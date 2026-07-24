@@ -26,6 +26,19 @@ import { validateConnection } from '../data/validate'
 import type { SystemConfig } from '../types/domain'
 
 const TREND_CAP = 20160 // ~14 days at 1-minute resolution
+const PROJECT_INDEX = 'hbs-bas-projects'
+const PROJECT_PREFIX = 'hbs-bas-project:'
+
+function listSavedProjects(): string[] {
+  if (typeof localStorage === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(PROJECT_INDEX)
+    const names = raw ? (JSON.parse(raw) as string[]) : []
+    return Array.isArray(names) ? names.filter((n) => typeof n === 'string').sort() : []
+  } catch {
+    return []
+  }
+}
 
 export interface BaselineCapture {
   label: string
@@ -90,8 +103,11 @@ interface StoreState {
   newSystem: () => void
   loadConfig: (config: SystemConfig) => void
   exportJSON: () => string
-  saveLocal: () => void
-  loadLocal: () => boolean
+  setProjectName: (name: string) => void
+  savedProjects: string[]
+  saveProject: () => void
+  loadProject: (name: string) => void
+  deleteProject: (name: string) => void
 
   // ui
   setPanel: (p: StoreState['activePanel']) => void
@@ -335,19 +351,46 @@ export const useStore = create<StoreState>((set, get) => ({
 
   exportJSON: () => JSON.stringify(get().config, null, 2),
 
-  saveLocal: () => {
-    localStorage.setItem('hbs-bas-config', JSON.stringify(get().config))
+  setProjectName: (name) => {
+    set({ config: { ...get().config, name } })
   },
 
-  loadLocal: () => {
-    const raw = localStorage.getItem('hbs-bas-config')
-    if (!raw) return false
+  savedProjects: listSavedProjects(),
+
+  saveProject: () => {
+    const config = get().config
+    const name = (config.name || 'Untitled').trim() || 'Untitled'
+    // Persist the current name onto the config so a reload restores it.
+    const toSave = { ...config, name }
     try {
+      localStorage.setItem(PROJECT_PREFIX + name, JSON.stringify(toSave))
+      const names = Array.from(new Set([...listSavedProjects(), name])).sort()
+      localStorage.setItem(PROJECT_INDEX, JSON.stringify(names))
+      set({ config: toSave, savedProjects: names })
+    } catch {
+      /* storage full or unavailable */
+    }
+  },
+
+  loadProject: (name) => {
+    try {
+      const raw = localStorage.getItem(PROJECT_PREFIX + name)
+      if (!raw) return
       const config = JSON.parse(raw) as SystemConfig
       get().loadConfig(config)
-      return true
     } catch {
-      return false
+      /* corrupt entry */
+    }
+  },
+
+  deleteProject: (name) => {
+    try {
+      localStorage.removeItem(PROJECT_PREFIX + name)
+      const names = listSavedProjects().filter((n) => n !== name)
+      localStorage.setItem(PROJECT_INDEX, JSON.stringify(names))
+      set({ savedProjects: names })
+    } catch {
+      /* ignore */
     }
   },
 
