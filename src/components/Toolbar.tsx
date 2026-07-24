@@ -6,6 +6,7 @@
 import { useRef } from 'react'
 import { useStore } from '../state/store'
 import type { SpeedMultiplier, SystemConfig } from '../types/domain'
+import { SEASONS } from '../data/drills'
 
 const SPEEDS: { value: SpeedMultiplier; label: string }[] = [
   { value: 0, label: '❚❚' },
@@ -20,6 +21,7 @@ export function Toolbar() {
   const speed = useStore((s) => s.speed)
   const setSpeed = useStore((s) => s.setSpeed)
   const jump = useStore((s) => s.jump)
+  const seekTime = useStore((s) => s.seekTime)
   const resetSim = useStore((s) => s.resetSim)
   const newSystem = useStore((s) => s.newSystem)
   const saveLocal = useStore((s) => s.saveLocal)
@@ -97,6 +99,20 @@ export function Toolbar() {
         <ToolButton onClick={() => jump(1440)} title="Advance one day">+1d</ToolButton>
         <ToolButton onClick={() => jump(10080)} title="Advance one week">+1w</ToolButton>
         <ToolButton onClick={resetSim} title="Reset simulation to day 1">↺</ToolButton>
+      </div>
+
+      {/* Season quick-jump */}
+      <div className="hidden lg:flex items-center gap-0.5 rounded bg-panel-800 p-0.5 border border-forest-800" title="Jump the clock to a season">
+        <span className="px-1 text-[9px] uppercase tracking-wider text-forest-300/70">Season</span>
+        {SEASONS.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => seekTime(s.minute)}
+            className="readout rounded px-1.5 py-1 text-[10px] text-forest-300 hover:bg-forest-700/50 hover:text-cream-100"
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
 
       <div className="ml-auto flex items-center gap-1">

@@ -21,6 +21,7 @@ import type {
 } from '../types/domain'
 import { createNode, CreateNodeOptions, connect as makeConn } from '../data/factory'
 import { buildSeedSystem } from '../data/seed'
+import { DRILLS } from '../data/drills'
 import { validateConnection } from '../data/validate'
 import type { SystemConfig } from '../types/domain'
 
@@ -64,7 +65,12 @@ interface StoreState {
   // simulation
   setSpeed: (s: SpeedMultiplier) => void
   jump: (minutes: number) => void
+  seekTime: (minute: number) => void
   resetSim: () => void
+
+  // training drills
+  activeDrillId: string | null
+  loadDrill: (id: string) => void
 
   // faults
   addFault: (kind: FaultKind, targetNodeId: string, params?: Record<string, number>, note?: string) => void
@@ -248,6 +254,23 @@ export const useStore = create<StoreState>((set, get) => ({
     worker?.postMessage({ type: 'jump', minutes })
   },
 
+  seekTime: (minute) => {
+    set({ trends: [], baseline: null })
+    worker?.postMessage({ type: 'set-time', minute })
+  },
+
+  activeDrillId: null,
+
+  loadDrill: (id) => {
+    const drill = DRILLS.find((d) => d.id === id)
+    if (!drill) return
+    const config = buildSeedSystem()
+    drill.apply(config)
+    set({ config, selectedNodeId: null, why: null, trends: [], baseline: null, activeDrillId: id, activePanel: 'alarms' })
+    pushConfig(config)
+    worker?.postMessage({ type: 'set-time', minute: drill.startMinute })
+  },
+
   resetSim: () => {
     set({ trends: [], baseline: null })
     worker?.postMessage({ type: 'reset' })
@@ -301,12 +324,12 @@ export const useStore = create<StoreState>((set, get) => ({
 
   newSystem: () => {
     const config = buildSeedSystem()
-    set({ config, selectedNodeId: null, why: null })
+    set({ config, selectedNodeId: null, why: null, activeDrillId: null })
     get().reloadWorker()
   },
 
   loadConfig: (config) => {
-    set({ config, selectedNodeId: null, why: null, trends: [], baseline: null })
+    set({ config, selectedNodeId: null, why: null, trends: [], baseline: null, activeDrillId: null })
     pushConfig(config)
   },
 

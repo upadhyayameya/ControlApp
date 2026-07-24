@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useStore } from '../state/store'
 import type { EquipmentNode, FaultKind } from '../types/domain'
 import { CATEGORY_LABELS } from '../data/schema'
+import { DRILLS } from '../data/drills'
 
 const FAULTS: { kind: FaultKind; label: string; blurb: string; targets: (n: EquipmentNode) => boolean; param?: { key: string; label: string; unit: string } }[] = [
   { kind: 'drifted-sensor', label: 'Drifted sensor', blurb: 'Sensor reads off by an offset — classic OAT drift that fools resets.', targets: (n) => n.category === 'sensor', param: { key: 'driftF', label: 'Drift', unit: '°F' } },
@@ -26,6 +27,10 @@ export function InstructorPanel() {
   const toggleFault = useStore((s) => s.toggleFault)
   const deleteFault = useStore((s) => s.deleteFault)
   const updateFaultParams = useStore((s) => s.updateFaultParams)
+  const loadDrill = useStore((s) => s.loadDrill)
+  const activeDrillId = useStore((s) => s.activeDrillId)
+  const [showAnswer, setShowAnswer] = useState(false)
+  const activeDrill = DRILLS.find((d) => d.id === activeDrillId)
 
   const [kind, setKind] = useState<FaultKind>('drifted-sensor')
   const def = FAULTS.find((f) => f.kind === kind)!
@@ -45,10 +50,56 @@ export function InstructorPanel() {
     <div className="flex h-full flex-col overflow-y-auto">
       <div className="border-b border-forest-800 px-3 py-2">
         <div className="text-[11px] font-semibold uppercase tracking-wide text-copper-300">Instructor — Fault Injection</div>
-        <div className="text-[10px] text-forest-300">Arm a hidden fault; have the trainee diagnose it.</div>
+        <div className="text-[10px] text-forest-300">Load a ready-made drill, or arm a hidden fault by hand.</div>
+      </div>
+
+      {/* Training drills */}
+      <div className="border-b border-forest-800 px-3 py-2">
+        <div className="pb-1 text-[10px] uppercase tracking-wider text-forest-300/70">Training drills — one click</div>
+        <div className="flex flex-col gap-1">
+          {DRILLS.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => { loadDrill(d.id); setShowAnswer(false) }}
+              className={`rounded border px-2 py-1.5 text-left transition-colors ${
+                activeDrillId === d.id ? 'border-copper-400 bg-copper-500/10' : 'border-forest-800 bg-panel-800 hover:bg-forest-700/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-cream-100">{d.name}</span>
+                <span className="readout text-[9px] text-forest-300">{d.season}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {activeDrill && (
+          <div className="mt-2 rounded border border-copper-500/30 bg-panel-800 p-2">
+            <div className="text-[9px] uppercase tracking-wider text-copper-300">Loaded: {activeDrill.name}</div>
+            <div className="mt-1 text-[10.5px] leading-snug text-cream-100/90">
+              <span className="text-forest-300">Symptom: </span>
+              {activeDrill.symptom}
+            </div>
+            <div className="mt-1.5 text-[9px] text-forest-300">
+              Put the clock on 100× and watch the Alarms tab. Have the trainee diagnose it, then reveal the answer.
+            </div>
+            <button
+              onClick={() => setShowAnswer((v) => !v)}
+              className="mt-1.5 rounded bg-forest-600 px-2 py-0.5 text-[10px] text-cream-50 hover:bg-forest-500"
+            >
+              {showAnswer ? 'Hide answer' : 'Show answer'}
+            </button>
+            {showAnswer && (
+              <div className="mt-1.5 rounded bg-copper-500/10 border border-copper-500/30 p-1.5 text-[10.5px] leading-snug text-copper-300">
+                {activeDrill.answer}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="border-b border-forest-800 px-3 py-2">
+        <div className="pb-1.5 text-[10px] uppercase tracking-wider text-forest-300/70">Or arm a fault by hand</div>
         <label className="block pb-1 text-[10px] uppercase tracking-wider text-forest-300/70">Fault type</label>
         <select
           value={kind}

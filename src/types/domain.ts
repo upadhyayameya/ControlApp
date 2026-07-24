@@ -354,6 +354,7 @@ export type WorkerInbound =
   | { type: 'load-config'; config: SystemConfig }
   | { type: 'set-speed'; speed: SpeedMultiplier }
   | { type: 'jump'; minutes: number }
+  | { type: 'set-time'; minute: number }
   | { type: 'update-faults'; faults: Fault[] }
   | { type: 'update-sequences'; nodeId: string; sequences: ControlSequences }
   | { type: 'update-setpoint'; nodeId: string; sequences: ControlSequences }

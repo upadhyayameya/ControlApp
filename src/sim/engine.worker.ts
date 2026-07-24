@@ -118,6 +118,21 @@ self.onmessage = (e: MessageEvent<WorkerInbound>) => {
       }
       break
     }
+    case 'set-time': {
+      if (!world) break
+      // Seek to a target minute, settling the previous 12 h so zone temps and
+      // loop temps reflect the new season instead of the day-0 initial state.
+      const target = Math.max(0, msg.minute)
+      world.minute = Math.max(0, target - 720)
+      let last: ReturnType<typeof step> | null = null
+      for (let i = 0; i < 720; i++) last = step(world)
+      if (last) {
+        last.snapshot.alarms = reconcileAlarms(evaluateAlarms(world, last.snapshot), last.snapshot.clock.minute)
+        lastSnapshot = last.snapshot
+        post({ type: 'snapshot', snapshot: last.snapshot, trends: [last.trend] })
+      }
+      break
+    }
     case 'update-faults':
       if (world) world.config = { ...world.config, faults: msg.faults }
       break
