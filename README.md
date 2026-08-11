@@ -18,10 +18,20 @@ This is a **training tool**, not an engineering-grade energy model. The physics 
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # type-check + production build
+npm run dev              # http://localhost:5173
+npm run build            # type-check + production build
+npm run build:standalone # one self-contained dist/index.html — open by double-clicking, no server
 npm run typecheck
 ```
+
+### Sharing without a terminal
+
+`npm run build:standalone` emits a single self-contained `dist/index.html` with
+everything inlined — hand it to someone and they open it by double-clicking or
+host it as one static file, no install required. In that mode the simulation
+runs on the main thread (`src/sim/localEngine.ts`) instead of a Web Worker,
+since a hosted page's security policy may forbid spawning a Worker; the physics
+are identical to the worker path because both share `src/sim/engineCore.ts`.
 
 The app opens on a pre-wired demo building (one AHU, three VAV-with-reheat zones, a
 two-chiller air-cooled plant, a condensing boiler, primary pumps, and an OAT sensor).

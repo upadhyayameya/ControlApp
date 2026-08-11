@@ -6,7 +6,8 @@
 // ---------------------------------------------------------------------------
 
 import { create } from 'zustand'
-import EngineWorker from '../sim/engine.worker.ts?worker'
+import EngineWorker from '../sim/engine.worker.ts?worker&inline'
+import { LocalEngine } from '../sim/localEngine'
 import type {
   ControlSequences,
   EquipmentCategory,
@@ -17,6 +18,7 @@ import type {
   SpeedMultiplier,
   TrendSample,
   WhyNotRunning,
+  WorkerInbound,
   WorkerOutbound,
 } from '../types/domain'
 import { createNode, CreateNodeOptions, connect as makeConn } from '../data/factory'
@@ -114,11 +116,22 @@ interface StoreState {
   toggleTheme: () => void
 }
 
-let worker: Worker | null = null
+// Both the Web Worker and the main-thread LocalEngine present this shape.
+interface EngineLike {
+  postMessage: (m: WorkerInbound) => void
+  onmessage: ((e: MessageEvent<WorkerOutbound>) => void) | null
+  terminate: () => void
+}
+
+// The self-contained hosted build sets VITE_LOCAL_ENGINE=1 to run the sim on
+// the main thread (a hosted page's policy may forbid spawning a Worker).
+const USE_LOCAL_ENGINE = import.meta.env.VITE_LOCAL_ENGINE === '1'
+
+let worker: EngineLike | null = null
 const whyResolvers = new Map<string, (w: WhyNotRunning) => void>()
 
 function spawnWorker(get: () => StoreState, set: (p: Partial<StoreState>) => void) {
-  const w = new EngineWorker()
+  const w: EngineLike = USE_LOCAL_ENGINE ? new LocalEngine() : (new EngineWorker() as unknown as EngineLike)
   w.onmessage = (e: MessageEvent<WorkerOutbound>) => {
     const msg = e.data
     if (msg.type === 'snapshot') {
