@@ -32,6 +32,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check the app is self-contained before publishing
+        run: |
+          set -euo pipefail
+          for f in index.html sw.js manifest.webmanifest icon.svg; do
+            test -f "penshow/$f" || { echo "missing penshow/$f"; exit 1; }
+          done
+          python3 - <<'PY'
+          import pathlib, re, sys
+          html = pathlib.Path("penshow/index.html").read_text()
+          # An offline app must not reach out to a CDN; convention wifi will not be there.
+          external = re.findall(r'(?:src|href)=["\'](?:https?:)?//[^"\']+', html)
+          if external:
+              sys.exit("external references in index.html: %s" % external[:5])
+          for needed in ("<title>", "indexedDB", "serviceWorker"):
+              if needed not in html:
+                  sys.exit("index.html is missing %r" % needed)
+          print("self-contained, %d KB" % (len(html) // 1024))
+          PY
+
       # Enabling Pages needs administration:write, which GITHUB_TOKEN does not
       # get — so configure-pages cannot switch it on for us (it fails with an
       # opaque "Resource not accessible by integration"). Check first and say
@@ -58,25 +77,6 @@ jobs:
           echo "Pages is enabled."
 
       - uses: actions/configure-pages@v5
-
-      - name: Check the app is self-contained before publishing
-        run: |
-          set -euo pipefail
-          for f in index.html sw.js manifest.webmanifest icon.svg; do
-            test -f "penshow/$f" || { echo "missing penshow/$f"; exit 1; }
-          done
-          python3 - <<'PY'
-          import pathlib, re, sys
-          html = pathlib.Path("penshow/index.html").read_text()
-          # An offline app must not reach out to a CDN; convention wifi will not be there.
-          external = re.findall(r'(?:src|href)=["\'](?:https?:)?//[^"\']+', html)
-          if external:
-              sys.exit("external references in index.html: %s" % external[:5])
-          for needed in ("<title>", "indexedDB", "serviceWorker"):
-              if needed not in html:
-                  sys.exit("index.html is missing %r" % needed)
-          print("self-contained, %d KB" % (len(html) // 1024))
-          PY
 
       - uses: actions/upload-pages-artifact@v3
         with:
