@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#14161c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pen Show">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Pen Show Tracker</title>
+<style>
+/* ---------------------------------------------------------------- tokens */
+:root{
+  --bg:#f6f6f8; --panel:#ffffff; --panel-2:#f0f1f4; --line:#d9dbe2;
+  --ink:#14161c; --ink-2:#5a6172; --ink-3:#878e9f;
+  --accent:#1f6feb; --accent-ink:#ffffff;
+  --good:#0f8b4c; --warn:#b26a00; --bad:#c02b2b;
+  --cash:#0f8b4c; --zelle:#6d28d9; --venmo:#0a7ea4; --card:#b45309; --other:#5a6172;
+  --r:12px; --shadow:0 1px 2px rgba(20,22,28,.06),0 8px 24px rgba(20,22,28,.06);
+  --tap:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1116; --panel:#181b22; --panel-2:#20242d; --line:#2c313c;
+    --ink:#e9ecf2; --ink-2:#a3abbb; --ink-3:#7b8497;
+    --accent:#4d8dff; --accent-ink:#0b0d11;
+    --good:#3ecf8e; --warn:#e0a458; --bad:#ff6b6b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1116; --panel:#181b22; --panel-2:#20242d; --line:#2c313c;
+  --ink:#e9ecf2; --ink-2:#a3abbb; --ink-3:#7b8497;
+  --accent:#4d8dff; --accent-ink:#0b0d11;
+  --good:#3ecf8e; --warn:#e0a458; --bad:#ff6b6b;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}
+
+/* ----------------------------------------------------------------- base */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  overscroll-behavior-y:contain;
+}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{font-size:16px} /* stops iOS zoom-on-focus */
+a{color:var(--accent)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+
+/* --------------------------------------------------------------- layout */
+header.top{
+  position:sticky; top:0; z-index:40;
+  background:color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
+  display:flex; align-items:center; gap:10px;
+}
+header.top .title{font-size:16px;font-weight:700;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header.top .sub{font-size:12px;color:var(--ink-2);font-weight:500}
+main{padding:12px; max-width:1100px; margin:0 auto}
+.view{display:none}
+.view.on{display:block}
+
+nav.tabs{
+  position:fixed; left:0; right:0; bottom:0; z-index:50;
+  display:grid; grid-template-columns:repeat(5,1fr);
+  background:color-mix(in srgb, var(--panel) 94%, transparent);
+  backdrop-filter:saturate(180%) blur(12px);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+nav.tabs button{
+  background:none;border:0;padding:8px 2px 10px;color:var(--ink-3);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;
+}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button.on{color:var(--accent)}
+
+/* ------------------------------------------------------------ primitives */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow)}
+.pad{padding:12px}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.stack{display:flex;flex-direction:column;gap:10px}
+.muted{color:var(--ink-2)}
+.tiny{font-size:12px}
+.right{text-align:right}
+hr.sep{border:0;border-top:1px solid var(--line);margin:10px 0}
+
+.btn{
+  min-height:var(--tap); padding:0 14px; border-radius:10px;
+  border:1px solid var(--line); background:var(--panel-2); color:var(--ink);
+  font-weight:600; cursor:pointer; display:inline-flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.danger{background:transparent;border-color:var(--bad);color:var(--bad)}
+.btn.sm{min-height:34px;padding:0 10px;font-size:13px;border-radius:9px}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11.5px;font-weight:700;color:var(--ink-2);
+  text-transform:uppercase;letter-spacing:.05em}
+.input,select.input,textarea.input{
+  min-height:var(--tap); padding:9px 11px; border-radius:10px;
+  border:1px solid var(--line); background:var(--panel); color:var(--ink); width:100%;
+}
+textarea.input{min-height:70px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;
+  background:var(--panel-2);border:1px solid var(--line);font-size:12px;font-weight:600}
+.chip.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.pill{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;
+  letter-spacing:.03em;text-transform:uppercase}
+.pill.good{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.flat{background:var(--panel-2);color:var(--ink-2)}
+
+/* ------------------------------------------------------------- sell view */
+.searchbar{display:flex;gap:8px;margin-bottom:10px}
+.searchbar .input{flex:1}
+
+.skugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.sku{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;text-align:left;padding:0;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;
+}
+.sku:active{border-color:var(--accent)}
+.sku .ph{aspect-ratio:4/3;background:var(--panel-2);position:relative;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sku .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.sku .ph .noimg{font-size:26px;opacity:.28}
+.sku .qty{position:absolute;top:6px;right:6px;background:var(--panel);
+  border:1px solid var(--line);border-radius:999px;padding:1px 8px;
+  font-size:11.5px;font-weight:800}
+.sku .qty.zero{background:var(--bad);border-color:transparent;color:#fff}
+.sku .qty.low{background:var(--warn);border-color:transparent;color:#fff}
+.sku .meta{padding:8px 9px 9px;display:flex;flex-direction:column;gap:2px;flex:1}
+.sku .nm{font-weight:650;font-size:13.5px;line-height:1.25;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sku .br{font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;
+  letter-spacing:.04em}
+.sku .pr{margin-top:auto;padding-top:5px;font-weight:800;font-size:15px}
+
+.cartbar{
+  position:fixed;left:8px;right:8px;bottom:calc(70px + env(safe-area-inset-bottom));
+  z-index:45;background:var(--accent);color:var(--accent-ink);border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);padding:11px 14px;
+  display:none;align-items:center;gap:10px;cursor:pointer;font-weight:700;
+  max-width:1084px;margin:0 auto;
+}
+.cartbar.on{display:flex}
+
+.line{display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:0}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;
+  overflow:hidden;background:var(--panel)}
+.stepper button{width:32px;height:34px;border:0;background:transparent;font-size:17px;
+  font-weight:700;cursor:pointer;color:var(--ink)}
+.stepper span{min-width:26px;text-align:center;font-weight:700;font-size:14px}
+
+.paygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.paybtn{min-height:52px;border-radius:11px;border:1px solid var(--line);background:var(--panel);
+  font-weight:700;font-size:13px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;color:var(--ink)}
+.paybtn.on{border-color:transparent;color:#fff}
+.paybtn.on[data-m="Cash"]{background:var(--cash)}
+.paybtn.on[data-m="Zelle"]{background:var(--zelle)}
+.paybtn.on[data-m="Venmo"]{background:var(--venmo)}
+.paybtn.on[data-m="Card"]{background:var(--card)}
+.paybtn.on[data-m="Check"],.paybtn.on[data-m="Trade"]{background:var(--other)}
+
+/* -------------------------------------------------------------- sheets */
+.scrim{position:fixed;inset:0;background:rgba(6,8,12,.5);z-index:60;display:none;
+  backdrop-filter:blur(2px)}
+.scrim.on{display:block}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--panel);
+  border-radius:18px 18px 0 0;border-top:1px solid var(--line);
+  max-height:92vh;display:none;flex-direction:column;
+  box-shadow:0 -8px 40px rgba(0,0,0,.3);
+}
+.sheet.on{display:flex}
+@media(min-width:760px){
+  .sheet{left:50%;transform:translateX(-50%);width:620px;bottom:16px;border-radius:18px;
+    border:1px solid var(--line)}
+}
+.sheet .head{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);
+  border-radius:18px 18px 0 0}
+.sheet .head h2{font-size:16px;flex:1}
+.sheet .body{overflow:auto;padding:14px;-webkit-overflow-scrolling:touch}
+.sheet .foot{padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line);display:flex;gap:8px;background:var(--panel)}
+.x{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+  background:var(--panel-2);cursor:pointer;font-size:16px;line-height:1;color:var(--ink)}
+
+/* --------------------------------------------------------------- tables */
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--ink-3);padding:6px 6px;border-bottom:1px solid var(--line);font-weight:700}
+table.t td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+.kv+.kv{border-top:1px dashed var(--line)}
+.kv b{font-variant-numeric:tabular-nums}
+.big{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.stat{background:var(--panel-2);border-radius:10px;padding:10px}
+.stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);
+  font-weight:700}
+.stat .v{font-size:19px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:999px;background:var(--panel-2);overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%}
+
+.empty{text-align:center;padding:36px 16px;color:var(--ink-3)}
+.empty .em{font-size:34px;display:block;margin-bottom:8px;opacity:.6}
+.warnbox{border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent);
+  padding:9px 11px;border-radius:0 8px 8px 0;font-size:12.5px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(130px + env(safe-area-inset-bottom));
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;z-index:90;
+  font-weight:650;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .18s}
+.toast.on{opacity:1}
+@media print{nav.tabs,.cartbar,header.top .btn{display:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="grow">
+    <div class="title" id="hdrTitle">Pen Show Tracker</div>
+    <div class="sub" id="hdrSub">—</div>
+  </div>
+  <button class="btn sm ghost" id="themeBtn" title="Theme">◐</button>
+</header>
+
+<main>
+  <!-- ============================================================ SELL -->
+  <section class="view on" id="v-sell">
+    <div class="searchbar">
+      <input class="input" id="sellSearch" placeholder="Search brand, model, SKU, nib…" autocomplete="off">
+      <button class="btn sm" id="customLineBtn" title="Sell something not in inventory">+ Custom</button>
+    </div>
+    <div class="row wrap tiny" id="sellFilters" style="margin-bottom:10px"></div>
+    <div class="skugrid" id="sellGrid"></div>
+  </section>
+
+  <!-- ======================================================= INVENTORY -->
+  <section class="view" id="v-inv">
+    <div class="searchbar">
+      <input class="input" id="invSearch" placeholder="Search inventory…" autocomplete="off">
+      <button class="btn sm primary" id="addItemBtn">+ Item</button>
+    </div>
+    <div class="row wrap tiny" style="margin-bottom:10px">
+      <span class="chip" id="invStatItems">—</span>
+      <span class="chip" id="invStatUnits">—</span>
+      <span class="chip" id="invStatCost">—</span>
+      <span class="chip" id="invStatRetail">—</span>
+    </div>
+    <div class="stack" id="invList"></div>
+  </section>
+
+  <!-- =========================================================== SHOWS -->
+  <section class="view" id="v-shows">
+    <div class="row" style="margin-bottom:10px">
+      <h2 class="grow">Shows</h2>
+      <button class="btn sm primary" id="addShowBtn">+ Show</button>
+    </div>
+    <div class="stack" id="showList"></div>
+  </section>
+
+  <!-- ========================================================= REPORTS -->
+  <section class="view" id="v-rep">
+    <div class="row" style="margin-bottom:10px">
+      <h2 class="grow">Reports</h2>
+      <select class="input" id="repShow" style="max-width:200px"></select>
+    </div>
+    <div class="stack" id="repBody"></div>
+  </section>
+
+  <!-- ============================================================ DATA -->
+  <section class="view" id="v-data">
+    <div class="stack" id="dataBody"></div>
+  </section>
+</main>
+
+<div class="cartbar" id="cartBar">
+  <span id="cartCount">0 items</span>
+  <span class="grow"></span>
+  <span id="cartTotal">$0.00</span>
+  <span>›</span>
+</div>
+
+<nav class="tabs">
+  <button data-v="sell" class="on"><svg viewBox="0 0 24 24"><path d="M3 6h18l-1.6 9.2a2 2 0 0 1-2 1.8H7.6a2 2 0 0 1-2-1.8L4 6z"/><circle cx="9" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg>Sell</button>
+  <button data-v="inv"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Inventory</button>
+  <button data-v="shows"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>Shows</button>
+  <button data-v="rep"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Reports</button>
+  <button data-v="data"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Data</button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="head"><h2 id="sheetTitle">—</h2><button class="x" id="sheetX">✕</button></div>
+  <div class="body" id="sheetBody"></div>
+  <div class="foot" id="sheetFoot"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   Pen Show Tracker — offline-first inventory + point of sale for pen shows.
+   Single file, no build step, no network. State lives in IndexedDB on the
+   device (photos in their own store so the main blob stays small).
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ utils */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = p => p + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const money = n => (n < 0 ? "-$" : "$") + Math.abs(+n || 0).toFixed(2);
+const num = v => { const n = parseFloat(String(v).replace(/[^0-9.\-]/g, "")); return isFinite(n) ? n : 0; };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const pct = n => (n * 100).toFixed(1) + "%";
+
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 1900);
+}
+
+/* --------------------------------------------------------------- storage */
+/* Two object stores: `kv` holds the state JSON (small, loaded every boot),
+   `photos` holds one data-URL per item so a 200-pen catalogue of images never
+   bloats the thing we parse on startup. localStorage is the fallback when
+   IndexedDB is unavailable (private browsing on some iOS versions).        */
+const DB = (() => {
+  let db = null, ok = false;
+  const open = () => new Promise(res => {
+    if (!("indexedDB" in window)) return res(null);
+    const r = indexedDB.open("penshow", 1);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      if (!d.objectStoreNames.contains("kv")) d.createObjectStore("kv");
+      if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos");
+    };
+    r.onsuccess = () => { db = r.result; ok = true; res(db); };
+    r.onerror = () => res(null);
+  });
+  const tx = (store, mode) => db.transaction(store, mode).objectStore(store);
+  const get = (store, key) => new Promise(res => {
+    if (!ok) return res(JSON.parse(localStorage.getItem("penshow:" + store + ":" + key) || "null"));
+    const r = tx(store, "readonly").get(key);
+    r.onsuccess = () => res(r.result ?? null); r.onerror = () => res(null);
+  });
+  const set = (store, key, val) => new Promise(res => {
+    if (!ok) { try { localStorage.setItem("penshow:" + store + ":" + key, JSON.stringify(val)); } catch (e) {} return res(); }
+    const r = tx(store, "readwrite").put(val, key);
+    r.onsuccess = () => res(); r.onerror = () => res();
+  });
+  const del = (store, key) => new Promise(res => {
+    if (!ok) { localStorage.removeItem("penshow:" + store + ":" + key); return res(); }
+    const r = tx(store, "readwrite").delete(key);
+    r.onsuccess = () => res(); r.onerror = () => res();
+  });
+  const all = store => new Promise(res => {
+    if (!ok) {
+      const out = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i), p = "penshow:" + store + ":";
+        if (k.startsWith(p)) out[k.slice(p.length)] = JSON.parse(localStorage.getItem(k));
+      }
+      return res(out);
+    }
+    const out = {}, s = tx(store, "readonly"), r = s.openCursor();
+    r.onsuccess = e => { const c = e.target.result; if (!c) return res(out); out[c.key] = c.value; c.continue(); };
+    r.onerror = () => res(out);
+  });
+  return { open, get, set, del, all, get usable() { return ok; } };
+})();
+
+/* ----------------------------------------------------------------- model */
+const CATEGORIES = ["Pen", "Vintage Pen", "Nib", "Ink", "Paper", "Accessory", "Service"];
+const NIBS = ["", "EF", "F", "M", "B", "BB", "Stub", "Italic", "Architect", "Music", "Flex", "Zoom", "Fude", "Needlepoint"];
+const CONDITIONS = ["New", "New old stock", "Restored", "Used — excellent", "Used — good", "For parts"];
+const METHODS = ["Cash", "Zelle", "Venmo", "Card", "Check", "Trade"];
+
+/* Seeded with the five shows on the 2026 circuit. Dates and — importantly —
+   tax rates are placeholders you must confirm; see the VERIFY warning in the
+   Shows tab. Rates below are the commonly quoted combined state+local rate
+   for the usual venue city, not legal advice. */
+const SEED_SHOWS = [
+  { name: "SF Pen Show",      city: "San Francisco Bay Area, CA", state: "CA", taxRate: 9.375 },
+  { name: "Orlando Pen Show", city: "Orlando, FL",                state: "FL", taxRate: 6.5   },
+  { name: "Dallas Pen Show",  city: "Dallas, TX",                 state: "TX", taxRate: 8.25  },
+  { name: "Denver Pen Show",  city: "Denver, CO",                 state: "CO", taxRate: 8.81  },
+  { name: "Ohio Pen Show",    city: "Columbus, OH",               state: "OH", taxRate: 7.5   },
+];
+
+const blankShow = o => ({
+  id: uid("sh_"), name: "", city: "", state: "", start: "", end: "",
+  taxRate: 0, chargeTax: true, cardFeePct: 2.6, cardFeeFlat: 0.10,
+  costs: { table: 0, travel: 0, lodging: 0, meals: 0, shipping: 0, other: 0 },
+  openingCash: 0, notes: "", ...o
+});
+
+const blankItem = () => ({
+  id: uid("it_"), sku: "", brand: "", model: "", variant: "", nib: "",
+  category: "Pen", condition: "New", cost: 0, msrp: 0, price: 0, floor: 0,
+  wholesale: 0, qty: 0, location: "", serial: "", tags: "", notes: "",
+  hasPhoto: false, taxable: true, archived: false, created: Date.now()
+});
+
+let state = {
+  v: 1,
+  settings: { business: "", activeShow: null, lowStock: 2, theme: "auto" },
+  shows: [], items: [], sales: []
+};
+const photos = new Map();     // itemId -> data URL, kept in memory once loaded
+let cart = null;              // active in-progress sale
+
+/* --------------------------------------------------------------- persist */
+let saveTimer = null;
+function save(now) {
+  clearTimeout(saveTimer);
+  const go = () => DB.set("kv", "state", JSON.parse(JSON.stringify(state)));
+  if (now) return go();
+  saveTimer = setTimeout(go, 250);
+}
+
+async function boot() {
+  await DB.open();
+  const loaded = await DB.get("kv", "state");
+  if (loaded && loaded.items) state = Object.assign(state, loaded);
+  if (!state.shows.length) {
+    state.shows = SEED_SHOWS.map(s => blankShow(s));
+    state.settings.activeShow = state.shows[0].id;
+    save(true);
+  }
+  const ph = await DB.all("photos");
+  for (const k in ph) photos.set(k, ph[k]);
+  applyTheme();
+  renderAll();
+}
+
+/* ---------------------------------------------------------------- lookup */
+const showById  = id => state.shows.find(s => s.id === id) || null;
+const itemById  = id => state.items.find(i => i.id === id) || null;
+const activeShow = () => showById(state.settings.activeShow) || state.shows[0] || null;
+const liveItems = () => state.items.filter(i => !i.archived);
+
+const itemLabel = i => [i.brand, i.model].filter(Boolean).join(" ") || i.sku || "Untitled";
+const itemSub   = i => [i.variant, i.nib && i.nib + " nib", i.condition !== "New" ? i.condition : ""]
+  .filter(Boolean).join(" · ");
+
+/* Units committed to open holds — reserved but not yet paid for. */
+function heldQty(itemId) {
+  let n = 0;
+  for (const s of state.sales)
+    if (s.status === "hold" && !s.voided)
+      for (const l of s.lines) if (l.itemId === itemId) n += l.qty;
+  return n;
+}
+const availQty = i => i.qty - heldQty(i.id);
+
+/* ------------------------------------------------------------------ math */
+/* One place that turns a sale (cart or saved) into money. Tax is computed on
+   the discounted taxable base and tracked separately — it is a liability you
+   remit to the state, never revenue and never profit. */
+function calc(sale) {
+  const show = showById(sale.showId);
+  const rate = show && show.chargeTax ? (show.taxRate || 0) / 100 : 0;
+  let subtotal = 0, taxableSub = 0, cogs = 0;
+  for (const l of sale.lines) {
+    const gross = l.qty * l.unitPrice;
+    subtotal += gross;
+    if (l.taxable) taxableSub += gross;
+    cogs += l.qty * (l.unitCost || 0);
+  }
+  const d = sale.discount || { type: "amt", value: 0 };
+  const discount = Math.min(subtotal, d.type === "pct" ? subtotal * (num(d.value) / 100) : num(d.value));
+  // Spread the discount proportionally so the taxable base shrinks with it.
+  const share = subtotal > 0 ? taxableSub / subtotal : 0;
+  const taxBase = Math.max(0, taxableSub - discount * share);
+  const tax = Math.round(taxBase * rate * 100) / 100;
+  const net = Math.round((subtotal - discount) * 100) / 100;
+  const total = Math.round((net + tax) * 100) / 100;
+
+  const paid = (sale.payments || []).reduce((a, p) => a + num(p.amount), 0);
+  let fees = 0;
+  for (const p of (sale.payments || []))
+    if (p.method === "Card" && show)
+      fees += num(p.amount) * (num(show.cardFeePct) / 100) + num(show.cardFeeFlat);
+  fees = Math.round(fees * 100) / 100;
+
+  return { subtotal, discount, net, tax, total, cogs, fees,
+           gross: Math.round((net - cogs - fees) * 100) / 100,
+           paid, due: Math.round((total - paid) * 100) / 100 };
+}
+
+/* =======================================================================
+   NAVIGATION
+   ======================================================================= */
+let view = "sell";
+$$("nav.tabs button").forEach(b => b.onclick = () => {
+  view = b.dataset.v;
+  $$("nav.tabs button").forEach(x => x.classList.toggle("on", x === b));
+  $$(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + view));
+  window.scrollTo(0, 0);
+  renderAll();
+});
+
+$("#themeBtn").onclick = () => {
+  const order = ["auto", "light", "dark"];
+  state.settings.theme = order[(order.indexOf(state.settings.theme || "auto") + 1) % 3];
+  applyTheme(); save(); toast("Theme: " + state.settings.theme);
+};
+function applyTheme() {
+  const t = state.settings.theme || "auto";
+  if (t === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+}
+
+/* --------------------------------------------------------------- sheets */
+let sheetOnClose = null;
+function openSheet(title, bodyHTML, footHTML, onClose) {
+  $("#sheetTitle").textContent = title;
+  $("#sheetBody").innerHTML = bodyHTML;
+  $("#sheetFoot").innerHTML = footHTML || "";
+  $("#sheet").classList.add("on"); $("#scrim").classList.add("on");
+  $("#sheetBody").scrollTop = 0;
+  sheetOnClose = onClose || null;
+}
+function closeSheet() {
+  $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on");
+  const f = sheetOnClose; sheetOnClose = null; if (f) f();
+}
+$("#sheetX").onclick = closeSheet;
+$("#scrim").onclick = closeSheet;
+
+function renderAll() {
+  const s = activeShow();
+  $("#hdrTitle").textContent = state.settings.business || "Pen Show Tracker";
+  $("#hdrSub").textContent = s
+    ? s.name + (s.chargeTax && s.taxRate ? " · tax " + s.taxRate + "%" : " · no tax")
+    : "No show selected";
+  if (view === "sell") renderSell();
+  if (view === "inv") renderInv();
+  if (view === "shows") renderShows();
+  if (view === "rep") renderReports();
+  if (view === "data") renderData();
+  renderCartBar();
+}
+
+/* =======================================================================
+   SELL
+   ======================================================================= */
+let sellFilter = "All";
+
+function renderSell() {
+  const q = $("#sellSearch").value.trim().toLowerCase();
+  const cats = ["All", ...new Set(liveItems().map(i => i.category))];
+  $("#sellFilters").innerHTML = cats.map(c =>
+    `<button class="chip ${c === sellFilter ? "on" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  $$("#sellFilters .chip").forEach(b => b.onclick = () => { sellFilter = b.dataset.cat; renderSell(); });
+
+  const list = liveItems().filter(i => {
+    if (sellFilter !== "All" && i.category !== sellFilter) return false;
+    if (!q) return true;
+    return [i.sku, i.brand, i.model, i.variant, i.nib, i.tags, i.location]
+      .join(" ").toLowerCase().includes(q);
+  }).sort((a, b) => itemLabel(a).localeCompare(itemLabel(b)));
+
+  const g = $("#sellGrid");
+  if (!list.length) {
+    g.innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="em">🖋</span>
+      ${state.items.length ? "Nothing matches that search." :
+        "No inventory yet.<br>Add items in the Inventory tab, or import a CSV from the Data tab."}</div>`;
+    return;
+  }
+  g.innerHTML = list.map(i => {
+    const a = availQty(i);
+    const cls = a <= 0 ? "zero" : (a <= (state.settings.lowStock || 2) ? "low" : "");
+    const img = i.hasPhoto && photos.get(i.id)
+      ? `<img src="${photos.get(i.id)}" alt="" loading="lazy">` : `<span class="noimg">🖊</span>`;
+    return `<button class="sku" data-id="${i.id}">
+      <div class="ph">${img}<span class="qty ${cls}">${a}</span></div>
+      <div class="meta">
+        <span class="br">${esc(i.brand || i.category)}</span>
+        <span class="nm">${esc(i.model || i.sku || "Untitled")}</span>
+        ${itemSub(i) ? `<span class="tiny muted">${esc(itemSub(i))}</span>` : ""}
+        <span class="pr">${money(i.price)}</span>
+      </div></button>`;
+  }).join("");
+  $$("#sellGrid .sku").forEach(b => b.onclick = () => addToCart(b.dataset.id));
+}
+$("#sellSearch").oninput = () => renderSell();
+
+function ensureCart() {
+  if (!cart) cart = {
+    id: uid("sa_"), ts: Date.now(), showId: state.settings.activeShow,
+    lines: [], discount: { type: "amt", value: 0 }, payments: [],
+    customer: { name: "", email: "", phone: "" }, notes: "",
+    status: "paid", voided: false
+  };
+  return cart;
+}
+
+function addToCart(itemId) {
+  const it = itemById(itemId); if (!it) return;
+  const c = ensureCart();
+  const ex = c.lines.find(l => l.itemId === itemId);
+  if (ex) ex.qty++;
+  else c.lines.push({
+    itemId, sku: it.sku, name: itemLabel(it), sub: itemSub(it),
+    qty: 1, unitPrice: num(it.price), unitCost: num(it.cost),
+    floor: num(it.floor), taxable: it.taxable !== false
+  });
+  if (navigator.vibrate) navigator.vibrate(8);
+  toast(itemLabel(it) + " added");
+  renderCartBar();
+}
+
+function renderCartBar() {
+  const bar = $("#cartBar");
+  if (!cart || !cart.lines.length) { bar.classList.remove("on"); return; }
+  const t = calc(cart), n = cart.lines.reduce((a, l) => a + l.qty, 0);
+  $("#cartCount").textContent = n + (n === 1 ? " item" : " items");
+  $("#cartTotal").textContent = money(t.total);
+  bar.classList.add("on");
+}
+$("#cartBar").onclick = () => openCart();
+
+$("#customLineBtn").onclick = () => {
+  const c = ensureCart();
+  c.lines.push({ itemId: null, sku: "", name: "Custom item", sub: "not in inventory",
+                 qty: 1, unitPrice: 0, unitCost: 0, floor: 0, taxable: true });
+  openCart();
+};
+
+/* ------------------------------------------------------------ cart sheet */
+function openCart() {
+  const c = ensureCart();
+  openSheet("Sale", cartHTML(), cartFootHTML());
+  wireCart();
+}
+
+function cartHTML() {
+  const c = cart, t = calc(c), show = showById(c.showId);
+  const lines = c.lines.map((l, ix) => {
+    const marginPctVal = l.unitPrice > 0 ? (l.unitPrice - l.unitCost) / l.unitPrice : 0;
+    const below = l.floor > 0 && l.unitPrice < l.floor;
+    return `<div class="line">
+      <div class="grow">
+        <div style="font-weight:650">${esc(l.name)}</div>
+        <div class="tiny muted">${esc(l.sub || l.sku || "")}</div>
+        <div class="row" style="margin-top:6px;gap:6px">
+          <div class="stepper">
+            <button data-act="dec" data-ix="${ix}">−</button>
+            <span>${l.qty}</span>
+            <button data-act="inc" data-ix="${ix}">+</button>
+          </div>
+          <input class="input" style="width:96px;min-height:34px;padding:4px 8px"
+                 inputmode="decimal" data-price="${ix}" value="${l.unitPrice.toFixed(2)}">
+          <button class="btn sm ghost" data-act="rm" data-ix="${ix}">✕</button>
+        </div>
+        <div class="tiny" style="margin-top:4px;color:${below ? "var(--bad)" : "var(--ink-3)"}">
+          cost ${money(l.unitCost)} · margin ${pct(marginPctVal)}
+          ${l.floor > 0 ? ` · floor ${money(l.floor)}${below ? " ⚠ BELOW FLOOR" : ""}` : ""}
+          ${l.itemId ? "" : " · <span style='color:var(--warn)'>custom line, no stock movement</span>"}
+        </div>
+      </div>
+      <div class="right" style="font-weight:750;min-width:74px">${money(l.qty * l.unitPrice)}</div>
+    </div>`;
+  }).join("") || `<div class="empty tiny">Cart is empty.</div>`;
+
+  const payRows = (c.payments || []).map((p, ix) => `
+    <div class="row" style="margin-top:6px">
+      <span class="pill flat" style="min-width:60px">${esc(p.method)}</span>
+      <input class="input grow" style="min-height:38px" inputmode="decimal"
+             data-pay="${ix}" value="${num(p.amount).toFixed(2)}">
+      <input class="input" style="min-height:38px;width:110px" placeholder="ref / last4"
+             data-payref="${ix}" value="${esc(p.ref || "")}">
+      <button class="btn sm ghost" data-act="rmpay" data-ix="${ix}">✕</button>
+    </div>`).join("");
+
+  return `
+  <div class="field" style="margin-bottom:12px">
+    <label>Show</label>
+    <select class="input" id="cartShow">
+      ${state.shows.map(s => `<option value="${s.id}" ${s.id === c.showId ? "selected" : ""}>${esc(s.name)}</option>`).join("")}
+    </select>
+  </div>
+  <div class="card pad" style="margin-bottom:12px">${lines}</div>
+
+  <div class="grid2" style="margin-bottom:12px">
+    <div class="field"><label>Discount</label>
+      <input class="input" id="discVal" inputmode="decimal" value="${num(c.discount.value)}"></div>
+    <div class="field"><label>Type</label>
+      <select class="input" id="discType">
+        <option value="amt" ${c.discount.type === "amt" ? "selected" : ""}>$ off</option>
+        <option value="pct" ${c.discount.type === "pct" ? "selected" : ""}>% off</option>
+      </select></div>
+  </div>
+
+  <div class="card pad" style="margin-bottom:12px">
+    <div class="kv"><span>Subtotal</span><b>${money(t.subtotal)}</b></div>
+    ${t.discount ? `<div class="kv"><span>Discount</span><b style="color:var(--bad)">−${money(t.discount)}</b></div>` : ""}
+    <div class="kv"><span>Sales tax ${show && show.chargeTax ? "(" + show.taxRate + "%)" : "(off)"}</span><b>${money(t.tax)}</b></div>
+    <div class="kv" style="font-size:18px"><span><b>Total</b></span><b>${money(t.total)}</b></div>
+    <div class="kv tiny muted"><span>Est. gross profit${t.fees ? " (after card fees)" : ""}</span>
+      <b style="color:${t.gross >= 0 ? "var(--good)" : "var(--bad)"}">${money(t.gross)}</b></div>
+  </div>
+
+  <h3 style="font-size:13px;margin-bottom:8px">Payment</h3>
+  <div class="paygrid">
+    ${METHODS.map(m => `<button class="paybtn" data-m="${m}" data-addpay="${m}">
+      <span>${m}</span><span class="tiny" style="opacity:.7">tap to add</span></button>`).join("")}
+  </div>
+  ${payRows}
+  <div class="row tiny" style="margin-top:8px">
+    <span class="grow muted">Paid ${money(t.paid)}</span>
+    <b style="color:${Math.abs(t.due) < 0.005 ? "var(--good)" : "var(--warn)"}">
+      ${t.due > 0 ? "Due " + money(t.due) : t.due < 0 ? "Change " + money(-t.due) : "Settled"}</b>
+  </div>
+  <button class="btn sm block ghost" id="payExact" style="margin-top:8px">Fill remaining on last method</button>
+
+  <hr class="sep">
+  <div class="grid2">
+    <div class="field"><label>Customer name</label>
+      <input class="input" id="cName" value="${esc(c.customer.name)}" autocomplete="off"></div>
+    <div class="field"><label>Email / phone</label>
+      <input class="input" id="cEmail" value="${esc(c.customer.email)}" autocomplete="off"
+             placeholder="for follow-up"></div>
+  </div>
+  <div class="field" style="margin-top:10px"><label>Notes</label>
+    <input class="input" id="cNotes" value="${esc(c.notes)}" placeholder="traded in a Vac700, etc."></div>`;
+}
+
+function cartFootHTML() {
+  const t = calc(cart);
+  return `<button class="btn ghost" id="cartHold">Hold</button>
+          <button class="btn danger" id="cartClear">Clear</button>
+          <button class="btn primary grow" id="cartDone">Complete ${money(t.total)}</button>`;
+}
+
+function wireCart() {
+  const body = $("#sheetBody");
+  const refresh = () => { $("#sheetBody").innerHTML = cartHTML(); $("#sheetFoot").innerHTML = cartFootHTML(); wireCart(); renderCartBar(); };
+
+  $$("[data-act]", body).forEach(b => b.onclick = () => {
+    const ix = +b.dataset.ix;
+    if (b.dataset.act === "inc") cart.lines[ix].qty++;
+    if (b.dataset.act === "dec") cart.lines[ix].qty = Math.max(1, cart.lines[ix].qty - 1);
+    if (b.dataset.act === "rm") cart.lines.splice(ix, 1);
+    if (b.dataset.act === "rmpay") cart.payments.splice(ix, 1);
+    refresh();
+  });
+  $$("[data-price]", body).forEach(inp => inp.onchange = () => {
+    cart.lines[+inp.dataset.price].unitPrice = num(inp.value); refresh();
+  });
+  $$("[data-pay]", body).forEach(inp => inp.onchange = () => {
+    cart.payments[+inp.dataset.pay].amount = num(inp.value); refresh();
+  });
+  $$("[data-payref]", body).forEach(inp => inp.oninput = () => {
+    cart.payments[+inp.dataset.payref].ref = inp.value;
+  });
+  $$("[data-addpay]", body).forEach(b => b.onclick = () => {
+    const t = calc(cart);
+    cart.payments.push({ method: b.dataset.addpay, amount: Math.max(0, t.due), ref: "" });
+    refresh();
+  });
+  const pe = $("#payExact"); if (pe) pe.onclick = () => {
+    if (!cart.payments.length) return toast("Add a payment method first");
+    const t = calc(cart);
+    cart.payments[cart.payments.length - 1].amount = num(cart.payments[cart.payments.length - 1].amount) + t.due;
+    refresh();
+  };
+  $("#cartShow").onchange = e => { cart.showId = e.target.value; refresh(); };
+  $("#discVal").onchange = e => { cart.discount.value = num(e.target.value); refresh(); };
+  $("#discType").onchange = e => { cart.discount.type = e.target.value; refresh(); };
+  $("#cName").oninput = e => cart.customer.name = e.target.value;
+  $("#cEmail").oninput = e => cart.customer.email = e.target.value;
+  $("#cNotes").oninput = e => cart.notes = e.target.value;
+
+  $("#cartClear").onclick = () => { if (confirm("Discard this sale?")) { cart = null; closeSheet(); renderAll(); } };
+  $("#cartHold").onclick = () => commitSale("hold");
+  $("#cartDone").onclick = () => commitSale("paid");
+}
+
+function commitSale(status) {
+  if (!cart.lines.length) return toast("Nothing in the cart");
+  const t = calc(cart);
+  if (status === "paid") {
+    if (!cart.payments.length) return toast("Add how they paid");
+    if (Math.abs(t.due) > 0.005 && !confirm(
+      (t.due > 0 ? "Still due " + money(t.due) : "Change owed " + money(-t.due)) + ". Save anyway?")) return;
+  }
+  // A converted hold replaces its original rather than sitting alongside it.
+  if (cart.replaces) state.sales = state.sales.filter(x => x.id !== cart.replaces);
+  // Stock only moves for real inventory lines; custom lines are revenue only.
+  for (const l of cart.lines) {
+    const it = itemById(l.itemId);
+    if (it && status === "paid") it.qty = Math.max(0, it.qty - l.qty);
+  }
+  cart.status = status;
+  cart.ts = Date.now();
+  cart.totals = { subtotal: t.subtotal, discount: t.discount, tax: t.tax,
+                  total: t.total, cogs: t.cogs, fees: t.fees };
+  state.sales.push(cart);
+  cart = null;
+  save(true); closeSheet(); renderAll();
+  toast(status === "hold" ? "Held — stock reserved" : "Sale recorded " + money(t.total));
+}
+
+/* Converting a hold to a paid sale is where the stock actually leaves.
+   The original stays in `state.sales` until the new one commits — abandoning
+   the sheet half-way must not silently delete somebody's reserved pen. */
+function convertHold(saleId) {
+  const s = state.sales.find(x => x.id === saleId); if (!s) return;
+  cart = JSON.parse(JSON.stringify(s));
+  cart.id = uid("sa_");
+  cart.replaces = saleId;
+  cart.status = "paid";
+  cart.payments = [];
+  openCart();
+}
+
+function voidSale(saleId) {
+  const s = state.sales.find(x => x.id === saleId); if (!s) return;
+  if (!confirm("Void this sale and put the stock back?")) return;
+  s.voided = true; s.voidedAt = Date.now();
+  if (s.status === "paid")
+    for (const l of s.lines) { const it = itemById(l.itemId); if (it) it.qty += l.qty; }
+  save(true); renderAll(); toast("Voided, stock restored");
+}
+
+/* =======================================================================
+   INVENTORY
+   ======================================================================= */
+function renderInv() {
+  const q = $("#invSearch").value.trim().toLowerCase();
+  const items = liveItems();
+  const units = items.reduce((a, i) => a + i.qty, 0);
+  const cost  = items.reduce((a, i) => a + i.qty * num(i.cost), 0);
+  const retail = items.reduce((a, i) => a + i.qty * num(i.price), 0);
+  $("#invStatItems").textContent  = items.length + " SKUs";
+  $("#invStatUnits").textContent  = units + " units";
+  $("#invStatCost").textContent   = money(cost) + " at cost";
+  $("#invStatRetail").textContent = money(retail) + " at retail";
+
+  const list = items.filter(i => !q || [i.sku, i.brand, i.model, i.variant, i.nib, i.tags, i.location, i.serial]
+    .join(" ").toLowerCase().includes(q))
+    .sort((a, b) => (a.brand || "").localeCompare(b.brand || "") || itemLabel(a).localeCompare(itemLabel(b)));
+
+  $("#invList").innerHTML = list.length ? list.map(i => {
+    const m = i.price > 0 ? (i.price - i.cost) / i.price : 0;
+    const img = i.hasPhoto && photos.get(i.id)
+      ? `<img src="${photos.get(i.id)}" style="width:54px;height:54px;object-fit:cover;border-radius:9px;flex:none">`
+      : `<div style="width:54px;height:54px;border-radius:9px;background:var(--panel-2);flex:none;
+           display:flex;align-items:center;justify-content:center;opacity:.4">🖊</div>`;
+    const held = heldQty(i.id);
+    return `<div class="card pad row" data-edit="${i.id}" style="cursor:pointer;gap:10px">
+      ${img}
+      <div class="grow">
+        <div class="row"><b class="grow">${esc(itemLabel(i))}</b>
+          <b class="num">${money(i.price)}</b></div>
+        <div class="tiny muted">${esc(itemSub(i))}${i.sku ? " · " + esc(i.sku) : ""}${i.location ? " · 📍" + esc(i.location) : ""}</div>
+        <div class="row tiny" style="margin-top:4px;gap:6px">
+          <span class="pill ${i.qty <= 0 ? "bad" : i.qty <= (state.settings.lowStock || 2) ? "warn" : "flat"}">${i.qty} on hand</span>
+          ${held ? `<span class="pill warn">${held} held</span>` : ""}
+          <span class="muted">cost ${money(i.cost)} · margin ${pct(m)}${i.floor ? " · floor " + money(i.floor) : ""}</span>
+        </div>
+      </div></div>`;
+  }).join("") : `<div class="empty"><span class="em">📦</span>No items yet.<br>
+      <button class="btn sm primary" style="margin-top:10px" onclick="document.getElementById('addItemBtn').click()">Add your first pen</button></div>`;
+
+  $$("#invList [data-edit]").forEach(el => el.onclick = () => editItem(el.dataset.edit));
+}
+$("#invSearch").oninput = () => renderInv();
+$("#addItemBtn").onclick = () => editItem(null);
+
+function editItem(id) {
+  const isNew = !id;
+  const it = isNew ? blankItem() : Object.assign({}, itemById(id));
+  const f = (k, label, opts = {}) => `
+    <div class="field"><label>${label}</label>
+      ${opts.select
+        ? `<select class="input" data-f="${k}">${opts.select.map(o =>
+            `<option value="${esc(o)}" ${String(it[k]) === o ? "selected" : ""}>${esc(o || "—")}</option>`).join("")}</select>`
+        : `<input class="input" data-f="${k}" ${opts.mode ? `inputmode="${opts.mode}"` : ""}
+             value="${esc(it[k] ?? "")}" placeholder="${esc(opts.ph || "")}" autocomplete="off">`}
+    </div>`;
+
+  const img = photos.get(it.id);
+  openSheet(isNew ? "New item" : "Edit item", `
+    <div class="row" style="margin-bottom:14px;gap:12px">
+      <div id="photoBox" style="width:88px;height:88px;border-radius:12px;background:var(--panel-2);
+        overflow:hidden;display:flex;align-items:center;justify-content:center;flex:none">
+        ${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover">` : `<span style="opacity:.4;font-size:26px">🖊</span>`}
+      </div>
+      <div class="stack grow">
+        <label class="btn sm block" style="cursor:pointer">📷 Photo
+          <input type="file" accept="image/*" id="photoIn" style="display:none"></label>
+        ${img ? `<button class="btn sm ghost block" id="photoRm">Remove photo</button>` : ""}
+      </div>
+    </div>
+    <div class="grid2">${f("brand", "Brand", { ph: "Sailor" })}${f("model", "Model", { ph: "Pro Gear" })}</div>
+    <div class="grid2" style="margin-top:10px">${f("variant", "Variant / finish", { ph: "Sky blue" })}
+      ${f("nib", "Nib", { select: NIBS })}</div>
+    <div class="grid2" style="margin-top:10px">${f("category", "Category", { select: CATEGORIES })}
+      ${f("condition", "Condition", { select: CONDITIONS })}</div>
+    <div class="grid2" style="margin-top:10px">${f("sku", "SKU", { ph: "auto" })}${f("qty", "Qty on hand", { mode: "numeric" })}</div>
+
+    <hr class="sep">
+    <div class="grid3">
+      ${f("cost", "Landed cost", { mode: "decimal" })}
+      ${f("price", "Show price", { mode: "decimal" })}
+      ${f("floor", "Floor price", { mode: "decimal" })}
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      ${f("msrp", "MSRP", { mode: "decimal" })}
+      ${f("wholesale", "Dealer / wholesale", { mode: "decimal" })}
+    </div>
+    <div class="tiny muted" id="marginHint" style="margin-top:8px"></div>
+    <div class="warnbox" style="margin-top:8px">
+      <b>Floor price</b> is the lowest you will go when someone haggles. The cart turns
+      red when you price below it, so you never discount into a loss at 4pm on Sunday.
+    </div>
+
+    <hr class="sep">
+    <div class="grid2">${f("location", "Case / tray", { ph: "Case 1, tray B" })}
+      ${f("serial", "Serial / lot", { ph: "for one-of-a-kind pieces" })}</div>
+    <div class="field" style="margin-top:10px"><label>Tags</label>
+      <input class="input" data-f="tags" value="${esc(it.tags)}" placeholder="limited, urushi, japan"></div>
+    <div class="field" style="margin-top:10px"><label>Notes</label>
+      <textarea class="input" data-f="notes">${esc(it.notes)}</textarea></div>
+    <label class="row tiny" style="margin-top:10px;gap:8px">
+      <input type="checkbox" id="fTaxable" ${it.taxable !== false ? "checked" : ""}>
+      Charge sales tax on this item</label>
+  `, `${isNew ? "" : `<button class="btn danger" id="itemDel">Delete</button>`}
+      <button class="btn primary grow" id="itemSave">Save</button>`);
+
+  const read = () => {
+    $$("#sheetBody [data-f]").forEach(el => {
+      const k = el.dataset.f;
+      it[k] = ["cost", "price", "floor", "msrp", "wholesale", "qty"].includes(k) ? num(el.value) : el.value;
+    });
+    it.taxable = $("#fTaxable").checked;
+  };
+  const hint = () => {
+    read();
+    const m = it.price > 0 ? (it.price - it.cost) / it.price : 0;
+    const mf = it.floor > 0 ? (it.floor - it.cost) / it.floor : 0;
+    $("#marginHint").innerHTML =
+      `Margin at show price <b style="color:${m > 0 ? "var(--good)" : "var(--bad)"}">${pct(m)}</b>
+       (${money(it.price - it.cost)}/unit)` +
+      (it.floor > 0 ? ` · at floor <b style="color:${mf > 0 ? "var(--good)" : "var(--bad)"}">${pct(mf)}</b>` : "") +
+      ` · ${it.qty} units tie up <b>${money(it.qty * it.cost)}</b>`;
+  };
+  $$("#sheetBody [data-f]").forEach(el => el.oninput = hint);
+  hint();
+
+  $("#photoIn").onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    shrinkImage(file, 720, 0.72).then(dataUrl => {
+      photos.set(it.id, dataUrl); it.hasPhoto = true;
+      DB.set("photos", it.id, dataUrl);
+      $("#photoBox").innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
+      toast("Photo attached");
+    });
+  };
+  const prm = $("#photoRm"); if (prm) prm.onclick = () => {
+    photos.delete(it.id); it.hasPhoto = false; DB.del("photos", it.id);
+    $("#photoBox").innerHTML = `<span style="opacity:.4;font-size:26px">🖊</span>`; prm.remove();
+  };
+
+  $("#itemSave").onclick = () => {
+    read();
+    if (!it.brand && !it.model && !it.sku) return toast("Give it at least a brand or model");
+    if (!it.sku) it.sku = (it.brand.slice(0, 3) + "-" + it.model.slice(0, 6) + "-" + (it.nib || it.variant.slice(0, 3) || "X"))
+      .toUpperCase().replace(/\s+/g, "");
+    if (isNew) state.items.push(it);
+    else Object.assign(itemById(id), it);
+    save(true); closeSheet(); renderAll(); toast("Saved");
+  };
+  const del = $("#itemDel"); if (del) del.onclick = () => {
+    if (!confirm("Delete " + itemLabel(it) + "? Past sales keep their own record.")) return;
+    itemById(id).archived = true;
+    save(true); closeSheet(); renderAll(); toast("Removed from inventory");
+  };
+}
+
+/* Downscale to keep the photo store small — a 12MP phone shot is 4MB, this
+   makes it ~60KB, which matters when the whole catalogue lives on one device. */
+function shrinkImage(file, maxDim, quality) {
+  return new Promise(res => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(im.width, im.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(im.width * scale); c.height = Math.round(im.height * scale);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+        res(c.toDataURL("image/jpeg", quality));
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* =======================================================================
+   SHOWS
+   ======================================================================= */
+function renderShows() {
+  $("#showList").innerHTML = state.shows.map(s => {
+    const isActive = s.id === state.settings.activeShow;
+    const p = showPL(s.id);
+    const fixed = Object.values(s.costs).reduce((a, b) => a + num(b), 0);
+    return `<div class="card pad">
+      <div class="row">
+        <div class="grow">
+          <div class="row"><b class="grow">${esc(s.name)}</b>
+            ${isActive ? `<span class="pill good">Active</span>` : ""}</div>
+          <div class="tiny muted">${esc(s.city)}${s.start ? " · " + s.start + (s.end ? " → " + s.end : "") : " · dates not set"}</div>
+        </div>
+      </div>
+      <div class="row tiny wrap" style="margin-top:8px;gap:6px">
+        <span class="chip">${s.chargeTax ? "tax " + s.taxRate + "%" : "no tax"}</span>
+        <span class="chip">card ${s.cardFeePct}% + ${money(s.cardFeeFlat)}</span>
+        <span class="chip">costs ${money(fixed)}</span>
+        <span class="chip">${p.units} sold · ${money(p.revenue)}</span>
+        <span class="chip" style="color:${p.net >= 0 ? "var(--good)" : "var(--bad)"}">net ${money(p.net)}</span>
+      </div>
+      <div class="row" style="margin-top:10px;gap:8px">
+        ${isActive ? "" : `<button class="btn sm grow" data-act="${s.id}">Make active</button>`}
+        <button class="btn sm ghost grow" data-edit="${s.id}">Edit</button>
+      </div></div>`;
+  }).join("") + `<div class="warnbox">
+    <b>Verify every tax rate before you sell.</b> The seeded rates are typical
+    combined state+local rates for each venue city, not legal advice — Colorado in
+    particular stacks home-rule district taxes on top of the state rate. Each state
+    also wants its own temporary seller's permit before you take a dollar at the table.
+  </div>`;
+
+  $$("#showList [data-act]").forEach(b => b.onclick = () => {
+    state.settings.activeShow = b.dataset.act; save(true); renderAll(); toast("Active show set");
+  });
+  $$("#showList [data-edit]").forEach(b => b.onclick = () => editShow(b.dataset.edit));
+}
+$("#addShowBtn").onclick = () => editShow(null);
+
+function editShow(id) {
+  const isNew = !id;
+  const s = isNew ? blankShow() : JSON.parse(JSON.stringify(showById(id)));
+  const c = s.costs;
+  openSheet(isNew ? "New show" : s.name, `
+    <div class="grid2">
+      <div class="field"><label>Name</label><input class="input" data-s="name" value="${esc(s.name)}"></div>
+      <div class="field"><label>City</label><input class="input" data-s="city" value="${esc(s.city)}"></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field"><label>Start</label><input class="input" type="date" data-s="start" value="${esc(s.start)}"></div>
+      <div class="field"><label>End</label><input class="input" type="date" data-s="end" value="${esc(s.end)}"></div>
+    </div>
+    <hr class="sep">
+    <div class="grid3">
+      <div class="field"><label>Tax rate %</label><input class="input" inputmode="decimal" data-s="taxRate" value="${s.taxRate}"></div>
+      <div class="field"><label>Card fee %</label><input class="input" inputmode="decimal" data-s="cardFeePct" value="${s.cardFeePct}"></div>
+      <div class="field"><label>Card flat $</label><input class="input" inputmode="decimal" data-s="cardFeeFlat" value="${s.cardFeeFlat}"></div>
+    </div>
+    <label class="row tiny" style="margin-top:10px;gap:8px">
+      <input type="checkbox" id="sTax" ${s.chargeTax ? "checked" : ""}> Charge sales tax at this show</label>
+
+    <hr class="sep">
+    <h3 style="font-size:13px;margin-bottom:8px">Show costs — these come off your P&amp;L</h3>
+    <div class="grid2">
+      <div class="field"><label>Table / booth</label><input class="input" inputmode="decimal" data-c="table" value="${c.table}"></div>
+      <div class="field"><label>Travel</label><input class="input" inputmode="decimal" data-c="travel" value="${c.travel}"></div>
+      <div class="field"><label>Lodging</label><input class="input" inputmode="decimal" data-c="lodging" value="${c.lodging}"></div>
+      <div class="field"><label>Meals</label><input class="input" inputmode="decimal" data-c="meals" value="${c.meals}"></div>
+      <div class="field"><label>Shipping</label><input class="input" inputmode="decimal" data-c="shipping" value="${c.shipping}"></div>
+      <div class="field"><label>Other</label><input class="input" inputmode="decimal" data-c="other" value="${c.other}"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>Opening cash float</label>
+      <input class="input" inputmode="decimal" data-s="openingCash" value="${s.openingCash}"></div>
+    <div class="field" style="margin-top:10px"><label>Notes</label>
+      <textarea class="input" data-s="notes">${esc(s.notes)}</textarea></div>
+  `, `${isNew ? "" : `<button class="btn danger" id="showDel">Delete</button>`}
+      <button class="btn primary grow" id="showSave">Save</button>`);
+
+  $("#showSave").onclick = () => {
+    $$("#sheetBody [data-s]").forEach(el => {
+      const k = el.dataset.s;
+      s[k] = ["taxRate", "cardFeePct", "cardFeeFlat", "openingCash"].includes(k) ? num(el.value) : el.value;
+    });
+    $$("#sheetBody [data-c]").forEach(el => s.costs[el.dataset.c] = num(el.value));
+    s.chargeTax = $("#sTax").checked;
+    if (!s.name) return toast("Name the show");
+    if (isNew) { state.shows.push(s); if (!state.settings.activeShow) state.settings.activeShow = s.id; }
+    else Object.assign(showById(id), s);
+    save(true); closeSheet(); renderAll(); toast("Saved");
+  };
+  const d = $("#showDel"); if (d) d.onclick = () => {
+    if (state.sales.some(x => x.showId === id)) return toast("This show has sales — can't delete it");
+    if (!confirm("Delete " + s.name + "?")) return;
+    state.shows = state.shows.filter(x => x.id !== id);
+    if (state.settings.activeShow === id) state.settings.activeShow = (state.shows[0] || {}).id || null;
+    save(true); closeSheet(); renderAll();
+  };
+}
+
+/* =======================================================================
+   REPORTS  —  the P&L
+   ======================================================================= */
+function salesFor(showId) {
+  return state.sales.filter(s => !s.voided && s.status === "paid" && (!showId || s.showId === showId));
+}
+
+function showPL(showId) {
+  const rows = salesFor(showId);
+  let revenue = 0, tax = 0, cogs = 0, fees = 0, discount = 0, units = 0;
+  const byMethod = {}, byDay = {}, byItem = {};
+  for (const s of rows) {
+    const t = calc(s);
+    revenue += t.net; tax += t.tax; cogs += t.cogs; fees += t.fees; discount += t.discount;
+    const day = new Date(s.ts).toISOString().slice(0, 10);
+    byDay[day] = (byDay[day] || 0) + t.net;
+    for (const p of s.payments) byMethod[p.method] = (byMethod[p.method] || 0) + num(p.amount);
+    for (const l of s.lines) {
+      units += l.qty;
+      const k = l.name + (l.sub ? " — " + l.sub : "");
+      byItem[k] = byItem[k] || { qty: 0, rev: 0, profit: 0 };
+      byItem[k].qty += l.qty;
+      byItem[k].rev += l.qty * l.unitPrice;
+      byItem[k].profit += l.qty * (l.unitPrice - l.unitCost);
+    }
+  }
+  const shows = showId ? [showById(showId)].filter(Boolean) : state.shows;
+  const fixed = shows.reduce((a, s) => a + Object.values(s.costs).reduce((x, y) => x + num(y), 0), 0);
+  const grossProfit = revenue - cogs;
+  const net = grossProfit - fees - fixed;
+  return { revenue, tax, cogs, fees, fixed, discount, units, grossProfit, net,
+           byMethod, byDay, byItem, count: rows.length,
+           avg: rows.length ? revenue / rows.length : 0 };
+}
+
+function renderReports() {
+  const sel = $("#repShow");
+  const cur = sel.value || state.settings.activeShow || "";
+  sel.innerHTML = `<option value="">All shows</option>` +
+    state.shows.map(s => `<option value="${s.id}" ${s.id === cur ? "selected" : ""}>${esc(s.name)}</option>`).join("");
+  sel.onchange = renderReports;
+  const showId = sel.value || null;
+  const p = showPL(showId);
+  const holds = state.sales.filter(s => s.status === "hold" && !s.voided && (!showId || s.showId === showId));
+
+  const bar = (label, val, total, color) => {
+    const w = total > 0 ? Math.max(2, (val / total) * 100) : 0;
+    return `<div style="margin-bottom:8px">
+      <div class="row tiny"><span class="grow">${label}</span><b class="num">${money(val)}</b></div>
+      <div class="bar"><i style="width:${w}%;background:${color}"></i></div></div>`;
+  };
+  const methodTotal = Object.values(p.byMethod).reduce((a, b) => a + b, 0);
+  const methodColor = { Cash: "var(--cash)", Zelle: "var(--zelle)", Venmo: "var(--venmo)",
+                        Card: "var(--card)", Check: "var(--other)", Trade: "var(--other)" };
+
+  const top = Object.entries(p.byItem).sort((a, b) => b[1].profit - a[1].profit).slice(0, 8);
+  const recent = state.sales.filter(s => !showId || s.showId === showId)
+    .slice().sort((a, b) => b.ts - a.ts).slice(0, 25);
+
+  const dead = liveItems().filter(i => i.qty > 0 && !Object.keys(p.byItem)
+    .some(k => k.startsWith(itemLabel(i)))).sort((a, b) => b.qty * b.cost - a.qty * a.cost).slice(0, 8);
+
+  $("#repBody").innerHTML = `
+    <div class="card pad">
+      <div class="grid3" style="gap:8px">
+        <div class="stat"><div class="l">Revenue</div><div class="v">${money(p.revenue)}</div></div>
+        <div class="stat"><div class="l">Net profit</div>
+          <div class="v" style="color:${p.net >= 0 ? "var(--good)" : "var(--bad)"}">${money(p.net)}</div></div>
+        <div class="stat"><div class="l">Units</div><div class="v">${p.units}</div></div>
+      </div>
+      <hr class="sep">
+      <div class="kv"><span>Gross sales (after discounts)</span><b>${money(p.revenue)}</b></div>
+      <div class="kv"><span>Cost of goods sold</span><b style="color:var(--bad)">−${money(p.cogs)}</b></div>
+      <div class="kv"><span><b>Gross profit</b> · ${p.revenue ? pct(p.grossProfit / p.revenue) : "—"} margin</span>
+        <b>${money(p.grossProfit)}</b></div>
+      <div class="kv"><span>Card processing fees</span><b style="color:var(--bad)">−${money(p.fees)}</b></div>
+      <div class="kv"><span>Show costs (table, travel, hotel…)</span><b style="color:var(--bad)">−${money(p.fixed)}</b></div>
+      <div class="kv" style="font-size:17px"><span><b>Net profit</b></span>
+        <b style="color:${p.net >= 0 ? "var(--good)" : "var(--bad)"}">${money(p.net)}</b></div>
+      <hr class="sep">
+      <div class="kv tiny muted"><span>Sales tax collected — owed to the state, not yours</span>
+        <b>${money(p.tax)}</b></div>
+      <div class="kv tiny muted"><span>Discounts given away</span><b>${money(p.discount)}</b></div>
+      <div class="kv tiny muted"><span>${p.count} sales · average ticket</span><b>${money(p.avg)}</b></div>
+      ${p.revenue > 0 && p.net < 0 ? `<div class="warnbox" style="margin-top:8px">
+        You sold ${money(p.revenue)} but the show still lost money once table and travel
+        are counted. Break-even revenue at this margin is
+        <b>${money(p.grossProfit > 0 ? (p.fixed + p.fees) / (p.grossProfit / p.revenue) : 0)}</b>.</div>` : ""}
+    </div>
+
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:10px">End-of-day reconciliation</h3>
+      ${methodTotal ? Object.entries(p.byMethod).sort((a, b) => b[1] - a[1])
+        .map(([m, v]) => bar(m, v, methodTotal, methodColor[m] || "var(--other)")).join("")
+        : `<div class="tiny muted">No payments recorded yet.</div>`}
+      ${p.byMethod.Cash ? `<div class="kv tiny"><span>Cash drawer should hold</span>
+        <b>${money(p.byMethod.Cash + (showId ? num((showById(showId) || {}).openingCash) : 0))}</b></div>` : ""}
+      <div class="tiny muted" style="margin-top:8px">Count the drawer against this number before
+        you tear down. Check the Zelle and Venmo figures against your banking app the same night —
+        a missed transfer is unrecoverable once the buyer has walked away.</div>
+    </div>
+
+    ${holds.length ? `<div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Open holds — ${holds.length}</h3>
+      ${holds.map(h => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)">
+        <div class="grow"><b>${esc(h.customer.name || "No name")}</b>
+          <div class="tiny muted">${h.lines.map(l => esc(l.qty + "× " + l.name)).join(", ")}</div></div>
+        <b class="num">${money(calc(h).total)}</b>
+        <button class="btn sm primary" data-hold="${h.id}">Ring up</button>
+        <button class="btn sm ghost" data-void="${h.id}">✕</button></div>`).join("")}
+      <div class="tiny muted" style="margin-top:8px">Held stock is reserved and shows as unavailable
+        in Sell. Release anything not collected before you pack up.</div></div>` : ""}
+
+    ${top.length ? `<div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Best sellers by profit</h3>
+      <table class="t"><tr><th>Item</th><th class="right">Qty</th><th class="right">Revenue</th><th class="right">Profit</th></tr>
+      ${top.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="right num">${v.qty}</td>
+        <td class="right num">${money(v.rev)}</td>
+        <td class="right num" style="color:${v.profit >= 0 ? "var(--good)" : "var(--bad)"}">${money(v.profit)}</td></tr>`).join("")}
+      </table></div>` : ""}
+
+    ${dead.length ? `<div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Not selling — capital sitting on the table</h3>
+      <table class="t">${dead.map(i => `<tr><td>${esc(itemLabel(i))}<div class="tiny muted">${esc(itemSub(i))}</div></td>
+        <td class="right num">${i.qty}</td><td class="right num">${money(i.qty * i.cost)}</td></tr>`).join("")}</table>
+      <div class="tiny muted" style="margin-top:6px">Consider a bundle or a dealer price on these
+        rather than hauling them to the next show.</div></div>` : ""}
+
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Recent sales</h3>
+      ${recent.length ? recent.map(s => {
+        const t = calc(s);
+        return `<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)">
+          <div class="grow">
+            <div class="row tiny"><b class="grow">${new Date(s.ts).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</b>
+              ${s.voided ? `<span class="pill bad">Void</span>` : s.status === "hold" ? `<span class="pill warn">Hold</span>` : ""}</div>
+            <div class="tiny muted">${s.lines.map(l => esc(l.qty + "× " + l.name)).join(", ")}
+              ${s.payments.length ? " · " + s.payments.map(p => esc(p.method)).join("+") : ""}</div>
+          </div>
+          <b class="num">${money(t.total)}</b>
+          ${s.voided ? "" : `<button class="btn sm ghost" data-void="${s.id}">Void</button>`}</div>`;
+      }).join("") : `<div class="tiny muted">Nothing sold yet.</div>`}
+    </div>`;
+
+  $$("#repBody [data-void]").forEach(b => b.onclick = () => voidSale(b.dataset.void));
+  $$("#repBody [data-hold]").forEach(b => b.onclick = () => convertHold(b.dataset.hold));
+}
+
+/* =======================================================================
+   DATA  —  backup, CSV, danger zone
+   ======================================================================= */
+function renderData() {
+  const bytes = JSON.stringify(state).length;
+  const photoBytes = [...photos.values()].reduce((a, s) => a + s.length, 0);
+  $("#dataBody").innerHTML = `
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Back up — do this every night</h3>
+      <div class="tiny muted" style="margin-bottom:10px">Everything lives on this device only.
+        Lose the phone, lose the show. Export after each day and email the file to yourself.</div>
+      <div class="row wrap" style="gap:8px">
+        <button class="btn sm primary" id="expJson">Download backup (.json)</button>
+        <button class="btn sm" id="impJsonBtn">Restore backup</button>
+        <input type="file" accept=".json,application/json" id="impJson" style="display:none">
+      </div>
+      <div class="tiny muted" style="margin-top:8px">
+        ${state.items.length} items · ${state.sales.length} sales · ${photos.size} photos ·
+        about ${Math.round((bytes + photoBytes) / 1024)} KB ·
+        storage: ${DB.usable ? "IndexedDB" : "localStorage fallback"}</div>
+    </div>
+
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Spreadsheet exchange</h3>
+      <div class="row wrap" style="gap:8px">
+        <button class="btn sm" id="expInv">Inventory CSV</button>
+        <button class="btn sm" id="expSales">Sales CSV</button>
+        <button class="btn sm" id="expLines">Line items CSV</button>
+        <button class="btn sm" id="expPL">P&amp;L CSV</button>
+      </div>
+      <hr class="sep">
+      <div class="row wrap" style="gap:8px">
+        <label class="btn sm" style="cursor:pointer">Import inventory CSV
+          <input type="file" accept=".csv,text/csv" id="impCsv" style="display:none"></label>
+        <button class="btn sm ghost" id="tmplCsv">Download template</button>
+      </div>
+      <div class="tiny muted" style="margin-top:8px">Import matches on SKU: an existing SKU is
+        updated in place, a new one is added. Nothing is deleted.</div>
+    </div>
+
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Settings</h3>
+      <div class="field"><label>Business name</label>
+        <input class="input" id="setBiz" value="${esc(state.settings.business)}" placeholder="shown in the header"></div>
+      <div class="field" style="margin-top:10px"><label>Low-stock warning at or below</label>
+        <input class="input" id="setLow" inputmode="numeric" value="${state.settings.lowStock}"></div>
+    </div>
+
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Danger zone</h3>
+      <div class="row wrap" style="gap:8px">
+        <button class="btn sm danger" id="clrSales">Delete all sales</button>
+        <button class="btn sm danger" id="clrAll">Erase everything</button>
+      </div>
+    </div>
+
+    <div class="card pad">
+      <h3 style="font-size:14px;margin-bottom:8px">Before the first show</h3>
+      <ol class="tiny muted" style="margin:0;padding-left:18px;line-height:1.9">
+        <li>Confirm the sales-tax rate and get a temporary seller's permit for each state.</li>
+        <li>Raise your Zelle daily limit with your bank — most default to $500–$2,500, which will
+            block a single high-end pen sale at the table.</li>
+        <li>Move Venmo to a business profile; taking business payments on a personal profile can
+            get funds frozen, and the 1099-K arrives either way.</li>
+        <li>Load real landed cost — pen, shipping, import fees — or the P&amp;L is fiction.</li>
+        <li>Set a floor price on everything you're willing to haggle on.</li>
+        <li>Do a dry run: ring up a $1 sale, void it, export the backup.</li>
+      </ol>
+    </div>`;
+
+  $("#setBiz").onchange = e => { state.settings.business = e.target.value; save(true); renderAll(); };
+  $("#setLow").onchange = e => { state.settings.lowStock = num(e.target.value); save(true); };
+  $("#expJson").onclick = exportBackup;
+  $("#impJsonBtn").onclick = () => $("#impJson").click();
+  $("#impJson").onchange = importBackup;
+  $("#expInv").onclick = exportInventoryCSV;
+  $("#expSales").onclick = exportSalesCSV;
+  $("#expLines").onclick = exportLinesCSV;
+  $("#expPL").onclick = exportPLCSV;
+  $("#impCsv").onchange = importInventoryCSV;
+  $("#tmplCsv").onclick = () => download("penshow-inventory-template.csv",
+    CSV_COLS.join(",") + "\n" +
+    "SAI-PROGEA-M,Sailor,Pro Gear,Sky Blue,M,Pen,New,168,340,420,290,380,3,Case 1 tray B,,limited japan,\n");
+
+  $("#clrSales").onclick = () => {
+    if (!confirm("Delete every recorded sale? Inventory quantities are NOT restored.")) return;
+    state.sales = []; save(true); renderAll(); toast("Sales cleared");
+  };
+  $("#clrAll").onclick = async () => {
+    if (!confirm("Erase all inventory, shows and sales on this device?")) return;
+    if (!confirm("Really? Export a backup first if you have not.")) return;
+    for (const k of photos.keys()) await DB.del("photos", k);
+    photos.clear();
+    state = { v: 1, settings: { business: "", activeShow: null, lowStock: 2, theme: state.settings.theme },
+              shows: SEED_SHOWS.map(s => blankShow(s)), items: [], sales: [] };
+    state.settings.activeShow = state.shows[0].id;
+    save(true); renderAll(); toast("Erased");
+  };
+}
+
+/* ------------------------------------------------------------ CSV / file */
+function download(name, text, mime) {
+  const b = new Blob([text], { type: mime || "text/csv;charset=utf-8" });
+  const u = URL.createObjectURL(b), a = document.createElement("a");
+  a.href = u; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 400);
+}
+const q = v => {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+};
+const toCSV = rows => rows.map(r => r.map(q).join(",")).join("\n");
+
+const CSV_COLS = ["sku", "brand", "model", "variant", "nib", "category", "condition",
+  "cost", "msrp", "price", "floor", "wholesale", "qty", "location", "serial", "tags", "notes"];
+
+function exportInventoryCSV() {
+  download("inventory-" + todayISO() + ".csv",
+    toCSV([CSV_COLS, ...liveItems().map(i => CSV_COLS.map(c => i[c]))]));
+}
+
+function exportSalesCSV() {
+  const head = ["date", "time", "show", "sale_id", "status", "items", "subtotal", "discount",
+    "tax", "total", "cogs", "card_fees", "gross_profit", "payments", "customer", "email", "notes"];
+  const rows = state.sales.map(s => {
+    const t = calc(s), d = new Date(s.ts);
+    return [d.toISOString().slice(0, 10), d.toTimeString().slice(0, 5),
+      (showById(s.showId) || {}).name || "", s.id, s.voided ? "void" : s.status,
+      s.lines.reduce((a, l) => a + l.qty, 0), t.subtotal.toFixed(2), t.discount.toFixed(2),
+      t.tax.toFixed(2), t.total.toFixed(2), t.cogs.toFixed(2), t.fees.toFixed(2), t.gross.toFixed(2),
+      s.payments.map(p => p.method + " " + num(p.amount).toFixed(2) + (p.ref ? " #" + p.ref : "")).join(" | "),
+      s.customer.name, s.customer.email, s.notes];
+  });
+  download("sales-" + todayISO() + ".csv", toCSV([head, ...rows]));
+}
+
+function exportLinesCSV() {
+  const head = ["date", "show", "sale_id", "status", "sku", "item", "detail", "qty",
+    "unit_price", "unit_cost", "line_revenue", "line_profit"];
+  const rows = [];
+  for (const s of state.sales) for (const l of s.lines)
+    rows.push([new Date(s.ts).toISOString().slice(0, 10), (showById(s.showId) || {}).name || "",
+      s.id, s.voided ? "void" : s.status, l.sku, l.name, l.sub, l.qty,
+      num(l.unitPrice).toFixed(2), num(l.unitCost).toFixed(2),
+      (l.qty * l.unitPrice).toFixed(2), (l.qty * (l.unitPrice - l.unitCost)).toFixed(2)]);
+  download("sale-lines-" + todayISO() + ".csv", toCSV([head, ...rows]));
+}
+
+function exportPLCSV() {
+  const head = ["show", "sales", "units", "revenue", "cogs", "gross_profit", "margin",
+    "card_fees", "show_costs", "net_profit", "tax_collected", "cash", "zelle", "venmo", "card", "check", "trade"];
+  const rows = state.shows.map(s => {
+    const p = showPL(s.id);
+    return [s.name, p.count, p.units, p.revenue.toFixed(2), p.cogs.toFixed(2),
+      p.grossProfit.toFixed(2), p.revenue ? (p.grossProfit / p.revenue * 100).toFixed(1) + "%" : "",
+      p.fees.toFixed(2), p.fixed.toFixed(2), p.net.toFixed(2), p.tax.toFixed(2),
+      ...METHODS.map(m => (p.byMethod[m] || 0).toFixed(2))];
+  });
+  const all = showPL(null);
+  rows.push(["TOTAL", all.count, all.units, all.revenue.toFixed(2), all.cogs.toFixed(2),
+    all.grossProfit.toFixed(2), all.revenue ? (all.grossProfit / all.revenue * 100).toFixed(1) + "%" : "",
+    all.fees.toFixed(2), all.fixed.toFixed(2), all.net.toFixed(2), all.tax.toFixed(2),
+    ...METHODS.map(m => (all.byMethod[m] || 0).toFixed(2))]);
+  download("p-and-l-" + todayISO() + ".csv", toCSV([head, ...rows]));
+}
+
+/* A small tolerant CSV reader — handles quoted fields and embedded commas. */
+function parseCSV(text) {
+  const rows = []; let row = [], cell = "", inQ = false;
+  text = text.replace(/\r\n?/g, "\n");
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else inQ = false; }
+      else cell += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(v => String(v).trim() !== ""));
+}
+
+function importInventoryCSV(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    const rows = parseCSV(fr.result);
+    if (rows.length < 2) return toast("Nothing to import");
+    const head = rows[0].map(h => h.trim().toLowerCase().replace(/[^a-z]/g, ""));
+    const idx = k => head.indexOf(k);
+    let added = 0, updated = 0;
+    for (const r of rows.slice(1)) {
+      const get = k => { const i = idx(k); return i >= 0 ? String(r[i] ?? "").trim() : ""; };
+      const sku = get("sku");
+      const brand = get("brand"), model = get("model");
+      if (!sku && !brand && !model) continue;
+      let it = sku ? state.items.find(x => x.sku && x.sku.toLowerCase() === sku.toLowerCase()) : null;
+      const isNew = !it;
+      if (isNew) it = blankItem();
+      Object.assign(it, {
+        sku: sku || it.sku, brand: brand || it.brand, model: model || it.model,
+        variant: get("variant") || it.variant, nib: get("nib") || it.nib,
+        category: get("category") || it.category, condition: get("condition") || it.condition,
+        location: get("location") || it.location, serial: get("serial") || it.serial,
+        tags: get("tags") || it.tags, notes: get("notes") || it.notes, archived: false
+      });
+      for (const k of ["cost", "msrp", "price", "floor", "wholesale", "qty"])
+        if (get(k) !== "") it[k] = num(get(k));
+      if (!it.sku) it.sku = (it.brand.slice(0, 3) + "-" + it.model.slice(0, 6)).toUpperCase().replace(/\s+/g, "");
+      if (isNew) { state.items.push(it); added++; } else updated++;
+    }
+    save(true); renderAll();
+    toast(added + " added, " + updated + " updated");
+  };
+  fr.readAsText(f);
+  e.target.value = "";
+}
+
+function exportBackup() {
+  const blob = { app: "penshow", v: 1, exported: new Date().toISOString(),
+                 state, photos: Object.fromEntries(photos) };
+  download("penshow-backup-" + todayISO() + ".json", JSON.stringify(blob), "application/json");
+  toast("Backup downloaded — email it to yourself");
+}
+
+function importBackup(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = async () => {
+    let b;
+    try { b = JSON.parse(fr.result); } catch (err) { return toast("That is not a valid backup file"); }
+    if (!b.state || !b.state.items) return toast("That file is not a Pen Show backup");
+    if (!confirm("Replace everything on this device with the backup from " +
+      (b.exported || "unknown date").slice(0, 10) + "?")) return;
+    state = b.state;
+    photos.clear();
+    for (const k in (b.photos || {})) { photos.set(k, b.photos[k]); await DB.set("photos", k, b.photos[k]); }
+    save(true); applyTheme(); renderAll(); toast("Restored");
+  };
+  fr.readAsText(f);
+  e.target.value = "";
+}
+
+/* ------------------------------------------------------------- lifecycle */
+window.addEventListener("beforeunload", ev => {
+  if (cart && cart.lines.length) { ev.preventDefault(); ev.returnValue = ""; }
+});
+if ("serviceWorker" in navigator && location.protocol.startsWith("http"))
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+
+boot();
+</script>
+</body>
+</html>

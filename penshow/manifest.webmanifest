@@ -1,0 +1,19 @@
+{
+  "name": "Pen Show Tracker",
+  "short_name": "Pen Show",
+  "description": "Offline inventory, point of sale and P&L for pen show tables.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14161c",
+  "theme_color": "#14161c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

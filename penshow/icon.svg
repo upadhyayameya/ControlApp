@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#14161c"/>
+  <g transform="rotate(38 256 256)">
+    <!-- barrel -->
+    <rect x="228" y="118" width="56" height="196" rx="12" fill="#4d8dff"/>
+    <rect x="228" y="252" width="56" height="62" fill="#2f6ad4"/>
+    <!-- section -->
+    <rect x="236" y="314" width="40" height="34" rx="8" fill="#e9ecf2"/>
+    <!-- nib -->
+    <path d="M256 400 L232 348 h48 z" fill="#f2c14e"/>
+    <circle cx="256" cy="360" r="7" fill="#14161c"/>
+    <rect x="253" y="366" width="6" height="26" fill="#14161c"/>
+    <!-- clip -->
+    <rect x="286" y="130" width="12" height="86" rx="6" fill="#f2c14e"/>
+  </g>
+</svg>
