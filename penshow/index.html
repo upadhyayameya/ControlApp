@@ -264,6 +264,34 @@ textarea.input{min-height:70px;resize:vertical}
   border-radius:11px;background:var(--panel-2);border:1px solid var(--line)}
 .skubox>div{flex:1;min-width:0}
 
+/* --------------------------------------------- open sales & held pens */
+.openstrip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;-webkit-overflow-scrolling:touch}
+.opill{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+  padding:7px 12px;border-radius:11px;border:1px solid var(--line);background:var(--panel);
+  cursor:pointer;color:var(--ink);min-height:46px;justify-content:center}
+.opill b{font-size:12.5px;font-weight:700;white-space:nowrap}
+.opill span{font-size:11px;color:var(--ink-3);font-weight:600}
+.opill.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.opill.on span{color:var(--accent-ink);opacity:.8}
+.opill.hold{background:color-mix(in srgb,var(--warn) 14%,transparent);
+  border-color:color-mix(in srgb,var(--warn) 40%,transparent);flex-direction:row;
+  align-items:center;gap:8px;cursor:default}
+.opill.hold b,.opill.hold span{white-space:nowrap}
+.opill.add{border-style:dashed;color:var(--accent);font-weight:700;justify-content:center}
+.mini{border:1px solid var(--line);background:var(--panel);border-radius:8px;font-size:11px;
+  font-weight:700;padding:4px 8px;cursor:pointer;color:var(--ink);min-height:28px}
+
+/* switcher inside the sale sheet */
+.ticketbar{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px}
+.tkt{flex:none;display:flex;flex-direction:column;align-items:flex-start;padding:6px 11px;
+  border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--ink)}
+.tkt b{font-size:12.5px;white-space:nowrap}
+.tkt span{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tkt.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.tkt.on span{color:var(--accent-ink);opacity:.8}
+.footwrap{width:100%}
+.toast.act{cursor:pointer;pointer-events:auto}
+
 /* -------------------------------------------------------------- sheets */
 .scrim{position:fixed;inset:0;background:rgba(6,8,12,.5);z-index:60;display:none;
   backdrop-filter:blur(2px)}
@@ -285,7 +313,7 @@ textarea.input{min-height:70px;resize:vertical}
 .sheet .head h2{font-size:16px;flex:1}
 .sheet .body{overflow:auto;padding:14px;-webkit-overflow-scrolling:touch}
 .sheet .foot{padding:12px 14px calc(12px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--line);display:flex;gap:8px;background:var(--panel)}
+  border-top:1px solid var(--line);display:flex;gap:8px;background:var(--panel);flex-wrap:wrap}
 .x{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
   background:var(--panel-2);cursor:pointer;font-size:16px;line-height:1;color:var(--ink)}
 
@@ -334,6 +362,7 @@ table.t tr:last-child td{border-bottom:0}
       <input class="input" id="sellSearch" placeholder="Model, colour, SKU or case…" autocomplete="off">
       <button class="btn sm" id="customLineBtn" title="Sell something not in inventory">+ Custom</button>
     </div>
+    <div id="sellOpen"></div>
     <div class="row wrap tiny" id="sellFilters" style="margin-bottom:6px"></div>
     <div class="row" style="margin-bottom:8px">
       <span class="tiny muted grow" id="sellCount"></span>
@@ -427,8 +456,20 @@ const todayISO = () => new Date().toISOString().slice(0, 10);
 const pct = n => (n * 100).toFixed(1) + "%";
 
 function toast(msg) {
-  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  const t = $("#toast"); t.textContent = msg; t.onclick = null; t.classList.remove("act");
+  t.classList.add("on");
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 1900);
+}
+
+/* A toast you can tap to take the action back — used where a confirm dialog
+   would otherwise slow down a queue of customers. */
+function toastUndo(msg, undo) {
+  const t = $("#toast");
+  t.innerHTML = esc(msg) + ' <b style="margin-left:8px;text-decoration:underline">Undo</b>';
+  t.classList.add("on", "act");
+  t.onclick = () => { t.classList.remove("on", "act"); t.onclick = null; clearTimeout(toast._t); undo(); };
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { t.classList.remove("on", "act"); t.onclick = null; }, 6000);
 }
 
 /* --------------------------------------------------------------- storage */
@@ -509,7 +550,7 @@ const COLOR_CODE = {
   brown: "BRN", pink: "PNK", maroon: "MRN", clear: "CLR", chrome: "CHR", matte: "MAT",
   "rose gold": "RGD", "gun metal": "GUN", gunmetal: "GUN", demonstrator: "DEM",
 };
-const METHODS = ["Cash", "Zelle", "Venmo", "Card", "Check", "Trade"];
+const METHODS = ["Cash", "Zelle", "Venmo", "Card"];
 
 /* SKU nomenclature — BRAND-TYPE-MODEL[-NIB][-FINISH]
        SUB-FP-SHIKAR-M-BLK   Submarine · fountain pen · Shikari · medium · black
@@ -562,10 +603,16 @@ const blankItem = () => ({
 let state = {
   v: 1,
   settings: { business: "", activeShow: null, lowStock: 2, theme: "auto" },
-  shows: [], items: [], sales: []
+  shows: [], items: [], sales: [], open: []
 };
 const photos = new Map();     // itemId -> data URL, kept in memory once loaded
-let cart = null;              // active in-progress sale
+/* Several sales can be in progress at once — a pen show table often has two
+   or three customers mid-conversation. Open tickets are persisted, so closing
+   the sheet (or the laptop lid) never loses one. */
+const tickets       = () => (state.open || (state.open = []));
+const activeTicket  = () => tickets().find(t => t.id === state.settings.ticket) || null;
+const ticketLabel   = t => (t.customer && t.customer.name)
+  ? t.customer.name : "Sale " + (tickets().indexOf(t) + 1);
 
 /* --------------------------------------------------------------- persist */
 let saveTimer = null;
@@ -640,7 +687,15 @@ function heldQty(itemId) {
       for (const l of s.lines) if (l.itemId === itemId) n += l.qty;
   return n;
 }
-const availQty = i => i.qty - heldQty(i.id);
+/* Units already spoken for in an open ticket. Without this, two tickets could
+   each promise the last pen. */
+function ticketQty(itemId) {
+  let n = 0;
+  for (const t of tickets())
+    for (const l of t.lines) if (l.itemId === itemId) n += l.qty;
+  return n;
+}
+const availQty = i => i.qty - heldQty(i.id) - ticketQty(i.id);
 
 /* ------------------------------------------------------------------ math */
 /* One place that turns a sale (cart or saved) into money. Tax is computed on
@@ -648,7 +703,7 @@ const availQty = i => i.qty - heldQty(i.id);
    remit to the state, never revenue and never profit. */
 function calc(sale) {
   const show = showById(sale.showId);
-  const rate = show && show.chargeTax ? (show.taxRate || 0) / 100 : 0;
+  const rate = (show && show.chargeTax && !sale.noTax) ? (show.taxRate || 0) / 100 : 0;
   let subtotal = 0, taxableSub = 0, cogs = 0;
   for (const l of sale.lines) {
     const gross = l.qty * l.unitPrice;
@@ -746,6 +801,7 @@ let sellType = "All";      // pen type
 function renderSell() {
   const q = $("#sellSearch").value.trim().toLowerCase();
   const all = liveItems();
+  renderOpenStrip();
 
   const present = new Set(all.map(i => i.brand));
   const brands = ["All", ...BRANDS.map(b => b.name).filter(b => present.has(b)),
@@ -845,14 +901,26 @@ $$("#sellView button").forEach(b => b.onclick = () => {
   state.settings.sellView = b.dataset.view; save(); renderSell();
 });
 
-function ensureCart() {
-  if (!cart) cart = {
+function newTicket(seed) {
+  const t = Object.assign({
     id: uid("sa_"), ts: Date.now(), showId: state.settings.activeShow,
     lines: [], discount: { type: "amt", value: 0 }, payments: [],
     customer: { name: "", email: "", phone: "" }, notes: "",
-    status: "paid", voided: false
-  };
-  return cart;
+    status: "paid", voided: false, noTax: false
+  }, seed || {});
+  tickets().push(t);
+  state.settings.ticket = t.id;
+  save();
+  return t;
+}
+
+function ensureCart() { return activeTicket() || newTicket(); }
+
+function closeTicket(id) {
+  state.open = tickets().filter(t => t.id !== id);
+  if (state.settings.ticket === id)
+    state.settings.ticket = (tickets()[0] || {}).id || null;
+  save(true);
 }
 
 function addToCart(itemId) {
@@ -866,15 +934,22 @@ function addToCart(itemId) {
     floor: num(it.floor), taxable: it.taxable !== false
   });
   if (navigator.vibrate) navigator.vibrate(8);
+  save();
   toast(itemLabel(it) + " added");
-  renderCartBar();
+  renderAll();
 }
 
 function renderCartBar() {
-  const bar = $("#cartBar");
-  if (!cart || !cart.lines.length) { bar.classList.remove("on"); return; }
-  const t = calc(cart), n = cart.lines.reduce((a, l) => a + l.qty, 0);
-  $("#cartCount").textContent = n + (n === 1 ? " item" : " items");
+  const bar = $("#cartBar"), c = activeTicket();
+  const others = tickets().filter(t => t !== c && t.lines.length).length;
+  if (!c || !c.lines.length) {
+    // Still surface the bar if another ticket is waiting to be finished.
+    if (!others) { bar.classList.remove("on"); return; }
+  }
+  const t = calc(c || { lines: [], payments: [] });
+  const n = (c ? c.lines : []).reduce((a, l) => a + l.qty, 0);
+  $("#cartCount").textContent = (n ? n + (n === 1 ? " item" : " items") : "Empty sale")
+    + (others ? " · +" + others + " open" : "");
   $("#cartTotal").textContent = money(t.total);
   bar.classList.add("on");
 }
@@ -884,18 +959,51 @@ $("#customLineBtn").onclick = () => {
   const c = ensureCart();
   c.lines.push({ itemId: null, sku: "", name: "Custom item", sub: "not in inventory",
                  qty: 1, unitPrice: 0, unitCost: 0, floor: 0, taxable: true });
-  openCart();
+  save(); openCart();
 };
 
-/* ------------------------------------------------------------ cart sheet */
-function openCart() {
-  const c = ensureCart();
-  openSheet("Sale", cartHTML(), cartFootHTML());
-  wireCart();
+/* Sales in progress and reserved pens, shown where you are actually standing.
+   A held pen reads as 0 available in the grid, so without this strip it looks
+   like it vanished. */
+function renderOpenStrip() {
+  const open = tickets().filter(t => t.lines.length);
+  const holds = state.sales.filter(s => s.status === "hold" && !s.voided);
+  const box = $("#sellOpen");
+  if (!open.length && !holds.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="openstrip">
+    ${open.map(t => `<button class="opill ${t.id === state.settings.ticket ? "on" : ""}"
+        data-open="${t.id}"><b>${esc(ticketLabel(t))}</b>
+        <span>${money(calc(t).total)}</span></button>`).join("")}
+    ${holds.map(h => `<span class="opill hold">
+        <b>⏸ ${esc((h.customer && h.customer.name) || "Hold")}</b>
+        <span>${h.lines.reduce((a, l) => a + l.qty, 0)} pen${h.lines.reduce((a, l) => a + l.qty, 0) === 1 ? "" : "s"}</span>
+        <button class="mini" data-ring="${h.id}">Ring up</button>
+        <button class="mini" data-rel="${h.id}">Release</button></span>`).join("")}
+    <button class="opill add" id="newTicketBtn">+ New sale</button>
+  </div>`;
+  $$("#sellOpen [data-open]").forEach(b => b.onclick = () => openCart(b.dataset.open));
+  $$("#sellOpen [data-ring]").forEach(b => b.onclick = () => convertHold(b.dataset.ring));
+  $$("#sellOpen [data-rel]").forEach(b => b.onclick = () => releaseHold(b.dataset.rel));
+  $("#newTicketBtn").onclick = () => { newTicket(); openCart(); renderAll(); };
 }
 
+/* ------------------------------------------------------------ cart sheet */
+function openCart(id) {
+  if (id) state.settings.ticket = id;
+  ensureCart();
+  openSheet(cartTitle(), cartHTML(), cartFootHTML());
+  wireCart();
+}
+const cartTitle = () => {
+  const c = activeTicket(), n = tickets().length;
+  return n > 1 ? `${ticketLabel(c)}  (${tickets().indexOf(c) + 1}/${n})` : "Sale";
+};
+/* Numbers a customer leaning over the table should not read. Off by default;
+   the eye reveals them while you are working out a price. */
+const showCosts = () => !!state.settings.showCosts;
+
 function cartHTML() {
-  const c = cart, t = calc(c), show = showById(c.showId);
+  const c = activeTicket(), t = calc(c), show = showById(c.showId);
   const lines = c.lines.map((l, ix) => {
     const marginPctVal = l.unitPrice > 0 ? (l.unitPrice - l.unitCost) / l.unitPrice : 0;
     const below = l.floor > 0 && l.unitPrice < l.floor;
@@ -918,8 +1026,10 @@ function cartHTML() {
           <button class="btn sm ghost" data-act="rm" data-ix="${ix}">✕</button>
         </div>
         <div class="tiny" style="margin-top:4px;color:${below ? "var(--bad)" : "var(--ink-3)"}">
-          cost ${money(l.unitCost)} · margin ${pct(marginPctVal)}
-          ${l.floor > 0 ? ` · floor ${money(l.floor)}${below ? " ⚠ BELOW FLOOR" : ""}` : ""}
+          ${showCosts()
+            ? `cost ${money(l.unitCost)} · margin ${pct(marginPctVal)}` +
+              (l.floor > 0 ? ` · floor ${money(l.floor)}${below ? " ⚠ BELOW FLOOR" : ""}` : "")
+            : (below ? `<b style="color:var(--bad)">⚠ below your floor</b>` : "")}
           ${l.itemId ? "" : " · <span style='color:var(--warn)'>custom line, no stock movement</span>"}
         </div>
       </div>
@@ -937,7 +1047,22 @@ function cartHTML() {
       <button class="btn sm ghost" data-act="rmpay" data-ix="${ix}">✕</button>
     </div>`).join("");
 
+  const others = tickets();
   return `
+  ${others.length > 1 ? `<div class="ticketbar">
+    ${others.map(t2 => `<button class="tkt ${t2.id === c.id ? "on" : ""}" data-tkt="${t2.id}">
+      <b>${esc(ticketLabel(t2))}</b><span>${money(calc(t2).total)}</span></button>`).join("")}
+  </div>` : ""}
+
+  <div class="row" style="margin-bottom:12px;gap:8px">
+    <button class="btn sm ${c.noTax ? "" : "primary"}" id="taxBtn" style="flex:1">
+      ${c.noTax ? "Tax OFF" : `Tax ON${show && show.chargeTax ? " · " + show.taxRate + "%" : ""}`}
+    </button>
+    <button class="btn sm ${showCosts() ? "primary" : ""}" id="eyeBtn" title="Show or hide your cost and margin">
+      ${showCosts() ? "🙈 Hide costs" : "👁 Show costs"}
+    </button>
+  </div>
+
   <div class="field" style="margin-bottom:12px">
     <label>Show</label>
     <select class="input" id="cartShow">
@@ -959,10 +1084,11 @@ function cartHTML() {
   <div class="card pad" style="margin-bottom:12px">
     <div class="kv"><span>Subtotal</span><b>${money(t.subtotal)}</b></div>
     ${t.discount ? `<div class="kv"><span>Discount</span><b style="color:var(--bad)">−${money(t.discount)}</b></div>` : ""}
-    <div class="kv"><span>Sales tax ${show && show.chargeTax ? "(" + show.taxRate + "%)" : "(off)"}</span><b>${money(t.tax)}</b></div>
+    <div class="kv"><span>Sales tax ${c.noTax ? "(off for this sale)"
+        : show && show.chargeTax ? "(" + show.taxRate + "%)" : "(off)"}</span><b>${money(t.tax)}</b></div>
     <div class="kv" style="font-size:18px"><span><b>Total</b></span><b>${money(t.total)}</b></div>
-    <div class="kv tiny muted"><span>Est. gross profit${t.fees ? " (after card fees)" : ""}</span>
-      <b style="color:${t.gross >= 0 ? "var(--good)" : "var(--bad)"}">${money(t.gross)}</b></div>
+    ${showCosts() ? `<div class="kv tiny muted"><span>Est. gross profit${t.fees ? " (after card fees)" : ""}</span>
+      <b style="color:${t.gross >= 0 ? "var(--good)" : "var(--bad)"}">${money(t.gross)}</b></div>` : ""}
   </div>
 
   <h3 style="font-size:13px;margin-bottom:8px">Payment</h3>
@@ -991,15 +1117,33 @@ function cartHTML() {
 }
 
 function cartFootHTML() {
-  const t = calc(cart);
-  return `<button class="btn ghost" id="cartHold">Hold</button>
-          <button class="btn danger" id="cartClear">Clear</button>
-          <button class="btn primary grow" id="cartDone">Complete ${money(t.total)}</button>`;
+  const t = calc(activeTicket());
+  return `<div class="footwrap">
+    <div class="row" style="gap:8px">
+      <button class="btn sm grow" id="cartMin">▾ Minimise</button>
+      <button class="btn sm grow" id="cartNew">+ New sale</button>
+      <button class="btn sm grow" id="cartHold">Hold</button>
+      <button class="btn sm danger" id="cartClear">Clear</button>
+    </div>
+    <button class="btn primary block" id="cartDone" style="margin-top:8px">
+      Complete ${money(t.total)}</button>
+  </div>`;
 }
 
 function wireCart() {
   const body = $("#sheetBody");
-  const refresh = () => { $("#sheetBody").innerHTML = cartHTML(); $("#sheetFoot").innerHTML = cartFootHTML(); wireCart(); renderCartBar(); };
+  const cart = activeTicket();
+  const refresh = () => {
+    save();
+    $("#sheetTitle").textContent = cartTitle();
+    $("#sheetBody").innerHTML = cartHTML();
+    $("#sheetFoot").innerHTML = cartFootHTML();
+    wireCart(); renderCartBar();
+  };
+
+  $$("[data-tkt]", body).forEach(b => b.onclick = () => {
+    state.settings.ticket = b.dataset.tkt; save(); openCart();
+  });
 
   $$("[data-act]", body).forEach(b => b.onclick = () => {
     const ix = +b.dataset.ix;
@@ -1026,23 +1170,45 @@ function wireCart() {
   const pe = $("#payExact"); if (pe) pe.onclick = () => {
     if (!cart.payments.length) return toast("Add a payment method first");
     const t = calc(cart);
-    cart.payments[cart.payments.length - 1].amount = num(cart.payments[cart.payments.length - 1].amount) + t.due;
+    cart.payments[cart.payments.length - 1].amount =
+      num(cart.payments[cart.payments.length - 1].amount) + t.due;
     refresh();
   };
+
+  $("#taxBtn").onclick = () => { cart.noTax = !cart.noTax; refresh(); };
+  $("#eyeBtn").onclick = () => {
+    state.settings.showCosts = !showCosts(); save(); refresh();
+  };
+
   $("#cartShow").onchange = e => { cart.showId = e.target.value; refresh(); };
   $("#discVal").onchange = e => { cart.discount.value = num(e.target.value); refresh(); };
   $("#discType").onchange = e => { cart.discount.type = e.target.value; refresh(); };
-  $("#cName").oninput = e => cart.customer.name = e.target.value;
-  $("#cEmail").oninput = e => cart.customer.email = e.target.value;
-  $("#cNotes").oninput = e => cart.notes = e.target.value;
+  $("#cName").oninput = e => { cart.customer.name = e.target.value; save(); };
+  $("#cEmail").oninput = e => { cart.customer.email = e.target.value; save(); };
+  $("#cNotes").oninput = e => { cart.notes = e.target.value; save(); };
 
-  $("#cartClear").onclick = () => { if (confirm("Discard this sale?")) { cart = null; closeSheet(); renderAll(); } };
+  $("#cartMin").onclick = () => { save(true); closeSheet(); renderAll(); toast("Sale parked — tap the bar to resume"); };
+  $("#cartNew").onclick = () => { newTicket(); openCart(); renderAll(); };
+
+  /* Clear does not ask. It offers the sale back for a few seconds instead,
+     which is faster at the table and still recoverable. */
+  $("#cartClear").onclick = () => {
+    const snapshot = JSON.parse(JSON.stringify(cart));
+    closeTicket(cart.id);
+    closeSheet(); renderAll();
+    toastUndo("Sale cleared", () => {
+      tickets().push(snapshot);
+      state.settings.ticket = snapshot.id;
+      save(true); renderAll(); openCart();
+    });
+  };
   $("#cartHold").onclick = () => commitSale("hold");
   $("#cartDone").onclick = () => commitSale("paid");
 }
 
 function commitSale(status) {
-  if (!cart.lines.length) return toast("Nothing in the cart");
+  const cart = activeTicket();
+  if (!cart.lines.length) return toast("Nothing in this sale");
   const t = calc(cart);
   if (status === "paid") {
     if (!cart.payments.length) return toast("Add how they paid");
@@ -1061,7 +1227,7 @@ function commitSale(status) {
   cart.totals = { subtotal: t.subtotal, discount: t.discount, tax: t.tax,
                   total: t.total, cogs: t.cogs, fees: t.fees };
   state.sales.push(cart);
-  cart = null;
+  closeTicket(cart.id);
   save(true); closeSheet(); renderAll();
   toast(status === "hold" ? "Held — stock reserved" : "Sale recorded " + money(t.total));
 }
@@ -1071,12 +1237,22 @@ function commitSale(status) {
    the sheet half-way must not silently delete somebody's reserved pen. */
 function convertHold(saleId) {
   const s = state.sales.find(x => x.id === saleId); if (!s) return;
-  cart = JSON.parse(JSON.stringify(s));
-  cart.id = uid("sa_");
-  cart.replaces = saleId;
-  cart.status = "paid";
-  cart.payments = [];
+  const t = newTicket(JSON.parse(JSON.stringify(s)));
+  t.id = uid("sa_");
+  t.replaces = saleId;
+  t.status = "paid";
+  t.payments = [];
+  state.settings.ticket = t.id;
+  save(true);
   openCart();
+}
+
+/* Give the pen back to the table without ringing anything up. */
+function releaseHold(saleId) {
+  const s = state.sales.find(x => x.id === saleId); if (!s) return;
+  s.voided = true; s.voidedAt = Date.now();
+  save(true); renderAll();
+  toast("Hold released — back in stock");
 }
 
 function voidSale(saleId) {
@@ -1639,7 +1815,7 @@ function renderReports() {
           <div class="tiny muted">${h.lines.map(l => esc(l.qty + "× " + l.name)).join(", ")}</div></div>
         <b class="num">${money(calc(h).total)}</b>
         <button class="btn sm primary" data-hold="${h.id}">Ring up</button>
-        <button class="btn sm ghost" data-void="${h.id}">✕</button></div>`).join("")}
+        <button class="btn sm ghost" data-release="${h.id}">Release</button></div>`).join("")}
       <div class="tiny muted" style="margin-top:8px">Held stock is reserved and shows as unavailable
         in Sell. Release anything not collected before you pack up.</div></div>` : ""}
 
@@ -1675,6 +1851,7 @@ function renderReports() {
     </div>`;
 
   $$("#repBody [data-void]").forEach(b => b.onclick = () => voidSale(b.dataset.void));
+  $$("#repBody [data-release]").forEach(b => b.onclick = () => releaseHold(b.dataset.release));
   $$("#repBody [data-hold]").forEach(b => b.onclick = () => convertHold(b.dataset.hold));
 }
 
@@ -1936,9 +2113,7 @@ function importBackup(e) {
 }
 
 /* ------------------------------------------------------------- lifecycle */
-window.addEventListener("beforeunload", ev => {
-  if (cart && cart.lines.length) { ev.preventDefault(); ev.returnValue = ""; }
-});
+// Open sales are saved as you go, so closing the tab loses nothing.
 if ("serviceWorker" in navigator && location.protocol.startsWith("http"))
   navigator.serviceWorker.register("sw.js").catch(() => {});
 
