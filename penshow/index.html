@@ -588,6 +588,7 @@ async function boot() {
   }
   const ph = await DB.all("photos");
   for (const k in ph) photos.set(k, ph[k]);
+  pruneOrphanPhotos();
   applyTheme();
   renderAll();
 }
@@ -610,6 +611,15 @@ function migrate() {
   if (touched) save(true);
 }
 
+/* A photo attached to a pen that was never saved would otherwise sit in storage
+   forever. Also re-syncs hasPhoto, which is only bookkeeping now. */
+function pruneOrphanPhotos() {
+  const live = new Set(state.items.map(i => i.id));
+  for (const id of [...photos.keys()])
+    if (!live.has(id)) { photos.delete(id); DB.del("photos", id); }
+  for (const i of state.items) i.hasPhoto = photos.has(i.id);
+}
+
 /* ---------------------------------------------------------------- lookup */
 const showById  = id => state.shows.find(s => s.id === id) || null;
 const itemById  = id => state.items.find(i => i.id === id) || null;
@@ -619,6 +629,8 @@ const liveItems = () => state.items.filter(i => !i.archived);
 const itemLabel = i => [i.brand, i.model].filter(Boolean).join(" ") || i.sku || "Untitled";
 const itemSub   = i => [i.type, i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
 const typeOf    = i => TYPES.find(t => t.name === i.type) || TYPES[0];
+/* The single source of truth for "does this pen have a picture". */
+const photoOf   = i => (i && photos.get(i.id)) || null;
 
 /* Units committed to open holds — reserved but not yet paid for. */
 function heldQty(itemId) {
@@ -785,8 +797,8 @@ function renderSell() {
     g.innerHTML = list.map(i => {
       const a = availQty(i);
       const cls = a <= 0 ? "zero" : (a <= (state.settings.lowStock || 2) ? "low" : "");
-      const img = i.hasPhoto && photos.get(i.id)
-        ? `<img src="${photos.get(i.id)}" alt="" loading="lazy">`
+      const img = photoOf(i)
+        ? `<img src="${photoOf(i)}" alt="" loading="lazy">`
         : `<span class="noimg">🖊</span>`;
       const sub = [i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
       return `<button class="skurow" data-id="${i.id}">
@@ -811,8 +823,8 @@ function renderSell() {
   g.innerHTML = list.map(i => {
     const a = availQty(i);
     const cls = a <= 0 ? "zero" : (a <= (state.settings.lowStock || 2) ? "low" : "");
-    const img = i.hasPhoto && photos.get(i.id)
-      ? `<img src="${photos.get(i.id)}" alt="" loading="lazy">` : `<span class="noimg">🖊</span>`;
+    const img = photoOf(i)
+      ? `<img src="${photoOf(i)}" alt="" loading="lazy">` : `<span class="noimg">🖊</span>`;
     const sub = [i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
     return `<button class="sku" data-id="${i.id}">
       <div class="ph">${img}<span class="qty ${cls}">${a}</span>
@@ -1096,12 +1108,10 @@ function renderInv() {
 
   $("#invList").innerHTML = list.length ? list.map(i => {
     const m = i.price > 0 ? (i.price - i.cost) / i.price : 0;
-    const img = i.hasPhoto && photos.get(i.id)
-      ? `<img src="${photos.get(i.id)}" alt="">`
-      : `<span class="add">＋</span>`;
+    const img = photoOf(i) ? `<img src="${photoOf(i)}" alt="">` : `<span class="add">＋</span>`;
     const held = heldQty(i.id);
     return `<div class="card pad row invrow" style="gap:11px">
-      <button class="thumb ${i.hasPhoto ? "has" : ""}" data-photo="${i.id}"
+      <button class="thumb ${photoOf(i) ? "has" : ""}" data-photo="${i.id}"
               title="Tap to add a photo">${img}</button>
       <div class="grow" data-edit="${i.id}" style="cursor:pointer">
         <div class="row"><b class="grow">${esc(itemLabel(i))}</b>
@@ -1306,9 +1316,9 @@ function editItem(id, seed) {
       photos.delete(it.id); it.hasPhoto = false; DB.del("photos", it.id);
       redrawPhoto(null); const b = $("#photoRm"); if (b) b.remove();
     };
-    $("#btnCam").onclick = () => grabPhoto(it.id, redrawPhoto, true);
-    $("#btnLib").onclick = () => grabPhoto(it.id, redrawPhoto, false);
-    $("#photoBox").onclick = () => grabPhoto(it.id, redrawPhoto, false);
+    $("#btnCam").onclick = () => grabPhoto(it, redrawPhoto, true);
+    $("#btnLib").onclick = () => grabPhoto(it, redrawPhoto, false);
+    $("#photoBox").onclick = () => grabPhoto(it, redrawPhoto, false);
     const rm = $("#photoRm"); if (rm) rm.onclick = removePhoto;
 
     // Drag an image onto the sheet, or paste one from the clipboard.
@@ -1317,12 +1327,12 @@ function editItem(id, seed) {
     zone.ondragleave = () => zone.classList.remove("over");
     zone.ondrop = e => {
       e.preventDefault(); zone.classList.remove("over");
-      attachPhoto(it.id, e.dataTransfer.files[0], redrawPhoto);
+      attachPhoto(it, e.dataTransfer.files[0], redrawPhoto);
     };
     sheetPaste = e => {
       const f = [...(e.clipboardData || {}).items || []]
         .map(i => i.kind === "file" ? i.getAsFile() : null).filter(Boolean)[0];
-      if (f) attachPhoto(it.id, f, redrawPhoto);
+      if (f) attachPhoto(it, f, redrawPhoto);
     };
     document.addEventListener("paste", sheetPaste);
 
@@ -1368,13 +1378,18 @@ function editItem(id, seed) {
 /* One path for every way a picture arrives: the camera, the library, a drag,
    or a paste. Attaching is a single tap from the inventory list because with
    a large catalogue that is the action you repeat hundreds of times. */
-async function attachPhoto(itemId, file, done) {
+/* `target` may be an id, or the pen object itself — a pen being created is not
+   in state.items yet, and looking it up there would silently drop the flag. */
+async function attachPhoto(target, file, done) {
   if (!file || !file.type.startsWith("image/")) return;
+  const it = typeof target === "string" ? itemById(target) : target;
+  const id = typeof target === "string" ? target : (target || {}).id;
+  if (!id) return;
   const dataUrl = await shrinkImage(file, 720, 0.72);
-  const it = itemById(itemId);
-  photos.set(itemId, dataUrl);
-  if (it) { it.hasPhoto = true; save(true); }
-  await DB.set("photos", itemId, dataUrl);
+  photos.set(id, dataUrl);
+  if (it) it.hasPhoto = true;
+  await DB.set("photos", id, dataUrl);
+  if (itemById(id)) save(true);
   toast("Photo added");
   if (done) done(dataUrl);
 }
