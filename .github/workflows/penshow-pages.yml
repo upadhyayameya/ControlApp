@@ -1,0 +1,65 @@
+# Publishes penshow/ to GitHub Pages so the tracker is a URL you can open on a
+# phone and "Add to Home Screen". Only the penshow directory becomes the site;
+# the rest of the repository is not published.
+name: Deploy pen show tracker
+
+on:
+  push:
+    branches:
+      - main
+      - claude/pen-show-inventory-tracker-sc51of
+    paths:
+      - "penshow/**"
+      - ".github/workflows/penshow-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; queue instead of cancelling a half-finished one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # enablement: true switches Pages on through the API the first time this
+      # runs, so there is no manual repository-settings step.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Check the app is self-contained before publishing
+        run: |
+          set -euo pipefail
+          for f in index.html sw.js manifest.webmanifest icon.svg; do
+            test -f "penshow/$f" || { echo "missing penshow/$f"; exit 1; }
+          done
+          python3 - <<'PY'
+          import pathlib, re, sys
+          html = pathlib.Path("penshow/index.html").read_text()
+          # An offline app must not reach out to a CDN; convention wifi will not be there.
+          external = re.findall(r'(?:src|href)=["\'](?:https?:)?//[^"\']+', html)
+          if external:
+              sys.exit("external references in index.html: %s" % external[:5])
+          for needed in ("<title>", "indexedDB", "serviceWorker"):
+              if needed not in html:
+                  sys.exit("index.html is missing %r" % needed)
+          print("self-contained, %d KB" % (len(html) // 1024))
+          PY
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: penshow
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
