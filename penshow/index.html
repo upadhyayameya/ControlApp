@@ -192,6 +192,78 @@ textarea.input{min-height:70px;resize:vertical}
 .paybtn.on[data-m="Card"]{background:var(--card)}
 .paybtn.on[data-m="Check"],.paybtn.on[data-m="Trade"]{background:var(--other)}
 
+.sku .typetag{position:absolute;top:6px;left:6px;background:rgba(20,22,28,.62);color:#fff;
+  border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em}
+/* Where the pen physically is — the thing you need once it is sold. */
+.sku .loc{position:absolute;left:0;right:0;bottom:0;background:rgba(20,22,28,.72);color:#fff;
+  font-size:10.5px;font-weight:700;padding:3px 6px;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sku .skucode{font-size:10px;margin-top:1px}
+.filterbreak{flex-basis:100%;height:0}
+.chip.sub{font-size:11.5px;padding:2px 8px;opacity:.9}
+
+/* Photos / List toggle — recognise the pen by sight, or scan the names. */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex:none}
+.seg button{border:0;background:var(--panel);color:var(--ink-2);font-size:12px;font-weight:700;
+  padding:6px 12px;cursor:pointer;min-height:32px}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+
+.skugrid.aslist{grid-template-columns:1fr;gap:8px}
+.skurow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:8px 10px;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;
+  box-shadow:var(--shadow);color:var(--ink)}
+.skurow:active{border-color:var(--accent)}
+.rthumb{width:52px;height:52px;border-radius:9px;overflow:hidden;flex:none;background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center}
+.rthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.rthumb .noimg{font-size:20px;opacity:.3}
+.rmeta{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.rmeta b{font-size:14px;font-weight:650;line-height:1.2}
+.rright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.rright b{font-size:15px}
+.rright .qty{position:static;padding:1px 8px;font-size:11px}
+
+/* --------------------------------------------------------- inventory row */
+.invrow{align-items:flex-start}
+.thumb{width:60px;height:60px;border-radius:11px;flex:none;padding:0;cursor:pointer;
+  border:1px dashed var(--line);background:var(--panel-2);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.thumb.has{border-style:solid}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .add{font-size:22px;font-weight:300;line-height:1}
+.thumb:active{border-color:var(--accent);color:var(--accent)}
+.skucode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+  color:var(--ink-3);letter-spacing:.02em}
+.big-sku{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.01em}
+
+/* ------------------------------------------------------- editor controls */
+.lbl{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);
+  text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.chiprow{display:flex;gap:8px}
+.chiprow.wrap{flex-wrap:wrap}
+.bigchip{flex:1;min-height:52px;border-radius:11px;border:1px solid var(--line);
+  background:var(--panel);cursor:pointer;color:var(--ink);padding:6px 8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.bigchip b{font-size:13px;font-weight:650;line-height:1.15;text-align:center}
+.bigchip span{font-size:10px;font-weight:800;color:var(--ink-3);letter-spacing:.06em}
+.bigchip.sm{flex:0 0 auto;min-width:88px;min-height:46px}
+.bigchip.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.bigchip.on span{color:var(--accent-ink);opacity:.75}
+.chip.lg{min-height:38px;padding:0 14px;font-size:14px;cursor:pointer}
+
+.photozone{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:12px;
+  border:1px dashed var(--line);background:var(--panel-2);margin-bottom:4px}
+.photozone.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.photozone .pv{width:84px;height:84px;border-radius:10px;flex:none;overflow:hidden;cursor:pointer;
+  background:var(--panel);display:flex;align-items:center;justify-content:center;
+  color:var(--ink-3);border:1px solid var(--line)}
+.photozone .pv img{width:100%;height:100%;object-fit:cover;display:block}
+.photozone .pv .add{font-size:28px;font-weight:300}
+
+.skubox{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 12px;
+  border-radius:11px;background:var(--panel-2);border:1px solid var(--line)}
+.skubox>div{flex:1;min-width:0}
+
 /* -------------------------------------------------------------- sheets */
 .scrim{position:fixed;inset:0;background:rgba(6,8,12,.5);z-index:60;display:none;
   backdrop-filter:blur(2px)}
@@ -259,10 +331,17 @@ table.t tr:last-child td{border-bottom:0}
   <!-- ============================================================ SELL -->
   <section class="view on" id="v-sell">
     <div class="searchbar">
-      <input class="input" id="sellSearch" placeholder="Search brand, model, SKU, nib…" autocomplete="off">
+      <input class="input" id="sellSearch" placeholder="Model, colour, SKU or case…" autocomplete="off">
       <button class="btn sm" id="customLineBtn" title="Sell something not in inventory">+ Custom</button>
     </div>
-    <div class="row wrap tiny" id="sellFilters" style="margin-bottom:10px"></div>
+    <div class="row wrap tiny" id="sellFilters" style="margin-bottom:6px"></div>
+    <div class="row" style="margin-bottom:8px">
+      <span class="tiny muted grow" id="sellCount"></span>
+      <div class="seg" id="sellView">
+        <button data-view="grid" class="on">Photos</button>
+        <button data-view="list">List</button>
+      </div>
+    </div>
     <div class="skugrid" id="sellGrid"></div>
   </section>
 
@@ -403,10 +482,55 @@ const DB = (() => {
 })();
 
 /* ----------------------------------------------------------------- model */
-const CATEGORIES = ["Pen", "Vintage Pen", "Nib", "Ink", "Paper", "Accessory", "Service"];
-const NIBS = ["", "EF", "F", "M", "B", "BB", "Stub", "Italic", "Architect", "Music", "Flex", "Zoom", "Fude", "Needlepoint"];
-const CONDITIONS = ["New", "New old stock", "Restored", "Used — excellent", "Used — good", "For parts"];
+/* The three brands on the table, and the pen types they come in. The short
+   codes feed the SKU nomenclature in makeSKU(). */
+const BRANDS = [
+  { name: "Submarine",   code: "SUB" },
+  { name: "Swiss Brand", code: "SWB" },
+  { name: "Lamborghini", code: "LAM" },
+];
+const TYPES = [
+  { name: "Fountain Pen",      code: "FP", nib: true },
+  { name: "Ballpoint",         code: "BP" },
+  { name: "Rollerball",        code: "RB" },
+  { name: "Mechanical Pencil", code: "MP" },
+  { name: "Pen Set",           code: "ST", nib: true },
+  { name: "Ink",               code: "IN" },
+  { name: "Accessory",         code: "AC" },
+];
+const NIBS = ["", "EF", "F", "M", "B", "BB", "Stub", "Italic", "Music", "Flex"];
+const NIB_CODE = { EF: "EF", F: "F", M: "M", B: "B", BB: "BB",
+                   Stub: "ST", Italic: "IT", Music: "MU", Flex: "FX" };
+/* Common finishes get a readable code so a SKU stays scannable on a label;
+   anything else falls back to its first three letters. */
+const COLOR_CODE = {
+  black: "BLK", blue: "BLU", red: "RED", green: "GRN", white: "WHT", silver: "SLV",
+  gold: "GLD", grey: "GRY", gray: "GRY", orange: "ORG", purple: "PUR", yellow: "YEL",
+  brown: "BRN", pink: "PNK", maroon: "MRN", clear: "CLR", chrome: "CHR", matte: "MAT",
+  "rose gold": "RGD", "gun metal": "GUN", gunmetal: "GUN", demonstrator: "DEM",
+};
 const METHODS = ["Cash", "Zelle", "Venmo", "Card", "Check", "Trade"];
+
+/* SKU nomenclature — BRAND-TYPE-MODEL[-NIB][-FINISH]
+       SUB-FP-SHIKAR-M-BLK   Submarine · fountain pen · Shikari · medium · black
+       LAM-BP-AVENTA-CHR     Lamborghini · ballpoint · Aventador · chrome
+   Sorts by brand then type, reads at a glance on a label, and never collides:
+   a clash gets a numeric tail. */
+function makeSKU(it, ignoreId) {
+  const brand = (BRANDS.find(b => b.name === it.brand) || {}).code
+    || (it.brand || "").replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() || "GEN";
+  const t = TYPES.find(x => x.name === it.type);
+  const model = (it.model || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 6).toUpperCase() || "NA";
+  const parts = [brand, (t || {}).code || "XX", model];
+  if (t && t.nib && it.nib) parts.push(NIB_CODE[it.nib] || it.nib.slice(0, 2).toUpperCase());
+  const v = (it.variant || "").trim().toLowerCase();
+  if (v) parts.push(COLOR_CODE[v] || v.replace(/[^a-z0-9]/g, "").slice(0, 3).toUpperCase());
+  const base = parts.join("-");
+  const taken = s => state.items.some(x => x.id !== ignoreId && !x.archived && x.sku === s);
+  let sku = base, n = 1;
+  while (taken(sku)) sku = base + "-" + (++n);
+  return sku;
+}
 
 /* Seeded with the five shows on the 2026 circuit. Dates and — importantly —
    tax rates are placeholders you must confirm; see the VERIFY warning in the
@@ -428,9 +552,10 @@ const blankShow = o => ({
 });
 
 const blankItem = () => ({
-  id: uid("it_"), sku: "", brand: "", model: "", variant: "", nib: "",
-  category: "Pen", condition: "New", cost: 0, msrp: 0, price: 0, floor: 0,
-  wholesale: 0, qty: 0, location: "", serial: "", tags: "", notes: "",
+  id: uid("it_"), sku: "", skuLocked: false,
+  brand: BRANDS[0].name, model: "", variant: "", nib: "", type: TYPES[0].name,
+  cost: 0, msrp: 0, price: 0, floor: 0, wholesale: 0, qty: 1,
+  location: "", tags: "", notes: "",
   hasPhoto: false, taxable: true, archived: false, created: Date.now()
 });
 
@@ -455,6 +580,7 @@ async function boot() {
   await DB.open();
   const loaded = await DB.get("kv", "state");
   if (loaded && loaded.items) state = Object.assign(state, loaded);
+  migrate();
   if (!state.shows.length) {
     state.shows = SEED_SHOWS.map(s => blankShow(s));
     state.settings.activeShow = state.shows[0].id;
@@ -466,6 +592,24 @@ async function boot() {
   renderAll();
 }
 
+/* Anything entered under the older shape (free-text category, a condition
+   field) is carried forward rather than dropped. Every pen is new now, so
+   condition simply goes away. */
+function migrate() {
+  const CAT_TO_TYPE = { "Pen": "Fountain Pen", "Vintage Pen": "Fountain Pen", "Nib": "Accessory",
+                        "Ink": "Ink", "Paper": "Accessory", "Accessory": "Accessory",
+                        "Service": "Accessory" };
+  let touched = false;
+  for (const i of state.items) {
+    if (!i.type) { i.type = CAT_TO_TYPE[i.category] || TYPES[0].name; touched = true; }
+    if ("condition" in i) { delete i.condition; touched = true; }
+    if ("category" in i) { delete i.category; touched = true; }
+    if ("serial" in i) { delete i.serial; touched = true; }
+    if (i.skuLocked === undefined) { i.skuLocked = !!i.sku; touched = true; }
+  }
+  if (touched) save(true);
+}
+
 /* ---------------------------------------------------------------- lookup */
 const showById  = id => state.shows.find(s => s.id === id) || null;
 const itemById  = id => state.items.find(i => i.id === id) || null;
@@ -473,8 +617,8 @@ const activeShow = () => showById(state.settings.activeShow) || state.shows[0] |
 const liveItems = () => state.items.filter(i => !i.archived);
 
 const itemLabel = i => [i.brand, i.model].filter(Boolean).join(" ") || i.sku || "Untitled";
-const itemSub   = i => [i.variant, i.nib && i.nib + " nib", i.condition !== "New" ? i.condition : ""]
-  .filter(Boolean).join(" · ");
+const itemSub   = i => [i.type, i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
+const typeOf    = i => TYPES.find(t => t.name === i.type) || TYPES[0];
 
 /* Units committed to open holds — reserved but not yet paid for. */
 function heldQty(itemId) {
@@ -546,7 +690,9 @@ function applyTheme() {
 
 /* --------------------------------------------------------------- sheets */
 let sheetOnClose = null;
+let sheetPaste = null;          // clipboard-image handler, live only while a sheet is open
 function openSheet(title, bodyHTML, footHTML, onClose) {
+  if (sheetPaste) { document.removeEventListener("paste", sheetPaste); sheetPaste = null; }
   $("#sheetTitle").textContent = title;
   $("#sheetBody").innerHTML = bodyHTML;
   $("#sheetFoot").innerHTML = footHTML || "";
@@ -556,6 +702,7 @@ function openSheet(title, bodyHTML, footHTML, onClose) {
 }
 function closeSheet() {
   $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on");
+  if (sheetPaste) { document.removeEventListener("paste", sheetPaste); sheetPaste = null; }
   const f = sheetOnClose; sheetOnClose = null; if (f) f();
 }
 $("#sheetX").onclick = closeSheet;
@@ -578,46 +725,113 @@ function renderAll() {
 /* =======================================================================
    SELL
    ======================================================================= */
-let sellFilter = "All";
+let sellFilter = "All";    // brand
+let sellType = "All";      // pen type
 
+/* Finding one pen among hundreds, fast: narrow by brand, then by type, and
+   read the case number off the card so you can physically pick it up. Two
+   taps beats typing on a phone with a customer waiting. */
 function renderSell() {
   const q = $("#sellSearch").value.trim().toLowerCase();
-  const cats = ["All", ...new Set(liveItems().map(i => i.category))];
-  $("#sellFilters").innerHTML = cats.map(c =>
-    `<button class="chip ${c === sellFilter ? "on" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
-  $$("#sellFilters .chip").forEach(b => b.onclick = () => { sellFilter = b.dataset.cat; renderSell(); });
+  const all = liveItems();
 
-  const list = liveItems().filter(i => {
-    if (sellFilter !== "All" && i.category !== sellFilter) return false;
-    if (!q) return true;
-    return [i.sku, i.brand, i.model, i.variant, i.nib, i.tags, i.location]
+  const present = new Set(all.map(i => i.brand));
+  const brands = ["All", ...BRANDS.map(b => b.name).filter(b => present.has(b)),
+                  ...[...present].filter(b => !BRANDS.some(x => x.name === b))];
+  const inBrand = i => sellFilter === "All" || i.brand === sellFilter;
+  const typesPresent = new Set(all.filter(inBrand).map(i => i.type));
+  const types = ["All", ...TYPES.map(t => t.name).filter(t => typesPresent.has(t))];
+  if (!types.includes(sellType)) sellType = "All";
+
+  $("#sellFilters").innerHTML =
+    brands.map(c => `<button class="chip ${c === sellFilter ? "on" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("")
+    + (types.length > 2
+        ? `<span class="filterbreak"></span>` + types.map(t =>
+            `<button class="chip sub ${t === sellType ? "on" : ""}" data-type="${esc(t)}">${esc(
+              t === "All" ? "All types" : t)}</button>`).join("")
+        : "");
+  $$("#sellFilters [data-cat]").forEach(b => b.onclick = () => { sellFilter = b.dataset.cat; renderSell(); });
+  $$("#sellFilters [data-type]").forEach(b => b.onclick = () => { sellType = b.dataset.type; renderSell(); });
+
+  /* A search looks at the whole catalogue. If a filter left over from the last
+     customer could hide the pen you just typed the name of, you would conclude
+     you had not brought it — the one wrong answer this screen must never give. */
+  const list = all.filter(i => {
+    if (q) return [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.tags, i.location]
       .join(" ").toLowerCase().includes(q);
-  }).sort((a, b) => itemLabel(a).localeCompare(itemLabel(b)));
+    return inBrand(i) && (sellType === "All" || i.type === sellType);
+  }).sort((a, b) => itemLabel(a).localeCompare(itemLabel(b))
+                 || (a.variant || "").localeCompare(b.variant || ""));
+
+  $("#sellCount").textContent = q
+    ? `${list.length} match “${esc(q)}” · searching all ${all.length}`
+    : (list.length === all.length ? `${all.length} pens` : `${list.length} of ${all.length}`);
 
   const g = $("#sellGrid");
+  const view = state.settings.sellView || "grid";
+  $$("#sellView button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
+  g.classList.toggle("aslist", view === "list");
+
   if (!list.length) {
     g.innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="em">🖋</span>
       ${state.items.length ? "Nothing matches that search." :
         "No inventory yet.<br>Add items in the Inventory tab, or import a CSV from the Data tab."}</div>`;
     return;
   }
+
+  /* List view: one dense row per pen — photo, name, SKU, case, price. Faster
+     to scan by name when the catalogue is long and photos all look alike. */
+  if (view === "list") {
+    g.innerHTML = list.map(i => {
+      const a = availQty(i);
+      const cls = a <= 0 ? "zero" : (a <= (state.settings.lowStock || 2) ? "low" : "");
+      const img = i.hasPhoto && photos.get(i.id)
+        ? `<img src="${photos.get(i.id)}" alt="" loading="lazy">`
+        : `<span class="noimg">🖊</span>`;
+      const sub = [i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
+      return `<button class="skurow" data-id="${i.id}">
+        <span class="rthumb">${img}</span>
+        <span class="rmeta">
+          <b>${esc(itemLabel(i))}</b>
+          <span class="tiny muted">${esc([typeOf(i).name, sub].filter(Boolean).join(" · "))}</span>
+          <span class="row tiny" style="gap:6px;margin-top:2px">
+            <span class="skucode">${esc(i.sku)}</span>
+            ${i.location ? `<span class="pill flat">📍 ${esc(i.location)}</span>` : ""}
+          </span>
+        </span>
+        <span class="rright">
+          <b>${money(i.price)}</b>
+          <span class="qty ${cls}">${a}</span>
+        </span></button>`;
+    }).join("");
+    $$("#sellGrid .skurow").forEach(b => b.onclick = () => addToCart(b.dataset.id));
+    return;
+  }
+
   g.innerHTML = list.map(i => {
     const a = availQty(i);
     const cls = a <= 0 ? "zero" : (a <= (state.settings.lowStock || 2) ? "low" : "");
     const img = i.hasPhoto && photos.get(i.id)
       ? `<img src="${photos.get(i.id)}" alt="" loading="lazy">` : `<span class="noimg">🖊</span>`;
+    const sub = [i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
     return `<button class="sku" data-id="${i.id}">
-      <div class="ph">${img}<span class="qty ${cls}">${a}</span></div>
+      <div class="ph">${img}<span class="qty ${cls}">${a}</span>
+        <span class="typetag">${esc(typeOf(i).code)}</span>
+        ${i.location ? `<span class="loc">📍 ${esc(i.location)}</span>` : ""}</div>
       <div class="meta">
-        <span class="br">${esc(i.brand || i.category)}</span>
+        <span class="br">${esc(i.brand)}</span>
         <span class="nm">${esc(i.model || i.sku || "Untitled")}</span>
-        ${itemSub(i) ? `<span class="tiny muted">${esc(itemSub(i))}</span>` : ""}
+        ${sub ? `<span class="tiny muted">${esc(sub)}</span>` : ""}
+        <span class="skucode">${esc(i.sku)}</span>
         <span class="pr">${money(i.price)}</span>
       </div></button>`;
   }).join("");
   $$("#sellGrid .sku").forEach(b => b.onclick = () => addToCart(b.dataset.id));
 }
 $("#sellSearch").oninput = () => renderSell();
+$$("#sellView button").forEach(b => b.onclick = () => {
+  state.settings.sellView = b.dataset.view; save(); renderSell();
+});
 
 function ensureCart() {
   if (!cart) cart = {
@@ -635,7 +849,7 @@ function addToCart(itemId) {
   const ex = c.lines.find(l => l.itemId === itemId);
   if (ex) ex.qty++;
   else c.lines.push({
-    itemId, sku: it.sku, name: itemLabel(it), sub: itemSub(it),
+    itemId, sku: it.sku, name: itemLabel(it), sub: itemSub(it), location: it.location || "",
     qty: 1, unitPrice: num(it.price), unitCost: num(it.cost),
     floor: num(it.floor), taxable: it.taxable !== false
   });
@@ -676,7 +890,11 @@ function cartHTML() {
     return `<div class="line">
       <div class="grow">
         <div style="font-weight:650">${esc(l.name)}</div>
-        <div class="tiny muted">${esc(l.sub || l.sku || "")}</div>
+        <div class="tiny muted">${esc(l.sub || "")}</div>
+        <div class="row tiny" style="gap:6px;margin-top:2px">
+          ${l.sku ? `<span class="skucode">${esc(l.sku)}</span>` : ""}
+          ${l.location ? `<span class="pill flat">📍 ${esc(l.location)}</span>` : ""}
+        </div>
         <div class="row" style="margin-top:6px;gap:6px">
           <div class="stepper">
             <button data-act="dec" data-ix="${ix}">−</button>
@@ -872,146 +1090,308 @@ function renderInv() {
   $("#invStatCost").textContent   = money(cost) + " at cost";
   $("#invStatRetail").textContent = money(retail) + " at retail";
 
-  const list = items.filter(i => !q || [i.sku, i.brand, i.model, i.variant, i.nib, i.tags, i.location, i.serial]
+  const list = items.filter(i => !q || [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.tags, i.location]
     .join(" ").toLowerCase().includes(q))
     .sort((a, b) => (a.brand || "").localeCompare(b.brand || "") || itemLabel(a).localeCompare(itemLabel(b)));
 
   $("#invList").innerHTML = list.length ? list.map(i => {
     const m = i.price > 0 ? (i.price - i.cost) / i.price : 0;
     const img = i.hasPhoto && photos.get(i.id)
-      ? `<img src="${photos.get(i.id)}" style="width:54px;height:54px;object-fit:cover;border-radius:9px;flex:none">`
-      : `<div style="width:54px;height:54px;border-radius:9px;background:var(--panel-2);flex:none;
-           display:flex;align-items:center;justify-content:center;opacity:.4">🖊</div>`;
+      ? `<img src="${photos.get(i.id)}" alt="">`
+      : `<span class="add">＋</span>`;
     const held = heldQty(i.id);
-    return `<div class="card pad row" data-edit="${i.id}" style="cursor:pointer;gap:10px">
-      ${img}
-      <div class="grow">
+    return `<div class="card pad row invrow" style="gap:11px">
+      <button class="thumb ${i.hasPhoto ? "has" : ""}" data-photo="${i.id}"
+              title="Tap to add a photo">${img}</button>
+      <div class="grow" data-edit="${i.id}" style="cursor:pointer">
         <div class="row"><b class="grow">${esc(itemLabel(i))}</b>
           <b class="num">${money(i.price)}</b></div>
-        <div class="tiny muted">${esc(itemSub(i))}${i.sku ? " · " + esc(i.sku) : ""}${i.location ? " · 📍" + esc(i.location) : ""}</div>
-        <div class="row tiny" style="margin-top:4px;gap:6px">
-          <span class="pill ${i.qty <= 0 ? "bad" : i.qty <= (state.settings.lowStock || 2) ? "warn" : "flat"}">${i.qty} on hand</span>
+        <div class="tiny muted">${esc(itemSub(i))}</div>
+        <div class="row tiny" style="margin-top:5px;gap:6px">
+          <span class="pill ${i.qty <= 0 ? "bad" : i.qty <= (state.settings.lowStock || 2) ? "warn" : "flat"}">${i.qty} in stock</span>
           ${held ? `<span class="pill warn">${held} held</span>` : ""}
-          <span class="muted">cost ${money(i.cost)} · margin ${pct(m)}${i.floor ? " · floor " + money(i.floor) : ""}</span>
+          <span class="skucode">${esc(i.sku)}</span>
         </div>
+        <div class="tiny muted" style="margin-top:3px">cost ${money(i.cost)} · margin ${pct(m)}${i.floor ? " · floor " + money(i.floor) : ""}</div>
       </div></div>`;
-  }).join("") : `<div class="empty"><span class="em">📦</span>No items yet.<br>
+  }).join("") : `<div class="empty"><span class="em">📦</span>No pens yet.<br>
       <button class="btn sm primary" style="margin-top:10px" onclick="document.getElementById('addItemBtn').click()">Add your first pen</button></div>`;
 
   $$("#invList [data-edit]").forEach(el => el.onclick = () => editItem(el.dataset.edit));
+  // Tapping the square attaches a photo straight away — no need to open the item.
+  $$("#invList [data-photo]").forEach(el => el.onclick = e => {
+    e.stopPropagation(); grabPhoto(el.dataset.photo, () => renderInv());
+  });
 }
 $("#invSearch").oninput = () => renderInv();
 $("#addItemBtn").onclick = () => editItem(null);
 
-function editItem(id) {
+/* The item sheet is deliberately short: brand, type, model, finish, three
+   numbers. Everything else is behind "More", because with hundreds of pens to
+   enter the only thing that matters is how fast the common case goes. */
+function editItem(id, seed) {
   const isNew = !id;
-  const it = isNew ? blankItem() : Object.assign({}, itemById(id));
-  const f = (k, label, opts = {}) => `
-    <div class="field"><label>${label}</label>
-      ${opts.select
-        ? `<select class="input" data-f="${k}">${opts.select.map(o =>
-            `<option value="${esc(o)}" ${String(it[k]) === o ? "selected" : ""}>${esc(o || "—")}</option>`).join("")}</select>`
-        : `<input class="input" data-f="${k}" ${opts.mode ? `inputmode="${opts.mode}"` : ""}
-             value="${esc(it[k] ?? "")}" placeholder="${esc(opts.ph || "")}" autocomplete="off">`}
-    </div>`;
+  const it = isNew ? Object.assign(blankItem(), seed || {}) : Object.assign({}, itemById(id));
+  const money2 = v => (v ? String(v) : "");
 
-  const img = photos.get(it.id);
-  openSheet(isNew ? "New item" : "Edit item", `
-    <div class="row" style="margin-bottom:14px;gap:12px">
-      <div id="photoBox" style="width:88px;height:88px;border-radius:12px;background:var(--panel-2);
-        overflow:hidden;display:flex;align-items:center;justify-content:center;flex:none">
-        ${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover">` : `<span style="opacity:.4;font-size:26px">🖊</span>`}
-      </div>
+  const body = () => `
+    <div class="photozone" id="photoZone">
+      <div class="pv" id="photoBox">${photos.get(it.id)
+        ? `<img src="${photos.get(it.id)}" alt="">` : `<span class="add">＋</span>`}</div>
       <div class="stack grow">
-        <label class="btn sm block" style="cursor:pointer">📷 Photo
-          <input type="file" accept="image/*" id="photoIn" style="display:none"></label>
-        ${img ? `<button class="btn sm ghost block" id="photoRm">Remove photo</button>` : ""}
+        <div class="row" style="gap:8px">
+          <button class="btn sm grow" id="btnCam">📷 Camera</button>
+          <button class="btn sm grow" id="btnLib">Choose file</button>
+        </div>
+        <div class="tiny muted" id="photoHint">Or drag an image here, or paste one with ⌘V.</div>
+        ${photos.get(it.id) ? `<button class="btn sm ghost" id="photoRm">Remove photo</button>` : ""}
       </div>
     </div>
-    <div class="grid2">${f("brand", "Brand", { ph: "Sailor" })}${f("model", "Model", { ph: "Pro Gear" })}</div>
-    <div class="grid2" style="margin-top:10px">${f("variant", "Variant / finish", { ph: "Sky blue" })}
-      ${f("nib", "Nib", { select: NIBS })}</div>
-    <div class="grid2" style="margin-top:10px">${f("category", "Category", { select: CATEGORIES })}
-      ${f("condition", "Condition", { select: CONDITIONS })}</div>
-    <div class="grid2" style="margin-top:10px">${f("sku", "SKU", { ph: "auto" })}${f("qty", "Qty on hand", { mode: "numeric" })}</div>
 
-    <hr class="sep">
-    <div class="grid3">
-      ${f("cost", "Landed cost", { mode: "decimal" })}
-      ${f("price", "Show price", { mode: "decimal" })}
-      ${f("floor", "Floor price", { mode: "decimal" })}
+    <label class="lbl">Brand</label>
+    <div class="chiprow" id="brandRow">
+      ${BRANDS.map(b => `<button class="bigchip ${it.brand === b.name ? "on" : ""}"
+         data-brand="${esc(b.name)}"><b>${esc(b.name)}</b><span>${b.code}</span></button>`).join("")}
     </div>
-    <div class="grid2" style="margin-top:10px">
-      ${f("msrp", "MSRP", { mode: "decimal" })}
-      ${f("wholesale", "Dealer / wholesale", { mode: "decimal" })}
+
+    <label class="lbl">Type</label>
+    <div class="chiprow wrap" id="typeRow">
+      ${TYPES.map(t => `<button class="bigchip sm ${it.type === t.name ? "on" : ""}"
+         data-type="${esc(t.name)}"><b>${esc(t.name)}</b><span>${t.code}</span></button>`).join("")}
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <div class="field"><label>Model</label>
+        <input class="input" data-f="model" value="${esc(it.model)}" placeholder="Shikari" autocomplete="off"></div>
+      <div class="field"><label>Colour / finish</label>
+        <input class="input" data-f="variant" value="${esc(it.variant)}" placeholder="Black" autocomplete="off"></div>
+    </div>
+
+    <div id="nibWrap" style="margin-top:12px;${typeOf(it).nib ? "" : "display:none"}">
+      <label class="lbl">Nib</label>
+      <div class="chiprow wrap" id="nibRow">
+        ${NIBS.map(n => `<button class="chip lg ${it.nib === n ? "on" : ""}"
+           data-nib="${esc(n)}">${esc(n || "—")}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:14px">
+      <div class="field"><label>Cost</label>
+        <input class="input" data-f="cost" inputmode="decimal" value="${money2(it.cost)}" placeholder="0"></div>
+      <div class="field"><label>Price</label>
+        <input class="input" data-f="price" inputmode="decimal" value="${money2(it.price)}" placeholder="0"></div>
+      <div class="field"><label>Qty</label>
+        <input class="input" data-f="qty" inputmode="numeric" value="${it.qty}"></div>
     </div>
     <div class="tiny muted" id="marginHint" style="margin-top:8px"></div>
-    <div class="warnbox" style="margin-top:8px">
-      <b>Floor price</b> is the lowest you will go when someone haggles. The cart turns
-      red when you price below it, so you never discount into a loss at 4pm on Sunday.
+
+    <div class="skubox">
+      <div>
+        <div class="lbl" style="margin:0">SKU</div>
+        <div class="skucode big-sku" id="skuOut">—</div>
+      </div>
+      <button class="btn sm ghost" id="skuEdit">${it.skuLocked ? "Auto" : "Edit"}</button>
     </div>
+    <input class="input" id="skuManual" value="${esc(it.sku)}"
+           style="margin-top:8px;${it.skuLocked ? "" : "display:none"}">
 
-    <hr class="sep">
-    <div class="grid2">${f("location", "Case / tray", { ph: "Case 1, tray B" })}
-      ${f("serial", "Serial / lot", { ph: "for one-of-a-kind pieces" })}</div>
-    <div class="field" style="margin-top:10px"><label>Tags</label>
-      <input class="input" data-f="tags" value="${esc(it.tags)}" placeholder="limited, urushi, japan"></div>
-    <div class="field" style="margin-top:10px"><label>Notes</label>
-      <textarea class="input" data-f="notes">${esc(it.notes)}</textarea></div>
-    <label class="row tiny" style="margin-top:10px;gap:8px">
-      <input type="checkbox" id="fTaxable" ${it.taxable !== false ? "checked" : ""}>
-      Charge sales tax on this item</label>
-  `, `${isNew ? "" : `<button class="btn danger" id="itemDel">Delete</button>`}
-      <button class="btn primary grow" id="itemSave">Save</button>`);
+    <button class="btn ghost block" id="moreBtn" style="margin-top:14px">More options ▾</button>
+    <div id="moreBox" style="display:none;margin-top:12px">
+      <div class="grid3">
+        <div class="field"><label>Floor price</label>
+          <input class="input" data-f="floor" inputmode="decimal" value="${money2(it.floor)}"></div>
+        <div class="field"><label>MRP</label>
+          <input class="input" data-f="msrp" inputmode="decimal" value="${money2(it.msrp)}"></div>
+        <div class="field"><label>Dealer</label>
+          <input class="input" data-f="wholesale" inputmode="decimal" value="${money2(it.wholesale)}"></div>
+      </div>
+      <div class="warnbox" style="margin-top:10px">
+        <b>Floor price</b> is the lowest you will take when someone haggles. The cart
+        turns red below it, so you never discount into a loss on Sunday afternoon.
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label>Case / tray</label>
+          <input class="input" data-f="location" value="${esc(it.location)}" placeholder="Case 1"></div>
+        <div class="field"><label>Tags</label>
+          <input class="input" data-f="tags" value="${esc(it.tags)}" placeholder="limited"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Notes</label>
+        <textarea class="input" data-f="notes">${esc(it.notes)}</textarea></div>
+      <label class="row tiny" style="margin-top:12px;gap:8px">
+        <input type="checkbox" id="fTaxable" ${it.taxable !== false ? "checked" : ""}>
+        Charge sales tax on this pen</label>
+    </div>`;
 
-  const read = () => {
+  const foot = isNew
+    ? `<button class="btn grow" id="saveNext">Save &amp; add next</button>
+       <button class="btn primary grow" id="itemSave">Save</button>`
+    : `<button class="btn danger" id="itemDel">Delete</button>
+       <button class="btn" id="itemDup">Duplicate</button>
+       <button class="btn primary grow" id="itemSave">Save</button>`;
+
+  openSheet(isNew ? "New pen" : itemLabel(it), body(), foot);
+  wire();
+
+  function read() {
     $$("#sheetBody [data-f]").forEach(el => {
       const k = el.dataset.f;
-      it[k] = ["cost", "price", "floor", "msrp", "wholesale", "qty"].includes(k) ? num(el.value) : el.value;
+      it[k] = ["cost", "price", "floor", "msrp", "wholesale", "qty"].includes(k)
+        ? num(el.value) : el.value;
     });
-    it.taxable = $("#fTaxable").checked;
-  };
-  const hint = () => {
+    const tx = $("#fTaxable"); if (tx) it.taxable = tx.checked;
+    if (it.skuLocked) it.sku = $("#skuManual").value.trim();
+  }
+
+  function refreshSKU() {
+    if (!it.skuLocked) it.sku = makeSKU(it, isNew ? null : id);
+    $("#skuOut").textContent = it.sku || "—";
+  }
+
+  function hint() {
     read();
     const m = it.price > 0 ? (it.price - it.cost) / it.price : 0;
-    const mf = it.floor > 0 ? (it.floor - it.cost) / it.floor : 0;
     $("#marginHint").innerHTML =
-      `Margin at show price <b style="color:${m > 0 ? "var(--good)" : "var(--bad)"}">${pct(m)}</b>
-       (${money(it.price - it.cost)}/unit)` +
-      (it.floor > 0 ? ` · at floor <b style="color:${mf > 0 ? "var(--good)" : "var(--bad)"}">${pct(mf)}</b>` : "") +
-      ` · ${it.qty} units tie up <b>${money(it.qty * it.cost)}</b>`;
-  };
-  $$("#sheetBody [data-f]").forEach(el => el.oninput = hint);
-  hint();
+      `Margin <b style="color:${m > 0 ? "var(--good)" : "var(--bad)"}">${it.price ? pct(m) : "—"}</b>` +
+      (it.price ? ` · ${money(it.price - it.cost)} a pen` : "") +
+      ` · ${it.qty} tie up <b>${money(it.qty * it.cost)}</b>`;
+    refreshSKU();
+  }
 
-  $("#photoIn").onchange = e => {
-    const file = e.target.files[0]; if (!file) return;
-    shrinkImage(file, 720, 0.72).then(dataUrl => {
-      photos.set(it.id, dataUrl); it.hasPhoto = true;
-      DB.set("photos", it.id, dataUrl);
-      $("#photoBox").innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
-      toast("Photo attached");
+  function wire() {
+    $$("#sheetBody [data-f]").forEach(el => el.oninput = hint);
+
+    $$("#brandRow [data-brand]").forEach(b => b.onclick = () => {
+      it.brand = b.dataset.brand;
+      $$("#brandRow .bigchip").forEach(x => x.classList.toggle("on", x === b));
+      hint();
     });
-  };
-  const prm = $("#photoRm"); if (prm) prm.onclick = () => {
-    photos.delete(it.id); it.hasPhoto = false; DB.del("photos", it.id);
-    $("#photoBox").innerHTML = `<span style="opacity:.4;font-size:26px">🖊</span>`; prm.remove();
-  };
+    $$("#typeRow [data-type]").forEach(b => b.onclick = () => {
+      it.type = b.dataset.type;
+      $$("#typeRow .bigchip").forEach(x => x.classList.toggle("on", x === b));
+      $("#nibWrap").style.display = typeOf(it).nib ? "" : "none";
+      if (!typeOf(it).nib) it.nib = "";
+      hint();
+    });
+    $$("#nibRow [data-nib]").forEach(b => b.onclick = () => {
+      it.nib = b.dataset.nib;
+      $$("#nibRow .chip").forEach(x => x.classList.toggle("on", x === b));
+      hint();
+    });
 
-  $("#itemSave").onclick = () => {
-    read();
-    if (!it.brand && !it.model && !it.sku) return toast("Give it at least a brand or model");
-    if (!it.sku) it.sku = (it.brand.slice(0, 3) + "-" + it.model.slice(0, 6) + "-" + (it.nib || it.variant.slice(0, 3) || "X"))
-      .toUpperCase().replace(/\s+/g, "");
-    if (isNew) state.items.push(it);
-    else Object.assign(itemById(id), it);
-    save(true); closeSheet(); renderAll(); toast("Saved");
+    $("#moreBtn").onclick = () => {
+      const box = $("#moreBox"), open = box.style.display !== "none";
+      box.style.display = open ? "none" : "";
+      $("#moreBtn").textContent = open ? "More options ▾" : "Fewer options ▴";
+    };
+
+    $("#skuEdit").onclick = () => {
+      it.skuLocked = !it.skuLocked;
+      $("#skuEdit").textContent = it.skuLocked ? "Auto" : "Edit";
+      $("#skuManual").style.display = it.skuLocked ? "" : "none";
+      if (it.skuLocked) $("#skuManual").value = it.sku;
+      hint();
+    };
+    $("#skuManual").oninput = () => { it.sku = $("#skuManual").value.trim(); $("#skuOut").textContent = it.sku || "—"; };
+
+    const redrawPhoto = url => {
+      $("#photoBox").innerHTML = url ? `<img src="${url}" alt="">` : `<span class="add">＋</span>`;
+      if (url && !$("#photoRm")) {
+        const b = document.createElement("button");
+        b.className = "btn sm ghost"; b.id = "photoRm"; b.textContent = "Remove photo";
+        $("#photoZone").querySelector(".stack").appendChild(b);
+        b.onclick = removePhoto;
+      }
+    };
+    const removePhoto = () => {
+      photos.delete(it.id); it.hasPhoto = false; DB.del("photos", it.id);
+      redrawPhoto(null); const b = $("#photoRm"); if (b) b.remove();
+    };
+    $("#btnCam").onclick = () => grabPhoto(it.id, redrawPhoto, true);
+    $("#btnLib").onclick = () => grabPhoto(it.id, redrawPhoto, false);
+    $("#photoBox").onclick = () => grabPhoto(it.id, redrawPhoto, false);
+    const rm = $("#photoRm"); if (rm) rm.onclick = removePhoto;
+
+    // Drag an image onto the sheet, or paste one from the clipboard.
+    const zone = $("#photoZone");
+    zone.ondragover = e => { e.preventDefault(); zone.classList.add("over"); };
+    zone.ondragleave = () => zone.classList.remove("over");
+    zone.ondrop = e => {
+      e.preventDefault(); zone.classList.remove("over");
+      attachPhoto(it.id, e.dataTransfer.files[0], redrawPhoto);
+    };
+    sheetPaste = e => {
+      const f = [...(e.clipboardData || {}).items || []]
+        .map(i => i.kind === "file" ? i.getAsFile() : null).filter(Boolean)[0];
+      if (f) attachPhoto(it.id, f, redrawPhoto);
+    };
+    document.addEventListener("paste", sheetPaste);
+
+    const commit = () => {
+      read();
+      if (!it.model) { toast("Give it a model name"); return false; }
+      refreshSKU();
+      if (isNew) state.items.push(it); else Object.assign(itemById(id), it);
+      save(true);
+      return true;
+    };
+
+    $("#itemSave").onclick = () => { if (commit()) { closeSheet(); renderAll(); toast("Saved"); } };
+
+    const nxt = $("#saveNext"); if (nxt) nxt.onclick = () => {
+      if (!commit()) return;
+      renderAll(); toast("Saved — next one");
+      // Carry brand, type and prices forward: consecutive pens are usually
+      // the same model in a different colour.
+      editItem(null, { brand: it.brand, type: it.type, nib: it.nib, model: it.model,
+                       cost: it.cost, price: it.price, floor: it.floor,
+                       msrp: it.msrp, wholesale: it.wholesale, location: it.location });
+    };
+
+    const dup = $("#itemDup"); if (dup) dup.onclick = () => {
+      read();
+      editItem(null, { brand: it.brand, type: it.type, nib: it.nib, model: it.model,
+                       cost: it.cost, price: it.price, floor: it.floor, msrp: it.msrp,
+                       wholesale: it.wholesale, location: it.location, tags: it.tags });
+    };
+
+    const del = $("#itemDel"); if (del) del.onclick = () => {
+      if (!confirm("Delete " + itemLabel(it) + "? Past sales keep their own record.")) return;
+      itemById(id).archived = true;
+      save(true); closeSheet(); renderAll(); toast("Deleted");
+    };
+
+    hint();
+  }
+}
+
+/* ------------------------------------------------------------- photos */
+/* One path for every way a picture arrives: the camera, the library, a drag,
+   or a paste. Attaching is a single tap from the inventory list because with
+   a large catalogue that is the action you repeat hundreds of times. */
+async function attachPhoto(itemId, file, done) {
+  if (!file || !file.type.startsWith("image/")) return;
+  const dataUrl = await shrinkImage(file, 720, 0.72);
+  const it = itemById(itemId);
+  photos.set(itemId, dataUrl);
+  if (it) { it.hasPhoto = true; save(true); }
+  await DB.set("photos", itemId, dataUrl);
+  toast("Photo added");
+  if (done) done(dataUrl);
+}
+
+/* `camera` opens the rear camera straight away on a phone; without it the
+   picker offers the photo library too. */
+function grabPhoto(itemId, done, camera) {
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "image/*";
+  if (camera) inp.capture = "environment";
+  inp.style.display = "none";
+  document.body.appendChild(inp);
+  inp.onchange = async () => {
+    await attachPhoto(itemId, inp.files[0], done);
+    inp.remove();
   };
-  const del = $("#itemDel"); if (del) del.onclick = () => {
-    if (!confirm("Delete " + itemLabel(it) + "? Past sales keep their own record.")) return;
-    itemById(id).archived = true;
-    save(true); closeSheet(); renderAll(); toast("Removed from inventory");
-  };
+  inp.click();
 }
 
 /* Downscale to keep the photo store small — a 12MP phone shot is 4MB, this
@@ -1365,7 +1745,8 @@ function renderData() {
   $("#impCsv").onchange = importInventoryCSV;
   $("#tmplCsv").onclick = () => download("penshow-inventory-template.csv",
     CSV_COLS.join(",") + "\n" +
-    "SAI-PROGEA-M,Sailor,Pro Gear,Sky Blue,M,Pen,New,168,340,420,290,380,3,Case 1 tray B,,limited japan,\n");
+    ",Submarine,Fountain Pen,Shikari,Black,M,6,24,18,14,12,10,Case 1,,\n" +
+    ",Lamborghini,Ballpoint,Aventador,Chrome,,18,60,45,36,32,4,Case 2,,\n");
 
   $("#clrSales").onclick = () => {
     if (!confirm("Delete every recorded sale? Inventory quantities are NOT restored.")) return;
@@ -1396,8 +1777,8 @@ const q = v => {
 };
 const toCSV = rows => rows.map(r => r.map(q).join(",")).join("\n");
 
-const CSV_COLS = ["sku", "brand", "model", "variant", "nib", "category", "condition",
-  "cost", "msrp", "price", "floor", "wholesale", "qty", "location", "serial", "tags", "notes"];
+const CSV_COLS = ["sku", "brand", "type", "model", "variant", "nib",
+  "cost", "msrp", "price", "floor", "wholesale", "qty", "location", "tags", "notes"];
 
 function exportInventoryCSV() {
   download("inventory-" + todayISO() + ".csv",
@@ -1467,6 +1848,16 @@ function parseCSV(text) {
   return rows.filter(r => r.some(v => String(v).trim() !== ""));
 }
 
+/* Accept "Fountain Pen", "fountain", "FP" or "fp" for the type column — a
+   spreadsheet filled in by hand will not match the canonical string. */
+function matchType(v) {
+  const s = String(v || "").trim().toLowerCase();
+  if (!s) return "";
+  const t = TYPES.find(x => x.name.toLowerCase() === s || x.code.toLowerCase() === s)
+         || TYPES.find(x => x.name.toLowerCase().startsWith(s));
+  return t ? t.name : "";
+}
+
 function importInventoryCSV(e) {
   const f = e.target.files[0]; if (!f) return;
   const fr = new FileReader();
@@ -1487,13 +1878,14 @@ function importInventoryCSV(e) {
       Object.assign(it, {
         sku: sku || it.sku, brand: brand || it.brand, model: model || it.model,
         variant: get("variant") || it.variant, nib: get("nib") || it.nib,
-        category: get("category") || it.category, condition: get("condition") || it.condition,
-        location: get("location") || it.location, serial: get("serial") || it.serial,
+        type: matchType(get("type")) || it.type,
+        location: get("location") || it.location,
         tags: get("tags") || it.tags, notes: get("notes") || it.notes, archived: false
       });
       for (const k of ["cost", "msrp", "price", "floor", "wholesale", "qty"])
         if (get(k) !== "") it[k] = num(get(k));
-      if (!it.sku) it.sku = (it.brand.slice(0, 3) + "-" + it.model.slice(0, 6)).toUpperCase().replace(/\s+/g, "");
+      it.skuLocked = !!sku;
+      if (!it.sku) it.sku = makeSKU(it, it.id);
       if (isNew) { state.items.push(it); added++; } else updated++;
     }
     save(true); renderAll();

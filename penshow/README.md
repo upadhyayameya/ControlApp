@@ -1,7 +1,32 @@
 # Pen Show Tracker
 
 Inventory, pricing, point of sale and P&L for a five-show US pen show season —
-SF, Orlando, Dallas, Denver and Ohio.
+SF, Orlando, Dallas, Denver and Ohio — carrying **Submarine**, **Swiss Brand**
+and **Lamborghini**.
+
+## SKU nomenclature
+
+SKUs are generated for you. The shape is:
+
+```
+BRAND-TYPE-MODEL[-NIB][-FINISH]
+
+SUB-FP-SHIKAR-M-BLK    Submarine · fountain pen · Shikari · medium nib · black
+SWB-ST-ALPINE-F        Swiss Brand · pen set · Alpine Duo · fine nib
+LAM-BP-AVENTA-CHR      Lamborghini · ballpoint · Aventador · chrome
+```
+
+| Part | Values |
+|---|---|
+| Brand | `SUB` Submarine · `SWB` Swiss Brand · `LAM` Lamborghini |
+| Type | `FP` fountain · `BP` ballpoint · `RB` rollerball · `MP` pencil · `ST` set · `IN` ink · `AC` accessory |
+| Model | first 6 letters/digits of the model name |
+| Nib | fountain pens and sets only — `EF F M B BB ST IT MU FX` |
+| Finish | `BLK BLU RED GRN WHT SLV GLD GRY ORG PUR YEL BRN PNK MRN CLR CHR MAT RGD GUN DEM`, else the first three letters |
+
+It sorts by brand then type, reads off a label at a glance, and never collides —
+an identical spec gets a numeric tail (`…-BLK-2`). Tap **Edit** beside the SKU to
+override it by hand; the app then leaves it alone forever.
 
 Two things live in this folder, built on the same data model so you can move
 between them:
@@ -11,7 +36,8 @@ between them:
 | Runs on | Phone, tablet, laptop — any browser | Excel, Google Sheets, Numbers |
 | Works offline | Yes, fully | Yes (desktop Excel) |
 | Ring up a sale mid-conversation | Two taps | Type a row — slow at a busy table |
-| Photos of each pen | Yes | Link only |
+| Photos of each pen | Yes — camera, drag or paste | Link only |
+| Auto SKUs | Yes, live as you type | Paste them in |
 | Warns below floor price | Yes, live in the cart | No |
 | Holds ("back Sunday for this") | Yes, reserves stock | No |
 | Pivot, chart, hand to an accountant | Export CSV | Native |
@@ -54,16 +80,61 @@ if you want it to update whenever the repo does.
 **Important:** each device holds its own separate copy of the data. The phone
 and the laptop do not sync.
 
+### Where the data actually lives
+
+**In the browser you opened it in, on that one machine.** Nothing is uploaded;
+there is no account and no server. Concretely, it is an IndexedDB database named
+`penshow`, owned by the page's origin.
+
+That has three consequences worth understanding before you enter hundreds of pens:
+
+- **The origin is part of the identity.** A file you double-clicked
+  (`file://…/index.html`) and the same app served over `http://localhost:8000`
+  or a Pages URL are *different origins* and therefore *different databases*.
+  Data entered in one does not appear in the other.
+- **The machine is part of the identity.** The Mac's copy and the phone's copy
+  are separate. There is no sync.
+- **Clearing browsing data deletes it**, as does "empty cache and hard reload"
+  in some browsers. Backups are the only protection.
+
+**So: no, you do not have to take the same Mac** — but you do have to take the
+data. Move it with **Data → Download backup** on the old machine and
+**Restore backup** on the new one. The backup is a single `.json` file
+containing every pen, sale, show and photo. Do that before the show as a
+rehearsal, not on the morning of.
+
+If you want the show itself to run off a phone or a second laptop, do the whole
+inventory build-out on the Mac first — that's the tedious part and a real
+keyboard is faster — then restore the backup onto the device you'll actually
+sell from.
+
 ### First run
 
 The five shows are pre-seeded. Then:
 
 1. **Shows** → open each one, set your table fee, travel, lodging, meals, and
    **verify the sales tax rate**.
-2. **Inventory** → add pens, or import a CSV (Data tab → *Download template*).
-3. **Sell** → tap items, pick payment, done.
+2. **Inventory** → **+ Item**, pick brand and type, type model, colour, cost,
+   price, qty. Hit **Save & add next** and it keeps the brand, type and prices
+   for the following pen — entering twenty colours of one model is twenty
+   colour-and-save cycles, nothing more. Or import a CSV
+   (Data tab → *Download template*).
+3. **Sell** → filter by brand, then type; or search. Tap, pick payment, done.
 4. **Reports** → per-show P&L and the end-of-day payment reconciliation.
 5. **Data** → *Download backup* every single night.
+
+### Photos, quickly
+
+Four ways in, because with a large catalogue this is the action you repeat most:
+
+- **Tap the square** next to any pen in the Inventory list — attaches straight
+  away, without opening the pen.
+- **📷 Camera** in the item sheet opens the rear camera directly on a phone.
+- **Drag** an image onto the photo panel (Mac).
+- **Paste** with ⌘V — screenshot a supplier's product shot and paste it in.
+
+Images are downscaled to about 60KB on the way in, so a few hundred photos stay
+comfortably inside the browser's storage budget.
 
 ---
 
@@ -145,8 +216,7 @@ Options, cheapest first:
 | **Trades** — extremely common at pen shows | "Trade" is a payment method, but the incoming pen is not added to inventory or costed | Record the trade-in value as the payment amount, then add the received pen as a new SKU with that value as its cost |
 | **Partial returns / refunds** | Only whole-sale void (restocks everything) | Void and re-ring the corrected sale |
 | **Consignment** — selling someone else's pens | Not modelled; their pens would show as your COGS and inflate your profit | Track separately, or set cost = the amount you owe the owner so margin shows only your cut |
-| **Vintage lots** — one price for a box of 20 pens | No lot-cost allocation | Divide the lot cost across the pens yourself, weighted by expected resale, before entering cost |
-| **Nib grinding / repair services** | "Service" category exists; no scheduling or turnaround tracking | Fine as a revenue line; use a notebook for the queue |
+| **Bulk lots** — one price for a box of pens | No lot-cost allocation | Divide the lot cost across the pens yourself before entering cost |
 | **Pre-show and dealer-day wholesale** | `Dealer price` field exists in the workbook; the app's cart takes any price | Override the price in the cart for dealer-to-dealer sales |
 | **Shipping post-show orders** | Not tracked | Add as a custom line at cost |
 | **Per-show allocation** — what you brought vs what is at home | Single quantity only | Keep home stock out of the app, or tag it |

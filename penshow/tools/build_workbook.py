@@ -81,10 +81,14 @@ ls = wb.active; ls.title = "Lists"
 ls["A1"] = "Validation lists"; ls["A1"].font = TITLE
 ls["A2"] = "Add your own values down each column; the dropdowns pick them up automatically."
 ls["A2"].font = SUB
+BRAND_LIST = ["Submarine", "Swiss Brand", "Lamborghini"]
+TYPE_LIST  = ["Fountain Pen", "Ballpoint", "Rollerball", "Mechanical Pencil",
+              "Pen Set", "Ink", "Accessory"]
+NIB_LIST   = ["EF", "F", "M", "B", "BB", "Stub", "Italic", "Music", "Flex", "n/a"]
 LIST_COLS = {
-    "A": ("Category", ["Pen", "Vintage Pen", "Nib", "Ink", "Paper", "Accessory", "Service"]),
-    "B": ("Nib", ["EF", "F", "M", "B", "BB", "Stub", "Italic", "Architect", "Music", "Flex", "Zoom", "Fude", "Needlepoint", "n/a"]),
-    "C": ("Condition", ["New", "New old stock", "Restored", "Used - excellent", "Used - good", "For parts"]),
+    "A": ("Brand", BRAND_LIST),
+    "B": ("Type", TYPE_LIST),
+    "C": ("Nib", NIB_LIST),
     "D": ("Payment", ["Cash", "Zelle", "Venmo", "Card", "Check", "Trade", "Split"]),
     "E": ("Yes/No", ["Yes", "No"]),
 }
@@ -142,51 +146,64 @@ SHOW_RANGE = f"Shows!$A${r0}:$A${r0+SHOW_ROWS-1}"
 
 # ============================================================== INVENTORY
 iv = wb.create_sheet("Inventory")
-INV_COLS = ["SKU", "Brand", "Model", "Variant / finish", "Nib", "Category", "Condition",
-            "Landed cost", "MSRP", "Show price", "Floor price", "Dealer price",
+INV_COLS = ["SKU", "Brand", "Type", "Model", "Colour / finish", "Nib",
+            "Landed cost", "MRP", "Show price", "Floor price", "Dealer price",
             "Qty brought", "Qty sold", "Qty left", "Margin @ price", "Margin @ floor",
-            "Profit / unit", "Cost tied up", "Retail value", "Case / tray", "Serial / lot",
+            "Profit / unit", "Cost tied up", "Retail value", "Case / tray",
             "Tags", "Photo link", "Notes"]
-header(iv, "Inventory — every SKU you put on the table",
+# Column letters are derived from the header list, so reordering a column can
+# never silently point a formula at the wrong one.
+IC = {name: get_column_letter(i) for i, name in enumerate(INV_COLS, start=1)}
+header(iv, "Inventory — every pen you put on the table",
        "Blue = you type it. Black = calculated, do not overwrite. Qty sold reads the Sales Log "
-       "automatically. Floor price is the lowest you will accept when someone haggles.",
-       INV_COLS, [16, 14, 18, 18, 8, 12, 14, 11, 10, 11, 11, 11, 9, 9, 9, 11, 11, 11, 11, 11,
-                  14, 14, 18, 26, 30], "D4")
+       "automatically. Floor price is the lowest you will accept when someone haggles. "
+       "Every pen is new, so there is no condition column.",
+       INV_COLS, [18, 14, 15, 18, 16, 8, 11, 10, 11, 11, 11, 9, 9, 9, 11, 11, 11, 11, 11,
+                  14, 18, 26, 30], "E4")
 
-i0 = HDR + 1
-i1 = i0 + INV_ROWS - 1
 for r in range(i0, i1 + 1):
-    iv.cell(row=r, column=14, value=f'=IF($A{r}="","",IFERROR(SUMIFS(\'Sales Log\'!$E${s0}:$E${s1},\'Sales Log\'!$C${s0}:$C${s1},$A{r}),0))')
-    iv.cell(row=r, column=15, value=f'=IF($A{r}="","",M{r}-N{r})')
-    iv.cell(row=r, column=16, value=f'=IF(J{r}>0,(J{r}-H{r})/J{r},"")')
-    iv.cell(row=r, column=17, value=f'=IF(K{r}>0,(K{r}-H{r})/K{r},"")')
-    iv.cell(row=r, column=18, value=f'=IF($A{r}="","",J{r}-H{r})')
-    iv.cell(row=r, column=19, value=f'=IF($A{r}="","",O{r}*H{r})')
-    iv.cell(row=r, column=20, value=f'=IF($A{r}="","",O{r}*J{r})')
+    iv[f"{IC['Qty sold']}{r}"]      = (f'=IF($A{r}="","",IFERROR(SUMIFS(\'Sales Log\'!$E${s0}:$E${s1},'
+                                       f'\'Sales Log\'!$C${s0}:$C${s1},$A{r}),0))')
+    iv[f"{IC['Qty left']}{r}"]      = f'=IF($A{r}="","",{IC["Qty brought"]}{r}-{IC["Qty sold"]}{r})'
+    iv[f"{IC['Margin @ price']}{r}"] = (f'=IF({IC["Show price"]}{r}>0,({IC["Show price"]}{r}-'
+                                        f'{IC["Landed cost"]}{r})/{IC["Show price"]}{r},"")')
+    iv[f"{IC['Margin @ floor']}{r}"] = (f'=IF({IC["Floor price"]}{r}>0,({IC["Floor price"]}{r}-'
+                                        f'{IC["Landed cost"]}{r})/{IC["Floor price"]}{r},"")')
+    iv[f"{IC['Profit / unit']}{r}"]  = f'=IF($A{r}="","",{IC["Show price"]}{r}-{IC["Landed cost"]}{r})'
+    iv[f"{IC['Cost tied up']}{r}"]   = f'=IF($A{r}="","",{IC["Qty left"]}{r}*{IC["Landed cost"]}{r})'
+    iv[f"{IC['Retail value']}{r}"]   = f'=IF($A{r}="","",{IC["Qty left"]}{r}*{IC["Show price"]}{r})'
 
-inv_fonts = [INPUT]*13 + [LINK] + [CALC]*7 + [INPUT]*5
-inv_fmts  = [None, None, None, None, None, None, None, MONEY, MONEY, MONEY, MONEY, MONEY,
-             INT, INT, INT, PCTF, PCTF, MONEY, MONEY, MONEY, None, None, None, None, None]
-style_grid(iv, i0, i1, 25, inv_fonts, inv_fmts)
+inv_fonts = [INPUT]*12 + [LINK] + [CALC]*6 + [INPUT]*4
+inv_fmts  = [None, None, None, None, None, None, MONEY, MONEY, MONEY, MONEY, MONEY,
+             INT, INT, INT, PCTF, PCTF, MONEY, MONEY, MONEY, None, None, None, None]
+style_grid(iv, i0, i1, len(INV_COLS), inv_fonts, inv_fmts)
 
 # example row, clearly marked
-ex = [("A", "SAI-PROGEAR-M"), ("B", "Sailor"), ("C", "Pro Gear Slim"), ("D", "Sky Blue"),
-      ("E", "M"), ("F", "Pen"), ("G", "New"), ("H", 168), ("I", 340), ("J", 340),
-      ("K", 290), ("L", 255), ("M", 3), ("U", "Case 1, tray B"),
-      ("W", "limited, japan"), ("Y", "EXAMPLE ROW — overwrite or delete it")]
-for col, val in ex:
-    iv[f"{col}{i0}"] = val
-for c in range(1, 26):
+for col, val in [("SKU", "SUB-FP-SHIKAR-M-BLK"), ("Brand", "Submarine"), ("Type", "Fountain Pen"),
+                 ("Model", "Shikari"), ("Colour / finish", "Black"), ("Nib", "M"),
+                 ("Landed cost", 6), ("MRP", 24), ("Show price", 18), ("Floor price", 14),
+                 ("Dealer price", 12), ("Qty brought", 10), ("Case / tray", "Case 1"),
+                 ("Notes", "EXAMPLE ROW — overwrite or delete it")]:
+    iv[f"{IC[col]}{i0}"] = val
+for c in range(1, len(INV_COLS) + 1):
     iv.cell(row=i0, column=c).fill = GOODFILL
 
-for col, listcol, n in (("F", "A", 7), ("E", "B", 14), ("G", "C", 6)):
+for col, listcol, n in (("Brand", "A", len(BRAND_LIST)), ("Type", "B", len(TYPE_LIST)),
+                        ("Nib", "C", len(NIB_LIST))):
     dv = DataValidation(type="list",
                         formula1=f"=Lists!${listcol}${HDR+1}:${listcol}${HDR+n}",
                         allow_blank=True)
     iv.add_data_validation(dv)
-    dv.add(f"{col}{i0}:{col}{i1}")
+    dv.add(f"{IC[col]}{i0}:{IC[col]}{i1}")
 
-iv.cell(row=i0, column=11).comment = Comment(
+iv[f"{IC['SKU']}{i0}"].comment = Comment(
+    "Nomenclature: BRAND-TYPE-MODEL[-NIB][-FINISH]\n"
+    "  SUB-FP-SHIKAR-M-BLK   Submarine fountain pen, Shikari, medium, black\n"
+    "  LAM-BP-AVENTA-CHR     Lamborghini ballpoint, Aventador, chrome\n"
+    "Brands: SUB / SWB / LAM. Types: FP BP RB MP ST IN AC.\n"
+    "The app generates these for you; leave blank on import and it will fill in.",
+    "Setup", width=340, height=140)
+iv[f"{IC['Floor price']}{i0}"].comment = Comment(
     "The lowest price you will take. Anything below this loses money once you "
     "count the table fee, so decide it now — not at 4pm on Sunday with a "
     "customer in front of you.", "Setup", width=300, height=100)
@@ -211,10 +228,11 @@ for r in range(s0, s1 + 1):
     blank = f'$C{r}=""'
     # name + cost pulled from Inventory
     sl.cell(row=r, column=4, value=(
-        f'=IF({blank},"",IFERROR(INDEX(Inventory!$B${i0}:$B${i1},MATCH($C{r},{INV_SKU},0))&" "&'
-        f'INDEX(Inventory!$C${i0}:$C${i1},MATCH($C{r},{INV_SKU},0)),"SKU not in Inventory"))'))
+        f'=IF({blank},"",IFERROR(INDEX(Inventory!${IC["Brand"]}${i0}:${IC["Brand"]}${i1},MATCH($C{r},{INV_SKU},0))&" "&'
+        f'INDEX(Inventory!${IC["Model"]}${i0}:${IC["Model"]}${i1},MATCH($C{r},{INV_SKU},0)),"SKU not in Inventory"))'))
     sl.cell(row=r, column=8, value=(
-        f'=IF({blank},"",IFERROR(INDEX(Inventory!$H${i0}:$H${i1},MATCH($C{r},{INV_SKU},0)),0))'))
+        f'=IF({blank},"",IFERROR(INDEX(Inventory!${IC["Landed cost"]}${i0}:${IC["Landed cost"]}${i1},'
+        f'MATCH($C{r},{INV_SKU},0)),0))'))
     # revenue net of the line discount
     sl.cell(row=r, column=10, value=f'=IF({blank},"",MAX(0,$E{r}*$F{r}-$G{r}))')
     # tax uses the show's rate
@@ -308,12 +326,15 @@ p = tr + 3
 db.cell(row=p, column=1, value="Inventory position").font = Font(name=F, size=12, bold=True)
 blocks = [
     ("SKUs listed",            f'=COUNTA(Inventory!$A${i0}:$A${i1})', INT),
-    ("Units brought",          f'=SUM(Inventory!$M${i0}:$M${i1})', INT),
-    ("Units sold",             f'=SUM(Inventory!$N${i0}:$N${i1})', INT),
-    ("Units left",             f'=SUM(Inventory!$O${i0}:$O${i1})', INT),
-    ("Cost still on the table", f'=SUMIF(Inventory!$O${i0}:$O${i1},">0",Inventory!$S${i0}:$S${i1})', MONEY0),
-    ("Retail still on the table", f'=SUMIF(Inventory!$O${i0}:$O${i1},">0",Inventory!$T${i0}:$T${i1})', MONEY0),
-    ("Sell-through rate",      f'=IFERROR(SUM(Inventory!$N${i0}:$N${i1})/SUM(Inventory!$M${i0}:$M${i1}),"")', PCTF),
+    ("Units brought",          f'=SUM(Inventory!${IC["Qty brought"]}${i0}:${IC["Qty brought"]}${i1})', INT),
+    ("Units sold",             f'=SUM(Inventory!${IC["Qty sold"]}${i0}:${IC["Qty sold"]}${i1})', INT),
+    ("Units left",             f'=SUM(Inventory!${IC["Qty left"]}${i0}:${IC["Qty left"]}${i1})', INT),
+    ("Cost still on the table", f'=SUMIF(Inventory!${IC["Qty left"]}${i0}:${IC["Qty left"]}${i1},">0",'
+                               f'Inventory!${IC["Cost tied up"]}${i0}:${IC["Cost tied up"]}${i1})', MONEY0),
+    ("Retail still on the table", f'=SUMIF(Inventory!${IC["Qty left"]}${i0}:${IC["Qty left"]}${i1},">0",'
+                                 f'Inventory!${IC["Retail value"]}${i0}:${IC["Retail value"]}${i1})', MONEY0),
+    ("Sell-through rate",      f'=IFERROR(SUM(Inventory!${IC["Qty sold"]}${i0}:${IC["Qty sold"]}${i1})/'
+                               f'SUM(Inventory!${IC["Qty brought"]}${i0}:${IC["Qty brought"]}${i1}),"")', PCTF),
 ]
 for i, (label, f_, fmt) in enumerate(blocks):
     rr = p + 1 + i
@@ -340,13 +361,13 @@ rm = wb.create_sheet("Start here")
 rm.column_dimensions["A"].width = 4
 rm.column_dimensions["B"].width = 112
 rm["B2"] = "Pen Show Tracker"; rm["B2"].font = Font(name=F, size=20, bold=True)
-rm["B3"] = "Inventory, pricing, sales and P&L for the 2026 US pen show circuit."
+rm["B3"] = "Submarine · Swiss Brand · Lamborghini — inventory, pricing, sales and P&L for the 2026 US pen show circuit."
 rm["B3"].font = SUB
 
 LINES = [
     ("h", "How to use it"),
     ("n", "1.  Shows tab — fill in your table fee, travel, lodging and meals for each show, and VERIFY the sales tax rate."),
-    ("n", "2.  Inventory tab — one row per SKU. Type cost, show price and floor price. Everything grey-black is calculated."),
+    ("n", "2.  Inventory tab — one row per pen. Pick brand and type from the dropdowns, then type cost, price and floor."),
     ("n", "3.  Sales Log tab — one row per item sold. Pick the SKU from the dropdown; name, cost and tax fill in for you."),
     ("n", "4.  Dashboard tab — per-show P&L and your end-of-day payment reconciliation. Nothing to type here."),
     ("", ""),
