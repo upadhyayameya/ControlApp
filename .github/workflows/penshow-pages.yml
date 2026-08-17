@@ -32,11 +32,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # enablement: true switches Pages on through the API the first time this
-      # runs, so there is no manual repository-settings step.
+      # Enabling Pages needs administration:write, which GITHUB_TOKEN does not
+      # get — so configure-pages cannot switch it on for us (it fails with an
+      # opaque "Resource not accessible by integration"). Check first and say
+      # plainly what the one-time manual step is.
+      - name: Require Pages to be enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/pages.json -w '%{http_code}' \
+                   -H "Authorization: Bearer $GH_TOKEN" \
+                   -H "Accept: application/vnd.github+json" \
+                   "https://api.github.com/repos/$REPO/pages") || code=000
+          if [ "$code" = "404" ]; then
+            echo "::error title=GitHub Pages is not enabled::Open https://github.com/$REPO/settings/pages, set Source to 'GitHub Actions', then re-run this workflow. One-time step, needs repo admin."
+            exit 1
+          fi
+          if [ "$code" != "200" ]; then
+            echo "::error::Could not read Pages settings (HTTP $code)."
+            cat /tmp/pages.json || true
+            exit 1
+          fi
+          echo "Pages is enabled."
+
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Check the app is self-contained before publishing
         run: |

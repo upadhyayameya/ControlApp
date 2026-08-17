@@ -28,13 +28,25 @@ workbook's tabs.
 It is a single HTML file with no build step, no server and no network calls.
 All data stays on the device, in IndexedDB.
 
-**On your phone (recommended)**
+**On your phone — via GitHub Pages (set up, one switch left to flip)**
 
-1. Host the `penshow/` folder anywhere static — GitHub Pages, Netlify Drop,
-   Cloudflare Pages. Any of them takes about two minutes and is free.
-2. Open the URL on your phone → Share → **Add to Home Screen**.
-3. It now launches full-screen like an app and works in airplane mode
-   (`sw.js` caches the shell on first load).
+`.github/workflows/penshow-pages.yml` publishes this folder as the site root on
+every push. It needs Pages turned on once first, because enabling Pages requires
+repository-admin rights that the workflow's token deliberately does not have:
+
+1. Open **<https://github.com/upadhyayameya/ControlApp/settings/pages>**
+2. Under **Source**, choose **GitHub Actions**.
+3. Re-run the *Deploy pen show tracker* workflow (Actions tab → the failed run →
+   *Re-run all jobs*), or just push anything to `penshow/`.
+
+The site then lives at **<https://upadhyayameya.github.io/ControlApp/>**.
+Open it on your phone → Share → **Add to Home Screen**. It launches full-screen
+and works in airplane mode, because `sw.js` caches the shell on first load.
+
+**Or skip GitHub entirely** — drag the `penshow/` folder onto
+<https://app.netlify.com/drop>. That gives you a URL in about thirty seconds with
+no settings to change. Fine for a single-person table; the Pages route is better
+if you want it to update whenever the repo does.
 
 **On a laptop** — double-click `index.html`. Works, but the service worker and
 "add to home screen" only activate over `http(s)`, not `file://`.
