@@ -20,11 +20,12 @@ sh["I4"], sh["J4"] = 450, 380
 
 # Inventory row 4 is the shipped example row: Submarine Shikari, cost 6, price 18,
 # floor 14, qty 10. Row 5 is a second pen added here.
-# Columns: A sku B brand C type D model E colour F nib G cost H mrp I price
-#          J floor K dealer L qty-brought M sold N left O margin P margin@floor
-#          Q profit R cost-tied S retail
-iv["A5"], iv["B5"], iv["C5"], iv["D5"] = "LAM-BP-AVENTA-CHR", "Lamborghini", "Ballpoint", "Aventador"
-iv["G5"], iv["I5"], iv["J5"], iv["L5"] = 18, 45, 36, 6
+# Columns: A sku B brand C type D material E model F colour G nib H cost I mrp
+#          J price K floor L dealer M qty-brought N sold O left P margin
+#          Q margin@floor R profit S cost-tied T retail
+iv["A5"], iv["B5"], iv["C5"], iv["E5"] = "LAM-BP-AVENTA-CHR", "Lamborghini", "Ballpoint", "Aventador"
+iv["D5"] = "Metal"
+iv["H5"], iv["J5"], iv["K5"], iv["M5"] = 18, 45, 36, 6
 
 SHOW = "SF Pen Show"
 # Sales: 1 Sailor @340 cash, 1 ink @25 cash, 2 Sailor @300 (discount 40 on line) card
@@ -88,15 +89,15 @@ check("r6 card fee 2.6% + 0.10", cell("Sales Log", "P6"), round((14 + 1.31) * 0.
 check("r6 profit after card fee", cell("Sales Log", "M6"), round(14 - 6 - (round((14 + 1.31) * 0.026 + 0.10, 2)), 2))
 
 print("--- Inventory rollups ---")
-check("Shikari qty sold (SUMIFS)", cell("Inventory", "M4"), 2)
-check("Shikari qty left", cell("Inventory", "N4"), 8)
-check("Shikari margin @ price", cell("Inventory", "O4"), (18 - 6) / 18)
-check("Shikari margin @ floor", cell("Inventory", "P4"), (14 - 6) / 14)
-check("Shikari profit per unit", cell("Inventory", "Q4"), 12)
-check("Shikari cost tied up", cell("Inventory", "R4"), 8 * 6)
-check("Shikari retail value", cell("Inventory", "S4"), 8 * 18)
-check("Aventador qty sold", cell("Inventory", "M5"), 2)
-check("Aventador qty left", cell("Inventory", "N5"), 4)
+check("Shikari qty sold (SUMIFS)", cell("Inventory", "N4"), 2)
+check("Shikari qty left", cell("Inventory", "O4"), 8)
+check("Shikari margin @ price", cell("Inventory", "P4"), (18 - 6) / 18)
+check("Shikari margin @ floor", cell("Inventory", "Q4"), (14 - 6) / 14)
+check("Shikari profit per unit", cell("Inventory", "R4"), 12)
+check("Shikari cost tied up", cell("Inventory", "S4"), 8 * 6)
+check("Shikari retail value", cell("Inventory", "T4"), 8 * 18)
+check("Aventador qty sold", cell("Inventory", "N5"), 2)
+check("Aventador qty left", cell("Inventory", "O5"), 4)
 
 print("--- Dashboard P&L ---")
 rev, cogs = 18 + 90 + 14, 6 + 36 + 6

@@ -19,10 +19,14 @@ LAM-BP-AVENTA-CHR      Lamborghini · ballpoint · Aventador · chrome
 | Part | Values |
 |---|---|
 | Brand | `SUB` Submarine · `SWB` Swiss Brand · `LAM` Lamborghini |
-| Type | `FP` fountain · `BP` ballpoint · `RB` rollerball · `MP` pencil · `ST` set · `IN` ink · `AC` accessory |
+| Type | `FP` fountain · `BP` ballpoint · `RB` rollerball · `ST` set · `IN` ink · `AC` accessory |
 | Model | first 6 letters/digits of the model name |
 | Nib | fountain pens and sets only — `EF F M B BB ST IT MU FX` |
 | Finish | `BLK BLU RED GRN WHT SLV GLD GRY ORG PUR YEL BRN PNK MRN CLR CHR MAT RGD GUN DEM`, else the first three letters |
+
+**Material** (Metal, Acrylic, Ebonite, Wooden, Resin) is recorded per pen and
+filterable, but is deliberately **not** part of the SKU — adding it would
+renumber pens that may already be labelled.
 
 It sorts by brand then type, reads off a label at a glance, and never collides —
 an identical spec gets a numeric tail (`…-BLK-2`). Tap **Edit** beside the SKU to
@@ -119,7 +123,9 @@ The five shows are pre-seeded. Then:
    for the following pen — entering twenty colours of one model is twenty
    colour-and-save cycles, nothing more. Or import a CSV
    (Data tab → *Download template*).
-3. **Sell** → filter by brand, then type; or search. Tap, pick payment, done.
+3. **Sell** → filter by brand, then material, then type — "Metal → Fountain Pen"
+   is two taps, and each row only offers combinations you actually have. Or
+   search, which ignores the filters on purpose. Tap, pick payment, done.
 4. **Reports** → per-show P&L and the end-of-day payment reconciliation.
 5. **Data** → *Download backup* every single night.
 
@@ -128,7 +134,9 @@ The five shows are pre-seeded. Then:
 Four ways in, because with a large catalogue this is the action you repeat most:
 
 - **Tap the square** next to any pen in the Inventory list — attaches straight
-  away, without opening the pen.
+  away, without opening the pen. Once it has a picture, the same tap enlarges
+  it, with replace and remove to hand.
+- **Tap ⤢ on a photo in the Sell tab** to enlarge it without adding to the cart.
 - **📷 Camera** in the item sheet opens the rear camera directly on a phone.
 - **Drag** an image onto the photo panel (Mac).
 - **Paste** with ⌘V — screenshot a supplier's product shot and paste it in.

@@ -82,13 +82,14 @@ ls["A1"] = "Validation lists"; ls["A1"].font = TITLE
 ls["A2"] = "Add your own values down each column; the dropdowns pick them up automatically."
 ls["A2"].font = SUB
 BRAND_LIST = ["Submarine", "Swiss Brand", "Lamborghini"]
-TYPE_LIST  = ["Fountain Pen", "Ballpoint", "Rollerball", "Mechanical Pencil",
-              "Pen Set", "Ink", "Accessory"]
+TYPE_LIST  = ["Fountain Pen", "Ballpoint", "Rollerball", "Pen Set", "Ink", "Accessory"]
+MAT_LIST   = ["Metal", "Acrylic", "Ebonite", "Wooden", "Resin"]
 NIB_LIST   = ["EF", "F", "M", "B", "BB", "Stub", "Italic", "Music", "Flex", "n/a"]
 LIST_COLS = {
     "A": ("Brand", BRAND_LIST),
     "B": ("Type", TYPE_LIST),
     "C": ("Nib", NIB_LIST),
+    "F": ("Material", MAT_LIST),
     "D": ("Payment", ["Cash", "Zelle", "Venmo", "Card", "Check", "Trade", "Split"]),
     "E": ("Yes/No", ["Yes", "No"]),
 }
@@ -146,7 +147,7 @@ SHOW_RANGE = f"Shows!$A${r0}:$A${r0+SHOW_ROWS-1}"
 
 # ============================================================== INVENTORY
 iv = wb.create_sheet("Inventory")
-INV_COLS = ["SKU", "Brand", "Type", "Model", "Colour / finish", "Nib",
+INV_COLS = ["SKU", "Brand", "Type", "Material", "Model", "Colour / finish", "Nib",
             "Landed cost", "MRP", "Show price", "Floor price", "Dealer price",
             "Qty brought", "Qty sold", "Qty left", "Margin @ price", "Margin @ floor",
             "Profit / unit", "Cost tied up", "Retail value", "Case / tray",
@@ -158,8 +159,8 @@ header(iv, "Inventory — every pen you put on the table",
        "Blue = you type it. Black = calculated, do not overwrite. Qty sold reads the Sales Log "
        "automatically. Floor price is the lowest you will accept when someone haggles. "
        "Every pen is new, so there is no condition column.",
-       INV_COLS, [18, 14, 15, 18, 16, 8, 11, 10, 11, 11, 11, 9, 9, 9, 11, 11, 11, 11, 11,
-                  14, 18, 26, 30], "E4")
+       INV_COLS, [18, 14, 15, 12, 18, 16, 8, 11, 10, 11, 11, 11, 9, 9, 9, 11, 11, 11, 11, 11,
+                  14, 18, 26, 30], "F4")
 
 for r in range(i0, i1 + 1):
     iv[f"{IC['Qty sold']}{r}"]      = (f'=IF($A{r}="","",IFERROR(SUMIFS(\'Sales Log\'!$E${s0}:$E${s1},'
@@ -173,14 +174,15 @@ for r in range(i0, i1 + 1):
     iv[f"{IC['Cost tied up']}{r}"]   = f'=IF($A{r}="","",{IC["Qty left"]}{r}*{IC["Landed cost"]}{r})'
     iv[f"{IC['Retail value']}{r}"]   = f'=IF($A{r}="","",{IC["Qty left"]}{r}*{IC["Show price"]}{r})'
 
-inv_fonts = [INPUT]*12 + [LINK] + [CALC]*6 + [INPUT]*4
-inv_fmts  = [None, None, None, None, None, None, MONEY, MONEY, MONEY, MONEY, MONEY,
+inv_fonts = [INPUT]*13 + [LINK] + [CALC]*6 + [INPUT]*4
+inv_fmts  = [None, None, None, None, None, None, None, MONEY, MONEY, MONEY, MONEY, MONEY,
              INT, INT, INT, PCTF, PCTF, MONEY, MONEY, MONEY, None, None, None, None]
 style_grid(iv, i0, i1, len(INV_COLS), inv_fonts, inv_fmts)
 
 # example row, clearly marked
 for col, val in [("SKU", "SUB-FP-SHIKAR-M-BLK"), ("Brand", "Submarine"), ("Type", "Fountain Pen"),
-                 ("Model", "Shikari"), ("Colour / finish", "Black"), ("Nib", "M"),
+                 ("Material", "Ebonite"), ("Model", "Shikari"),
+                 ("Colour / finish", "Black"), ("Nib", "M"),
                  ("Landed cost", 6), ("MRP", 24), ("Show price", 18), ("Floor price", 14),
                  ("Dealer price", 12), ("Qty brought", 10), ("Case / tray", "Case 1"),
                  ("Notes", "EXAMPLE ROW — overwrite or delete it")]:
@@ -189,7 +191,7 @@ for c in range(1, len(INV_COLS) + 1):
     iv.cell(row=i0, column=c).fill = GOODFILL
 
 for col, listcol, n in (("Brand", "A", len(BRAND_LIST)), ("Type", "B", len(TYPE_LIST)),
-                        ("Nib", "C", len(NIB_LIST))):
+                        ("Nib", "C", len(NIB_LIST)), ("Material", "F", len(MAT_LIST))):
     dv = DataValidation(type="list",
                         formula1=f"=Lists!${listcol}${HDR+1}:${listcol}${HDR+n}",
                         allow_blank=True)

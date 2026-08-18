@@ -1,15 +1,15 @@
-sku,brand,type,model,variant,nib,cost,msrp,price,floor,wholesale,qty,location,tags,notes
-,Submarine,Fountain Pen,Shikari,Black,M,6,24,18,14,12,10,Case 1,everyday,
-,Submarine,Fountain Pen,Shikari,Blue,F,6,24,18,14,12,8,Case 1,everyday,
-,Submarine,Fountain Pen,Ebonite,Maroon,M,14,48,38,30,26,4,Case 1,handmade,
-,Submarine,Ballpoint,Trendy,Silver,,3,12,9,7,6,20,Bin 1,,
-,Swiss Brand,Fountain Pen,Geneva,Chrome,M,22,70,55,44,38,5,Case 2,,
-,Swiss Brand,Fountain Pen,Geneva,Gun Metal,F,22,70,55,44,38,3,Case 2,,
-,Swiss Brand,Rollerball,Zurich,Black,,16,52,42,34,29,6,Case 2,,
-,Swiss Brand,Pen Set,Alpine Duo,Silver,M,40,130,105,85,74,3,Case 2,gift boxed,fountain + ballpoint
-,Lamborghini,Ballpoint,Aventador,Chrome,,18,60,45,36,32,6,Case 3,licensed,
-,Lamborghini,Ballpoint,Aventador,Yellow,,18,60,45,36,32,4,Case 3,licensed,best seller
-,Lamborghini,Rollerball,Huracan,Black,,24,78,62,50,44,4,Case 3,licensed,
-,Lamborghini,Pen Set,Corsa Set,Red,,55,180,145,118,102,2,Case 3,gift boxed,
-,Submarine,Ink,Bottled Ink,Blue,,2,8,6,5,4,24,Bin 2,,
-,Submarine,Accessory,Converter,,,1,5,4,3,3,30,Bin 2,,attach-rate item
+sku,brand,type,material,model,variant,nib,cost,msrp,price,floor,wholesale,qty,location,tags,notes
+,Submarine,Fountain Pen,Ebonite,Shikari,Black,M,6,24,18,14,12,10,Case 1,everyday,
+,Submarine,Fountain Pen,Ebonite,Shikari,Blue,F,6,24,18,14,12,8,Case 1,everyday,
+,Submarine,Fountain Pen,Acrylic,Marble,Maroon,M,14,48,38,30,26,4,Case 1,handmade,
+,Submarine,Ballpoint,Metal,Trendy,Silver,,3,12,9,7,6,20,Bin 1,,
+,Swiss Brand,Fountain Pen,Metal,Geneva,Chrome,M,22,70,55,44,38,5,Case 2,,
+,Swiss Brand,Fountain Pen,Metal,Geneva,Gun Metal,F,22,70,55,44,38,3,Case 2,,
+,Swiss Brand,Rollerball,Resin,Zurich,Black,,16,52,42,34,29,6,Case 2,,
+,Swiss Brand,Pen Set,Wooden,Alpine Duo,Walnut,M,40,130,105,85,74,3,Case 2,gift boxed,fountain + ballpoint
+,Lamborghini,Ballpoint,Metal,Aventador,Chrome,,18,60,45,36,32,6,Case 3,licensed,
+,Lamborghini,Ballpoint,Metal,Aventador,Yellow,,18,60,45,36,32,4,Case 3,licensed,best seller
+,Lamborghini,Rollerball,Metal,Huracan,Black,,24,78,62,50,44,4,Case 3,licensed,
+,Lamborghini,Pen Set,Acrylic,Corsa Set,Red,,55,180,145,118,102,2,Case 3,gift boxed,
+,Submarine,Ink,,Bottled Ink,Blue,,2,8,6,5,4,24,Bin 2,,
+,Submarine,Accessory,,Converter,,,1,5,4,3,3,30,Bin 2,,attach-rate item

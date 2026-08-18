@@ -292,6 +292,22 @@ textarea.input{min-height:70px;resize:vertical}
 .footwrap{width:100%}
 .toast.act{cursor:pointer;pointer-events:auto}
 
+/* tap a picture to see it full size */
+.sku .zoom{position:absolute;left:6px;bottom:26px;width:28px;height:28px;border-radius:8px;
+  background:rgba(20,22,28,.62);color:#fff;font-size:14px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;z-index:2}
+.lightbox{position:fixed;inset:0;z-index:100;background:rgba(6,8,12,.94);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;padding:16px;
+  padding-top:calc(16px + env(safe-area-inset-top))}
+.lightbox img{max-width:100%;max-height:72vh;object-fit:contain;border-radius:10px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lbcap{margin-top:14px;text-align:center;color:#f4f5f8;display:flex;flex-direction:column;gap:3px}
+.lbcap b{font-size:16px}
+.lbcap span{font-size:12.5px;opacity:.72}
+.lbx{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;width:40px;height:40px;
+  border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:18px;cursor:pointer}
+.lbact{margin-top:16px;display:flex;gap:8px}
+
 /* -------------------------------------------------------------- sheets */
 .scrim{position:fixed;inset:0;background:rgba(6,8,12,.5);z-index:60;display:none;
   backdrop-filter:blur(2px)}
@@ -531,14 +547,16 @@ const BRANDS = [
   { name: "Lamborghini", code: "LAM" },
 ];
 const TYPES = [
-  { name: "Fountain Pen",      code: "FP", nib: true },
-  { name: "Ballpoint",         code: "BP" },
-  { name: "Rollerball",        code: "RB" },
-  { name: "Mechanical Pencil", code: "MP" },
-  { name: "Pen Set",           code: "ST", nib: true },
-  { name: "Ink",               code: "IN" },
-  { name: "Accessory",         code: "AC" },
+  { name: "Fountain Pen", code: "FP", nib: true },
+  { name: "Ballpoint",    code: "BP" },
+  { name: "Rollerball",   code: "RB" },
+  { name: "Pen Set",      code: "ST", nib: true },
+  { name: "Ink",          code: "IN" },
+  { name: "Accessory",    code: "AC" },
 ];
+/* What the barrel is made of. Deliberately kept out of the SKU: adding it
+   would renumber pens that may already be labelled. */
+const MATERIALS = ["Metal", "Acrylic", "Ebonite", "Wooden", "Resin"];
 const NIBS = ["", "EF", "F", "M", "B", "BB", "Stub", "Italic", "Music", "Flex"];
 const NIB_CODE = { EF: "EF", F: "F", M: "M", B: "B", BB: "BB",
                    Stub: "ST", Italic: "IT", Music: "MU", Flex: "FX" };
@@ -594,7 +612,7 @@ const blankShow = o => ({
 
 const blankItem = () => ({
   id: uid("it_"), sku: "", skuLocked: false,
-  brand: BRANDS[0].name, model: "", variant: "", nib: "", type: TYPES[0].name,
+  brand: BRANDS[0].name, model: "", variant: "", nib: "", type: TYPES[0].name, material: "",
   cost: 0, msrp: 0, price: 0, floor: 0, wholesale: 0, qty: 1,
   location: "", tags: "", notes: "",
   hasPhoto: false, taxable: true, archived: false, created: Date.now()
@@ -650,6 +668,7 @@ function migrate() {
   let touched = false;
   for (const i of state.items) {
     if (!i.type) { i.type = CAT_TO_TYPE[i.category] || TYPES[0].name; touched = true; }
+    if (i.material === undefined) { i.material = ""; touched = true; }
     if ("condition" in i) { delete i.condition; touched = true; }
     if ("category" in i) { delete i.category; touched = true; }
     if ("serial" in i) { delete i.serial; touched = true; }
@@ -674,8 +693,9 @@ const activeShow = () => showById(state.settings.activeShow) || state.shows[0] |
 const liveItems = () => state.items.filter(i => !i.archived);
 
 const itemLabel = i => [i.brand, i.model].filter(Boolean).join(" ") || i.sku || "Untitled";
-const itemSub   = i => [i.type, i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
-const typeOf    = i => TYPES.find(t => t.name === i.type) || TYPES[0];
+const itemSub   = i => [i.material, i.type, i.variant, i.nib && i.nib + " nib"].filter(Boolean).join(" · ");
+const typeOf    = i => TYPES.find(t => t.name === i.type)
+  || { name: i.type || "Item", code: (i.type || "??").slice(0, 2).toUpperCase() };
 /* The single source of truth for "does this pen have a picture". */
 const photoOf   = i => (i && photos.get(i.id)) || null;
 
@@ -755,6 +775,38 @@ function applyTheme() {
   else document.documentElement.setAttribute("data-theme", t);
 }
 
+/* Tap a picture to see it full size. `manage` adds replace/remove, which
+   belongs in Inventory but not behind the table mid-sale. */
+function openLightbox(itemId, manage) {
+  const url = photos.get(itemId); if (!url) return;
+  const it = itemById(itemId) || {};
+  const box = document.createElement("div");
+  box.className = "lightbox";
+  box.innerHTML = `
+    <img src="${url}" alt="">
+    <div class="lbcap">
+      <b>${esc(itemLabel(it))}</b>
+      <span>${esc(itemSub(it))}${it.sku ? " · " + esc(it.sku) : ""}</span>
+    </div>
+    <button class="lbx" data-close>✕</button>
+    ${manage ? `<div class="lbact">
+      <button class="btn sm" data-replace>Replace photo</button>
+      <button class="btn sm danger" data-remove>Remove</button>
+    </div>` : ""}`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.onclick = e => { if (e.target === box || e.target.hasAttribute("data-close")) close(); };
+  const rep = box.querySelector("[data-replace]");
+  if (rep) rep.onclick = () => { close(); grabPhoto(itemId, () => renderAll(), false); };
+  const rem = box.querySelector("[data-remove]");
+  if (rem) rem.onclick = () => {
+    if (!confirm("Remove this photo?")) return;
+    photos.delete(itemId); DB.del("photos", itemId);
+    const t = itemById(itemId); if (t) { t.hasPhoto = false; save(true); }
+    close(); renderAll();
+  };
+}
+
 /* --------------------------------------------------------------- sheets */
 let sheetOnClose = null;
 let sheetPaste = null;          // clipboard-image handler, live only while a sheet is open
@@ -793,6 +845,7 @@ function renderAll() {
    SELL
    ======================================================================= */
 let sellFilter = "All";    // brand
+let sellMat = "All";       // barrel material
 let sellType = "All";      // pen type
 
 /* Finding one pen among hundreds, fast: narrow by brand, then by type, and
@@ -806,34 +859,49 @@ function renderSell() {
   const present = new Set(all.map(i => i.brand));
   const brands = ["All", ...BRANDS.map(b => b.name).filter(b => present.has(b)),
                   ...[...present].filter(b => !BRANDS.some(x => x.name === b))];
+
+  /* Each row narrows what the next one offers, so Metal → Fountain Pen is two
+     taps and never shows a combination you do not actually have. */
   const inBrand = i => sellFilter === "All" || i.brand === sellFilter;
-  const typesPresent = new Set(all.filter(inBrand).map(i => i.type));
-  const types = ["All", ...TYPES.map(t => t.name).filter(t => typesPresent.has(t))];
+  const matsPresent = new Set(all.filter(inBrand).map(i => i.material).filter(Boolean));
+  const mats = matsPresent.size
+    ? ["All", ...MATERIALS.filter(m => matsPresent.has(m)),
+       ...[...matsPresent].filter(m => !MATERIALS.includes(m))] : [];
+  if (!mats.includes(sellMat)) sellMat = "All";
+
+  const inMat = i => sellMat === "All" || i.material === sellMat;
+  const typesPresent = new Set(all.filter(i => inBrand(i) && inMat(i)).map(i => i.type));
+  const typeOrder = [...TYPES.map(t => t.name), ...[...typesPresent].filter(t => !TYPES.some(x => x.name === t))];
+  const types = ["All", ...typeOrder.filter(t => typesPresent.has(t))];
   if (!types.includes(sellType)) sellType = "All";
 
+  const row = (items, key, cls) => items.map(v =>
+    `<button class="chip ${cls} ${v === (key === "cat" ? sellFilter : key === "mat" ? sellMat : sellType) ? "on" : ""}"
+       data-${key}="${esc(v)}">${esc(v === "All" ? (key === "mat" ? "All materials" : key === "type" ? "All types" : "All") : v)}</button>`).join("");
+
   $("#sellFilters").innerHTML =
-    brands.map(c => `<button class="chip ${c === sellFilter ? "on" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("")
-    + (types.length > 2
-        ? `<span class="filterbreak"></span>` + types.map(t =>
-            `<button class="chip sub ${t === sellType ? "on" : ""}" data-type="${esc(t)}">${esc(
-              t === "All" ? "All types" : t)}</button>`).join("")
-        : "");
+    row(brands, "cat", "")
+    + (mats.length > 2 ? `<span class="filterbreak"></span>` + row(mats, "mat", "sub") : "")
+    + (types.length > 2 ? `<span class="filterbreak"></span>` + row(types, "type", "sub") : "");
   $$("#sellFilters [data-cat]").forEach(b => b.onclick = () => { sellFilter = b.dataset.cat; renderSell(); });
+  $$("#sellFilters [data-mat]").forEach(b => b.onclick = () => { sellMat = b.dataset.mat; renderSell(); });
   $$("#sellFilters [data-type]").forEach(b => b.onclick = () => { sellType = b.dataset.type; renderSell(); });
 
   /* A search looks at the whole catalogue. If a filter left over from the last
      customer could hide the pen you just typed the name of, you would conclude
      you had not brought it — the one wrong answer this screen must never give. */
   const list = all.filter(i => {
-    if (q) return [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.tags, i.location]
+    if (q) return [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.material, i.tags, i.location]
       .join(" ").toLowerCase().includes(q);
-    return inBrand(i) && (sellType === "All" || i.type === sellType);
+    return inBrand(i) && inMat(i) && (sellType === "All" || i.type === sellType);
   }).sort((a, b) => itemLabel(a).localeCompare(itemLabel(b))
                  || (a.variant || "").localeCompare(b.variant || ""));
 
+  const crumbs = [sellFilter, sellMat, sellType].filter(v => v && v !== "All").join(" · ");
   $("#sellCount").textContent = q
     ? `${list.length} match “${esc(q)}” · searching all ${all.length}`
-    : (list.length === all.length ? `${all.length} pens` : `${list.length} of ${all.length}`);
+    : (crumbs ? `${crumbs} — ${list.length} of ${all.length}`
+              : `${all.length} pen${all.length === 1 ? "" : "s"}`);
 
   const g = $("#sellGrid");
   const view = state.settings.sellView || "grid";
@@ -873,6 +941,11 @@ function renderSell() {
         </span></button>`;
     }).join("");
     $$("#sellGrid .skurow").forEach(b => b.onclick = () => addToCart(b.dataset.id));
+    $$("#sellGrid .rthumb").forEach(t => t.onclick = e => {
+      const id = t.closest(".skurow").dataset.id;
+      if (!photos.get(id)) return;               // no picture: fall through and sell
+      e.stopPropagation(); openLightbox(id, false);
+    });
     return;
   }
 
@@ -885,6 +958,7 @@ function renderSell() {
     return `<button class="sku" data-id="${i.id}">
       <div class="ph">${img}<span class="qty ${cls}">${a}</span>
         <span class="typetag">${esc(typeOf(i).code)}</span>
+        ${photoOf(i) ? `<span class="zoom" data-zoom="${i.id}">⤢</span>` : ""}
         ${i.location ? `<span class="loc">📍 ${esc(i.location)}</span>` : ""}</div>
       <div class="meta">
         <span class="br">${esc(i.brand)}</span>
@@ -895,6 +969,9 @@ function renderSell() {
       </div></button>`;
   }).join("");
   $$("#sellGrid .sku").forEach(b => b.onclick = () => addToCart(b.dataset.id));
+  $$("#sellGrid [data-zoom]").forEach(z => z.onclick = e => {
+    e.stopPropagation(); openLightbox(z.dataset.zoom, false);
+  });
 }
 $("#sellSearch").oninput = () => renderSell();
 $$("#sellView button").forEach(b => b.onclick = () => {
@@ -1278,7 +1355,7 @@ function renderInv() {
   $("#invStatCost").textContent   = money(cost) + " at cost";
   $("#invStatRetail").textContent = money(retail) + " at retail";
 
-  const list = items.filter(i => !q || [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.tags, i.location]
+  const list = items.filter(i => !q || [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.material, i.tags, i.location]
     .join(" ").toLowerCase().includes(q))
     .sort((a, b) => (a.brand || "").localeCompare(b.brand || "") || itemLabel(a).localeCompare(itemLabel(b)));
 
@@ -1306,7 +1383,10 @@ function renderInv() {
   $$("#invList [data-edit]").forEach(el => el.onclick = () => editItem(el.dataset.edit));
   // Tapping the square attaches a photo straight away — no need to open the item.
   $$("#invList [data-photo]").forEach(el => el.onclick = e => {
-    e.stopPropagation(); grabPhoto(el.dataset.photo, () => renderInv());
+    e.stopPropagation();
+    const id = el.dataset.photo;
+    if (photos.get(id)) openLightbox(id, true);          // look at it
+    else grabPhoto(id, () => renderInv());               // or add one
   });
 }
 $("#invSearch").oninput = () => renderInv();
@@ -1351,6 +1431,12 @@ function editItem(id, seed) {
         <input class="input" data-f="model" value="${esc(it.model)}" placeholder="Shikari" autocomplete="off"></div>
       <div class="field"><label>Colour / finish</label>
         <input class="input" data-f="variant" value="${esc(it.variant)}" placeholder="Black" autocomplete="off"></div>
+    </div>
+
+    <label class="lbl">Material</label>
+    <div class="chiprow wrap" id="matRow">
+      ${["", ...MATERIALS].map(m => `<button class="chip lg ${(it.material || "") === m ? "on" : ""}"
+         data-mat="${esc(m)}">${esc(m || "—")}</button>`).join("")}
     </div>
 
     <div id="nibWrap" style="margin-top:12px;${typeOf(it).nib ? "" : "display:none"}">
@@ -1458,6 +1544,11 @@ function editItem(id, seed) {
       if (!typeOf(it).nib) it.nib = "";
       hint();
     });
+    $$("#matRow [data-mat]").forEach(b => b.onclick = () => {
+      it.material = b.dataset.mat;
+      $$("#matRow .chip").forEach(x => x.classList.toggle("on", x === b));
+      hint();
+    });
     $$("#nibRow [data-nib]").forEach(b => b.onclick = () => {
       it.nib = b.dataset.nib;
       $$("#nibRow .chip").forEach(x => x.classList.toggle("on", x === b));
@@ -1494,7 +1585,10 @@ function editItem(id, seed) {
     };
     $("#btnCam").onclick = () => grabPhoto(it, redrawPhoto, true);
     $("#btnLib").onclick = () => grabPhoto(it, redrawPhoto, false);
-    $("#photoBox").onclick = () => grabPhoto(it, redrawPhoto, false);
+    $("#photoBox").onclick = () => {
+      if (photos.get(it.id)) openLightbox(it.id, false);
+      else grabPhoto(it, redrawPhoto, false);
+    };
     const rm = $("#photoRm"); if (rm) rm.onclick = removePhoto;
 
     // Drag an image onto the sheet, or paste one from the clipboard.
@@ -1528,16 +1622,16 @@ function editItem(id, seed) {
       renderAll(); toast("Saved — next one");
       // Carry brand, type and prices forward: consecutive pens are usually
       // the same model in a different colour.
-      editItem(null, { brand: it.brand, type: it.type, nib: it.nib, model: it.model,
-                       cost: it.cost, price: it.price, floor: it.floor,
+      editItem(null, { brand: it.brand, type: it.type, material: it.material, nib: it.nib,
+                       model: it.model, cost: it.cost, price: it.price, floor: it.floor,
                        msrp: it.msrp, wholesale: it.wholesale, location: it.location });
     };
 
     const dup = $("#itemDup"); if (dup) dup.onclick = () => {
       read();
-      editItem(null, { brand: it.brand, type: it.type, nib: it.nib, model: it.model,
-                       cost: it.cost, price: it.price, floor: it.floor, msrp: it.msrp,
-                       wholesale: it.wholesale, location: it.location, tags: it.tags });
+      editItem(null, { brand: it.brand, type: it.type, material: it.material, nib: it.nib,
+                       model: it.model, cost: it.cost, price: it.price, floor: it.floor,
+                       msrp: it.msrp, wholesale: it.wholesale, location: it.location, tags: it.tags });
     };
 
     const del = $("#itemDel"); if (del) del.onclick = () => {
@@ -1937,8 +2031,8 @@ function renderData() {
   $("#impCsv").onchange = importInventoryCSV;
   $("#tmplCsv").onclick = () => download("penshow-inventory-template.csv",
     CSV_COLS.join(",") + "\n" +
-    ",Submarine,Fountain Pen,Shikari,Black,M,6,24,18,14,12,10,Case 1,,\n" +
-    ",Lamborghini,Ballpoint,Aventador,Chrome,,18,60,45,36,32,4,Case 2,,\n");
+    ",Submarine,Fountain Pen,Ebonite,Shikari,Black,M,6,24,18,14,12,10,Case 1,,\n" +
+    ",Lamborghini,Ballpoint,Metal,Aventador,Chrome,,18,60,45,36,32,4,Case 2,,\n");
 
   $("#clrSales").onclick = () => {
     if (!confirm("Delete every recorded sale? Inventory quantities are NOT restored.")) return;
@@ -1969,7 +2063,7 @@ const q = v => {
 };
 const toCSV = rows => rows.map(r => r.map(q).join(",")).join("\n");
 
-const CSV_COLS = ["sku", "brand", "type", "model", "variant", "nib",
+const CSV_COLS = ["sku", "brand", "type", "material", "model", "variant", "nib",
   "cost", "msrp", "price", "floor", "wholesale", "qty", "location", "tags", "notes"];
 
 function exportInventoryCSV() {
@@ -2050,6 +2144,14 @@ function matchType(v) {
   return t ? t.name : "";
 }
 
+/* "metal", "Metal", "MET" all mean the same thing in a hand-filled sheet. */
+function matchMaterial(v) {
+  const t = String(v || "").trim().toLowerCase();
+  if (!t) return "";
+  return MATERIALS.find(m => m.toLowerCase() === t)
+      || MATERIALS.find(m => m.toLowerCase().startsWith(t)) || "";
+}
+
 function importInventoryCSV(e) {
   const f = e.target.files[0]; if (!f) return;
   const fr = new FileReader();
@@ -2071,6 +2173,7 @@ function importInventoryCSV(e) {
         sku: sku || it.sku, brand: brand || it.brand, model: model || it.model,
         variant: get("variant") || it.variant, nib: get("nib") || it.nib,
         type: matchType(get("type")) || it.type,
+        material: matchMaterial(get("material")) || it.material,
         location: get("location") || it.location,
         tags: get("tags") || it.tags, notes: get("notes") || it.notes, archived: false
       });
