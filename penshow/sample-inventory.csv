@@ -13,3 +13,6 @@ sku,brand,type,material,model,variant,nib,cost,msrp,price,floor,wholesale,qty,lo
 ,Lamborghini,Pen Set,Acrylic,Corsa Set,Red,,55,180,145,118,102,2,Case 3,gift boxed,
 ,Submarine,Ink,,Bottled Ink,Blue,,2,8,6,5,4,24,Bin 2,,
 ,Submarine,Accessory,,Converter,,,1,5,4,3,3,30,Bin 2,,attach-rate item
+,NASA,Ballpoint,Metal,Artemis,Silver,,14,46,36,29,25,8,Case 4,licensed,
+,NASA,Ballpoint,Metal,Artemis,Black,,14,46,36,29,25,6,Case 4,licensed,
+,NASA,Fountain Pen,Acrylic,Orbiter,Blue,M,26,84,66,53,46,4,Case 4,licensed,

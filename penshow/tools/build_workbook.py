@@ -81,7 +81,7 @@ ls = wb.active; ls.title = "Lists"
 ls["A1"] = "Validation lists"; ls["A1"].font = TITLE
 ls["A2"] = "Add your own values down each column; the dropdowns pick them up automatically."
 ls["A2"].font = SUB
-BRAND_LIST = ["Submarine", "Swiss Brand", "Lamborghini"]
+BRAND_LIST = ["Submarine", "Swiss Brand", "Lamborghini", "NASA"]
 TYPE_LIST  = ["Fountain Pen", "Ballpoint", "Rollerball", "Pen Set", "Ink", "Accessory"]
 MAT_LIST   = ["Metal", "Acrylic", "Ebonite", "Wooden", "Resin"]
 NIB_LIST   = ["EF", "F", "M", "B", "BB", "Stub", "Italic", "Music", "Flex", "n/a"]

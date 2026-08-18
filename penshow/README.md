@@ -1,8 +1,8 @@
 # Pen Show Tracker
 
 Inventory, pricing, point of sale and P&L for a five-show US pen show season —
-SF, Orlando, Dallas, Denver and Ohio — carrying **Submarine**, **Swiss Brand**
-and **Lamborghini**.
+SF, Orlando, Dallas, Denver and Ohio — carrying **Submarine**, **Swiss Brand**,
+**Lamborghini** and **NASA**.
 
 ## SKU nomenclature
 
@@ -18,7 +18,7 @@ LAM-BP-AVENTA-CHR      Lamborghini · ballpoint · Aventador · chrome
 
 | Part | Values |
 |---|---|
-| Brand | `SUB` Submarine · `SWB` Swiss Brand · `LAM` Lamborghini |
+| Brand | `SUB` Submarine · `SWB` Swiss Brand · `LAM` Lamborghini · `NAS` NASA |
 | Type | `FP` fountain · `BP` ballpoint · `RB` rollerball · `ST` set · `IN` ink · `AC` accessory |
 | Model | first 6 letters/digits of the model name |
 | Nib | fountain pens and sets only — `EF F M B BB ST IT MU FX` |
@@ -123,9 +123,11 @@ The five shows are pre-seeded. Then:
    for the following pen — entering twenty colours of one model is twenty
    colour-and-save cycles, nothing more. Or import a CSV
    (Data tab → *Download template*).
-3. **Sell** → filter by brand, then material, then type — "Metal → Fountain Pen"
-   is two taps, and each row only offers combinations you actually have. Or
-   search, which ignores the filters on purpose. Tap, pick payment, done.
+3. **Sell** → filter by brand, then material, then type, then colour. Each row
+   only offers combinations you actually have, and a row with a single option
+   is hidden because filtering by it would change nothing. A breadcrumb names
+   the active combination. Search ignores every filter on purpose. Tap, pick
+   payment, done.
 4. **Reports** → per-show P&L and the end-of-day payment reconciliation.
 5. **Data** → *Download backup* every single night.
 
