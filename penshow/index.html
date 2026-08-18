@@ -407,6 +407,7 @@ table.t tr:last-child td{border-bottom:0}
       <span class="chip" id="invStatCost">—</span>
       <span class="chip" id="invStatRetail">—</span>
     </div>
+    <div id="invFilters" style="margin-bottom:6px"></div>
     <div class="stack" id="invList"></div>
   </section>
 
@@ -850,10 +851,67 @@ function renderAll() {
 /* =======================================================================
    SELL
    ======================================================================= */
-let sellFilter = "All";    // brand
-let sellMat = "All";       // barrel material
-let sellType = "All";      // pen type
-let sellColor = "All";     // colour / finish
+/* Cascading brand → material → type → colour. Sell and Inventory each keep
+   their own selections but share one implementation, so the two screens
+   cannot drift apart. */
+const filterSel = {
+  sell: { cat: "All", mat: "All", type: "All", col: "All" },
+  inv:  { cat: "All", mat: "All", type: "All", col: "All" },
+};
+const ALL_LABEL = { cat: "All brands", mat: "All materials",
+                    type: "All types", col: "All colours" };
+const filterCrumbs = sel =>
+  [sel.cat, sel.mat, sel.type, sel.col].filter(v => v && v !== "All").join(" · ");
+const searchMatch = (i, q) =>
+  [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.material, i.tags, i.location]
+    .join(" ").toLowerCase().includes(q);
+
+/* Renders the rows into `box` and returns a predicate for the current picks.
+   Each row only offers values that exist given the rows above it, and a row
+   with a single real option is left out — filtering by it would change
+   nothing and only costs screen height on a phone. */
+function renderFilterRows(all, sel, box, rerender) {
+  const present = new Set(all.map(i => i.brand));
+  const brands = ["All", ...BRANDS.map(b => b.name).filter(b => present.has(b)),
+                  ...[...present].filter(b => !BRANDS.some(x => x.name === b))];
+
+  const inBrand = i => sel.cat === "All" || i.brand === sel.cat;
+  const matsPresent = new Set(all.filter(inBrand).map(i => i.material).filter(Boolean));
+  const mats = matsPresent.size
+    ? ["All", ...MATERIALS.filter(m => matsPresent.has(m)),
+       ...[...matsPresent].filter(m => !MATERIALS.includes(m))] : [];
+  if (!mats.includes(sel.mat)) sel.mat = "All";
+
+  const inMat = i => sel.mat === "All" || i.material === sel.mat;
+  const typesPresent = new Set(all.filter(i => inBrand(i) && inMat(i)).map(i => i.type));
+  const typeOrder = [...TYPES.map(t => t.name),
+                     ...[...typesPresent].filter(t => !TYPES.some(x => x.name === t))];
+  const types = ["All", ...typeOrder.filter(t => typesPresent.has(t))];
+  if (!types.includes(sel.type)) sel.type = "All";
+
+  const inType = i => sel.type === "All" || i.type === sel.type;
+  const colsPresent = new Set(all.filter(i => inBrand(i) && inMat(i) && inType(i))
+                                 .map(i => i.variant).filter(Boolean));
+  const cols = colsPresent.size
+    ? ["All", ...[...colsPresent].sort((a, b) => a.localeCompare(b))] : [];
+  if (!cols.includes(sel.col)) sel.col = "All";
+
+  const frow = (items, key) => items.length > 2
+    ? `<div class="frow">${items.map(v =>
+        `<button class="chip ${key === "cat" ? "" : "sub"} ${v === sel[key] ? "on" : ""}"
+           data-${key}="${esc(v)}">${esc(v === "All" ? ALL_LABEL[key] : v)}</button>`).join("")}</div>`
+    : "";
+
+  box.innerHTML = frow(brands, "cat") + frow(mats, "mat")
+                + frow(types, "type") + frow(cols, "col");
+  for (const key of ["cat", "mat", "type", "col"])
+    $$(`[data-${key}]`, box).forEach(b => b.onclick = () => {
+      sel[key] = b.dataset[key]; rerender();
+    });
+
+  return i => inBrand(i) && inMat(i) && inType(i)
+           && (sel.col === "All" || i.variant === sel.col);
+}
 
 /* Finding one pen among hundreds, fast: narrow by brand, then by type, and
    read the case number off the card so you can physically pick it up. Two
@@ -863,61 +921,17 @@ function renderSell() {
   const all = liveItems();
   renderOpenStrip();
 
-  /* Each row narrows what the next one offers, so no combination is offered
-     that has no pens behind it. Colour comes last because it is the most
-     granular, and it is free text so the values are whatever was typed. */
-  const present = new Set(all.map(i => i.brand));
-  const brands = ["All", ...BRANDS.map(b => b.name).filter(b => present.has(b)),
-                  ...[...present].filter(b => !BRANDS.some(x => x.name === b))];
-
-  const inBrand = i => sellFilter === "All" || i.brand === sellFilter;
-  const matsPresent = new Set(all.filter(inBrand).map(i => i.material).filter(Boolean));
-  const mats = matsPresent.size
-    ? ["All", ...MATERIALS.filter(m => matsPresent.has(m)),
-       ...[...matsPresent].filter(m => !MATERIALS.includes(m))] : [];
-  if (!mats.includes(sellMat)) sellMat = "All";
-
-  const inMat = i => sellMat === "All" || i.material === sellMat;
-  const typesPresent = new Set(all.filter(i => inBrand(i) && inMat(i)).map(i => i.type));
-  const typeOrder = [...TYPES.map(t => t.name),
-                     ...[...typesPresent].filter(t => !TYPES.some(x => x.name === t))];
-  const types = ["All", ...typeOrder.filter(t => typesPresent.has(t))];
-  if (!types.includes(sellType)) sellType = "All";
-
-  const inType = i => sellType === "All" || i.type === sellType;
-  const colsPresent = new Set(all.filter(i => inBrand(i) && inMat(i) && inType(i))
-                                 .map(i => i.variant).filter(Boolean));
-  const cols = colsPresent.size
-    ? ["All", ...[...colsPresent].sort((a, b) => a.localeCompare(b))] : [];
-  if (!cols.includes(sellColor)) sellColor = "All";
-
-  const sel = { cat: sellFilter, mat: sellMat, type: sellType, col: sellColor };
-  const allLabel = { cat: "All brands", mat: "All materials", type: "All types", col: "All colours" };
-  const frow = (items, key) => items.length > 2
-    ? `<div class="frow">${items.map(v =>
-        `<button class="chip ${key === "cat" ? "" : "sub"} ${v === sel[key] ? "on" : ""}"
-           data-${key}="${esc(v)}">${esc(v === "All" ? allLabel[key] : v)}</button>`).join("")}</div>`
-    : "";
-
-  $("#sellFilters").innerHTML =
-    frow(brands, "cat") + frow(mats, "mat") + frow(types, "type") + frow(cols, "col");
-  $$("#sellFilters [data-cat]").forEach(b => b.onclick = () => { sellFilter = b.dataset.cat; renderSell(); });
-  $$("#sellFilters [data-mat]").forEach(b => b.onclick = () => { sellMat = b.dataset.mat; renderSell(); });
-  $$("#sellFilters [data-type]").forEach(b => b.onclick = () => { sellType = b.dataset.type; renderSell(); });
-  $$("#sellFilters [data-col]").forEach(b => b.onclick = () => { sellColor = b.dataset.col; renderSell(); });
+  const sel = filterSel.sell;
+  const match = renderFilterRows(all, sel, $("#sellFilters"), renderSell);
 
   /* A search looks at the whole catalogue. If a filter left over from the last
      customer could hide the pen you just typed the name of, you would conclude
      you had not brought it — the one wrong answer this screen must never give. */
-  const list = all.filter(i => {
-    if (q) return [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.material, i.tags, i.location]
-      .join(" ").toLowerCase().includes(q);
-    return inBrand(i) && inMat(i) && inType(i)
-        && (sellColor === "All" || i.variant === sellColor);
-  }).sort((a, b) => itemLabel(a).localeCompare(itemLabel(b))
+  const list = all.filter(i => q ? searchMatch(i, q) : match(i))
+    .sort((a, b) => itemLabel(a).localeCompare(itemLabel(b))
                  || (a.variant || "").localeCompare(b.variant || ""));
 
-  const crumbs = [sellFilter, sellMat, sellType, sellColor].filter(v => v && v !== "All").join(" · ");
+  const crumbs = filterCrumbs(sel);
   $("#sellCount").textContent = q
     ? `${list.length} match “${esc(q)}” · searching all ${all.length}`
     : (crumbs ? `${crumbs} — ${list.length} of ${all.length}`
@@ -1367,17 +1381,23 @@ function voidSale(saleId) {
 function renderInv() {
   const q = $("#invSearch").value.trim().toLowerCase();
   const items = liveItems();
-  const units = items.reduce((a, i) => a + i.qty, 0);
-  const cost  = items.reduce((a, i) => a + i.qty * num(i.cost), 0);
-  const retail = items.reduce((a, i) => a + i.qty * num(i.price), 0);
-  $("#invStatItems").textContent  = items.length + " SKUs";
+  const sel = filterSel.inv;
+  const match = renderFilterRows(items, sel, $("#invFilters"), renderInv);
+
+  const list = items.filter(i => q ? searchMatch(i, q) : match(i))
+    .sort((a, b) => (a.brand || "").localeCompare(b.brand || "") || itemLabel(a).localeCompare(itemLabel(b)));
+
+  /* Stats describe what is on screen, so "Metal fountain pens tie up $X" is a
+     question the filters can answer. */
+  const units  = list.reduce((a, i) => a + i.qty, 0);
+  const cost   = list.reduce((a, i) => a + i.qty * num(i.cost), 0);
+  const retail = list.reduce((a, i) => a + i.qty * num(i.price), 0);
+  const narrowed = list.length !== items.length;
+  $("#invStatItems").textContent  = narrowed ? `${list.length} of ${items.length} SKUs`
+                                             : `${items.length} SKUs`;
   $("#invStatUnits").textContent  = units + " units";
   $("#invStatCost").textContent   = money(cost) + " at cost";
   $("#invStatRetail").textContent = money(retail) + " at retail";
-
-  const list = items.filter(i => !q || [i.sku, i.brand, i.model, i.variant, i.nib, i.type, i.material, i.tags, i.location]
-    .join(" ").toLowerCase().includes(q))
-    .sort((a, b) => (a.brand || "").localeCompare(b.brand || "") || itemLabel(a).localeCompare(itemLabel(b)));
 
   $("#invList").innerHTML = list.length ? list.map(i => {
     const m = i.price > 0 ? (i.price - i.cost) / i.price : 0;
@@ -1397,7 +1417,8 @@ function renderInv() {
         </div>
         <div class="tiny muted" style="margin-top:3px">cost ${money(i.cost)} · margin ${pct(m)}${i.floor ? " · floor " + money(i.floor) : ""}</div>
       </div></div>`;
-  }).join("") : `<div class="empty"><span class="em">📦</span>No pens yet.<br>
+  }).join("") : `<div class="empty"><span class="em">📦</span>${
+      items.length ? "No pens match those filters." : "No pens yet."}<br>
       <button class="btn sm primary" style="margin-top:10px" onclick="document.getElementById('addItemBtn').click()">Add your first pen</button></div>`;
 
   $$("#invList [data-edit]").forEach(el => el.onclick = () => editItem(el.dataset.edit));
