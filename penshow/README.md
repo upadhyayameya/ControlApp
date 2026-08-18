@@ -24,7 +24,7 @@ LAM-BP-AVENTA-CHR      Lamborghini · ballpoint · Aventador · chrome
 | Nib | fountain pens and sets only — `EF F M B BB ST IT MU FX` |
 | Finish | `BLK BLU RED GRN WHT SLV GLD GRY ORG PUR YEL BRN PNK MRN CLR CHR MAT RGD GUN DEM`, else the first three letters |
 
-**Material** (Metal, Acrylic, Ebonite, Wooden, Resin) is recorded per pen and
+**Material** (Metal, Acrylic, Ebonite, Wooden, Resin, Plastic) is recorded per pen and
 filterable, but is deliberately **not** part of the SKU — adding it would
 renumber pens that may already be labelled.
 
