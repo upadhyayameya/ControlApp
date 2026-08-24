@@ -61,10 +61,10 @@ export function parseSessionPaste(pasted) {
   }
 
   // An auth token, whether inside a curl command, a header line, or bare.
-  const tokenMatch =
-    text.match(/authorization:\s*Token\s+([A-Za-z0-9._~+/=-]{16,})/i) ||
-    text.match(/^Token\s+([A-Za-z0-9._~+/=-]{16,})$/i) ||
-    text.match(/^([A-Za-z0-9._~+/=-]{24,})$/)
+  const token =
+    (text.match(/authorization:\s*Token\s+([A-Za-z0-9._~+/=-]{16,})/i) ||
+      text.match(/^Token\s+([A-Za-z0-9._~+/=-]{16,})$/i) ||
+      text.match(/^([A-Za-z0-9._~+/=-]{24,})$/))?.[1] ?? null
 
   // Cookies, from -b/--cookie, a cookie header (in curl or on its own), or raw pairs.
   const cookieSource =
@@ -72,27 +72,41 @@ export function parseSessionPaste(pasted) {
     text.match(/-H\s+(['"])\s*cookie:\s*([\s\S]*?)\1/i)?.[2] ??
     text.match(/^\s*cookie:\s*(.+)$/im)?.[1] ??
     (text.includes('session_id=') ? text : null)
+  const cookies = cookieSource ? parseCookieString(cookieSource) : null
+  const cookiesComplete = Boolean(cookies) && REQUIRED_COOKIES.every((name) => cookies[name])
 
-  if (cookieSource) {
-    const cookies = parseCookieString(cookieSource)
-    const missing = REQUIRED_COOKIES.filter((name) => !cookies[name])
-    if (!missing.length) return { kind: 'cookies', cookies }
-    if (!tokenMatch) {
+  // A paste often carries both a cookie jar and an Authorization header, and
+  // which one Monarch honours has changed before. Hand back every candidate so
+  // the caller can try them for real instead of guessing.
+  const candidates = []
+  if (cookiesComplete) candidates.push({ kind: 'cookies', cookies })
+  if (token) candidates.push({ kind: 'token', token })
+
+  if (!candidates.length) {
+    if (cookies && Object.keys(cookies).length) {
+      const missing = REQUIRED_COOKIES.filter((name) => !cookies[name])
       throw new MonarchError(
-        `That paste is missing the ${missing.join(' and ')} cookie${missing.length > 1 ? 's' : ''}. ` +
-          'Make sure you copied a request to api.monarch.com while signed in.',
+        `That paste has cookies, but not the ${missing.join(' and ')} one${missing.length > 1 ? 's' : ''} ` +
+          'and no auth token either. Copy a request to api.monarch.com (not to app.monarch.com) ' +
+          'from a tab where you are signed in.',
         { code: 'COOKIES_INCOMPLETE' },
       )
     }
+    throw new MonarchError(
+      "That doesn't look like a browser session. Paste the whole \"Copy as cURL\" command, " +
+        'or the Cookie / Authorization header from a request to api.monarch.com.',
+      { code: 'PASTE_UNRECOGNIZED' },
+    )
   }
 
-  if (tokenMatch) return { kind: 'token', token: tokenMatch[1] }
+  return { candidates, summary: describeCandidates(cookiesComplete ? cookies : null, token) }
+}
 
-  throw new MonarchError(
-    "That doesn't look like a browser session. Paste the whole \"Copy as cURL\" command, " +
-      'or the Cookie / Authorization header from a request to api.monarch.com.',
-    { code: 'PASTE_UNRECOGNIZED' },
-  )
+function describeCandidates(cookies, token) {
+  const parts = []
+  if (cookies) parts.push(`cookies (${Object.keys(cookies).slice(0, 4).join(', ')})`)
+  if (token) parts.push('an authorization token')
+  return parts.join(' and ')
 }
 
 export class MonarchClient {

@@ -142,20 +142,41 @@ async function handleApi(request, response, url) {
     case 'POST /api/auth/session':
     case 'POST /api/auth/cookie': {
       const body = await readBody(request)
-      const parsed = parseSessionPaste(body.session ?? body.cookie ?? '')
-      if (parsed.kind === 'cookies') client.setCookies(parsed.cookies)
-      else {
-        client.cookies = null
-        client.token = parsed.token
+      const { candidates, summary } = parseSessionPaste(body.session ?? body.cookie ?? '')
+
+      // Try each session the paste contained, keeping the first that Monarch
+      // actually accepts. Nothing is saved until one has proved itself.
+      let failure = null
+      for (const candidate of candidates) {
+        if (candidate.kind === 'cookies') client.setCookies(candidate.cookies)
+        else {
+          client.cookies = null
+          client.token = candidate.token
+        }
+        service.setSource(new MonarchSource(client))
+        try {
+          await service.refresh('browser-session')
+          failure = null
+          break
+        } catch (error) {
+          failure = error
+        }
       }
 
-      // Prove the pasted session actually works before saving it.
-      service.setSource(new MonarchSource(client))
-      try {
-        await service.refresh('browser-session')
-      } catch (error) {
+      if (failure) {
         client.clear()
-        return sendJson(response, 401, { authed: false, error: error.message })
+        const detail =
+          failure instanceof AuthExpiredError
+            ? 'Monarch answered 401 — it did not recognise that session.'
+            : failure.message
+        return sendJson(response, 401, {
+          authed: false,
+          error:
+            `Monarch turned down the session in that paste (found ${summary}). ` +
+            `${detail} ` +
+            'Copy a request to api.monarch.com from a tab where you are still signed in — ' +
+            'the Network tab keeps requests from before you signed in, and those will not work.',
+        })
       }
 
       authEmail = body.email || null

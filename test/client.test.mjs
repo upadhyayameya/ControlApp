@@ -41,10 +41,10 @@ test('parseSessionPaste reads cookies out of a Chrome "Copy as cURL" paste', () 
     "  -H 'cookie: session_id=abc123; csrftoken=xyz789; ajs_anonymous_id=nope' \\",
     "  --data-raw '{\"operationName\":\"GetAccounts\"}'",
   ].join('\n')
-  const parsed = parseSessionPaste(curl)
-  assert.equal(parsed.kind, 'cookies')
-  assert.equal(parsed.cookies.session_id, 'abc123')
-  assert.equal(parsed.cookies.csrftoken, 'xyz789')
+  const { candidates } = parseSessionPaste(curl)
+  assert.equal(candidates[0].kind, 'cookies')
+  assert.equal(candidates[0].cookies.session_id, 'abc123')
+  assert.equal(candidates[0].cookies.csrftoken, 'xyz789')
 })
 
 test('parseSessionPaste accepts curl -b, a bare Cookie header, and raw pairs', () => {
@@ -53,9 +53,9 @@ test('parseSessionPaste accepts curl -b, a bare Cookie header, and raw pairs', (
     'Cookie: session_id=s1; csrftoken=c1',
     'session_id=s1; csrftoken=c1',
   ]) {
-    const parsed = parseSessionPaste(paste)
-    assert.equal(parsed.kind, 'cookies', paste)
-    assert.equal(parsed.cookies.session_id, 's1')
+    const { candidates } = parseSessionPaste(paste)
+    assert.equal(candidates[0].kind, 'cookies', paste)
+    assert.equal(candidates[0].cookies.session_id, 's1')
   }
 })
 
@@ -66,17 +66,25 @@ test('parseSessionPaste finds an auth token in a header line, a curl, or on its 
     `Authorization: Token ${token}`,
     token,
   ]) {
-    const parsed = parseSessionPaste(paste)
-    assert.equal(parsed.kind, 'token', paste)
-    assert.equal(parsed.token, token)
+    const { candidates } = parseSessionPaste(paste)
+    assert.equal(candidates[0].kind, 'token', paste)
+    assert.equal(candidates[0].token, token)
   }
 })
 
-test('parseSessionPaste prefers the token when the cookies are incomplete', () => {
-  const parsed = parseSessionPaste(
+test('parseSessionPaste offers both a cookie jar and a token when the paste has both', () => {
+  const { candidates, summary } = parseSessionPaste(
+    `curl 'https://api.monarch.com/graphql' -H 'cookie: session_id=s; csrftoken=c' -H 'authorization: Token tok_abcdefghijklmnopqrst'`,
+  )
+  assert.deepEqual(candidates.map((candidate) => candidate.kind), ['cookies', 'token'])
+  assert.match(summary, /cookies .*and an authorization token/)
+})
+
+test('parseSessionPaste falls back to the token when the cookies are incomplete', () => {
+  const { candidates } = parseSessionPaste(
     `curl 'https://api.monarch.com/graphql' -H 'cookie: session_id=only' -H 'authorization: Token tok_abcdefghijklmnopqrst'`,
   )
-  assert.equal(parsed.kind, 'token')
+  assert.deepEqual(candidates.map((candidate) => candidate.kind), ['token'])
 })
 
 test('parseSessionPaste explains an incomplete cookie paste and an unusable one', () => {
