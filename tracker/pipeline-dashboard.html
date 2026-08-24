@@ -431,6 +431,11 @@ const MS365  = "Microsoft 365";
 
 const BOARD_ICF = 18424932045;
 const BOARD_TU  = 1069746645;
+/* The four programmes the ICF/HBS board actually runs. Pinned rather than
+   derived, so the filter stays stable if a stray label is ever added to the
+   board's dropdown. Anything outside them is still reachable under "Other". */
+const UTILITIES = ["BGE", "Pepco", "Delmarva", "SMECO"];
+
 const BOARD_TODO = 4559143382;      // Ameya To-do — the shared task list
 const TODO = {
   person: "dropdown",        // Person responsible
@@ -1042,7 +1047,10 @@ function engineersOf(p) {
 function filtered() {
   const q = state.q.trim().toLowerCase();
   return state.projects.filter(p => {
-    if (state.utility && p.utility !== state.utility) return false;
+    if (state.utility) {
+      if (state.utility === "__other") { if (UTILITIES.includes(p.utility)) return false; }
+      else if (p.utility !== state.utility) return false;
+    }
     if (state.type && p.type !== state.type) return false;
     if (state.org === "icf" && !p.icfEngs.length) return false;
     if (state.org === "hbs" && !p.hbsAll.length) return false;
@@ -1360,14 +1368,32 @@ function renderNumbers() {
       <td class="n num">${money(e.incentive)}</td><td class="n num">${money(e.hbsShare)}</td><td class="n num">${qty(e.savings)}</td>
     </tr>`).join("")}</tbody></table></div>`;
 
-  /* per utility */
+  /* Per utility. The KPI board stores this as free text, so "PEPCO" and
+     "Pepco", "Met ED" and "Met-Ed" are the same programme typed differently.
+     Fold on case and punctuation, and label each group with its commonest
+     spelling — programmes that genuinely differ stay separate. */
+  const utilKey = u => String(u || "").trim().toLowerCase().replace(/[\s\-_]+/g, " ");
+  const spellings = new Map();
+  for (const k of state.kpis) {
+    const key = utilKey(k.utility);
+    if (!key) continue;
+    if (!spellings.has(key)) spellings.set(key, new Map());
+    const m = spellings.get(key);
+    m.set(k.utility, (m.get(k.utility) || 0) + 1);
+  }
+  const labelFor = key => {
+    const m = spellings.get(key);
+    if (!m) return "—";
+    return [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  };
   const byUtil = new Map();
   for (const k of inCur) {
-    const u = k.utility || "—";
+    const u = utilKey(k.utility) || "—";
     if (!byUtil.has(u)) byUtil.set(u, []);
     byUtil.get(u).push(k);
   }
-  const utilRows = [...byUtil.entries()].map(([u, rows]) => ({ u, ...sumRows(rows) })).sort((a, b) => b.incentive - a.incentive);
+  const utilRows = [...byUtil.entries()].map(([u, rows]) => ({ u: u === "—" ? "—" : labelFor(u), ...sumRows(rows) }))
+    .sort((a, b) => b.incentive - a.incentive);
   out += `<div class="section-head"><h2>By utility programme</h2></div>
     <div class="panel scroller"><table><thead><tr><th>Utility</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">kWh / therms</th></tr></thead>
     <tbody>${utilRows.map(x => `<tr><td>${esc(x.u)}</td><td class="n num">${x.count}</td><td class="n num">${money(x.incentive)}</td><td class="n num">${qty(x.savings)}</td></tr>`).join("")}</tbody></table></div>`;
@@ -2502,7 +2528,16 @@ function fillFilters() {
     const s = $(id), c = s.value;
     s.innerHTML = `<option value="">All</option>` + [...new Set(vals)].filter(Boolean).sort().map(v => `<option value="${esc(v)}"${v === c ? " selected" : ""}>${esc(v)}</option>`).join("");
   };
-  fill("#f-util", state.projects.map(p => p.utility));
+
+  /* Utility is a fixed set of four programmes. "Other" only appears when some
+     project really does sit outside them, so nothing becomes unreachable. */
+  const utilSel = $("#f-util"), utilCur = utilSel.value;
+  const strays = state.projects.filter(p => !UTILITIES.includes(p.utility)).length;
+  utilSel.innerHTML = `<option value="">All</option>` +
+    UTILITIES.map(v => `<option value="${esc(v)}"${v === utilCur ? " selected" : ""}>${esc(v)}</option>`).join("") +
+    (strays ? `<option value="__other"${utilCur === "__other" ? " selected" : ""}>Other / unset (${strays})</option>` : "");
+  if (utilCur && utilCur !== "__other" && !UTILITIES.includes(utilCur)) { state.utility = ""; utilSel.value = ""; }
+
   fill("#f-type", state.projects.map(p => p.type));
 }
 
