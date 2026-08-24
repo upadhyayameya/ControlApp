@@ -1483,6 +1483,18 @@ function sumRows(rows) {
    Only that matched subset can be broken down by ICF engineer, and the page
    says how much of the total it covers.
 -------------------------------------------------------------------------- */
+/* The KPI board's Utility column carries two different kinds of thing: real
+   utilities, and service groups — tune-ups and coil cleaning, which are a type
+   of work rather than a programme. They are reported separately, because
+   mixing them makes both harder to read and because service groups record no
+   kWh at all, which drags a combined savings average toward zero.
+
+   Confirmed by Ameya: HVAC BTU, HVAC BPTU and HVAC Tune Up are service groups. */
+const SERVICE_GROUPS = new Set(["hvac btu", "hvac bptu", "hvac tune up", "hvac tuneup"]);
+
+/* Spellings that are the same programme written short. */
+const UTILITY_ALIASES = { "potomac": "potomac edison" };
+
 const KPI_PHASES = ["Audits Performed", "Preapprovals Submitted", "Preapprovals Received",
   "Implementations Scheduled", "Closeouts Submitted", "Closeouts Received"];
 
@@ -1580,7 +1592,10 @@ function renderNumbers() {
   if (state.errors.kpis) return errNote("Monthly KPIs board", state.errors.kpis, MONDAY);
   if (!state.kpis.length) return `<div class="panel empty">No KPI rows found in the last thirteen months.</div>`;
 
-  const utilKey = u => String(u || "").trim().toLowerCase().replace(/[\s\-_]+/g, " ");
+  const utilKey = u => {
+    const k = String(u || "").trim().toLowerCase().replace(/[\s\-_]+/g, " ");
+    return UTILITY_ALIASES[k] || k;
+  };
   const spellings = new Map();
   for (const k of state.kpis) {
     const key = utilKey(k.utility);
@@ -1670,7 +1685,14 @@ function renderNumbers() {
   <div class="stats" style="margin-bottom:18px">
     ${tile(money(per(cur.incentive, cur.count)), "Average incentive per milestone", `previous ${money(per(prev.incentive, prev.count))}`)}
     ${tile(money(per(cur.hbsShare, cur.count)), "Average HBS share", `previous ${money(per(prev.hbsShare, prev.count))}`)}
-    ${tile(qty(Math.round(per(cur.savings, cur.count))), "Average kWh / therms", `previous ${qty(Math.round(per(prev.savings, prev.count)))}`)}
+    ${(() => {
+      const withKwh = inCur.filter(k => (k.savings || 0) > 0);
+      const prevKwh = inPrev.filter(k => (k.savings || 0) > 0);
+      const a = withKwh.length ? withKwh.reduce((x, k) => x + k.savings, 0) / withKwh.length : 0;
+      const b = prevKwh.length ? prevKwh.reduce((x, k) => x + k.savings, 0) / prevKwh.length : 0;
+      return tile(qty(Math.round(a)), "Average kWh / therms",
+        `across the ${withKwh.length} that record it${b ? ` · previous ${qty(Math.round(b))}` : ""}`);
+    })()}
   </div>`;
 
   /* ---- per phase, with averages: the PA and CO numbers to move ---- */
@@ -1705,20 +1727,22 @@ function renderNumbers() {
       </tbody></table></div>`;
 
   /* ---- per utility, with averages ---- */
-  const byUtil = new Map();
+  const byUtil = new Map(), byService = new Map();
   for (const k of inCur) {
     const u = k.uKey || "—";
-    if (!byUtil.has(u)) byUtil.set(u, []);
-    byUtil.get(u).push(k);
+    const bucket = SERVICE_GROUPS.has(u) ? byService : byUtil;
+    if (!bucket.has(u)) bucket.set(u, []);
+    bucket.get(u).push(k);
   }
   const spanMonths = (r.end - r.start) / (30.44 * 86400000);
   const showRate = spanMonths >= 1.8;      // below that, a monthly rate just repeats the count
-  const utilRows = [...byUtil.entries()].map(([u, rs]) => {
+  const mkRows = map => [...map.entries()].map(([u, rs]) => {
     const s = sumRows(rs);
     return { u: u === "—" ? "—" : uLabel(u), ...s,
              avgInc: per(s.incentive, s.count), avgKwh: per(s.savings, s.count),
              perMonth: spanMonths > 0 ? s.count / spanMonths : s.count };
   }).sort((a, b) => b.incentive - a.incentive);
+  const utilRows = mkRows(byUtil), svcRows = mkRows(byService);
 
   out += `<div class="section-head"><h2>By utility</h2>
     <span class="hint">Where the incentive sits, then the averages behind it</span></div>
@@ -1744,6 +1768,27 @@ function renderNumbers() {
         <td class="n num"><b>${qty(Math.round(x.avgKwh))}</b></td>
       </tr>`).join("")}
       </tbody></table></div>`;
+
+  if (svcRows.length) {
+    const svcTotal = svcRows.reduce((a, x) => a + x.incentive, 0);
+    const svcCount = svcRows.reduce((a, x) => a + x.count, 0);
+    out += `<div class="section-head"><h2>By service group</h2>
+      <span class="hint">Tune-ups and coil cleaning — a type of work rather than a utility programme</span></div>
+      <div class="panel scroller" style="margin-bottom:10px"><table><thead><tr>
+        <th>Service group</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">Avg incentive</th></tr></thead><tbody>
+        ${svcRows.map(x => `<tr>
+          <td>${esc(x.u)}</td>
+          <td class="n num">${x.count}</td>
+          <td class="n num">${money(x.incentive)}</td>
+          <td class="n num"><b>${money(x.avgInc)}</b></td>
+        </tr>`).join("")}
+        <tr><td><b>Total</b></td><td class="n num"><b>${svcCount}</b></td>
+          <td class="n num"><b>${money(svcTotal)}</b></td><td class="n num"></td></tr>
+        </tbody></table></div>
+      <div class="ans-note" style="margin-bottom:18px">These record no kWh or therms — that is how the work is
+      tracked, not a gap. They are kept out of the utility table above and out of the savings averages, which would
+      otherwise be pulled toward zero by ${svcCount} rows carrying none.</div>`;
+  }
 
   /* ---- per engineer, both sides ---- */
   const engRow = (name, org, rs) => {

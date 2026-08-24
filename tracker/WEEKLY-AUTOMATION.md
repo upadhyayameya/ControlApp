@@ -252,6 +252,30 @@ punctuation and are shown under one spelling, preferring a properly capitalised
 one. Programmes that genuinely differ, such as Dominion and Dominion - TRC, fold
 to different keys and stay separate.
 
+## Utilities and service groups
+
+The Monthly KPIs board stores utility as free text, and that column carries two
+different kinds of thing:
+
+- **Utilities** — BGE, Pepco, Delmarva, SMECO, Dominion, Dominion - TRC,
+  GA Power, Washington Gas, West Penn, Penelec, Potomac Edison, National Grid,
+  Met-Ed, JCPL, First Energy, Dominion - SC.
+- **Service groups** — `HVAC BTU`, `HVAC BPTU`, `HVAC Tune Up`. These are tune-up
+  and coil-cleaning work, a type of job rather than a programme.
+
+The Numbers tab reports them separately. Service groups record **no kWh or
+therms at all** — 367 rows across the board's history, every one of them zero.
+That is how the work is tracked, not a gap, so they are kept out of the savings
+averages, which would otherwise be pulled toward zero.
+
+Savings averages are taken across the rows that actually record savings, and the
+page says how many that is.
+
+`Potomac` is folded into `Potomac Edison`, and case and punctuation variants —
+`PEPCO` against `Pepco`, `Met ED` against `Met-Ed` — fold together and display
+under one spelling. Programmes that genuinely differ, such as Dominion and
+Dominion - TRC, keep their own keys.
+
 ## Strategy
 
 The **Strategy** tab models the one real strategic choice in the data: volume
