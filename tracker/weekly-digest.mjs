@@ -281,6 +281,12 @@ const projects = icfItems.map(it => {
 
   return {
     name: it.name, url: it.url, phase, icfStatus, tuStatus,
+    projectId: txt(it, C.projectId), utility: txt(it, C.utility), type: txt(it, C.type),
+    icfDates: {
+      submittedPA: txt(it, C.dSubPA), paDate: txt(it, C.dPAd),
+      submittedCO: txt(it, C.dSubCO), coDate: txt(it, C.dCOd),
+      nextAction: txt(it, C.dNextAct),
+    },
     icfEngs, hbsEngs, ev, current,
     need: rule ? rule.need : 'No status recorded — set a status on the board',
     ownerNames, sev, aging,
@@ -291,7 +297,61 @@ const projects = icfItems.map(it => {
 });
 
 /* ------------------------------------------------------------------ digests */
+/* ---------------------------------------------------------------------------
+   ICF isolation.
+
+   The ICF/HBS Project Tracker is the board ICF already shares with us. The
+   Master TU Tracker is HBS-internal: SOW commercials (Rahl's, the client, CGS),
+   internal QA/QC states, deal owners and a running admin-notes log. So an
+   ICF-bound digest is built from the shared board ONLY — a whitelist, so a
+   column added to the TU board later cannot leak by default.
+--------------------------------------------------------------------------- */
+function icfDigestBody(name, mine) {
+  const rows = mine.map(p => ({
+    name: p.name, projectId: p.projectId, utility: p.utility, type: p.type,
+    phase: p.phase, status: p.icfStatus, d: p.icfDates,
+    rule: ICF_ACTIONS[p.icfStatus] || null,
+  }));
+  const onIcf = rows.filter(r => r.rule && r.rule.role !== 'hbs');
+  const onHbs = rows.filter(r => r.rule && r.rule.role === 'hbs');
+  const quiet = rows.filter(r => !r.rule);
+
+  const L = [];
+  const first = /\s/.test(name) ? name.split(' ')[0] : name;
+  L.push(`Hi ${first},`, '');
+  L.push(`Here is the current state of the HBS projects assigned to you, as of ${new Date().toDateString()}.`, '');
+  L.push(`${rows.length} project${rows.length === 1 ? '' : 's'}.`);
+  const line = r => `  * ${r.name}${r.projectId ? ` (${r.projectId})` : ''} - ${r.status || r.phase}`;
+  if (onIcf.length) {
+    L.push('', `WITH ICF (${onIcf.length})`);
+    for (const r of onIcf) { L.push(line(r)); L.push(`      ${r.rule.need}`); }
+  }
+  if (onHbs.length) {
+    L.push('', `WITH HBS - WE OWE YOU A RESPONSE (${onHbs.length})`);
+    for (const r of onHbs) { L.push(line(r)); L.push(`      ${r.rule.need}`); }
+  }
+  if (quiet.length) {
+    L.push('', `NO OPEN ACTION (${quiet.length})`);
+    for (const r of quiet) L.push(line(r));
+  }
+  const dated = rows.filter(r => r.d.submittedPA || r.d.paDate || r.d.submittedCO || r.d.coDate);
+  if (dated.length) {
+    L.push('', 'DATES ON RECORD');
+    for (const r of dated) {
+      const bits = [];
+      if (r.d.submittedPA) bits.push(`PA submitted ${r.d.submittedPA}`);
+      if (r.d.paDate) bits.push(`PA'd ${r.d.paDate}`);
+      if (r.d.submittedCO) bits.push(`CO submitted ${r.d.submittedCO}`);
+      if (r.d.coDate) bits.push(`CO'd ${r.d.coDate}`);
+      L.push(`  * ${r.name} - ${bits.join(', ')}`);
+    }
+  }
+  L.push('', 'Automated from the shared ICF/HBS Project Tracker.');
+  return { text: L.join('\n'), counts: { active: rows.length, yours: onIcf.length, ageing: 0, moved: 0 } };
+}
+
 function digestBody(name, org, mine) {
+  if (org === 'ICF') return icfDigestBody(name, mine);
   const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
   const moved = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], wk.prevStart, wk.end)));
   const yours = mine.filter(p => (p.sev === 'critical' || p.sev === 'serious') && owns(p));
