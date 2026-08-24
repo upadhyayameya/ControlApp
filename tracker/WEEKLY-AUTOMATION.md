@@ -186,6 +186,33 @@ reads back fine, which is what makes the projection figures available at all.
 standing engineering meetings, not an authoritative distribution list. Edit it
 to match who should actually receive the update.
 
+## What the dashboard covers
+
+The **Master TU Tracker** (`1069746645`) is the primary source: every project,
+every utility. The **ICF/HBS Project Tracker** (`18424932045`) is joined onto it
+through the board relation and supplies the ICF-side status and the ICF
+engineer for the subset ICF reviews.
+
+That means every utility on the books appears — BGE, Pepco, Delmarva, SMECO,
+Dominion, Dominion - TRC, GA Power, Washington Gas, West Penn, Penelec,
+Potomac Edison, National Grid, Met-Ed, JCPL and the rest. The utility filter is
+built from the data with a count per option, busiest first, so it follows the
+boards rather than a hard-coded list.
+
+A **Reviewer** filter splits the book three ways:
+
+| Reviewer | How it is decided |
+|---|---|
+| ICF | The project is on the ICF/HBS board, or its Review Engineer starts `ICF -` |
+| TRC | Review Engineer starts `TRC -`, or the utility names TRC |
+| In-house | Neither — reviewed inside HBS |
+
+The TU tracker stores utility as free text, so the same programme can appear as
+`PEPCO` and `Pepco`, or `Met ED` and `Met-Ed`. Those fold together on case and
+punctuation and are shown under one spelling, preferring a properly capitalised
+one. Programmes that genuinely differ, such as Dominion and Dominion - TRC, fold
+to different keys and stay separate.
+
 ## Ask the tracker (in the dashboard)
 
 The **Ask & tasks** tab is a conversation with the boards. It answers from the

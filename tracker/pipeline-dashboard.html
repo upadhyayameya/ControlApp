@@ -430,6 +430,9 @@ details.detail summary:hover { color: var(--ink-2); }
       </div>
     </div>
     <div class="ctl" data-filter="engineer"><label for="f-eng">Engineer</label><select id="f-eng"><option value="">All</option></select></div>
+    <div class="ctl" data-filter="reviewer"><label for="f-rev">Reviewer</label>
+      <select id="f-rev"></select>
+    </div>
     <div class="ctl" data-filter="utility"><label for="f-util">Utility</label><select id="f-util"><option value="">All</option></select></div>
     <div class="ctl" data-filter="type"><label for="f-type">Type</label><select id="f-type"><option value="">All</option></select></div>
     <div class="ctl" data-filter="q"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
@@ -462,11 +465,6 @@ const MS365  = "Microsoft 365";
 
 const BOARD_ICF = 18424932045;
 const BOARD_TU  = 1069746645;
-/* The four programmes the ICF/HBS board actually runs. Pinned rather than
-   derived, so the filter stays stable if a stray label is ever added to the
-   board's dropdown. Anything outside them is still reachable under "Other". */
-const UTILITIES = ["BGE", "Pepco", "Delmarva", "SMECO"];
-
 const BOARD_TODO = 4559143382;      // Ameya To-do — the shared task list
 const TODO = {
   person: "dropdown",        // Person responsible
@@ -558,6 +556,9 @@ const T = {
   adminNotes: "long_text",
   aiSummary:  "text_mm4jb8gz",
   projectId:  "text8",
+  utility:    "text",
+  type:       "type",
+  company:    "text_mkxpkdex",
   rel:        "board_relation_mm5xccpb",
 };
 const ICF_COLS = Object.values(C);
@@ -822,23 +823,77 @@ function latestNoteLine(text) {
   return dated || lines[0];
 }
 
-function buildProjects(icfItems, tuItems) {
-  const tuByIcf = new Map();
-  for (const t of tuItems) for (const id of relIds(t, T.rel, BOARD_ICF)) if (!tuByIcf.has(id)) tuByIcf.set(id, t);
+/* The Master TU Tracker holds every project across every utility. The ICF/HBS
+   board holds the subset ICF reviews, with the ICF-side status and engineer on
+   it. Pair them up and walk the union, so a project shows up whether it is
+   reviewed by ICF, by TRC, or by nobody outside HBS. */
+function pairBoards(icfItems, tuItems) {
+  const icfById = new Map(icfItems.map(it => [String(it.id), it]));
+  const pairs = [];
+  const claimedIcf = new Set();
 
+  for (const tu of tuItems) {
+    let icf = null;
+    for (const id of relIds(tu, T.rel, BOARD_ICF)) {
+      if (icfById.has(id) && !claimedIcf.has(id)) { icf = icfById.get(id); claimedIcf.add(id); break; }
+    }
+    pairs.push({ icf, tu });
+  }
+  /* ICF-board rows with no TU counterpart still belong in the pipeline. */
+  for (const [id, icf] of icfById) if (!claimedIcf.has(id)) pairs.push({ icf, tu: null });
+  return pairs;
+}
+
+/* The TU tracker's utility is free text, so the same programme appears as
+   "PEPCO" and "Pepco", "Met ED" and "Met-Ed". Fold on case and punctuation and
+   settle on one spelling. Programmes that genuinely differ — Dominion and
+   Dominion - TRC — fold to different keys and stay separate. */
+const UTILITY_KEY = u => String(u || "").trim().toLowerCase().replace(/[\s\-_]+/g, " ");
+const utilitySpellings = new Map();
+function normUtility(u) {
+  const raw = String(u || "").trim();
+  if (!raw) return "";
+  const key = UTILITY_KEY(raw);
+  if (!utilitySpellings.has(key)) utilitySpellings.set(key, new Map());
+  const m = utilitySpellings.get(key);
+  m.set(raw, (m.get(raw) || 0) + 1);
+  return key;
+}
+function utilityLabel(key) {
+  const m = utilitySpellings.get(key);
+  if (!m) return key || "—";
+  const cased = str => /[A-Z]/.test(str) ? 1 : 0;
+  return [...m.entries()].sort((a, b) => b[1] - a[1] || cased(b[0]) - cased(a[0]))[0][0];
+}
+
+function buildProjects(icfItems, tuItems) {
+  utilitySpellings.clear();
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
-  const built = icfItems.map(it => {
-    const tu = tuByIcf.get(String(it.id)) || null;
+  const built = pairBoards(icfItems, tuItems).map(({ icf, tu }) => {
+    const it = icf || tu;                      // the row the project is named by
     const g = (id) => (tu ? col(tu, id) : "");
+    const ci = (id) => (icf ? col(icf, id) : "");
 
-    const phase     = col(it, C.phase);
-    const icfStatus = col(it, C.status);
+    const phase     = ci(C.phase);
+    const icfStatus = ci(C.status);
     const tuStatus  = g(T.status);
     const sowStatus = g(T.sowStatus);
 
-    const icfEngs = people(it, C.icfEng);
-    const hbsEngs = people(it, C.hbsEng);
+    const utility = normUtility(ci(C.utility) || g(T.utility));
+    const type    = ci(C.type) || g(T.type);
+
+    /* Who reviews it. ICF work is on the shared board; TRC work is named on
+       the TU tracker's Review Engineer, or by the utility itself. */
+    const revRaw = g(T.reviewEng);
+    const reviewer = icf ? "ICF"
+      : /^TRC\s*-/.test(revRaw) ? "TRC"
+      : /^ICF\s*-/.test(revRaw) ? "ICF"
+      : /\bTRC\b/i.test(utility) ? "TRC"
+      : "In-house";
+
+    const icfEngs = (icf ? people(icf, C.icfEng) : []);
+    const hbsEngs = (icf ? people(icf, C.hbsEng) : []);
     const auditor = tu ? people(tu, T.auditor) : [];
     const paLead  = tu ? people(tu, T.paLead)  : [];
     const coLead  = tu ? people(tu, T.coLead)  : [];
@@ -847,11 +902,11 @@ function buildProjects(icfItems, tuItems) {
 
     const dAudit   = dparse(g(T.dAudit));
     const dImpl    = dparse(g(T.dImpl));
-    const dPAd     = dparse(col(it, C.dPAd))   || dparse(g(T.dSignedPA));
-    const dSubPA   = dparse(col(it, C.dSubPA));
-    const dSubCO   = dparse(col(it, C.dSubCO));          // actually submitted for closeout
+    const dPAd     = dparse(ci(C.dPAd))   || dparse(g(T.dSignedPA));
+    const dSubPA   = dparse(ci(C.dSubPA));
+    const dSubCO   = dparse(ci(C.dSubCO));          // actually submitted for closeout
     const dProjCO  = dparse(g(T.dProjCO));               // forecast only — never advances a stage
-    const dCOd     = dparse(col(it, C.dCOd));
+    const dCOd     = dparse(ci(C.dCOd));
     const dSowSent = dparse(g(T.dSowClient))   || dparse(g(T.dSowRahls));
     const dSowSign = dparse(g(T.dSowSigned));
 
@@ -917,8 +972,8 @@ function buildProjects(icfItems, tuItems) {
     const hbsAll = [...roleMap.keys()];
     const hbsRoles = Object.fromEntries([...roleMap].map(([k, v]) => [k, v.join(", ")]));
 
-    const aging = col(it, C.aging);
-    const daysInPhase = (() => { const n = parseFloat(col(it, C.daysPhase)); return Number.isFinite(n) ? n : null; })();
+    const aging = ci(C.aging);
+    const daysInPhase = (() => { const n = parseFloat(ci(C.daysPhase)); return Number.isFinite(n) ? n : null; })();
 
     let sev = (rule && rule.sev) || null;
     if (!sev) {
@@ -927,7 +982,7 @@ function buildProjects(icfItems, tuItems) {
     }
     if (sev !== "good" && aging === "Critical" && (rule && rule.sev === "warning")) sev = "critical";
 
-    const notes = col(it, C.notes);
+    const notes = ci(C.notes);
     const adminNotes = g(T.adminNotes);
     const evidence = latestNoteLine(adminNotes) || latestNoteLine(notes) || "";
     const evidenceFrom = latestNoteLine(adminNotes) ? "TU admin notes" : (latestNoteLine(notes) ? "ICF board notes" : "");
@@ -938,29 +993,28 @@ function buildProjects(icfItems, tuItems) {
       url: it.url || "",
       tuUrl: tu ? (tu.url || "") : "",
       group: (it.group && it.group.title) || "",
-      projectId: col(it, C.projectId) || g(T.projectId),
-      utility: col(it, C.utility),
-      type: col(it, C.type),
+      projectId: ci(C.projectId) || g(T.projectId),
       phase, icfStatus, tuStatus, sowStatus,
+      utility, type, reviewer,
       icfEngs, hbsEngs, hbsAll, hbsRoles, auditor, paLead, coLead, owner, revEng,
       ev, current,
       evDates: {
-        dSubPA: dstr(col(it, C.dSubPA)), dPAd: dstr(col(it, C.dPAd)),
-        dSubCO: dstr(col(it, C.dSubCO)), dCOd: dstr(col(it, C.dCOd)),
+        dSubPA: dstr(ci(C.dSubPA)), dPAd: dstr(ci(C.dPAd)),
+        dSubCO: dstr(ci(C.dSubCO)), dCOd: dstr(ci(C.dCOd)),
         dAudit: dstr(g(T.dAudit)), dImpl: dstr(g(T.dImpl)),
       },
       need: rule ? rule.need : "No status recorded — set a status on the board",
       ownerNames, ownerOrg,
       sev: sev || "none",
       aging, daysInPhase,
-      nextActionDate: dstr(col(it, C.dNextAct)),
+      nextActionDate: dstr(ci(C.dNextAct)),
       projectedCO: dProjCO ? dstr(g(T.dProjCO)) : "",
-      ecd: dstr(col(it, C.ecd)),
-      lastUpdate: dstr(col(it, C.dLastUpd)),
-      lastBy: col(it, C.lastBy),
-      incentive: num(it, C.incentive),
-      kwh: num(it, C.kwh),
-      therms: num(it, C.therms),
+      ecd: dstr(ci(C.ecd)),
+      lastUpdate: dstr(ci(C.dLastUpd)),
+      lastBy: ci(C.lastBy),
+      incentive: (icf ? num(icf, C.incentive) : null),
+      kwh: (icf ? num(icf, C.kwh) : null),
+      therms: (icf ? num(icf, C.therms) : null),
       aiSummary: g(T.aiSummary),
       notes, adminNotes, evidence, evidenceFrom,
       hasTu: !!tu,
@@ -1043,6 +1097,7 @@ const state = {
   org: "both",
   engineer: "",
   utility: "",
+  reviewer: "",
   type: "",
   q: "",
   view: "pipeline",
@@ -1081,16 +1136,14 @@ function engineersOf(p) {
 function filtered() {
   const q = state.q.trim().toLowerCase();
   return state.projects.filter(p => {
-    if (state.utility) {
-      if (state.utility === "__other") { if (UTILITIES.includes(p.utility)) return false; }
-      else if (p.utility !== state.utility) return false;
-    }
+    if (state.utility && p.utility !== state.utility) return false;
+    if (state.reviewer && p.reviewer !== state.reviewer) return false;
     if (state.type && p.type !== state.type) return false;
     if (state.org === "icf" && !p.icfEngs.length) return false;
     if (state.org === "hbs" && !p.hbsAll.length) return false;
     if (state.engineer && !engineersOf(p).includes(state.engineer)) return false;
     if (q) {
-      const hay = [p.name, p.projectId, p.phase, p.icfStatus, p.tuStatus, p.need, p.ownerNames.join(" "), p.utility, p.type, p.evidence].join(" ").toLowerCase();
+      const hay = [p.name, p.projectId, p.phase, p.icfStatus, p.tuStatus, p.need, p.ownerNames.join(" "), p.utility, utilityLabel(p.utility), p.type, p.evidence].join(" ").toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -1102,14 +1155,14 @@ function filtered() {
    My desk is already scoped to one person — narrowing those by engineer or
    team would be a control that quietly does nothing. */
 const VIEW_FILTERS = {
-  pipeline: ["period", "team", "engineer", "utility", "type", "q", "count"],
+  pipeline: ["period", "team", "engineer", "reviewer", "utility", "type", "q", "count"],
   numbers:  ["period"],
   mydesk:   ["utility", "type", "q"],
-  asap:     ["team", "engineer", "utility", "type", "q", "count"],
+  asap:     ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
   todos:    [],
-  phases:   ["period", "team", "engineer", "utility", "type", "q", "count"],
-  projects: ["team", "engineer", "utility", "type", "q", "count"],
-  digest:   ["team", "engineer", "utility", "type", "q"],
+  phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "q", "count"],
+  projects: ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
+  digest:   ["team", "engineer", "reviewer", "utility", "type", "q"],
   intel:    [],
   notes:    [],
 };
@@ -1567,7 +1620,7 @@ const ASK = /^(who|what|when|which|how many|how much|where|why|is |are |does |do
 const ACTION_VERBS = /\b(chase|call|email|schedule|submit|resubmit|assign|follow up|send|check|book|order|fix|review|remind|escalate|close out|invoice)\b/i;
 
 function projectLine(p) {
-  const bits = [p.phase, p.icfStatus || p.tuStatus, p.utility].filter(Boolean).join(" · ");
+  const bits = [p.phase, p.icfStatus || p.tuStatus, p.utility && utilityLabel(p.utility)].filter(Boolean).join(" · ");
   return `<div class="ans-row">
     <div class="t">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}
       <span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}"
@@ -1723,7 +1776,8 @@ const CHAT_SUGGESTIONS = ["What's on me?", "Any RFIs outstanding?", "What's stuc
 
 function renderNotes() {
   let out = `<div class="section-head"><h2>Ask the tracker</h2>
-    <span class="hint">Answers come from the boards, not a language model — name a project or a person and it will tell you what it knows, then offer to write it back.</span></div>`;
+    <span class="hint">Answers come from the boards, not a language model — name a project or a person and it will tell you what it knows, then offer to write it back.</span>
+    ${state.chat.length ? `<button id="chat-clear" style="margin-left:auto">Clear conversation</button>` : ""}</div>`;
 
   out += `<div class="chat">
     <div class="chat-feed" id="chat-feed">
@@ -1822,7 +1876,7 @@ function renderProjects(list) {
       return `<tr>
         <td>
           <div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
-          <div class="ev">${esc([p.utility, p.type, p.projectId].filter(Boolean).join(" · "))}</div>
+          <div class="ev">${esc([p.utility && utilityLabel(p.utility), p.type, p.projectId].filter(Boolean).join(" · "))}</div>
         </td>
         <td>${esc(stage)}<div class="ev">${esc(p.phase)}</div></td>
         <td>${esc(p.tuStatus || p.icfStatus || "—")}${p.sowStatus ? `<div class="ev">SOW: ${esc(p.sowStatus)}</div>` : ""}</td>
@@ -1845,7 +1899,7 @@ function pline(p, extra) {
   return `<li><span class="rail"></span><span>
     <span class="t">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</span>
     <div class="s">${esc(p.need)}</div>
-    <div class="m">${esc([p.utility, p.tuStatus || p.icfStatus, p.ownerNames.length ? p.ownerNames.join(", ") : "no owner",
+    <div class="m">${esc([p.utility && utilityLabel(p.utility), p.tuStatus || p.icfStatus, p.ownerNames.length ? p.ownerNames.join(", ") : "no owner",
       p.daysInPhase != null ? p.daysInPhase + "d in phase" : ""].filter(Boolean).join(" · "))}${extra ? " · " + esc(extra) : ""}</div>
   </span></li>`;
 }
@@ -1856,7 +1910,7 @@ function ptable(rows, opts = {}) {
     ${opts.due ? "<th>Due</th>" : ""}<th class="n">Days</th></tr></thead><tbody>
     ${rows.map(p => `<tr>
       <td><div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
-          <div class="ev">${esc([p.utility, p.type].filter(Boolean).join(" · "))}</div></td>
+          <div class="ev">${esc([p.utility ? utilityLabel(p.utility) : "", p.type].filter(Boolean).join(" · "))}</div></td>
       ${opts.priority ? `<td class="n"><span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}" title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></td>` : ""}
       <td>${esc(p.tuStatus || p.icfStatus || "—")}</td>
       <td><div class="need">${esc(p.need)}</div>${p.evidence ? `<div class="ev"><b>Latest:</b> ${esc(p.evidence.slice(0, 150))}</div>` : ""}
@@ -2142,7 +2196,7 @@ function renderPhases(list) {
       <th>Status</th><th>Next step</th><th>${esc(V.leadLabel)}</th><th>Is the info here?</th>
     </tr></thead><tbody>${rows.map(({ p, when, done, upcoming, inPeriod, gaps }) => `<tr>
       <td><div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
-          <div class="ev">${esc([p.utility, p.type].filter(Boolean).join(" · "))}</div></td>
+          <div class="ev">${esc([p.utility ? utilityLabel(p.utility) : "", p.type].filter(Boolean).join(" · "))}</div></td>
       <td class="n"><span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}" title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></td>
       <td class="num">${when
         ? `${esc(when)}${upcoming ? ` <span class="sev sev-good">ahead</span>` : ""}${inPeriod ? ` <span class="chip">this period</span>` : ""}`
@@ -2177,7 +2231,7 @@ function icfSafeView(p) {
   return {
     name: p.name,
     projectId: p.projectId,
-    utility: p.utility,
+    utility: p.utility ? utilityLabel(p.utility) : "",
     type: p.type,
     phase: p.phase,
     status: p.icfStatus,
@@ -2675,6 +2729,15 @@ function render() {
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); state.chatFocus = true; chatSend(chatBox.value); }
     });
   }
+  const clearBtn = main.querySelector("#chat-clear");
+  if (clearBtn) clearBtn.addEventListener("click", () => {
+    /* Only the transcript goes — anything already posted to monday stays there. */
+    state.chat = [];
+    state.chatDraft = "";
+    state.noteResult = null;
+    render();
+  });
+
   const sendBtn = main.querySelector("#chat-send");
   if (sendBtn) sendBtn.addEventListener("click", () => {
     state.chatFocus = true;
@@ -2780,14 +2843,23 @@ function fillFilters() {
     s.innerHTML = `<option value="">All</option>` + [...new Set(vals)].filter(Boolean).sort().map(v => `<option value="${esc(v)}"${v === c ? " selected" : ""}>${esc(v)}</option>`).join("");
   };
 
-  /* Utility is a fixed set of four programmes. "Other" only appears when some
-     project really does sit outside them, so nothing becomes unreachable. */
+  /* Every utility the boards hold, busiest first, each labelled with its
+     commonest spelling and carrying its own count. */
+  const utilCounts = new Map();
+  for (const p of state.projects) if (p.utility) utilCounts.set(p.utility, (utilCounts.get(p.utility) || 0) + 1);
   const utilSel = $("#f-util"), utilCur = utilSel.value;
-  const strays = state.projects.filter(p => !UTILITIES.includes(p.utility)).length;
-  utilSel.innerHTML = `<option value="">All</option>` +
-    UTILITIES.map(v => `<option value="${esc(v)}"${v === utilCur ? " selected" : ""}>${esc(v)}</option>`).join("") +
-    (strays ? `<option value="__other"${utilCur === "__other" ? " selected" : ""}>Other / unset (${strays})</option>` : "");
-  if (utilCur && utilCur !== "__other" && !UTILITIES.includes(utilCur)) { state.utility = ""; utilSel.value = ""; }
+  utilSel.innerHTML = `<option value="">All utilities</option>` +
+    [...utilCounts.entries()].sort((a, b) => b[1] - a[1] || utilityLabel(a[0]).localeCompare(utilityLabel(b[0])))
+      .map(([k, n]) => `<option value="${esc(k)}"${k === utilCur ? " selected" : ""}>${esc(utilityLabel(k))} (${n})</option>`).join("");
+  if (utilCur && !utilCounts.has(utilCur)) { state.utility = ""; utilSel.value = ""; }
+
+  const revCounts = new Map();
+  for (const p of state.projects) revCounts.set(p.reviewer, (revCounts.get(p.reviewer) || 0) + 1);
+  const revSel = $("#f-rev"), revCur = revSel.value;
+  revSel.innerHTML = `<option value="">All reviewers</option>` +
+    ["ICF", "TRC", "In-house"].filter(r => revCounts.has(r))
+      .map(r => `<option value="${esc(r)}"${r === revCur ? " selected" : ""}>${esc(r)} (${revCounts.get(r)})</option>`).join("");
+  if (revCur && !revCounts.has(revCur)) { state.reviewer = ""; revSel.value = ""; }
 
   fill("#f-type", state.projects.map(p => p.type));
 }
@@ -2798,7 +2870,7 @@ async function loadMonday(refresh) {
   try {
     const [icfItems, tuItems] = await Promise.all([
       fetchBoard(BOARD_ICF, ICF_COLS, null, refresh),
-      fetchBoard(BOARD_TU, TU_COLS, [{ columnId: T.rel, operator: "is_not_empty", compareValue: "" }], refresh),
+      fetchBoard(BOARD_TU, TU_COLS, null, refresh),
     ]);
     state.projects = buildProjects(icfItems, tuItems);
     state.errors.monday = null;
@@ -3141,6 +3213,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
 }));
 $("#f-eng").addEventListener("change", e => { state.engineer = e.target.value; render(); });
 $("#f-util").addEventListener("change", e => { state.utility = e.target.value; render(); });
+$("#f-rev").addEventListener("change", e => { state.reviewer = e.target.value; render(); });
 $("#f-type").addEventListener("change", e => { state.type = e.target.value; render(); });
 let qt = null;
 $("#f-q").addEventListener("input", e => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { state.q = v; render(); }, 160); });
