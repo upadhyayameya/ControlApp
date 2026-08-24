@@ -1711,15 +1711,20 @@ function renderNumbers() {
     if (!byUtil.has(u)) byUtil.set(u, []);
     byUtil.get(u).push(k);
   }
-  const months = Math.max(1, Math.round((r.end - r.start) / (30 * 86400000)));
+  const spanMonths = (r.end - r.start) / (30.44 * 86400000);
+  const showRate = spanMonths >= 1.8;      // below that, a monthly rate just repeats the count
   const utilRows = [...byUtil.entries()].map(([u, rs]) => {
     const s = sumRows(rs);
     return { u: u === "—" ? "—" : uLabel(u), ...s,
-             avgInc: per(s.incentive, s.count), avgKwh: per(s.savings, s.count), perMonth: s.count / months };
+             avgInc: per(s.incentive, s.count), avgKwh: per(s.savings, s.count),
+             perMonth: spanMonths > 0 ? s.count / spanMonths : s.count };
   }).sort((a, b) => b.incentive - a.incentive);
 
   out += `<div class="section-head"><h2>By utility</h2>
     <span class="hint">Where the incentive sits, then the averages behind it</span></div>
+    <div class="ans-note" style="margin-bottom:10px">A milestone is a stage a project passed, not a project.
+    One project that was audited, pre-approved and closed out in this period appears three times, carrying its
+    incentive each time — so these totals measure activity, not money earned once.</div>
     <div class="panel" style="padding:16px 18px;margin-bottom:12px">
       ${utilRows.length ? barChart(utilRows.slice(0, 10).map(x => ({
         k: x.u, v: x.incentive, label: money(x.incentive),
@@ -1727,12 +1732,12 @@ function renderNumbers() {
       }))) : `<div class="ev">Nothing in this period.</div>`}
     </div>
     <div class="panel scroller" style="margin-bottom:18px"><table><thead><tr>
-      <th>Utility</th><th class="n">Milestones</th><th class="n">Per month</th><th class="n">Incentive</th>
+      <th>Utility</th><th class="n">Milestones</th>${showRate ? `<th class="n">Per month</th>` : ""}<th class="n">Incentive</th>
       <th class="n">Avg incentive</th><th class="n">kWh / therms</th><th class="n">Avg kWh</th></tr></thead><tbody>
       ${utilRows.map(x => `<tr>
         <td>${esc(x.u)}</td>
         <td class="n num">${x.count}</td>
-        <td class="n num">${x.perMonth.toFixed(1)}</td>
+        ${showRate ? `<td class="n num">${x.perMonth.toFixed(1)}</td>` : ""}
         <td class="n num">${money(x.incentive)}</td>
         <td class="n num"><b>${money(x.avgInc)}</b></td>
         <td class="n num">${qty(x.savings)}</td>
