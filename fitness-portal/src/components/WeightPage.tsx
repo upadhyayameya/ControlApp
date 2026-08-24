@@ -95,7 +95,7 @@ export default function WeightPage() {
         ) : (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={series} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <LineChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke="#232c38" vertical={false} />
                 <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} minTickGap={24} />
                 <YAxis
@@ -103,7 +103,7 @@ export default function WeightPage() {
                   tick={{ fill: '#64748b', fontSize: 11 }}
                   tickLine={false}
                   axisLine={false}
-                  width={48}
+                  width={44}
                 />
                 <Tooltip
                   contentStyle={{

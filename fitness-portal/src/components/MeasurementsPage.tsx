@@ -110,10 +110,10 @@ export default function MeasurementsPage() {
         <Card title="Waist and chest over time" sub="Waist down, chest holding — that is recomposition.">
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={series} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <LineChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke="#232c38" vertical={false} />
                 <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} minTickGap={24} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} width={48} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} width={44} />
                 <Tooltip
                   contentStyle={{ background: '#161b22', border: '1px solid #232c38', borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: '#94a3b8' }}
