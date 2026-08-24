@@ -261,6 +261,21 @@ a:hover { text-decoration: underline; }
 .tb .tl { font-size: 10px; color: var(--ink-3); text-align: center; }
 .tb:hover .tbar { filter: brightness(1.15); }
 
+/* a folded-away section: closed by default, still one click from everything */
+details.fold { margin-top: 22px; border-top: 1px solid var(--rule); padding-top: 12px; }
+details.fold > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 10px;
+  padding: 4px 0; border-radius: 4px;
+}
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before {
+  content: "\25B8"; color: var(--ink-3); font-size: 11px; transition: transform .15s ease; display: inline-block;
+}
+details.fold[open] > summary::before { transform: rotate(90deg); }
+details.fold > summary:hover .fold-title { color: var(--ink); }
+.fold-title { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
+.fold-meta { font-size: 12px; color: var(--ink-3); margin-left: auto; }
+
 /* period comparison — previous behind, current in front */
 .cmp { display: block; position: relative; height: 14px; }
 .cmp-prev, .cmp-cur { position: absolute; left: 0; border-radius: 2px; }
@@ -303,15 +318,15 @@ button.linkish:hover { text-decoration: underline; background: none; }
 /* grouped project lines */
 .bucket { border-top: 1px solid var(--rule); padding-top: 9px; }
 .bucket > h4 { margin: 0 0 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-.bucket ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-.bucket li { display: grid; grid-template-columns: 3px 1fr; gap: 9px; align-items: start; }
-.bucket li .rail { border-radius: 2px; align-self: stretch; background: var(--rule-strong); }
-.bucket.b-critical li .rail { background: var(--critical); }
-.bucket.b-serious  li .rail { background: var(--serious); }
-.bucket.b-good     li .rail { background: var(--good); }
-.bucket li .t { font-size: 13px; }
-.bucket li .s { font-size: 12px; color: var(--ink-2); }
-.bucket li .m { font-size: 11.5px; color: var(--ink-3); }
+.bucket ul.blist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.bucket ul.blist > li { display: grid; grid-template-columns: 3px 1fr; gap: 9px; align-items: start; }
+.bucket ul.blist > li .rail { border-radius: 2px; align-self: stretch; background: var(--rule-strong); }
+.bucket.b-critical ul.blist > li .rail { background: var(--critical); }
+.bucket.b-serious  ul.blist > li .rail { background: var(--serious); }
+.bucket.b-good     ul.blist > li .rail { background: var(--good); }
+.bucket .t { font-size: 13px; }
+.bucket .s { font-size: 12px; color: var(--ink-2); }
+.bucket .m { font-size: 11.5px; color: var(--ink-3); }
 
 /* meeting + chat feed */
 .feed { display: grid; gap: 10px; }
@@ -363,7 +378,7 @@ details.detail summary:hover { color: var(--ink-2); }
   </div>
   <div class="masthead-in" style="padding-top:0">
     <div class="controls" id="controls" hidden>
-    <div class="ctl">
+    <div class="ctl" data-filter="period">
       <label id="lbl-period">Period</label>
       <div class="segmented" role="group" aria-labelledby="lbl-period" id="period-group">
         <button data-period="day"     aria-pressed="false">Day</button>
@@ -373,7 +388,7 @@ details.detail summary:hover { color: var(--ink-2); }
         <button data-period="year"    aria-pressed="false">Year</button>
       </div>
     </div>
-    <div class="ctl">
+    <div class="ctl" data-filter="team">
       <label id="lbl-org">Team</label>
       <div class="segmented" role="group" aria-labelledby="lbl-org" id="org-group">
         <button data-org="both" aria-pressed="true">Both</button>
@@ -381,11 +396,11 @@ details.detail summary:hover { color: var(--ink-2); }
         <button data-org="hbs"  aria-pressed="false">HBS</button>
       </div>
     </div>
-    <div class="ctl"><label for="f-eng">Engineer</label><select id="f-eng"><option value="">All</option></select></div>
-    <div class="ctl"><label for="f-util">Utility</label><select id="f-util"><option value="">All</option></select></div>
-    <div class="ctl"><label for="f-type">Type</label><select id="f-type"><option value="">All</option></select></div>
-    <div class="ctl"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
-    <div class="ctl" style="margin-left:auto"><span class="stamp" id="count-stamp"></span></div>
+    <div class="ctl" data-filter="engineer"><label for="f-eng">Engineer</label><select id="f-eng"><option value="">All</option></select></div>
+    <div class="ctl" data-filter="utility"><label for="f-util">Utility</label><select id="f-util"><option value="">All</option></select></div>
+    <div class="ctl" data-filter="type"><label for="f-type">Type</label><select id="f-type"><option value="">All</option></select></div>
+    <div class="ctl" data-filter="q"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
+    <div class="ctl" data-filter="count" style="margin-left:auto"><span class="stamp" id="count-stamp"></span></div>
   </div>
   </div>
 </div>
@@ -1019,6 +1034,34 @@ function filtered() {
   });
 }
 
+/* Only show a control where it changes what the board in front of you shows.
+   Numbers reads the KPI board, to-dos and meetings read their own sources, and
+   My desk is already scoped to one person — narrowing those by engineer or
+   team would be a control that quietly does nothing. */
+const VIEW_FILTERS = {
+  pipeline: ["period", "team", "engineer", "utility", "type", "q", "count"],
+  numbers:  ["period"],
+  mydesk:   ["utility", "type", "q"],
+  asap:     ["team", "engineer", "utility", "type", "q", "count"],
+  todos:    [],
+  phases:   ["period", "team", "engineer", "utility", "type", "q", "count"],
+  projects: ["team", "engineer", "utility", "type", "q", "count"],
+  digest:   ["team", "engineer", "utility", "type", "q"],
+  intel:    [],
+};
+
+function applyViewFilters() {
+  const allowed = new Set(VIEW_FILTERS[state.view] || []);
+  let shown = 0;
+  document.querySelectorAll("#controls [data-filter]").forEach(el => {
+    const on = allowed.has(el.getAttribute("data-filter"));
+    el.hidden = !on;
+    if (on) shown++;
+  });
+  const bar = document.querySelector("#controls");
+  if (bar) bar.hidden = shown === 0;
+}
+
 /* ========================= rendering ===================================== */
 const $ = sel => document.querySelector(sel);
 const main = $("#main");
@@ -1413,8 +1456,9 @@ function renderMyDesk(list) {
     <span class="hint num" style="margin-left:auto">${noOwner.length}</span></div>` + ptable(noOwner.slice(0, 40), { priority: true });
 
   if (upcoming.length) {
-    out += `<div class="section-head"><h2>Coming up on your calendar</h2><span class="hint">Next meetings, with the projects they touch</span></div>
-      <div class="feed">${upcoming.map(m => meetingCard(m)).join("")}</div>`;
+    out += `<div class="section-head"><h2>Coming up on your calendar</h2>
+      <span class="hint">Talking points for each, built from the boards</span></div>
+      <div class="cards">${upcoming.slice(0, 6).map(meetingPrepCard).join("")}</div>`;
   }
   return out;
 }
@@ -1818,7 +1862,7 @@ function bucket(title, cls, items, lineFn) {
   if (!items.length) return "";
   return `<div class="bucket b-${cls}">
     <h4 class="sev-${cls === "plain" ? "none" : cls}">${cls !== "plain" ? sevIcon(cls) : ""}${esc(title)} (${items.length})</h4>
-    <ul>${items.map(p => `<li><span class="rail"></span><span>${lineFn(p)}</span></li>`).join("")}</ul>
+    <ul class="blist">${items.map(p => `<li><span class="rail"></span><span>${lineFn(p)}</span></li>`).join("")}</ul>
   </div>`;
 }
 
@@ -1885,6 +1929,164 @@ function projectTags(pred) {
     `<span class="tag">${esc(h.name)}</span>`).join("")}${hits.length > 8 ? `<span class="tag none">+${hits.length - 8} more</span>` : ""}</div>`;
 }
 
+/* --------------------------------------------------------------------------
+   Meeting prep.
+
+   Everything here is read off the boards and the calendar — the projects the
+   meeting touches, what each of them is waiting on, who is in the room and
+   what they own, and what the last instance of a recurring meeting covered.
+   Nothing is invented; each line names the project it came from.
+-------------------------------------------------------------------------- */
+
+/* Recurring meetings keep their subject, so a normalised title matches this
+   week's invite to the last Fireflies recap of the same series. */
+const normTitle = t => String(t).toLowerCase()
+  .replace(/\b(weekly|bi-?weekly|monthly|recurring)\b/g, "")
+  .replace(/[0-9]{1,2}[\/.-][0-9]{1,2}([\/.-][0-9]{2,4})?/g, "")
+  .replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+
+/* Attendee addresses are firstinitial+lastname at HBS (PLawson, AWhite), so a
+   surname match maps most of the room to a person on the boards. Anything that
+   does not resolve is shown as the raw address rather than guessed at. */
+function attendeeName(email, names) {
+  const local = String(email).split("@")[0].toLowerCase().replace(/[._-]/g, "");
+  let best = null;
+  for (const n of names) {
+    const parts = n.toLowerCase().split(/\s+/);
+    if (parts.length < 2) continue;
+    const last = parts[parts.length - 1], first = parts[0];
+    if (local === (first[0] + last) || local === (first + last) || local === last) { best = n; break; }
+    const stem = local.slice(1);
+    if (local[0] === first[0] && stem.length >= 4 && last.startsWith(stem)) { best = n; break; }
+    if (!best && local.endsWith(last) && last.length >= 5) best = n;
+  }
+  return best;
+}
+
+function meetingBrief(m) {
+  const touched = state.projects.filter(p =>
+    (p.calendar || []).some(x => x.id === m.id) || (p.meetings || []).some(x => x.id === m.id));
+
+  /* everyone who appears anywhere on the boards, for attendee resolution */
+  const allNames = new Set();
+  for (const p of state.projects) { for (const n of p.hbsAll) allNames.add(n); for (const n of p.icfEngs) allNames.add(n); }
+  const names = [...allNames];
+
+  const people = (m.attendees || []).map(a => {
+    const who = attendeeName(a, names);
+    if (!who) return { email: a, name: null, external: !isHbs(a), icf: isIcf(a) };
+    const theirs = state.projects.filter(p => p.hbsAll.includes(who) || p.icfEngs.includes(who));
+    return {
+      email: a, name: who, external: !isHbs(a), icf: isIcf(a),
+      active: theirs.length,
+      owed: theirs.filter(p => p.band === "critical").length,
+    };
+  });
+
+  /* what the last instance of this series covered */
+  const key = normTitle(m.title);
+  const prior = key ? state.meetings
+    .filter(x => x.id !== m.id && normTitle(x.title) === key && x.bullets.length)
+    .sort((a, b) => String(b.when).localeCompare(String(a.when)))[0] : null;
+
+  const owed = touched.filter(p => p.band === "critical" || p.band === "serious")
+    .sort((a, b) => b.priority - a.priority);
+  const decisions = touched.filter(p => !p.ownerNames.length || !p.evDates.dAudit || !p.hasTu);
+
+  /* When ICF is in the room, the meeting is external: keep prep to the shared
+     board's facts, exactly as the ICF digests do. */
+  const withIcf = people.some(x => x.icf) || m.withIcf;
+
+  return { touched, people, prior, owed, decisions, withIcf };
+}
+
+function briefText(m, b) {
+  const L = [];
+  L.push(m.title);
+  L.push(`${m.when}${m.tz ? " " + m.tz : ""}`);
+  L.push("");
+  if (b.withIcf) L.push("[ICF in the room — internal notes and commercials left out]", "");
+  if (b.touched.length) {
+    L.push(`PROJECTS ON THE TABLE (${b.touched.length})`);
+    for (const p of b.touched) {
+      L.push(`  * ${p.name} — ${p.phase}${p.icfStatus ? " / " + p.icfStatus : ""}`);
+      L.push(`      Next: ${p.need}${p.ownerNames.length ? " — " + p.ownerNames.join(", ") : " — nobody assigned"}`);
+      if (!b.withIcf && p.evidence) L.push(`      Latest: ${p.evidence.slice(0, 150)}`);
+    }
+    L.push("");
+  }
+  if (b.owed.length) {
+    L.push(`NEEDS A DECISION OR AN ANSWER (${b.owed.length})`);
+    for (const p of b.owed) L.push(`  * ${p.name} — ${p.need}${p.daysInPhase != null ? ` (${p.daysInPhase} days in phase)` : ""}`);
+    L.push("");
+  }
+  if (b.decisions.length) {
+    L.push("GAPS TO CLOSE");
+    for (const p of b.decisions) {
+      const g = [];
+      if (!p.ownerNames.length) g.push("no owner on the next step");
+      if (!p.evDates.dAudit) g.push("no audit date");
+      if (!p.hasTu) g.push("not linked to the TU tracker");
+      L.push(`  * ${p.name} — ${g.join(", ")}`);
+    }
+    L.push("");
+  }
+  if (b.prior) {
+    L.push(`CARRIED OVER FROM ${b.prior.when}`);
+    for (const x of b.prior.bullets) L.push(`  * ${x}`);
+    L.push("");
+  }
+  if (b.people.length) {
+    L.push("IN THE ROOM");
+    for (const x of b.people) {
+      if (x.name) L.push(`  * ${x.name}${x.active ? ` — ${x.active} active, ${x.owed} owed` : ""}`);
+      else L.push(`  * ${x.email}${x.external ? " (external)" : ""}`);
+    }
+  }
+  return L.join("\n");
+}
+
+let briefSeq = 0;
+function meetingPrepCard(m) {
+  const b = meetingBrief(m);
+  const id = "brief-" + (briefSeq++);
+  const link = m.firefliesUrl || m.url;
+  const chip = (t, c) => `<span class="chip ${c || ""}">${esc(t)}</span>`;
+  return `<div class="card">
+    <div class="card-hd">
+      <span class="nm">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(m.title)}</a>` : esc(m.title)}</span>
+      ${b.withIcf ? chip("ICF in the room", "chip-icf") : ""}
+      ${!b.withIcf && m.external ? chip("external", "chip-hbs") : ""}
+      <span class="to">${esc(m.when)}${m.tz ? " " + esc(m.tz) : ""} &middot; ${(m.attendees || []).length} attending</span>
+    </div>
+    <div class="card-bd">
+      ${b.touched.length ? bucket("Projects on the table", "plain", b.touched, p =>
+        `<span class="t">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</span>
+         <div class="s">${esc(p.need)}</div>
+         <div class="m">${esc([p.phase, p.icfStatus || p.tuStatus, p.ownerNames.join(", ") || "nobody assigned"].filter(Boolean).join(" · "))}</div>`)
+        : `<div class="ev">No project matched this meeting by name. Rename the invite to include the site and it will pick them up.</div>`}
+      ${bucket("Needs a decision or an answer", "critical", b.owed, p =>
+        `<span class="t">${esc(p.name)}</span><div class="s">${esc(p.need)}</div>
+         <div class="m">${p.daysInPhase != null ? p.daysInPhase + " days in phase" : ""}</div>`)}
+      ${bucket("Gaps to close", "warning", b.decisions, p => {
+        const g = [];
+        if (!p.ownerNames.length) g.push("no owner on the next step");
+        if (!p.evDates.dAudit) g.push("no audit date");
+        if (!p.hasTu) g.push("not linked to the TU tracker");
+        return `<span class="t">${esc(p.name)}</span><div class="s">${esc(g.join(", "))}</div>`;
+      })}
+      ${b.prior ? `<div class="bucket"><h4>Carried over from ${esc(b.prior.when)}</h4>
+        <ul class="ov" style="padding-left:16px">${b.prior.bullets.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+      ${b.people.length ? `<div class="bucket"><h4>In the room</h4><div class="tags">${b.people.map(x =>
+        x.name ? `<span class="tag">${esc(x.name)}${x.active ? ` · ${x.active} active${x.owed ? `, ${x.owed} owed` : ""}` : ""}</span>`
+               : `<span class="tag none">${esc(x.email)}</span>`).join("")}</div></div>` : ""}
+      <details class="detail"><summary>Copy as an agenda</summary>
+        <div class="detail-body"><pre id="${id}">${esc(briefText(m, b))}</pre>
+        <div class="digest-actions"><button data-copy="${id}">Copy</button></div></div></details>
+    </div>
+  </div>`;
+}
+
 function meetingCard(m) {
   const link = m.firefliesUrl || m.url;
   const who = m.kind === "calendar"
@@ -1920,27 +2122,49 @@ function renderIntel() {
     </div>`);
 
   if (state.errors.calendar) parts.push(errNote("Calendar meetings", state.errors.calendar, MS365));
-  if (cal.length) {
-    const upcoming = cal.filter(m => m.day >= isoDay(0));
-    const past = cal.filter(m => m.day < isoDay(0));
-    if (upcoming.length) parts.push(`<div class="section-head"><h2>Coming up</h2><span class="hint">Next meetings on your calendar</span>
-      <span class="hint num" style="margin-left:auto">${upcoming.length}</span></div>
-      <div class="feed">${upcoming.slice().reverse().map(meetingCard).join("")}</div>`);
-    if (past.length) parts.push(`<div class="section-head"><h2>Recent meetings</h2><span class="hint">The last three weeks</span>
-      <span class="hint num" style="margin-left:auto">${past.length}</span></div>
-      <div class="feed">${past.slice(0, 25).map(meetingCard).join("")}</div>`);
-  }
-
   if (state.errors.fireflies) parts.push(errNote("Fireflies recaps (Outlook)", state.errors.fireflies, MS365));
   if (state.errors.teams) parts.push(errNote("Teams messages", state.errors.teams, MS365));
 
-  if (mtg.length) {
-    parts.push(`<div class="section-head"><h2>Fireflies meetings</h2><span class="hint">What each meeting covered, newest first</span></div>
-      <div class="feed">${mtg.map(meetingCard).join("")}</div>`);
-  } else if (!state.errors.fireflies && sourceState.fireflies !== "ok") {
+  /* Upcoming first and open — that is the part you act on. */
+  const upcoming = cal.filter(m => m.day >= isoDay(0)).slice().reverse();
+  if (upcoming.length) {
+    parts.push(`<div class="section-head"><h2>Prep for what is coming up</h2>
+      <span class="hint">Talking points built from the boards — what each meeting touches, what it is waiting on, and what the last one covered.</span>
+      <span class="hint num" style="margin-left:auto">${upcoming.length}</span></div>
+      <div class="cards">${upcoming.map(meetingPrepCard).join("")}</div>`);
+  } else if (sourceState.calendar === "ok") {
+    parts.push(`<div class="section-head"><h2>Prep for what is coming up</h2></div>
+      <div class="panel empty">Nothing on the calendar in the next three weeks.</div>`);
+  } else if (!state.errors.calendar) {
+    parts.push(`<div class="skel"><span class="spin"></span>Reading your calendar…</div>`);
+  }
+
+  /* Everything already held: one chronological list, folded away. A Fireflies
+     recap and the calendar entry for the same meeting are the same event, so
+     the recap wins — it is the one carrying the notes. */
+  const past = cal.filter(m => m.day < isoDay(0));
+  const recapKeys = new Set(mtg.map(m => normTitle(m.title) + "|" + m.when));
+  const recapTitles = new Map();
+  for (const m of mtg) recapTitles.set(normTitle(m.title), m.when);
+  const pastOnly = past.filter(m => {
+    const k = normTitle(m.title);
+    if (recapKeys.has(k + "|" + m.day)) return false;
+    const w = recapTitles.get(k);
+    if (!w) return true;
+    return Math.abs(new Date(w) - new Date(m.day)) > 2 * 86400000;   // same series, different week
+  });
+  const history = [...mtg, ...pastOnly].sort((a, b) => String(b.when || b.day).localeCompare(String(a.when || a.day)));
+
+  if (history.length) {
+    const withNotes = history.filter(m => m.bullets && m.bullets.length).length;
+    parts.push(`<details class="fold"><summary>
+        <span class="fold-title">Past meetings and recaps</span>
+        <span class="fold-meta num">${history.length} meeting${history.length === 1 ? "" : "s"}${withNotes ? ` · ${withNotes} with notes` : ""}</span>
+      </summary>
+      <div class="feed" style="margin-top:10px">${history.map(meetingCard).join("")}</div>
+    </details>`);
+  } else if (sourceState.fireflies !== "ok" && !state.errors.fireflies) {
     parts.push(`<div class="skel"><span class="spin"></span>Reading Fireflies recaps from Outlook…</div>`);
-  } else if (!state.errors.fireflies) {
-    parts.push(`<div class="panel empty">No Fireflies recap emails found in your recent mail.</div>`);
   }
 
   if (tm.length) {
@@ -1967,6 +2191,7 @@ function errNote(what, err, server) {
 function render() {
   const list = filtered();
   $("#count-stamp").textContent = `${list.length} of ${state.projects.length} projects`;
+  applyViewFilters();
 
   let body = "";
   if (state.view === "pipeline") body = renderPipeline(list);
@@ -2340,7 +2565,6 @@ async function boot(refresh) {
   renderBanners();
   fillFilters();
   setStamp();
-  $("#controls").hidden = false;
   render();
 
   await Promise.all([

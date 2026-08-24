@@ -186,6 +186,42 @@ reads back fine, which is what makes the projection figures available at all.
 standing engineering meetings, not an authoritative distribution list. Edit it
 to match who should actually receive the update.
 
+## Logging engineer replies
+
+When an engineer replies to their Monday digest saying what a project needs,
+that information otherwise stays in a mailbox. `tracker/log-reply.mjs` files it
+back onto the projects.
+
+It posts **updates** — the item's comment thread — never column edits. Nothing
+existing is overwritten, every entry is attributed and dated, and any single
+entry can be undone by deleting that update.
+
+### Steps
+
+1. Search Outlook for replies to the digest:
+   `outlook_email_search` with `query: "Your project update"`, restricted to the
+   last week. Replies come back with `RE:` on the subject.
+2. Read each reply with `read_resource`.
+3. For each one, run `tracker/log-reply.mjs` through the monday.com
+   `execute_code` tool:
+   `vars: { "FROM": "<engineer's name>", "REPLY": "<body>", "LOG_MODE": "summary" }`
+4. Read what it proposes. Re-run with `"APPLY": "true"` to post.
+5. Report the `unmatched` list — those are the parts nobody could file.
+
+### How it decides where something goes
+
+Per paragraph, not per email. A reply covering three projects posts three
+different excerpts rather than the whole message three times. A paragraph is
+matched by project name or by a quoted utility project number.
+
+Deliberately conservative:
+
+- Quoted original text is stripped, so only what the engineer wrote is logged.
+- Greetings and sign-offs are dropped.
+- A paragraph naming more than three projects is treated as unmatched — that
+  is a summary sentence, not a note about one project.
+- Anything it cannot place is returned rather than posted to a guessed item.
+
 ## Utility portal reconciliation
 
 `tracker/portal-reconcile.mjs` closes the gap where a project sits in **Flawed**
