@@ -1,0 +1,2290 @@
+<title>ICF × HBS Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+/* ---------- tokens: light is the base, both dark scopes redefine only tokens ---------- */
+:root {
+  color-scheme: light;
+  --surface:      #fcfcfb;
+  --panel:        #f3f5f8;
+  --panel-2:      #e9edf2;
+  --ink:          #12171d;
+  --ink-2:        #5a656f;
+  --ink-3:        #8a939c;
+  --rule:         #dde3ea;
+  --rule-strong:  #c4cdd7;
+  --accent:       #2a78d6;
+  --accent-ink:   #1c5cab;
+  --org-icf:      #2a78d6;
+  --org-hbs:      #eb6834;
+  --good:         #0ca30c;
+  --warning:      #fab219;
+  --serious:      #ec835a;
+  --critical:     #d03b3b;
+  --on-accent:    #ffffff;
+  --mag-1:        #86b6ef;  --m1-ink: #12171d;
+  --mag-2:        #5598e7;  --m2-ink: #12171d;
+  --mag-3:        #2a78d6;  --m3-ink: #ffffff;
+  --mag-4:        #1c5cab;  --m4-ink: #ffffff;
+  --mag-5:        #104281;  --m5-ink: #ffffff;
+  --focus:        #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface:     #14181c;
+    --panel:       #1b2026;
+    --panel-2:     #232a31;
+    --ink:         #eef2f6;
+    --ink-2:       #a9b4bf;
+    --ink-3:       #78838d;
+    --rule:        #2a3138;
+    --rule-strong: #3a434c;
+    --accent:      #3987e5;
+    --accent-ink:  #86b6ef;
+    --org-icf:     #3987e5;
+    --org-hbs:     #d95926;
+    --good:        #0ca30c;
+    --warning:     #fab219;
+    --serious:     #ec835a;
+    --critical:    #d03b3b;
+    --on-accent:   #0d1114;
+    --mag-1:       #184f95;  --m1-ink: #eef2f6;
+    --mag-2:       #2a78d6;  --m2-ink: #ffffff;
+    --mag-3:       #5598e7;  --m3-ink: #0d1114;
+    --mag-4:       #86b6ef;  --m4-ink: #0d1114;
+    --mag-5:       #b7d3f6;  --m5-ink: #0d1114;
+    --focus:       #86b6ef;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface:     #14181c;
+  --panel:       #1b2026;
+  --panel-2:     #232a31;
+  --ink:         #eef2f6;
+  --ink-2:       #a9b4bf;
+  --ink-3:       #78838d;
+  --rule:        #2a3138;
+  --rule-strong: #3a434c;
+  --accent:      #3987e5;
+  --accent-ink:  #86b6ef;
+  --org-icf:     #3987e5;
+  --org-hbs:     #d95926;
+  --good:        #0ca30c;
+  --warning:     #fab219;
+  --serious:     #ec835a;
+  --critical:    #d03b3b;
+  --on-accent:   #0d1114;
+  --mag-1:       #184f95;  --m1-ink: #eef2f6;
+  --mag-2:       #2a78d6;  --m2-ink: #ffffff;
+  --mag-3:       #5598e7;  --m3-ink: #0d1114;
+  --mag-4:       #86b6ef;  --m4-ink: #0d1114;
+  --mag-5:       #b7d3f6;  --m5-ink: #0d1114;
+  --focus:       #86b6ef;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.num, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.wrap { max-width: 1480px; margin: 0 auto; padding: 0 20px 72px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 40;
+}
+.masthead-in {
+  max-width: 1480px; margin: 0 auto; padding: 14px 20px 0;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px;
+}
+h1 { font-size: 19px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+h1 .x { color: var(--ink-3); font-weight: 400; padding: 0 2px; }
+.sub { color: var(--ink-2); font-size: 12.5px; margin: 0; }
+.masthead-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.stamp { font-size: 11.5px; color: var(--ink-3); }
+.stamp b { color: var(--ink-2); font-weight: 500; }
+
+button, select, input[type="search"] {
+  font: inherit; color: var(--ink); background: var(--panel);
+  border: 1px solid var(--rule-strong); border-radius: 5px; padding: 5px 10px;
+}
+button { cursor: pointer; }
+button:hover:not(:disabled) { background: var(--panel-2); }
+button:disabled { opacity: .5; cursor: default; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+.btn-primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.1); }
+
+/* ---------- tabs ---------- */
+.tabs { display: flex; gap: 2px; margin-top: 12px; }
+.tab {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  border-radius: 0; padding: 8px 12px; color: var(--ink-2); font-size: 13px; font-weight: 500;
+}
+.tab:hover { background: var(--panel); color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+/* ---------- controls ---------- */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  padding: 12px 0; margin-bottom: 4px; border-bottom: 1px solid var(--rule);
+}
+.ctl { display: flex; align-items: center; gap: 6px; }
+.ctl > label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); font-weight: 600; }
+.segmented { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 5px; overflow: hidden; }
+.segmented button {
+  border: none; border-radius: 0; background: var(--surface); padding: 5px 11px;
+  font-size: 12.5px; color: var(--ink-2); border-right: 1px solid var(--rule);
+}
+.segmented button:last-child { border-right: none; }
+.segmented button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 500; }
+input[type="search"] { min-width: 220px; }
+
+/* ---------- funnel rail ---------- */
+.section-head { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 10px; }
+.section-head h2 { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin: 0; }
+.section-head .hint { font-size: 12px; color: var(--ink-3); }
+
+.rail { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 1180px) { .rail { grid-template-columns: repeat(5, minmax(0,1fr)); } }
+@media (max-width: 700px)  { .rail { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.stage {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 7px;
+  padding: 10px 11px 11px; display: flex; flex-direction: column; gap: 2px;
+  text-align: left; position: relative; overflow: hidden;
+}
+.stage .ord { font-size: 10px; color: var(--ink-3); letter-spacing: .06em; }
+.stage .nm { font-size: 11.5px; font-weight: 600; color: var(--ink-2); line-height: 1.25; min-height: 2.5em; }
+.stage .big { font-size: 27px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+.stage .open { font-size: 11.5px; color: var(--ink-3); }
+.stage .open b { color: var(--ink-2); font-weight: 500; }
+.stage .delta { font-size: 11px; }
+.up { color: var(--good); } .down { color: var(--critical); } .flat { color: var(--ink-3); }
+.stage .bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); }
+
+/* ---------- panels & tables ---------- */
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; }
+.scroller { overflow-x: auto; }
+.scroller.tall { max-height: 72vh; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+thead th {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600;
+  border-bottom: 1px solid var(--rule-strong); white-space: nowrap; background: var(--panel);
+}
+.scroller.tall thead th { position: sticky; top: 0; z-index: 2; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--panel-2); }
+td.n, th.n { text-align: right; }
+
+/* matrix */
+.matrix th.rot { white-space: normal; max-width: 74px; }
+.cell { display: block; text-align: center; border-radius: 4px; padding: 3px 0; font-size: 12.5px; }
+.m0 { color: var(--ink-3); }
+.m1 { background: var(--mag-1); color: var(--m1-ink); }
+.m2 { background: var(--mag-2); color: var(--m2-ink); }
+.m3 { background: var(--mag-3); color: var(--m3-ink); }
+.m4 { background: var(--mag-4); color: var(--m4-ink); }
+.m5 { background: var(--mag-5); color: var(--m5-ink); }
+
+.legend { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--ink-3); }
+.legend .sw { width: 16px; height: 11px; border-radius: 2px; display: inline-block; }
+
+/* chips */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 1px 7px; border-radius: 10px;
+  font-size: 11px; font-weight: 500; border: 1px solid var(--rule-strong); color: var(--ink-2); white-space: nowrap;
+}
+.chip .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.chip-icf { border-color: var(--org-icf); color: var(--org-icf); }
+.chip-hbs { border-color: var(--org-hbs); color: var(--org-hbs); }
+.sev { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.sev svg { flex: none; }
+.sev-good { color: var(--good); } .sev-warning { color: var(--warning); }
+.sev-serious { color: var(--serious); } .sev-critical { color: var(--critical); }
+.sev-none { color: var(--ink-3); }
+
+.need { color: var(--ink); }
+.who { color: var(--ink-2); font-size: 12.5px; }
+.who .unassigned { color: var(--serious); }
+.ev { color: var(--ink-3); font-size: 11.5px; margin-top: 3px; }
+.ev b { color: var(--ink-2); font-weight: 500; }
+.proj-name { font-weight: 500; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* status banners */
+.note { padding: 11px 13px; border-radius: 7px; border: 1px solid var(--rule-strong); background: var(--panel); font-size: 13px; margin: 12px 0; }
+.note-critical { border-color: var(--critical); }
+.note-warning  { border-color: var(--warning); }
+.note h3 { margin: 0 0 4px; font-size: 13px; font-weight: 600; }
+.note p { margin: 0; color: var(--ink-2); }
+.empty { padding: 26px; text-align: center; color: var(--ink-3); font-size: 13px; }
+
+.grid-2 { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 1080px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.digest { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+.digest h3 { margin: 0 0 2px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.digest .meta { font-size: 11.5px; color: var(--ink-3); margin-bottom: 9px; }
+.digest pre {
+  margin: 0; white-space: pre-wrap; word-wrap: break-word; font-size: 12.5px; line-height: 1.55;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--ink-2);
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 11px 12px; max-height: 340px; overflow: auto;
+}
+.digest-actions { display: flex; gap: 8px; margin-top: 9px; }
+
+/* thirteen-month trend — one hue, height carries the amount */
+.tbars { display: grid; grid-template-columns: repeat(13, 1fr); gap: 5px; align-items: end; height: 150px; }
+.tb { display: grid; grid-template-rows: auto 1fr auto; align-items: end; height: 100%; gap: 3px; }
+.tb .tv { font-size: 9.5px; color: var(--ink-2); text-align: center; white-space: nowrap; }
+.tb .tbar { display: block; width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; align-self: end; }
+.tb .tbar.live { background: var(--mag-2); }
+.tb .tl { font-size: 10px; color: var(--ink-3); text-align: center; }
+.tb:hover .tbar { filter: brightness(1.15); }
+
+/* period comparison — previous behind, current in front */
+.cmp { display: block; position: relative; height: 14px; }
+.cmp-prev, .cmp-cur { position: absolute; left: 0; border-radius: 2px; }
+.cmp-prev { top: 0; height: 6px; background: var(--rule-strong); }
+.cmp-cur  { top: 8px; height: 6px; background: var(--accent); }
+
+button.linkish {
+  background: none; border: none; padding: 0; font: inherit; font-weight: 500;
+  color: var(--accent); cursor: pointer; text-align: left; border-radius: 3px;
+}
+button.linkish:hover { text-decoration: underline; background: none; }
+
+/* ---------- digest & intel cards ---------- */
+.cards { display: grid; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.card-hd { display: flex; align-items: center; gap: 9px; padding: 12px 15px 0; flex-wrap: wrap; }
+.card-hd .nm { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.card-hd .to { margin-left: auto; font-size: 11.5px; color: var(--ink-3); }
+.card-bd { padding: 10px 15px 13px; display: grid; gap: 10px; }
+
+/* stat strip */
+.stats { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.stat { flex: 1 1 0; min-width: 74px; padding: 6px 11px; border-right: 1px solid var(--rule); }
+.stat:last-child { border-right: none; }
+.stat .v { font-size: 19px; font-weight: 600; line-height: 1.15; letter-spacing: -.02em; }
+.stat .l { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; margin-top: 1px; }
+.stat.is-critical .v { color: var(--critical); }
+.stat.is-serious  .v { color: var(--serious); }
+.stat.is-good     .v { color: var(--good); }
+.stat.is-zero .v { color: var(--ink-3); font-weight: 500; }
+
+/* stage profile — one hue, height carries the count */
+.profile { display: grid; gap: 5px; }
+.profile .cap { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
+.strip { display: grid; grid-template-columns: repeat(9, minmax(0,1fr)); gap: 3px; }
+.strip .sc { display: grid; gap: 2px; }
+.strip .sl { font-size: 9px; text-align: center; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.strip .cell { padding: 4px 0; font-size: 12px; }
+
+/* grouped project lines */
+.bucket { border-top: 1px solid var(--rule); padding-top: 9px; }
+.bucket > h4 { margin: 0 0 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.bucket ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.bucket li { display: grid; grid-template-columns: 3px 1fr; gap: 9px; align-items: start; }
+.bucket li .rail { border-radius: 2px; align-self: stretch; background: var(--rule-strong); }
+.bucket.b-critical li .rail { background: var(--critical); }
+.bucket.b-serious  li .rail { background: var(--serious); }
+.bucket.b-good     li .rail { background: var(--good); }
+.bucket li .t { font-size: 13px; }
+.bucket li .s { font-size: 12px; color: var(--ink-2); }
+.bucket li .m { font-size: 11.5px; color: var(--ink-3); }
+
+/* meeting + chat feed */
+.feed { display: grid; gap: 10px; }
+.fitem { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 11px 14px; display: grid; gap: 7px; }
+.fitem .top { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.fitem .who2 { font-weight: 600; font-size: 13.5px; }
+.fitem .when { font-size: 11.5px; color: var(--ink-3); }
+.fitem .msg { font-size: 13px; color: var(--ink-2); }
+.fitem ul.ov { margin: 0; padding-left: 15px; display: grid; gap: 4px; font-size: 12.5px; color: var(--ink-2); }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-size: 11px; padding: 1px 8px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--rule-strong); color: var(--ink-2); }
+.tag.none { color: var(--ink-3); border-style: dashed; }
+.avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 600;
+  background: var(--panel-2); border: 1px solid var(--rule-strong); color: var(--ink-2); flex: none; }
+
+details.detail { border-top: 1px dashed var(--rule); margin-top: 5px; padding-top: 5px; }
+details.detail summary { cursor: pointer; font-size: 11.5px; color: var(--ink-3); }
+details.detail summary:hover { color: var(--ink-2); }
+.detail-body { padding: 7px 0 2px; font-size: 12.5px; color: var(--ink-2); display: grid; gap: 5px; }
+.detail-body .k { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+
+.skel { color: var(--ink-3); font-size: 13px; padding: 20px 0; }
+.spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--rule-strong); border-top-color: var(--accent); border-radius: 50%; animation: sp .7s linear infinite; vertical-align: -1px; margin-right: 6px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.srcline { font-size: 11.5px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 0 0; }
+</style>
+
+<div class="masthead">
+  <div class="masthead-in">
+    <h1>ICF <span class="x">×</span> HBS Pipeline</h1>
+    <p class="sub">Live from monday.com, Teams and Outlook</p>
+    <div class="masthead-right">
+      <span class="stamp" id="stamp"></span>
+      <button id="refresh" class="btn-primary">Refresh</button>
+    </div>
+  </div>
+  <div class="masthead-in" style="padding-top:0">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true"  data-view="pipeline">Pipeline</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="numbers">Numbers</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="audits">Audits</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="digest">Weekly digest</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="intel">Meetings</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="banners"></div>
+
+  <div class="controls" id="controls" hidden>
+    <div class="ctl">
+      <label id="lbl-period">Period</label>
+      <div class="segmented" role="group" aria-labelledby="lbl-period" id="period-group">
+        <button data-period="day"     aria-pressed="false">Day</button>
+        <button data-period="week"    aria-pressed="true">Week</button>
+        <button data-period="month"   aria-pressed="false">Month</button>
+        <button data-period="quarter" aria-pressed="false">Quarter</button>
+        <button data-period="year"    aria-pressed="false">Year</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label id="lbl-org">Team</label>
+      <div class="segmented" role="group" aria-labelledby="lbl-org" id="org-group">
+        <button data-org="both" aria-pressed="true">Both</button>
+        <button data-org="icf"  aria-pressed="false">ICF</button>
+        <button data-org="hbs"  aria-pressed="false">HBS</button>
+      </div>
+    </div>
+    <div class="ctl"><label for="f-eng">Engineer</label><select id="f-eng"><option value="">All</option></select></div>
+    <div class="ctl"><label for="f-util">Utility</label><select id="f-util"><option value="">All</option></select></div>
+    <div class="ctl"><label for="f-type">Type</label><select id="f-type"><option value="">All</option></select></div>
+    <div class="ctl"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
+    <div class="ctl" style="margin-left:auto"><span class="stamp" id="count-stamp"></span></div>
+  </div>
+
+  <main id="main"><div class="skel"><span class="spin"></span>Connecting to monday.com…</div></main>
+</div>
+
+<script type="module">
+"use strict";
+
+/* ============================================================================
+   ICF × HBS Pipeline
+   Reads live from the viewer's own connectors. Nothing is stored in this page.
+
+   monday.com  — ICF/HBS Project Tracker (18424932045) joined to
+                 Master TU Tracker (1069746645) through the board-relation column.
+   Microsoft 365 — Teams messages and Fireflies meeting recaps in Outlook,
+                 matched to projects by name to surface the latest real-world signal.
+   ========================================================================== */
+
+const MONDAY = "monday.com";
+const MS365  = "Microsoft 365";
+
+const BOARD_ICF = 18424932045;
+const BOARD_TU  = 1069746645;
+const BOARD_KPI = 1069742731;       // Monthly KPIs — one row per milestone, with money on it
+const KPI = {
+  utility: "text", source: "text8", engineer: "person", status: "status",
+  date: "date4", incentive: "numbers_2", hbsShare: "dup__of_incentive", savings: "numbers5",
+};
+const BOARD_PA_WORK = 9889346356;   // Preapproval Workload — grouped by person
+const BOARD_CO_WORK = 10030690180;  // Closeout Workload — grouped by person
+
+/* The workload boards carry the real per-person to-do list. Their lookup
+   columns are mirrors, which the connector cannot read, so only the board's
+   own columns are requested and the rest is joined from the TU tracker. */
+const W = {
+  dueDate:  "date4",
+  due2:     "date_mkv5afd3",
+  due3:     "date_mkv59n4q",
+  done:     "date_mkv5c7c0",
+  status:   "color_mkve3fp3",
+  hours:    "numeric_mkwc48vb",
+  rel:      "board_relation_mkv5tqg7",
+};
+const W_ADDED_PA = "date_mm5w9q0r";
+const W_ADDED_CO = "date_mm5wyvbx";
+const WORK_DONE_GROUPS = new Set(["Completed", "Cancelled"]);
+const RFI_GROUP = "RFI's to Answer";
+
+/* Domain rules decide what is internal. Anything addressed outside HBS is
+   treated as external, and ICF/ESAI addresses mark a meeting as ICF-facing. */
+const HBS_DOMAIN = "hbssolutionsinc.com";
+const ICF_DOMAINS = ["icf.com", "esai.technology"];
+const domainOf = a => String(a || "").split("@")[1]?.toLowerCase() || "";
+const isHbs = a => domainOf(a) === HBS_DOMAIN;
+const isIcf = a => ICF_DOMAINS.includes(domainOf(a));
+
+/* The manager this dashboard belongs to — drives the "My desk" board. */
+const ME = { name: "Ameya Upadhyay", email: "aupad@hbssolutionsinc.com" };
+
+/* --- column ids (verified against both boards) --------------------------- */
+const C = {
+  projectId:  "text_mm5wf2g3",
+  icfEng:     "dropdown_mm5wqe1v",
+  hbsEng:     "multiple_person_mm5x8h0r",
+  utility:    "dropdown_mm5w3gg4",
+  type:       "color_mm5wrty9",
+  phase:      "color_mm5wyfg2",
+  status:     "status",
+  dSubPA:     "date_mm5wscn8",
+  dPAd:       "date_mm5wndmw",
+  dSubCO:     "date_mm5wsmw5",
+  dCOd:       "date_mm5w35b6",
+  dLastUpd:   "date_mm5w20p4",
+  dNextAct:   "date_mm5yw32z",
+  ecd:        "date_mm5wz6xx",
+  incentive:  "numeric_mm5whe76",
+  kwh:        "numeric_mm5wr51f",
+  therms:     "numeric_mm5we6ty",
+  notes:      "long_text_mm5wn8nj",
+  lastBy:     "color_mm5whmac",
+  aging:      "formula_mm6c5jr1",
+  daysPhase:  "formula_mm6cpemz",
+  rel:        "board_relation_mm5xewyr",
+};
+const T = {
+  status:     "status",
+  sowStatus:  "color_mm47r8nd",
+  dAudit:     "date_mkrvfahg",
+  dImpl:      "date_mm4b5x2",
+  dProjCO:    "date__1",
+  dSowClient: "date_mm5rd9h7",
+  dSowRahls:  "date_mm5r3pk9",
+  dSowSigned: "date73",
+  dSignedPA:  "date1",
+  auditor:    "person",
+  paLead:     "people",
+  coLead:     "people__1",
+  dealOwner:  "multiple_person_mkwfm19x",
+  reviewEng:  "dropdown_mm4bc2hd",
+  priority:   "status_1",
+  adminNotes: "long_text",
+  aiSummary:  "text_mm4jb8gz",
+  projectId:  "text8",
+  rel:        "board_relation_mm5xccpb",
+};
+const ICF_COLS = Object.values(C);
+const TU_COLS  = Object.values(T);
+
+/* label sets used to read stage progress out of the two status columns */
+const SOW_SENT_LABELS   = new Set(["Sent to Client / CGS", "Approved by Rahl's", "Sent to Rahl's", "SOW Call Scheduled", "SOW Call Complete"]);
+const SOW_SIGNED_LABELS = new Set(["Signed SOW received"]);
+const PAYMENT_STATUS    = new Set(["Ready for Invoice", "Invoiced", "Complete/Paid"]);
+const PAYMENT_ICF       = new Set(["Payment Processing", "Payment Ready", "Invoice Sent"]);
+const POST_AUDIT        = new Set(["Audit Phase Complete","PA Submitted","PA Received","Signed PA/RA Needed","Signed SOW Received",
+  "Sent for Review/QAQC","Review sent back for corrections","Implementation Ready to Schedule","Implementation & MV Complete",
+  "CD to Submit","CO Submitted","CO Received","CO Processed/Need Signed PA/RA","Ready for Invoice","Invoiced","Complete/Paid",
+  "TRC/ICF RFI Received","TRC/ICF RFI Responded"]);
+const POST_AUDIT_PHASES = ["Pre-Approval Phase","Implementation Phase","Closeout Phase","Payment Processing","Completed Project"];
+
+/* --- the nine funnel stages, in programme order -------------------------- */
+const STAGES = [
+  { key: "scheduled",  label: "Scheduled",                 short: "Sched" },
+  { key: "audited",    label: "Audited",                   short: "Audited" },
+  { key: "preapp",     label: "Pre-approved",              short: "Pre-app" },
+  { key: "sowSent",    label: "SOW sent",                  short: "SOW out" },
+  { key: "sowSigned",  label: "SOW signed",                short: "SOW in" },
+  { key: "impl",       label: "Implementation scheduled",  short: "Impl" },
+  { key: "coSched",    label: "Closeout scheduled",        short: "CO sent" },
+  { key: "coDone",     label: "Closeout completed",        short: "CO done" },
+  { key: "payment",    label: "Payment",                   short: "Paid" },
+];
+const STAGE_INDEX = Object.fromEntries(STAGES.map((s, i) => [s.key, i]));
+
+/* --- what each status means: what must happen next and who owns it -------
+   Derived from the live label sets on both boards. `role` resolves to a real
+   person through the assignment columns; `sev` drives the attention list.    */
+const TU_ACTIONS = {
+  "Not Started":                     { need: "Kick the project off — nothing has started yet", role: "hbs" },
+  "Audit Ready to Schedule":         { need: "Schedule the site audit with the customer", role: "auditor" },
+  "Scheduled":                       { need: "Carry out the scheduled site audit", role: "auditor" },
+  "Re-Audit Needed":                 { need: "Re-audit the site — the first audit was not sufficient", role: "auditor", sev: "serious" },
+  "Audit Phase Complete":            { need: "Build and submit the pre-approval application", role: "paLead" },
+  "PA Submitted":                    { need: "Waiting on ICF pre-approval review", role: "icf" },
+  "PA Received":                     { need: "Pre-approval in hand — schedule implementation", role: "hbs" },
+  "Signed PA/RA Needed":             { need: "Get the signed PA/RA back from the customer", role: "hbs", sev: "warning" },
+  "Signed SOW Received":             { need: "SOW signed — move into implementation scheduling", role: "hbs" },
+  "Sent for Review/QAQC":            { need: "Internal QA/QC review before submission", role: "paLead" },
+  "Review sent back for corrections":{ need: "Apply the QA/QC corrections and resubmit", role: "paLead", sev: "warning" },
+  "Implementation Ready to Schedule":{ need: "Schedule the implementation crew", role: "hbs" },
+  "Implementation & MV Complete":    { need: "Assemble and submit the closeout package", role: "coLead" },
+  "CD to Submit":                    { need: "Submit the closeout documentation", role: "coLead" },
+  "CO Submitted":                    { need: "Waiting on ICF closeout review", role: "icf" },
+  "CO Received":                     { need: "Closeout approved — raise the invoice", role: "hbs" },
+  "CO Processed/Need Signed PA/RA":  { need: "Closeout processed, but the signed PA/RA is still outstanding", role: "hbs", sev: "warning" },
+  "Ready for Invoice":               { need: "Raise the invoice", role: "hbs" },
+  "Invoiced":                        { need: "Waiting on payment", role: "hbs" },
+  "Complete/Paid":                   { need: "Complete and paid", role: null, sev: "good" },
+  "TRC/ICF RFI Received":            { need: "Respond to the ICF/TRC RFI", role: "hbs", sev: "critical" },
+  "TRC/ICF RFI Responded":           { need: "RFI answered — waiting on ICF to re-review", role: "icf" },
+  "Waiting on Info/Others":          { need: "Chase the outstanding information", role: "hbs", sev: "warning" },
+  "Action Needed from HBS":          { need: "HBS action outstanding", role: "hbs", sev: "critical" },
+  "FLAWED in Portal":                { need: "Application is flawed in the portal — correct and resubmit", role: "hbs", sev: "critical" },
+  "EC Motors Needed":                { need: "Source EC motors before implementation can proceed", role: "hbs", sev: "warning" },
+  "Pre/Post Inspecting Pending":     { need: "Schedule the pre/post inspection", role: "hbs" },
+  "Pre/Post Inspecting Scheduled":   { need: "Carry out the scheduled pre/post inspection", role: "hbs" },
+  "Pre/Post Inspection Completed":   { need: "Inspection done — submit the results", role: "hbs" },
+  "In Progress":                     { need: "Work in progress", role: "hbs" },
+  "Stuck":                           { need: "Blocked — needs unblocking", role: "hbs", sev: "critical" },
+  "On Hold":                         { need: "On hold", role: null },
+  "Cancelled":                       { need: "Cancelled", role: null },
+};
+const ICF_ACTIONS = {
+  "RFI Sent to HBS":          { need: "ICF has raised an RFI — HBS response owed", role: "hbs", sev: "critical" },
+  "RFI Respond by HBS":       { need: "RFI response owed back to ICF", role: "hbs", sev: "critical" },
+  "Technical Review":         { need: "ICF technical review under way", role: "icf" },
+  "Post-Tech Review":         { need: "ICF post-technical review", role: "icf" },
+  "Flawed":                   { need: "Flawed — correct the application and resubmit", role: "hbs", sev: "critical" },
+  "Flawed ARC":               { need: "ARC flawed — correct and resubmit", role: "hbs", sev: "critical" },
+  "ARC":                      { need: "ARC review with ICF", role: "icf" },
+  "Install":                  { need: "Installation under way on site", role: "hbs" },
+  "App Complete":             { need: "Application complete", role: "icf" },
+  "Site Inspection Pending":  { need: "Site inspection still needs scheduling", role: "hbs", sev: "warning" },
+  "Site Inspection Scheduled":{ need: "Site inspection is scheduled", role: "hbs" },
+  "Site Inspection Completed":{ need: "Site inspection done — awaiting ICF", role: "icf" },
+  "Final Project Approval":   { need: "Awaiting final project approval", role: "icf" },
+  "Internal Update Required": { need: "Internal update required before ICF can proceed", role: "hbs", sev: "warning" },
+  "Payment Processing":       { need: "Payment processing", role: "hbs" },
+  "Payment Ready":            { need: "Ready for payment", role: "hbs" },
+  "Invoice Sent":             { need: "Invoice sent — awaiting payment", role: "hbs" },
+  "Pre-approval":             { need: "In pre-approval with ICF", role: "icf" },
+  "On Hold":                  { need: "On hold", role: null },
+};
+const PHASE_FALLBACK = {
+  "Audit Phase":          { need: "Audit phase — confirm the audit is scheduled", role: "auditor" },
+  "Pre-Approval Phase":   { need: "Pre-approval phase — progress the application", role: "paLead" },
+  "Implementation Phase": { need: "Implementation phase — progress the install", role: "hbs" },
+  "Closeout Phase":       { need: "Closeout phase — progress the closeout package", role: "coLead" },
+  "Payment Processing":   { need: "Payment processing", role: "hbs" },
+  "Completed Project":    { need: "Complete", role: null, sev: "good" },
+};
+
+/* ========================= value normalisation ============================ */
+function txt(v) {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "number") return String(v);
+  if (typeof v === "string") {
+    const t = v.trim();
+    if (!t || t === "null" || t === "Column value type is not supported") return "";
+    return t;
+  }
+  if (Array.isArray(v)) return v.map(x => (x && x.name) ? x.name : "").filter(Boolean).join(", ");
+  if (typeof v === "object") {
+    if ("checked" in v) return v.checked ? "yes" : "";
+    if (typeof v.label === "string") return v.label;
+    if (typeof v.text === "string") return v.text.trim();
+    if (typeof v.date === "string") return v.date;
+    if (Array.isArray(v.labels)) return v.labels.join(", ");
+    if (Array.isArray(v.ids)) return "";
+  }
+  return "";
+}
+const col = (item, id) => txt(item && item.column_values ? item.column_values[id] : "");
+function people(item, id) {
+  const s = col(item, id);
+  return s ? s.split(",").map(x => x.trim()).filter(Boolean) : [];
+}
+function num(item, id) {
+  const n = parseFloat(String(col(item, id)).replace(/[^0-9.\-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+function relIds(item, id, boardId) {
+  const raw = item && item.column_values ? item.column_values[id] : null;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(r => r && (!boardId || String(r.board && r.board.id) === String(boardId)))
+    .map(r => String(r.id));
+}
+const dstr = s => (/^\d{4}-\d{2}-\d{2}/.test(s || "") ? s.slice(0, 10) : "");
+function dparse(s) {
+  const d = dstr(s);
+  if (!d) return null;
+  const [y, m, dd] = d.split("-").map(Number);
+  return new Date(y, m - 1, dd);
+}
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ========================= period maths =================================== */
+function periodRange(kind, now) {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let start;
+  if (kind === "day") start = d;
+  else if (kind === "week") { const dow = (d.getDay() + 6) % 7; start = new Date(d); start.setDate(d.getDate() - dow); }
+  else if (kind === "month") start = new Date(d.getFullYear(), d.getMonth(), 1);
+  else if (kind === "quarter") start = new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3, 1);
+  else start = new Date(d.getFullYear(), 0, 1);
+  const end = new Date(d); end.setDate(end.getDate() + 1);
+  const span = Math.round((end - start) / 86400000);
+  const prevEnd = new Date(start);
+  const prevStart = new Date(start); prevStart.setDate(prevStart.getDate() - span);
+  return { start, end, prevStart, prevEnd, span };
+}
+const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
+const PERIOD_LABEL = { day: "today", week: "this week", month: "this month", quarter: "this quarter", year: "this year" };
+
+/* ========================= connector plumbing ============================= */
+let mcp = null;
+const sourceState = { monday: "pending", teams: "pending", fireflies: "pending", calendar: "pending" };
+
+function mcpError(e) {
+  const code = (e && e.code) || "upstream_error";
+  const known = ["needs_reauth","server_not_connected","selection_required","server_not_found","server_unavailable",
+    "not_in_manifest","blocked_by_policy","approval_required","tool_error","bad_request","cancelled","rate_limited",
+    "upstream_error","not_granted","capability_disabled","capability_removed","transform_error"];
+  return { code: known.includes(code) ? code : "upstream_error", message: (e && e.message) || String(e), retryable: !!(e && e.retryable), retryAfterMs: e && e.retryAfterMs };
+}
+function fixCopy(err, server) {
+  switch (err.code) {
+    case "needs_reauth":         return `Reconnect ${server} in claude.ai Settings → Connectors, then refresh.`;
+    case "server_not_connected": return `Add ${server} in claude.ai Settings → Connectors, then refresh.`;
+    case "selection_required":   return `You have more than one ${server} connector. Choose one when claude.ai asks, then refresh.`;
+    case "server_not_found":     return `The ${server} connector no longer exists upstream.`;
+    case "blocked_by_policy":    return `Your organisation's policy blocks this ${server} tool.`;
+    case "approval_required":    return `This ${server} tool needs per-call approval, which artifacts cannot request yet.`;
+    case "not_in_manifest":      return `This page is not authorised to call that ${server} tool.`;
+    case "server_unavailable":   return `${server} did not answer. It is usually brief — try Refresh.`;
+    case "tool_error":           return `${server} reported: ${err.message}`;
+    case "not_granted":
+    case "capability_disabled":
+    case "capability_removed":   return `This view cannot reach your connectors.`;
+    default:                     return `${server} call failed: ${err.message}`;
+  }
+}
+const AUTHZ = new Set(["needs_reauth","server_not_connected","blocked_by_policy","approval_required","not_in_manifest","selection_required"]);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function call(server, tool, input, { retry = true, refresh = false } = {}) {
+  try {
+    return await mcp.callTool(server, tool, input, { cache: { staleTime: 60_000, gcTime: 900_000, refresh } });
+  } catch (raw) {
+    const err = mcpError(raw);
+    if (retry && err.retryable) {
+      await sleep(Math.min(err.retryAfterMs || 900, 4000) + Math.random() * 500);
+      return call(server, tool, input, { retry: false, refresh });
+    }
+    throw err;
+  }
+}
+
+/* "Read 14:22" must reflect when the data was actually produced, not when we rendered.
+   A result served from the call cache carries cache.storedAt; a fresh one does not. */
+function stampFrom(res) {
+  const st = res && res.cache && res.cache.storedAt;
+  if (typeof st === "number") state.storedAt = state.storedAt ? Math.min(state.storedAt, st) : st;
+}
+
+/* A connector may answer with one JSON array, or with one text block per record.
+   `payload` only ever exposes the first block, so fall back to reading them all. */
+function rowsFrom(res) {
+  const out = [];
+  const push = v => { if (v && typeof v === "object" && !Array.isArray(v)) out.push(v); };
+  const p = res && res.payload;
+  if (Array.isArray(p)) { p.forEach(push); return out; }
+  push(p);
+  const blocks = (res && Array.isArray(res.content)) ? res.content : [];
+  for (const b of blocks) {
+    if (!b || b.type !== "text" || typeof b.text !== "string") continue;
+    try {
+      const v = JSON.parse(b.text);
+      if (Array.isArray(v)) v.forEach(push); else push(v);
+    } catch { /* a non-JSON block is not a record */ }
+  }
+  const seen = new Set();
+  return out.filter(r => {
+    const k = r.id == null ? Symbol() : String(r.id);
+    if (typeof k === "string") { if (seen.has(k)) return false; seen.add(k); }
+    return true;
+  });
+}
+
+async function fetchBoard(boardId, columnIds, filters, refresh) {
+  const items = [];
+  let cursor = null;
+  for (let page = 0; page < 30; page++) {
+    const input = { boardId, limit: 200, includeColumns: true, includeGroup: true, columnIds };
+    if (filters) { input.filters = filters; input.filtersOperator = "and"; }
+    if (cursor) input.cursor = cursor;
+    const res = await call(MONDAY, "get_board_items_page", input, { refresh: refresh && page === 0 });
+    if (page === 0) stampFrom(res);
+    const p = res && res.payload;
+    if (!p || !Array.isArray(p.items)) break;
+    items.push(...p.items);
+    const pg = p.pagination || {};
+    if (!pg.has_more || !pg.nextCursor) break;
+    cursor = pg.nextCursor;
+  }
+  return items;
+}
+
+/* ========================= building the projects ========================== */
+function latestNoteLine(text) {
+  if (!text) return null;
+  const lines = String(text).split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (!lines.length) return null;
+  const dated = lines.find(l => /^\d{1,2}[\/\-]\d{1,2}\b/.test(l));
+  return dated || lines[0];
+}
+
+function buildProjects(icfItems, tuItems) {
+  const tuByIcf = new Map();
+  for (const t of tuItems) for (const id of relIds(t, T.rel, BOARD_ICF)) if (!tuByIcf.has(id)) tuByIcf.set(id, t);
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const built = icfItems.map(it => {
+    const tu = tuByIcf.get(String(it.id)) || null;
+    const g = (id) => (tu ? col(tu, id) : "");
+
+    const phase     = col(it, C.phase);
+    const icfStatus = col(it, C.status);
+    const tuStatus  = g(T.status);
+    const sowStatus = g(T.sowStatus);
+
+    const icfEngs = people(it, C.icfEng);
+    const hbsEngs = people(it, C.hbsEng);
+    const auditor = tu ? people(tu, T.auditor) : [];
+    const paLead  = tu ? people(tu, T.paLead)  : [];
+    const coLead  = tu ? people(tu, T.coLead)  : [];
+    const owner   = tu ? people(tu, T.dealOwner) : [];
+    const revEng  = tu ? people(tu, T.reviewEng).map(s => s.replace(/^ICF\s*-\s*/, "").replace(/^TRC\s*-\s*/, "")) : [];
+
+    const dAudit   = dparse(g(T.dAudit));
+    const dImpl    = dparse(g(T.dImpl));
+    const dPAd     = dparse(col(it, C.dPAd))   || dparse(g(T.dSignedPA));
+    const dSubPA   = dparse(col(it, C.dSubPA));
+    const dSubCO   = dparse(col(it, C.dSubCO));          // actually submitted for closeout
+    const dProjCO  = dparse(g(T.dProjCO));               // forecast only — never advances a stage
+    const dCOd     = dparse(col(it, C.dCOd));
+    const dSowSent = dparse(g(T.dSowClient))   || dparse(g(T.dSowRahls));
+    const dSowSign = dparse(g(T.dSowSigned));
+
+    const paidNow = PAYMENT_STATUS.has(tuStatus) || PAYMENT_ICF.has(icfStatus) || phase === "Payment Processing" || phase === "Completed Project";
+    const auditedNow = (dAudit && dAudit <= today) || POST_AUDIT.has(tuStatus) || POST_AUDIT_PHASES.includes(phase);
+
+    /* stage event dates — when the project crossed each milestone */
+    const ev = {
+      scheduled: dAudit,
+      audited:   auditedNow ? dAudit : null,
+      preapp:    dPAd,
+      sowSent:   dSowSent,
+      sowSigned: dSowSign,
+      impl:      dImpl,
+      coSched:   dSubCO,
+      coDone:    dCOd,
+      payment:   paidNow ? dCOd : null,
+    };
+
+    /* current stage — the furthest milestone actually reached */
+    let current = null;
+    if (paidNow) current = "payment";
+    else if (dCOd || tuStatus === "CO Received") current = "coDone";
+    else if (dSubCO || tuStatus === "CO Submitted" || phase === "Closeout Phase") current = "coSched";
+    else if (dImpl || phase === "Implementation Phase" || icfStatus === "Install" ||
+             ["Implementation Ready to Schedule","Implementation & MV Complete","CD to Submit"].includes(tuStatus)) current = "impl";
+    else if (dSowSign || SOW_SIGNED_LABELS.has(sowStatus) || tuStatus === "Signed SOW Received") current = "sowSigned";
+    else if (dSowSent || SOW_SENT_LABELS.has(sowStatus)) current = "sowSent";
+    else if (dPAd || tuStatus === "PA Received" || phase === "Pre-Approval Phase") current = "preapp";
+    else if (auditedNow) current = "audited";
+    else if (dAudit) current = "scheduled";
+
+    /* next step: what has to happen, and who owns it */
+    const rule = TU_ACTIONS[tuStatus] || ICF_ACTIONS[icfStatus] || PHASE_FALLBACK[phase] || null;
+    const roleOwners = {
+      auditor: auditor.length ? auditor : (hbsEngs.length ? hbsEngs : owner),
+      paLead:  paLead.length  ? paLead  : (hbsEngs.length ? hbsEngs : owner),
+      coLead:  coLead.length  ? coLead  : (hbsEngs.length ? hbsEngs : owner),
+      hbs:     hbsEngs.length ? hbsEngs : (owner.length ? owner : paLead),
+      icf:     icfEngs.length ? icfEngs : revEng,
+    };
+    const ownerNames = rule && rule.role ? (roleOwners[rule.role] || []) : [];
+    const ownerOrg   = rule && rule.role === "icf" ? "ICF" : (rule && rule.role ? "HBS" : null);
+
+    const aging = col(it, C.aging);
+    const daysInPhase = (() => { const n = parseFloat(col(it, C.daysPhase)); return Number.isFinite(n) ? n : null; })();
+
+    let sev = (rule && rule.sev) || null;
+    if (!sev) {
+      if (aging === "Critical") sev = "serious";
+      else if (aging === "Watch") sev = "warning";
+    }
+    if (sev !== "good" && aging === "Critical" && (rule && rule.sev === "warning")) sev = "critical";
+
+    const notes = col(it, C.notes);
+    const adminNotes = g(T.adminNotes);
+    const evidence = latestNoteLine(adminNotes) || latestNoteLine(notes) || "";
+    const evidenceFrom = latestNoteLine(adminNotes) ? "TU admin notes" : (latestNoteLine(notes) ? "ICF board notes" : "");
+
+    return {
+      id: String(it.id),
+      name: it.name || "(untitled)",
+      url: it.url || "",
+      tuUrl: tu ? (tu.url || "") : "",
+      group: (it.group && it.group.title) || "",
+      projectId: col(it, C.projectId) || g(T.projectId),
+      utility: col(it, C.utility),
+      type: col(it, C.type),
+      phase, icfStatus, tuStatus, sowStatus,
+      icfEngs, hbsEngs, auditor, paLead, coLead, owner, revEng,
+      ev, current,
+      evDates: {
+        dSubPA: dstr(col(it, C.dSubPA)), dPAd: dstr(col(it, C.dPAd)),
+        dSubCO: dstr(col(it, C.dSubCO)), dCOd: dstr(col(it, C.dCOd)),
+        dAudit: dstr(g(T.dAudit)), dImpl: dstr(g(T.dImpl)),
+      },
+      need: rule ? rule.need : "No status recorded — set a status on the board",
+      ownerNames, ownerOrg,
+      sev: sev || "none",
+      aging, daysInPhase,
+      nextActionDate: dstr(col(it, C.dNextAct)),
+      projectedCO: dProjCO ? dstr(g(T.dProjCO)) : "",
+      ecd: dstr(col(it, C.ecd)),
+      lastUpdate: dstr(col(it, C.dLastUpd)),
+      lastBy: col(it, C.lastBy),
+      incentive: num(it, C.incentive),
+      kwh: num(it, C.kwh),
+      therms: num(it, C.therms),
+      aiSummary: g(T.aiSummary),
+      notes, adminNotes, evidence, evidenceFrom,
+      hasTu: !!tu,
+      priority: 0, priorityWhy: [], band: "none",
+      teams: [],
+      meetings: [],
+      calendar: [],
+    };
+  });
+  for (const p of built) {
+    const sc = scoreProject(p);
+    p.priority = sc.score;
+    p.priorityWhy = sc.why;
+    p.band = priorityBand(sc.score);
+  }
+  return built;
+}
+
+/* ---------------------------------------------------------------------------
+   Automatic priority.
+
+   Every input is something the boards already record, so the ranking needs no
+   judgement from anyone: what the status says is owed, how long it has sat,
+   whether a due date has passed, and whether anyone owns it at all.
+--------------------------------------------------------------------------- */
+function scoreProject(p) {
+  const why = [];
+  let n = 0;
+  if (/RFI/i.test(p.tuStatus) && /Received/i.test(p.tuStatus)) { n += 45; why.push("ICF/TRC RFI open"); }
+  if (/RFI/i.test(p.icfStatus)) { n += 45; why.push("RFI with HBS"); }
+  if (/Flawed|FLAWED/.test(p.tuStatus + " " + p.icfStatus)) { n += 40; why.push("flawed in portal"); }
+  if (p.tuStatus === "Action Needed from HBS") { n += 35; why.push("action needed from HBS"); }
+  if (p.tuStatus === "Stuck") { n += 30; why.push("marked stuck"); }
+  if (p.tuStatus === "CD to Submit") { n += 25; why.push("closeout docs to submit"); }
+  if (p.tuStatus === "Implementation & MV Complete") { n += 22; why.push("implementation complete, closeout owed"); }
+  if (p.tuStatus === "Waiting on Info/Others") { n += 15; why.push("waiting on outside info"); }
+  if (p.aging === "Critical") { n += 30; why.push("60+ days without movement"); }
+  else if (p.aging === "Watch") { n += 12; why.push("30+ days without movement"); }
+  if (p.daysInPhase != null && p.daysInPhase > 120) { n += 12; why.push(`${p.daysInPhase} days in phase`); }
+  if (!p.ownerNames.length && p.sev !== "good") { n += 20; why.push("no owner on the next step"); }
+  if (p.nextActionDate) {
+    const d = dparse(p.nextActionDate);
+    if (d && d < new Date()) { n += 18; why.push("next-action date has passed"); }
+  }
+  if (p.sev === "good") n = Math.max(0, n - 40);
+  return { score: n, why };
+}
+const priorityBand = n => n >= 60 ? "critical" : n >= 35 ? "serious" : n >= 18 ? "warning" : "none";
+
+/* ========================= matching chatter to projects =================== */
+const STOP = new Set(["the","and","for","with","project","projects","building","center","centre","llc","inc","apartments","at"]);
+function matchKeys(name) {
+  const keys = [];
+  const parts = String(name).split(/\s+-\s+/);
+  for (const p of parts) {
+    const clean = p.trim();
+    if (clean.length >= 6) keys.push(clean.toLowerCase());
+  }
+  const words = String(name).toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(w => w.length >= 5 && !STOP.has(w));
+  for (let i = 0; i < words.length - 1; i++) keys.push(words[i] + " " + words[i + 1]);
+  return [...new Set(keys)];
+}
+function attachMentions(projects, records, field) {
+  const index = projects.map(p => ({ p, keys: matchKeys(p.name) }));
+  for (const r of records) {
+    const hay = String(r.text || "").toLowerCase();
+    if (!hay) continue;
+    for (const { p, keys } of index) {
+      if (keys.some(k => hay.includes(k))) {
+        p[field].push(r);
+        if (p[field].length > 6) p[field].length = 6;
+      }
+    }
+  }
+}
+
+/* ========================= state ========================================= */
+const state = {
+  period: "week",
+  org: "both",
+  engineer: "",
+  utility: "",
+  type: "",
+  q: "",
+  view: "pipeline",
+  projects: [],
+  errors: {},
+  teams: [],
+  meetings: [],
+  calendar: [],
+  todos: [],
+  kpis: [],
+  kpisLoaded: false,
+  kpisLoading: false,
+  workloadLoaded: false,
+  workloadLoading: false,
+  loadedAt: null,
+  storedAt: null,
+};
+
+function engineersOf(p) {
+  if (state.org === "icf") return p.icfEngs;
+  if (state.org === "hbs") return p.hbsEngs;
+  return [...p.icfEngs, ...p.hbsEngs];
+}
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  return state.projects.filter(p => {
+    if (state.utility && p.utility !== state.utility) return false;
+    if (state.type && p.type !== state.type) return false;
+    if (state.org === "icf" && !p.icfEngs.length) return false;
+    if (state.org === "hbs" && !p.hbsEngs.length) return false;
+    if (state.engineer && !engineersOf(p).includes(state.engineer)) return false;
+    if (q) {
+      const hay = [p.name, p.projectId, p.phase, p.icfStatus, p.tuStatus, p.need, p.ownerNames.join(" "), p.utility, p.type, p.evidence].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/* ========================= rendering ===================================== */
+const $ = sel => document.querySelector(sel);
+const main = $("#main");
+
+function sevIcon(sev) {
+  if (sev === "good")     return '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.4l2.6 2.6L10 3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  if (sev === "critical") return '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 3.3v3.2M6 8.5v.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  if (sev === "serious")  return '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.4l4.8 8.4H1.2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 4.6v2.2M6 8.4v.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  if (sev === "warning")  return '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 3.4v3M6 8.4v.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  return '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>';
+}
+const SEV_LABEL = { good: "On track", warning: "Watch", serious: "Ageing", critical: "Action owed" };
+const sevTag = sev => (sev === "none" || !SEV_LABEL[sev])
+  ? `<span class="sev sev-none">—</span>`
+  : `<span class="sev sev-${sev}">${sevIcon(sev)}${SEV_LABEL[sev]}</span>`;
+
+function magClass(v, max) {
+  if (!v) return "m0";
+  if (max < 3) return "m3";        /* too little range to read as a ramp — one flat step */
+  const r = v / max;
+  if (r > 0.8) return "m5";
+  if (r > 0.6) return "m4";
+  if (r > 0.4) return "m3";
+  if (r > 0.2) return "m2";
+  return "m1";
+}
+function ownerCell(p) {
+  if (!p.ownerNames.length) return `<span class="who"><span class="unassigned">Unassigned</span></span>`;
+  const cls = p.ownerOrg === "ICF" ? "chip-icf" : "chip-hbs";
+  return `<span class="who">${esc(p.ownerNames.join(", "))} <span class="chip ${cls}">${p.ownerOrg}</span></span>`;
+}
+
+/* ---- pipeline view ---- */
+function renderPipeline(list) {
+  const now = new Date();
+  const r = periodRange(state.period, now);
+  const counts = {}, prev = {}, open = {};
+  for (const s of STAGES) { counts[s.key] = 0; prev[s.key] = 0; open[s.key] = 0; }
+  for (const p of list) {
+    for (const s of STAGES) {
+      const d = p.ev[s.key];
+      if (inRange(d, r.start, r.end)) counts[s.key]++;
+      if (inRange(d, r.prevStart, r.prevEnd)) prev[s.key]++;
+    }
+    if (p.current) open[p.current]++;
+  }
+  const maxOpen = Math.max(1, ...Object.values(open));
+
+  const tiles = STAGES.map((s, i) => {
+    const c = counts[s.key], pv = prev[s.key];
+    const delta = c - pv;
+    const dcls = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+    const dtxt = (pv === 0 && c === 0) ? "none either period"
+               : delta === 0 ? "level with prior"
+               : `${delta > 0 ? "+" : ""}${delta} vs prior`;
+    return `<div class="stage">
+      <span class="ord num">${String(i + 1).padStart(2, "0")}</span>
+      <span class="nm">${esc(s.label)}</span>
+      <span class="big num">${c}</span>
+      <span class="delta num ${dcls}">${esc(dtxt)}</span>
+      <span class="open">Open now <b class="num">${open[s.key]}</b></span>
+      <span class="bar" style="width:${Math.round((open[s.key] / maxOpen) * 100)}%"></span>
+    </div>`;
+  }).join("");
+
+  /* engineer × stage matrix */
+  const rows = new Map();
+  for (const p of list) {
+    /* an engineer is counted once per project, under the org they are assigned in */
+    const pairs = [];
+    if (state.org !== "hbs") for (const n of new Set(p.icfEngs)) pairs.push([n, "ICF"]);
+    if (state.org !== "icf") for (const n of new Set(p.hbsEngs)) pairs.push([n, "HBS"]);
+    for (const [n, org] of pairs) {
+      const key = org + " " + n;
+      if (!rows.has(key)) rows.set(key, { name: n, org, counts: {}, open: 0, attention: 0 });
+      const row = rows.get(key);
+      for (const s of STAGES) if (inRange(p.ev[s.key], r.start, r.end)) row.counts[s.key] = (row.counts[s.key] || 0) + 1;
+      row.open++;
+      if (p.sev === "critical" || p.sev === "serious") row.attention++;
+    }
+  }
+  const engRows = [...rows.values()].sort((a, b) => b.open - a.open || a.name.localeCompare(b.name));
+  const maxCell = Math.max(1, ...engRows.flatMap(rw => STAGES.map(s => rw.counts[s.key] || 0)));
+
+  const matrix = engRows.length ? `<div class="panel scroller"><table class="matrix">
+    <thead><tr>
+      <th>Engineer</th><th></th>
+      ${STAGES.map(s => `<th class="rot n" title="${esc(s.label)}">${esc(s.short)}</th>`).join("")}
+      <th class="n">Active</th><th class="n">Needs action</th>
+    </tr></thead>
+    <tbody>${engRows.map(rw => `<tr>
+      <td><button class="linkish" data-engineer="${esc(rw.name)}">${esc(rw.name)}</button></td>
+      <td><span class="chip ${rw.org === "ICF" ? "chip-icf" : "chip-hbs"}">${rw.org}</span></td>
+      ${STAGES.map(s => { const v = rw.counts[s.key] || 0; return `<td class="n"><span class="cell num ${magClass(v, maxCell)}">${v || "·"}</span></td>`; }).join("")}
+      <td class="n num">${rw.open}</td>
+      <td class="n num">${rw.attention ? `<span class="sev sev-serious">${rw.attention}</span>` : "·"}</td>
+    </tr>`).join("")}</tbody></table></div>`
+    : `<div class="panel empty">No engineers match these filters.</div>`;
+
+  const swatches = ["--mag-1","--mag-2","--mag-3","--mag-4","--mag-5"]
+    .map(v => `<span class="sw" style="background:var(${v})"></span>`).join("");
+
+  return `
+  ${renderCompare(list)}
+  <div class="section-head">
+    <h2>Funnel</h2>
+    <span class="hint">Big number: milestones reached ${esc(PERIOD_LABEL[state.period])}. Bar and “open now”: where projects sit right now.</span>
+  </div>
+  <div class="rail">${tiles}</div>
+
+  <div class="section-head">
+    <h2>Per engineer</h2>
+    <span class="hint">Milestones reached ${esc(PERIOD_LABEL[state.period])}, by the engineer assigned on the board.</span>
+    <span class="legend" style="margin-left:auto">fewer ${swatches} more</span>
+  </div>
+  ${matrix}`;
+}
+
+/* Two periods side by side, so movement is visible rather than inferred. */
+function comparePair(list, kind) {
+  const now = new Date();
+  const r = periodRange(kind, now);
+  const cur = {}, prev = {};
+  for (const s of STAGES) { cur[s.key] = 0; prev[s.key] = 0; }
+  for (const p of list) for (const s of STAGES) {
+    if (inRange(p.ev[s.key], r.start, r.end)) cur[s.key]++;
+    if (inRange(p.ev[s.key], r.prevStart, r.prevEnd)) prev[s.key]++;
+  }
+  return { cur, prev, r };
+}
+function renderCompare(list) {
+  const blocks = [
+    { kind: "week", label: "This week vs last week", note: "Week starts Monday. The current week is counted to today, so a Monday reading is naturally small." },
+    { kind: "month", label: "This month vs last month", note: "The current month is counted to today against the same number of days last month." },
+  ].map(b => {
+    const { cur, prev } = comparePair(list, b.kind);
+    const curTotal = STAGES.reduce((n, s) => n + cur[s.key], 0);
+    const prevTotal = STAGES.reduce((n, s) => n + prev[s.key], 0);
+    const rows = STAGES.map(s => {
+      const c = cur[s.key], v = prev[s.key], d = c - v;
+      const max = Math.max(1, c, v);
+      return `<tr>
+        <td>${esc(s.label)}</td>
+        <td class="n num">${v}</td>
+        <td class="n num">${c}</td>
+        <td style="width:34%"><span class="cmp">
+          <span class="cmp-prev" style="width:${(v / max) * 100}%"></span>
+          <span class="cmp-cur" style="width:${(c / max) * 100}%"></span>
+        </span></td>
+        <td class="n num ${d > 0 ? "up" : d < 0 ? "down" : "flat"}">${d > 0 ? "+" : ""}${d || "—"}</td>
+      </tr>`;
+    }).join("");
+    const dTotal = curTotal - prevTotal;
+    return `<div class="panel" style="padding:12px 14px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+        <b style="font-size:13px">${esc(b.label)}</b>
+        <span class="num ${dTotal > 0 ? "up" : dTotal < 0 ? "down" : "flat"}" style="font-size:12px">${dTotal > 0 ? "+" : ""}${dTotal} milestones</span>
+      </div>
+      <div class="scroller"><table><thead><tr><th>Stage</th><th class="n">Prev</th><th class="n">Now</th><th>&nbsp;</th><th class="n">&Delta;</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+      <div class="ev" style="margin-top:6px">${esc(b.note)}</div>
+    </div>`;
+  }).join("");
+
+  return `<div class="section-head"><h2>Period comparison</h2>
+    <span class="hint">Milestones reached, current period against the one before it.</span>
+    <span class="legend" style="margin-left:auto"><span class="sw" style="background:var(--rule-strong)"></span>previous
+      <span class="sw" style="background:var(--accent);margin-left:8px"></span>current</span></div>
+    <div class="grid-2">${blocks}</div>`;
+}
+
+/* ---------------------------------------------------------------------------
+   Company numbers. Every figure is a sum over the Monthly KPIs rows whose
+   completion date falls in the selected period, compared with the same length
+   of time immediately before it.
+--------------------------------------------------------------------------- */
+function money(n) {
+  const sign = n < 0 ? "-" : "";
+  const a = Math.abs(n);
+  return sign + (a >= 1e6 ? "$" + (a / 1e6).toFixed(2) + "m" : a >= 1e3 ? "$" + Math.round(a / 1e3) + "k" : "$" + Math.round(a));
+}
+function qty(n) {
+  const sign = n < 0 ? "-" : "";
+  const a = Math.abs(n);
+  return sign + (a >= 1e6 ? (a / 1e6).toFixed(2) + "m" : a >= 1e3 ? Math.round(a / 1e3) + "k" : String(Math.round(a)));
+}
+const MILESTONE_ORDER = ["Audits Performed", "Preapprovals Submitted", "Preapprovals Received",
+  "Implementations Scheduled", "Closeouts Submitted", "Closeouts Received"];
+
+function sumRows(rows) {
+  return rows.reduce((a, k) => ({
+    count: a.count + 1, incentive: a.incentive + k.incentive,
+    hbsShare: a.hbsShare + k.hbsShare, savings: a.savings + k.savings,
+  }), { count: 0, incentive: 0, hbsShare: 0, savings: 0 });
+}
+
+function renderNumbers() {
+  if (state.kpisLoading) return `<div class="skel"><span class="spin"></span>Reading the Monthly KPIs board — thirteen months of milestones…</div>`;
+  if (state.errors.kpis) return errNote("Monthly KPIs board", state.errors.kpis, MONDAY);
+  if (!state.kpis.length) return `<div class="panel empty">No KPI rows found in the last thirteen months.</div>`;
+
+  const r = periodRange(state.period, new Date());
+  const inCur = state.kpis.filter(k => inRange(k.when, r.start, r.end));
+  const inPrev = state.kpis.filter(k => inRange(k.when, r.prevStart, r.prevEnd));
+  const cur = sumRows(inCur), prev = sumRows(inPrev);
+  const label = PERIOD_LABEL[state.period];
+
+  const delta = (c, v, fmt) => {
+    const d = c - v;
+    if (!d) return `<span class="num flat" style="font-size:11.5px">level with prior</span>`;
+    const cls = d > 0 ? "up" : "down";
+    const pct = v > 0 ? ` (${d > 0 ? "+" : ""}${Math.round((d / v) * 100)}%)` : "";
+    return `<span class="num ${cls}" style="font-size:11.5px">${d > 0 ? "+" : ""}${fmt(d)}${pct} vs prior</span>`;
+  };
+
+  let out = `<div class="section-head"><h2>Company numbers</h2>
+    <span class="hint">Milestones banked ${esc(label)}, against the period before it. Change the period at the top.</span></div>
+    <div class="stats" style="margin-bottom:6px">
+      <div class="stat"><div class="v num">${money(cur.incentive)}</div><div class="l">Incentive</div><div>${delta(cur.incentive, prev.incentive, money)}</div></div>
+      <div class="stat"><div class="v num">${money(cur.hbsShare)}</div><div class="l">HBS share</div><div>${delta(cur.hbsShare, prev.hbsShare, money)}</div></div>
+      <div class="stat"><div class="v num">${qty(cur.savings)}</div><div class="l">kWh / therms</div><div>${delta(cur.savings, prev.savings, qty)}</div></div>
+      <div class="stat"><div class="v num">${cur.count}</div><div class="l">Milestones</div><div>${delta(cur.count, prev.count, n => String(n))}</div></div>
+    </div>`;
+
+  /* per milestone group */
+  const groups = MILESTONE_ORDER.filter(g => state.kpis.some(k => k.milestone === g));
+  out += `<div class="section-head"><h2>By milestone</h2><span class="hint">What the company actually banked ${esc(label)}</span></div>
+    <div class="panel scroller"><table><thead><tr>
+      <th>Milestone</th><th class="n">Count</th><th class="n">Prev</th><th class="n">Incentive</th><th class="n">HBS share</th><th class="n">kWh / therms</th>
+    </tr></thead><tbody>${groups.map(g => {
+      const c = sumRows(inCur.filter(k => k.milestone === g));
+      const v = sumRows(inPrev.filter(k => k.milestone === g));
+      const d = c.count - v.count;
+      return `<tr><td>${esc(g)}</td>
+        <td class="n num">${c.count}</td>
+        <td class="n num ${d > 0 ? "up" : d < 0 ? "down" : "flat"}">${v.count}${d ? ` (${d > 0 ? "+" : ""}${d})` : ""}</td>
+        <td class="n num">${money(c.incentive)}</td><td class="n num">${money(c.hbsShare)}</td><td class="n num">${qty(c.savings)}</td></tr>`;
+    }).join("")}</tbody></table></div>`;
+
+  /* thirteen-month trend */
+  const months = [];
+  const m0 = new Date(); m0.setDate(1);
+  for (let i = 12; i >= 0; i--) {
+    const d = new Date(m0.getFullYear(), m0.getMonth() - i, 1);
+    const nx = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    const rows = state.kpis.filter(k => k.when >= d && k.when < nx);
+    months.push({ key: d.toLocaleDateString(undefined, { month: "short" }), year: d.getFullYear(), ...sumRows(rows) });
+  }
+  const maxInc = Math.max(1, ...months.map(m => m.incentive));
+  out += `<div class="section-head"><h2>Thirteen-month trend</h2><span class="hint">Incentive banked per month; the last column is the month in progress</span></div>
+    <div class="panel" style="padding:14px 16px">
+      <div class="tbars">${months.map((m, i) => `<div class="tb" title="${esc(m.key)} ${m.year}: ${money(m.incentive)} across ${m.count} milestones">
+        <span class="tv num">${m.incentive ? money(m.incentive) : ""}</span>
+        <span class="tbar${i === months.length - 1 ? " live" : ""}" style="height:${Math.max(2, Math.round((m.incentive / maxInc) * 100))}%"></span>
+        <span class="tl">${esc(m.key)}</span></div>`).join("")}</div>
+    </div>`;
+
+  /* per engineer */
+  const byEng = new Map();
+  for (const k of inCur) for (const n of (k.engineers.length ? k.engineers : ["Unassigned"])) {
+    if (!byEng.has(n)) byEng.set(n, []);
+    byEng.get(n).push(k);
+  }
+  const engRows = [...byEng.entries()].map(([n, rows]) => ({ n, ...sumRows(rows) }))
+    .sort((a, b) => b.incentive - a.incentive || b.count - a.count);
+  out += `<div class="section-head"><h2>By engineer</h2><span class="hint">Credited on the KPI row; a milestone with several names counts for each</span></div>
+    <div class="panel scroller${engRows.length > 14 ? " tall" : ""}"><table><thead><tr>
+      <th>Engineer</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">HBS share</th><th class="n">kWh / therms</th>
+    </tr></thead><tbody>${engRows.map(e => `<tr>
+      <td class="proj-name">${esc(e.n)}</td><td class="n num">${e.count}</td>
+      <td class="n num">${money(e.incentive)}</td><td class="n num">${money(e.hbsShare)}</td><td class="n num">${qty(e.savings)}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+
+  /* per utility */
+  const byUtil = new Map();
+  for (const k of inCur) {
+    const u = k.utility || "—";
+    if (!byUtil.has(u)) byUtil.set(u, []);
+    byUtil.get(u).push(k);
+  }
+  const utilRows = [...byUtil.entries()].map(([u, rows]) => ({ u, ...sumRows(rows) })).sort((a, b) => b.incentive - a.incentive);
+  out += `<div class="section-head"><h2>By utility programme</h2></div>
+    <div class="panel scroller"><table><thead><tr><th>Utility</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">kWh / therms</th></tr></thead>
+    <tbody>${utilRows.map(x => `<tr><td>${esc(x.u)}</td><td class="n num">${x.count}</td><td class="n num">${money(x.incentive)}</td><td class="n num">${qty(x.savings)}</td></tr>`).join("")}</tbody></table></div>`;
+
+  return out;
+}
+
+/* ---- projects view ---- */
+function renderProjects(list) {
+  const sorted = [...list].sort((a, b) => {
+    const rank = { critical: 0, serious: 1, warning: 2, none: 3, good: 4 };
+    return (rank[a.sev] - rank[b.sev]) || (b.daysInPhase || 0) - (a.daysInPhase || 0) || a.name.localeCompare(b.name);
+  });
+  if (!sorted.length) return `<div class="panel empty">No projects match these filters.</div>`;
+  return `<div class="section-head"><h2>Every project, and what it needs next</h2>
+    <span class="hint">Next step is derived from the live board status; the note beneath it is the most recent real entry on that project.</span></div>
+  <div class="panel scroller tall"><table>
+    <thead><tr>
+      <th>Project</th><th>Stage</th><th>Status</th><th>What needs to happen</th><th>Who</th><th class="n">Days</th><th>Flag</th>
+    </tr></thead>
+    <tbody>${sorted.map(p => {
+      const stage = p.current ? STAGES[STAGE_INDEX[p.current]].label : "Not started";
+      const chatter = [...p.teams.slice(0, 2), ...p.meetings.slice(0, 2)];
+      return `<tr>
+        <td>
+          <div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
+          <div class="ev">${esc([p.utility, p.type, p.projectId].filter(Boolean).join(" · "))}</div>
+        </td>
+        <td>${esc(stage)}<div class="ev">${esc(p.phase)}</div></td>
+        <td>${esc(p.tuStatus || p.icfStatus || "—")}${p.sowStatus ? `<div class="ev">SOW: ${esc(p.sowStatus)}</div>` : ""}</td>
+        <td>
+          <div class="need">${esc(p.need)}</div>
+          ${p.evidence ? `<div class="ev"><b>Latest:</b> ${esc(p.evidence.slice(0, 190))}${p.evidence.length > 190 ? "…" : ""} <span style="opacity:.75">(${esc(p.evidenceFrom)})</span></div>` : ""}
+          ${chatter.length ? `<details class="detail"><summary>${chatter.length} recent mention${chatter.length > 1 ? "s" : ""} in Teams / meetings</summary>
+            <div class="detail-body">${chatter.map(c => `<div><span class="k">${esc(c.source)} · ${esc(c.when || "")}</span><br>${esc(String(c.text).slice(0, 300))}</div>`).join("")}</div></details>` : ""}
+          ${p.aiSummary ? `<details class="detail"><summary>Board update summary</summary><div class="detail-body">${esc(p.aiSummary)}</div></details>` : ""}
+        </td>
+        <td>${ownerCell(p)}${p.nextActionDate ? `<div class="ev">Due ${esc(p.nextActionDate)}</div>` : ""}</td>
+        <td class="n num">${p.daysInPhase == null ? "·" : p.daysInPhase}</td>
+        <td>${sevTag(p.sev)}</td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
+/* ---- shared row renderers ---- */
+function pline(p, extra) {
+  return `<li><span class="rail"></span><span>
+    <span class="t">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</span>
+    <div class="s">${esc(p.need)}</div>
+    <div class="m">${esc([p.utility, p.tuStatus || p.icfStatus, p.ownerNames.length ? p.ownerNames.join(", ") : "no owner",
+      p.daysInPhase != null ? p.daysInPhase + "d in phase" : ""].filter(Boolean).join(" · "))}${extra ? " · " + esc(extra) : ""}</div>
+  </span></li>`;
+}
+function ptable(rows, opts = {}) {
+  if (!rows.length) return `<div class="panel empty">Nothing here right now.</div>`;
+  return `<div class="panel scroller${rows.length > 14 ? " tall" : ""}"><table><thead><tr>
+    <th>Project</th>${opts.priority ? '<th class="n">Pri</th>' : ""}<th>Status</th><th>What needs to happen</th><th>Who</th>
+    ${opts.due ? "<th>Due</th>" : ""}<th class="n">Days</th></tr></thead><tbody>
+    ${rows.map(p => `<tr>
+      <td><div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
+          <div class="ev">${esc([p.utility, p.type].filter(Boolean).join(" · "))}</div></td>
+      ${opts.priority ? `<td class="n"><span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}" title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></td>` : ""}
+      <td>${esc(p.tuStatus || p.icfStatus || "—")}</td>
+      <td><div class="need">${esc(p.need)}</div>${p.evidence ? `<div class="ev"><b>Latest:</b> ${esc(p.evidence.slice(0, 150))}</div>` : ""}
+          ${p.priorityWhy && p.priorityWhy.length ? `<div class="ev">Flagged: ${esc(p.priorityWhy.join(", "))}</div>` : ""}</td>
+      <td>${ownerCell(p)}</td>
+      ${opts.due ? `<td class="num">${esc(p.nextActionDate || p.ecd || "—")}</td>` : ""}
+      <td class="n num">${p.daysInPhase == null ? "·" : p.daysInPhase}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+/* ---- my desk: the manager's own work and the things to chase ---- */
+function renderMyDesk(list) {
+  const meIn = arr => arr.some(n => n === ME.name);
+  const mine = list.filter(p => meIn(p.ownerNames) || meIn(p.hbsEngs) || meIn(p.coLead) || meIn(p.paLead) || meIn(p.auditor) || meIn(p.owner));
+  const onMe = mine.filter(p => meIn(p.ownerNames)).sort((a, b) => b.priority - a.priority);
+  const chase = mine.filter(p => !meIn(p.ownerNames) && (p.band === "critical" || p.band === "serious")).sort((a, b) => b.priority - a.priority);
+  const noOwner = list.filter(p => !p.ownerNames.length && p.sev !== "good").sort((a, b) => b.priority - a.priority);
+  const myTodos = state.todos.filter(t => t.person === ME.name.split(" ")[0] || t.person === ME.name);
+  const upcoming = state.calendar.filter(m => m.day >= isoDay(0)).slice(0, 12).reverse();
+
+  const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+
+  let out = `<div class="section-head"><h2>My desk</h2>
+    <span class="hint">${esc(ME.name)} — everything with your name on it, plus what you should be chasing.</span></div>
+    <div class="stats" style="margin-bottom:16px">
+      ${stat(onMe.length, "On me now", "is-critical")}
+      ${stat(myTodos.length, "Workload to-dos", "")}
+      ${stat(chase.length, "To chase", "is-serious")}
+      ${stat(noOwner.length, "Nobody owns", "is-serious")}
+      ${stat(mine.length, "Projects I touch", "")}
+    </div>`;
+
+  out += `<div class="section-head"><h2>On me now</h2><span class="hint">The board says the next step is yours</span>
+    <span class="hint num" style="margin-left:auto">${onMe.length}</span></div>` + ptable(onMe, { priority: true });
+
+  if (state.workloadLoading) out += `<div class="skel"><span class="spin"></span>Reading your workload boards…</div>`;
+  else if (state.errors.workload) out += errNote("Workload boards", state.errors.workload, MONDAY);
+  else if (myTodos.length) {
+    out += `<div class="section-head"><h2>My workload to-dos</h2><span class="hint">From the Preapproval and Closeout workload boards</span>
+      <span class="hint num" style="margin-left:auto">${myTodos.length}</span></div>` + todoTable(myTodos);
+  }
+
+  out += `<div class="section-head"><h2>To chase</h2><span class="hint">Yours to shepherd, but the next step sits with someone else</span>
+    <span class="hint num" style="margin-left:auto">${chase.length}</span></div>` + ptable(chase, { priority: true });
+
+  out += `<div class="section-head"><h2>Nobody owns the next step</h2><span class="hint">A manager call — these have no assignee on the board</span>
+    <span class="hint num" style="margin-left:auto">${noOwner.length}</span></div>` + ptable(noOwner.slice(0, 40), { priority: true });
+
+  if (upcoming.length) {
+    out += `<div class="section-head"><h2>Coming up on your calendar</h2><span class="hint">Next meetings, with the projects they touch</span></div>
+      <div class="feed">${upcoming.map(m => meetingCard(m)).join("")}</div>`;
+  }
+  return out;
+}
+
+function todoTable(rows) {
+  return `<div class="panel scroller${rows.length > 14 ? " tall" : ""}"><table><thead><tr>
+    <th>Item</th><th>Queue</th><th>Status</th><th>What needs to happen</th><th>Owner</th><th>Due</th><th class="n">Hrs</th></tr></thead><tbody>
+    ${rows.sort((a, b) => (b.overdue - a.overdue) || String(a.due || "9999").localeCompare(String(b.due || "9999"))).map(t => `<tr>
+      <td><div class="proj-name">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>` : esc(t.name)}</div>
+        ${t.notes ? `<div class="ev">${esc(t.notes.slice(0, 130))}</div>` : ""}</td>
+      <td>${esc(t.kind)}${t.rfiQueue ? ` <span class="chip">RFI queue</span>` : ""}</td>
+      <td>${esc(t.tuStatus || t.status || "—")}</td>
+      <td><div class="need">${esc(t.need)}</div></td>
+      <td class="who">${esc(t.lead || "—")}</td>
+      <td class="num">${t.due ? `${esc(t.due)}${t.overdue ? ` <span class="sev sev-critical">overdue</span>` : ""}` : `<span class="ev">no due date</span>`}</td>
+      <td class="n num">${t.hours == null ? "·" : t.hours}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+/* ---- team to-dos: one card per HBS person ---- */
+function renderTodos() {
+  if (state.workloadLoading) return `<div class="skel"><span class="spin"></span>Reading the Preapproval and Closeout workload boards…</div>`;
+  if (state.errors.workload) return errNote("Workload boards", state.errors.workload, MONDAY);
+  if (!state.todos.length) return `<div class="panel empty">No open items on either workload board.</div>`;
+
+  const byPerson = new Map();
+  for (const t of state.todos) {
+    const key = t.person || RFI_GROUP;
+    if (!byPerson.has(key)) byPerson.set(key, []);
+    byPerson.get(key).push(t);
+  }
+  const people = [...byPerson.entries()]
+    .sort((a, b) => (a[0] === RFI_GROUP ? -1 : b[0] === RFI_GROUP ? 1 : 0) ||
+                    b[1].filter(t => t.overdue).length - a[1].filter(t => t.overdue).length || b[1].length - a[1].length);
+
+  const totalOverdue = state.todos.filter(t => t.overdue).length;
+  const noDue = state.todos.filter(t => !t.due).length;
+
+  const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+
+  return `<div class="section-head"><h2>Team to-dos</h2>
+    <span class="hint">Straight from the Preapproval and Closeout workload boards, where each item already sits in its owner's group.</span></div>
+    <div class="stats" style="margin-bottom:16px">
+      ${stat(state.todos.length, "Open items", "")}
+      ${stat(people.length, "People", "")}
+      ${stat(totalOverdue, "Overdue", "is-critical")}
+      ${stat(noDue, "No due date", "is-serious")}
+    </div>
+    <div class="cards">${people.map(([person, items]) => {
+      const overdue = items.filter(t => t.overdue).length;
+      const soon = items.filter(t => !t.overdue && t.due).length;
+      const undated = items.filter(t => !t.due).length;
+      return `<div class="card">
+        <div class="card-hd">
+          <span class="avatar">${esc((person === RFI_GROUP ? "RFI" : person).split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
+          <span class="nm">${esc(person)}</span>
+          ${person === RFI_GROUP ? `<span class="chip chip-hbs">shared queue</span>` : `<span class="chip chip-hbs">HBS</span>`}
+          <span class="to">${items.length} open</span>
+        </div>
+        <div class="card-bd">
+          <div class="stats">
+            ${stat(items.length, "Open", "")}
+            ${stat(overdue, "Overdue", "is-critical")}
+            ${stat(soon, "Dated", "")}
+            ${stat(undated, "No due date", "is-serious")}
+          </div>
+          ${todoTable(items)}
+        </div>
+      </div>`;
+    }).join("")}</div>`;
+}
+
+/* ---- ASAP: what needs an update right now ---- */
+const WATCH_BUCKETS = [
+  { key: "implDone", title: "Implementation completed", hint: "Implementation and M&V are done — the closeout package is now owed.",
+    test: p => p.tuStatus === "Implementation & MV Complete" },
+  { key: "cd", title: "CD to submit", hint: "Closeout documentation is ready to go in.",
+    test: p => p.tuStatus === "CD to Submit" },
+  { key: "flawed", title: "Flawed", hint: "Rejected in the utility portal — must be corrected and resubmitted.",
+    test: p => /Flawed|FLAWED/.test(p.tuStatus + " " + p.icfStatus) },
+  { key: "rfi", title: "RFI received", hint: "ICF or TRC has asked a question and is waiting on HBS.",
+    test: p => p.tuStatus === "TRC/ICF RFI Received" || p.icfStatus === "RFI Sent to HBS" || p.icfStatus === "RFI Respond by HBS" },
+];
+
+function renderAsap(list) {
+  const ranked = [...list].sort((a, b) => b.priority - a.priority);
+  const urgent = ranked.filter(p => p.band === "critical");
+  const soon = ranked.filter(p => p.band === "serious");
+  const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+
+  let out = `<div class="section-head"><h2>Needs an update now</h2>
+    <span class="hint">Ranked automatically from what the boards say is owed, how long it has sat, and whether anyone owns it.</span></div>
+    <div class="stats" style="margin-bottom:16px">
+      ${stat(urgent.length, "Urgent", "is-critical")}
+      ${stat(soon.length, "Soon", "is-serious")}
+      ${WATCH_BUCKETS.map(b => stat(list.filter(b.test).length, b.title, "")).join("")}
+    </div>`;
+
+  out += `<div class="section-head"><h2>Top priority</h2><span class="hint">Highest score first — hover a score to see why it ranked</span>
+    <span class="hint num" style="margin-left:auto">${urgent.length}</span></div>` + ptable(urgent.slice(0, 50), { priority: true });
+
+  for (const b of WATCH_BUCKETS) {
+    const rows = ranked.filter(b.test);
+    out += `<div class="section-head"><h2>${esc(b.title)}</h2><span class="hint">${esc(b.hint)}</span>
+      <span class="hint num" style="margin-left:auto">${rows.length}</span></div>` + ptable(rows, { priority: true });
+  }
+
+  const noTu = list.filter(p => !p.hasTu);
+  if (noTu.length) {
+    out += `<div class="section-head"><h2>Not linked to the Master TU Tracker</h2>
+      <span class="hint">No SOW, audit or implementation dates can be read for these — the link is missing on the board.</span>
+      <span class="hint num" style="margin-left:auto">${noTu.length}</span></div>` + ptable(noTu.slice(0, 40), {});
+  }
+  return out;
+}
+
+/* ---- audits in flight, for the HBS side ---- */
+function renderAudits(list) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const inAudit = list.filter(p => p.phase === "Audit Phase" || p.current === "scheduled" || p.current === "audited" ||
+    ["Audit Ready to Schedule", "Scheduled", "Re-Audit Needed", "Audit Phase Complete"].includes(p.tuStatus));
+  const rows = inAudit.map(p => {
+    const d = p.evDates.dAudit ? dparse(p.evDates.dAudit) : null;
+    return { p, when: p.evDates.dAudit, upcoming: !!(d && d >= today), missing: infoGaps(p) };
+  }).sort((a, b) => b.p.priority - a.p.priority || String(a.when || "9999").localeCompare(String(b.when || "9999")));
+
+  const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+  return `<div class="section-head"><h2>Audits in flight</h2>
+    <span class="hint">Every project in or around the audit phase, with the next step, who leads it and what is still missing.</span></div>
+    <div class="stats" style="margin-bottom:16px">
+      ${stat(rows.length, "In audit phase", "")}
+      ${stat(rows.filter(r => r.upcoming).length, "Audit upcoming", "")}
+      ${stat(rows.filter(r => !r.when).length, "No audit date", "is-critical")}
+      ${stat(rows.filter(r => r.missing.length).length, "Missing info", "is-serious")}
+    </div>
+    <div class="panel scroller tall"><table><thead><tr>
+      <th>Project</th><th class="n">Pri</th><th>Audit date</th><th>Status</th><th>Next step</th><th>Lead</th><th>Is the info here?</th>
+    </tr></thead><tbody>${rows.map(({ p, when, upcoming, missing }) => `<tr>
+      <td><div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
+          <div class="ev">${esc([p.utility, p.type].filter(Boolean).join(" · "))}</div></td>
+      <td class="n"><span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}" title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></td>
+      <td class="num">${when ? `${esc(when)}${upcoming ? ` <span class="sev sev-good">upcoming</span>` : ""}` : `<span class="sev sev-critical">${sevIcon("critical")}not set</span>`}</td>
+      <td>${esc(p.tuStatus || p.icfStatus || "—")}</td>
+      <td><div class="need">${esc(p.need)}</div>${p.evidence ? `<div class="ev"><b>Latest:</b> ${esc(p.evidence.slice(0, 130))}</div>` : ""}</td>
+      <td>${p.auditor.length ? `<span class="who">${esc(p.auditor.join(", "))}</span>` : ownerCell(p)}</td>
+      <td>${missing.length
+        ? `<span class="sev sev-serious">${sevIcon("serious")}${missing.length} gap${missing.length > 1 ? "s" : ""}</span><div class="ev">${esc(missing.join(", "))}</div>`
+        : `<span class="sev sev-good">${sevIcon("good")}complete</span>`}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+/* What a project is missing before it can move on — read off the board, not guessed. */
+function infoGaps(p) {
+  const gaps = [];
+  if (!p.evDates.dAudit) gaps.push("no audit date");
+  if (!p.auditor.length && !p.hbsEngs.length) gaps.push("no auditor");
+  if (!p.icfEngs.length) gaps.push("no ICF engineer");
+  if (!p.hbsEngs.length) gaps.push("no HBS engineer");
+  if (!p.hasTu) gaps.push("not linked to TU tracker");
+  if (!p.utility) gaps.push("no utility");
+  if (!p.type) gaps.push("no project type");
+  if (p.incentive == null) gaps.push("no incentive figure");
+  return gaps;
+}
+
+/* Placeholder assignments on the board are not people — never address a digest to one. */
+const NOT_A_PERSON = new Set(["TBD", "N/A", "NONE", "None", "---"]);
+
+/* ---------------------------------------------------------------------------
+   ICF isolation.
+
+   The ICF/HBS Project Tracker is the board ICF already shares with us. The
+   Master TU Tracker is HBS-internal: it carries SOW commercials (Rahl's, the
+   client, CGS), internal QA/QC states, deal owners and a running admin-notes
+   log. Teams messages, Fireflies notes and calendar invites are internal too.
+
+   So the rule is drawn at the source, not field by field: anything bound for
+   ICF may use ONLY the shared ICF board, plus the project's identity. Nothing
+   from the TU tracker, no free text, no chatter, no money. It is a whitelist,
+   so a column added to the TU board later cannot leak by default.
+--------------------------------------------------------------------------- */
+function icfSafeView(p) {
+  return {
+    name: p.name,
+    projectId: p.projectId,
+    utility: p.utility,
+    type: p.type,
+    phase: p.phase,
+    status: p.icfStatus,
+    submittedPA: p.evDates.dSubPA,
+    paDate: p.evDates.dPAd,
+    submittedCO: p.evDates.dSubCO,
+    coDate: p.evDates.dCOd,
+    nextActionDate: p.nextActionDate,
+    ecd: p.ecd,
+    /* Derived from the shared board's own status column only. */
+    need: ICF_ACTIONS[p.icfStatus] ? ICF_ACTIONS[p.icfStatus].need : "",
+    withHbs: !!(ICF_ACTIONS[p.icfStatus] && ICF_ACTIONS[p.icfStatus].role === "hbs"),
+  };
+}
+
+function icfDigestBody(name, mine) {
+  const rows = mine.map(icfSafeView);
+  const onIcf = rows.filter(r => r.need && !r.withHbs);
+  const onHbs = rows.filter(r => r.withHbs);
+  const quiet = rows.filter(r => !r.need);
+
+  const L = [];
+  L.push(`Hi ${/\s/.test(name) ? name.split(" ")[0] : name},`, "");
+  L.push(`Here is the current state of the HBS projects assigned to you, as of ${new Date().toLocaleDateString(undefined, { dateStyle: "medium" })}.`, "");
+  L.push(`${rows.length} project${rows.length === 1 ? "" : "s"}.`);
+  const line = r => `  • ${r.name}${r.projectId ? ` (${r.projectId})` : ""} — ${r.status || r.phase}`;
+  if (onIcf.length) {
+    L.push("", `WITH ICF (${onIcf.length})`);
+    for (const r of onIcf) { L.push(line(r)); L.push(`      ${r.need}`); }
+  }
+  if (onHbs.length) {
+    L.push("", `WITH HBS — WE OWE YOU A RESPONSE (${onHbs.length})`);
+    for (const r of onHbs) { L.push(line(r)); L.push(`      ${r.need}`); }
+  }
+  if (quiet.length) {
+    L.push("", `NO OPEN ACTION (${quiet.length})`);
+    for (const r of quiet) L.push(line(r));
+  }
+  L.push("", "Dates on record:");
+  for (const r of rows.filter(r => r.submittedPA || r.paDate || r.submittedCO || r.coDate)) {
+    const bits = [];
+    if (r.submittedPA) bits.push(`PA submitted ${r.submittedPA}`);
+    if (r.paDate) bits.push(`PA'd ${r.paDate}`);
+    if (r.submittedCO) bits.push(`CO submitted ${r.submittedCO}`);
+    if (r.coDate) bits.push(`CO'd ${r.coDate}`);
+    L.push(`  • ${r.name} — ${bits.join(", ")}`);
+  }
+  L.push("", "Automated from the shared ICF/HBS Project Tracker.");
+  return L.join("\n");
+}
+
+/* Splits one engineer's projects into the buckets the digest is built from. */
+function digestFor(name, org, list) {
+  if (NOT_A_PERSON.has(name)) return null;
+  const mine = list.filter(p => (org === "ICF" ? p.icfEngs : p.hbsEngs).includes(name));
+  if (!mine.length) return null;
+  const r = periodRange("week", new Date());
+  const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
+
+  const moved   = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], r.start, r.end)));
+  const yours   = mine.filter(p => (p.sev === "critical" || p.sev === "serious") && owns(p));
+  const waiting = mine.filter(p => p.sev === "critical" && !owns(p));
+  const ageing  = mine.filter(p => p.aging === "Critical" && !yours.includes(p) && !waiting.includes(p));
+  const rest    = mine.filter(p => !yours.includes(p) && !waiting.includes(p) && !ageing.includes(p));
+
+  const byStage = {};
+  for (const s of STAGES) byStage[s.key] = 0;
+  for (const p of mine) if (p.current) byStage[p.current]++;
+
+  const movedStages = new Map();
+  for (const p of moved) movedStages.set(p, STAGES.filter(s => inRange(p.ev[s.key], r.start, r.end)).map(s => s.label).join(", "));
+
+  let text;
+  if (org === "ICF") {
+    text = icfDigestBody(name, mine);
+  } else {
+    const L = [];
+    L.push(`Hi ${/\s/.test(name) ? name.split(" ")[0] : name},`, "");
+    L.push(`Here is where your HBS tune-up projects stand as of ${new Date().toLocaleDateString(undefined, { dateStyle: "medium" })}.`, "");
+    L.push(`You have ${mine.length} active project${mine.length === 1 ? "" : "s"}.`);
+    const anyStage = STAGES.filter(s => byStage[s.key]);
+    if (anyStage.length) {
+      L.push("", "WHERE THEY SIT");
+      for (const s of anyStage) L.push(`  ${s.label}: ${byStage[s.key]}`);
+    }
+    if (moved.length) {
+      L.push("", `MOVED THIS WEEK (${moved.length})`);
+      for (const p of moved) L.push(`  • ${p.name} — ${movedStages.get(p)}`);
+    }
+    if (yours.length) {
+      L.push("", `NEEDS YOUR ACTION (${yours.length})`);
+      for (const p of yours) {
+        L.push(`  • ${p.name}`, `      ${p.need}`);
+        if (p.evidence) L.push(`      Latest: ${p.evidence.slice(0, 160)}`);
+      }
+    }
+    if (waiting.length) {
+      L.push("", `WAITING ON SOMEONE ELSE (${waiting.length})`);
+      for (const p of waiting) L.push(`  • ${p.name} — ${p.need} (with ${p.ownerNames.join(", ")})`);
+    }
+    if (ageing.length) {
+      L.push("", `AGEING PAST 60 DAYS (${ageing.length})`);
+      for (const p of ageing) L.push(`  • ${p.name} — ${p.daysInPhase == null ? "?" : p.daysInPhase} days in ${p.phase} — ${p.need}`);
+    }
+    if (rest.length) {
+      L.push("", `EVERYTHING ELSE (${rest.length})`);
+      for (const p of rest) L.push(`  • ${p.name} — ${p.need}${p.ownerNames.length && !p.ownerNames.includes(name) ? ` (with ${p.ownerNames.join(", ")})` : ""}`);
+    }
+    L.push("", "— Sent automatically from the ICF × HBS pipeline tracker.");
+    text = L.join("\n");
+  }
+
+  return { name, org, count: mine.length, owed: yours.length, ageingCount: ageing.length, movedCount: moved.length,
+           byStage, moved, movedStages, yours, waiting, ageing, rest, mine, text };
+}
+
+/* A compact nine-cell strip of where one engineer's projects sit.
+   Position carries the stage, the count is printed, and the tint is that
+   stage's share of the engineer's book — one hue, so no false identity. */
+function stageProfile(byStage, total) {
+  const cells = STAGES.map(s => {
+    const v = byStage[s.key] || 0;
+    const share = total > 0 ? v / total : 0;
+    const cls = !v ? "m0" : share > 0.5 ? "m5" : share > 0.32 ? "m4" : share > 0.18 ? "m3" : share > 0.08 ? "m2" : "m1";
+    return `<span class="sc"><span class="cell num ${cls}" title="${esc(s.label)}: ${v}">${v || "\u00b7"}</span>` +
+           `<span class="sl" title="${esc(s.label)}">${esc(s.short)}</span></span>`;
+  }).join("");
+  return `<div class="profile"><span class="cap">Where their projects sit</span><div class="strip">${cells}</div></div>`;
+}
+
+function bucket(title, cls, items, lineFn) {
+  if (!items.length) return "";
+  return `<div class="bucket b-${cls}">
+    <h4 class="sev-${cls === "plain" ? "none" : cls}">${cls !== "plain" ? sevIcon(cls) : ""}${esc(title)} (${items.length})</h4>
+    <ul>${items.map(p => `<li><span class="rail"></span><span>${lineFn(p)}</span></li>`).join("")}</ul>
+  </div>`;
+}
+
+function renderDigest(list) {
+  const names = new Map();
+  for (const p of list) {
+    for (const n of p.icfEngs) names.set("ICF " + n, { name: n, org: "ICF" });
+    for (const n of p.hbsEngs) names.set("HBS " + n, { name: n, org: "HBS" });
+  }
+  const wanted = [...names.values()].filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"));
+  const digests = wanted.map(e => digestFor(e.name, e.org, list)).filter(Boolean)
+    .sort((a, b) => b.owed - a.owed || b.ageingCount - a.ageingCount || b.count - a.count);
+  if (!digests.length) return `<div class="panel empty">No engineers match these filters.</div>`;
+
+  const totalOwed = digests.reduce((n, d) => n + d.owed, 0);
+
+  return `<div class="section-head"><h2>Weekly digest, per engineer</h2>
+    <span class="hint">One card per engineer, sorted by who is most blocked. Each card is exactly what the Monday-morning email says.</span>
+    <span class="hint num" style="margin-left:auto">${digests.length} engineers &middot; ${totalOwed} action${totalOwed === 1 ? "" : "s"} owed</span></div>
+  <div class="cards">${digests.map((d, i) => {
+    const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+    return `<div class="card">
+      <div class="card-hd">
+        <span class="avatar">${esc(d.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
+        <span class="nm">${esc(d.name)}</span>
+        <span class="chip ${d.org === "ICF" ? "chip-icf" : "chip-hbs"}">${d.org}</span>
+        <span class="to">Subject: Your project update &mdash; week of ${esc(weekOfLabel())}</span>
+      </div>
+      <div class="card-bd">
+        <div class="stats">
+          ${stat(d.count, "Active", "")}
+          ${stat(d.owed, "Action owed", "is-critical")}
+          ${stat(d.ageingCount, "Ageing 60d+", "is-serious")}
+          ${stat(d.movedCount, "Moved this week", "is-good")}
+        </div>
+        ${stageProfile(d.byStage, d.count)}
+        ${bucket("Needs their action", "critical", d.yours, p =>
+          `<span class="t">${esc(p.name)}</span><div class="s">${esc(p.need)}</div>${p.evidence ? `<div class="m">Latest: ${esc(p.evidence.slice(0, 150))}</div>` : ""}`)}
+        ${bucket("Waiting on someone else", "warning", d.waiting, p =>
+          `<span class="t">${esc(p.name)}</span><div class="s">${esc(p.need)}</div><div class="m">With ${esc(p.ownerNames.join(", "))}</div>`)}
+        ${bucket("Ageing past 60 days", "serious", d.ageing, p =>
+          `<span class="t">${esc(p.name)}</span><div class="s">${esc(p.need)}</div><div class="m">${p.daysInPhase == null ? "?" : p.daysInPhase} days in ${esc(p.phase)}</div>`)}
+        ${bucket("Moved this week", "good", d.moved, p =>
+          `<span class="t">${esc(p.name)}</span><div class="s">${esc(d.movedStages.get(p) || "")}</div>`)}
+        ${d.rest.length ? `<details class="detail"><summary>Everything else (${d.rest.length})</summary>
+          <div class="detail-body">${d.rest.map(p => `<div><b>${esc(p.name)}</b> &mdash; ${esc(p.need)}</div>`).join("")}</div></details>` : ""}
+        <details class="detail"><summary>Show the email exactly as it sends</summary>
+          <div class="detail-body"><pre id="dg-${i}">${esc(d.text)}</pre>
+          <div class="digest-actions"><button data-copy="dg-${i}">Copy</button></div></div></details>
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+}
+function weekOfLabel() {
+  const r = periodRange("week", new Date());
+  return r.start.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+/* ---- meeting intel ---- */
+function projectTags(pred) {
+  const hits = state.projects.filter(pred);
+  if (!hits.length) return `<div class="tags"><span class="tag none">no project matched by name</span></div>`;
+  return `<div class="tags">${hits.slice(0, 8).map(h =>
+    `<span class="tag">${esc(h.name)}</span>`).join("")}${hits.length > 8 ? `<span class="tag none">+${hits.length - 8} more</span>` : ""}</div>`;
+}
+
+function meetingCard(m) {
+  const link = m.firefliesUrl || m.url;
+  const who = m.kind === "calendar"
+    ? `${(m.attendees || []).length} attendee${(m.attendees || []).length === 1 ? "" : "s"}`
+    : "Fireflies recap";
+  return `<div class="fitem">
+    <div class="top">
+      <span class="who2">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(m.title)}</a>` : esc(m.title)}</span>
+      <span class="when num">${esc(m.when)}</span>
+      <span class="chip">${esc(m.source)}</span>
+      ${m.withIcf ? `<span class="chip chip-icf">ICF on the invite</span>` : ""}
+      ${m.kind === "calendar" && m.external && !m.withIcf ? `<span class="chip chip-hbs">external</span>` : ""}
+      <span class="when" style="margin-left:auto">${esc(who)}</span>
+    </div>
+    ${m.bullets && m.bullets.length ? `<ul class="ov">${m.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+    ${projectTags(p => (p.meetings || []).some(x => x.id === m.id) || (p.calendar || []).some(x => x.id === m.id))}
+  </div>`;
+}
+
+function renderIntel() {
+  const parts = [];
+  const mtg = state.meetings, tm = state.teams, cal = state.calendar;
+  const matchedM = state.projects.filter(p => p.meetings.length || p.calendar.length).length;
+  const matchedT = state.projects.filter(p => p.teams.length).length;
+
+  parts.push(`<div class="section-head"><h2>Meeting and chat signal</h2>
+    <span class="hint">Fireflies recaps and Teams messages, matched to projects by name. Nothing here is typed by hand.</span></div>
+    <div class="stats" style="margin-bottom:16px">
+      <div class="stat ${cal.length ? "" : "is-zero"}"><div class="v num">${cal.length}</div><div class="l">Meetings</div></div>
+      <div class="stat ${mtg.length ? "" : "is-zero"}"><div class="v num">${mtg.length}</div><div class="l">Fireflies recaps</div></div>
+      <div class="stat ${tm.length ? "" : "is-zero"}"><div class="v num">${tm.length}</div><div class="l">Teams messages</div></div>
+      <div class="stat ${matchedM + matchedT ? "" : "is-zero"}"><div class="v num">${matchedM + matchedT}</div><div class="l">Projects mentioned</div></div>
+    </div>`);
+
+  if (state.errors.calendar) parts.push(errNote("Calendar meetings", state.errors.calendar, MS365));
+  if (cal.length) {
+    const upcoming = cal.filter(m => m.day >= isoDay(0));
+    const past = cal.filter(m => m.day < isoDay(0));
+    if (upcoming.length) parts.push(`<div class="section-head"><h2>Coming up</h2><span class="hint">Next meetings on your calendar</span>
+      <span class="hint num" style="margin-left:auto">${upcoming.length}</span></div>
+      <div class="feed">${upcoming.slice().reverse().map(meetingCard).join("")}</div>`);
+    if (past.length) parts.push(`<div class="section-head"><h2>Recent meetings</h2><span class="hint">The last three weeks</span>
+      <span class="hint num" style="margin-left:auto">${past.length}</span></div>
+      <div class="feed">${past.slice(0, 25).map(meetingCard).join("")}</div>`);
+  }
+
+  if (state.errors.fireflies) parts.push(errNote("Fireflies recaps (Outlook)", state.errors.fireflies, MS365));
+  if (state.errors.teams) parts.push(errNote("Teams messages", state.errors.teams, MS365));
+
+  if (mtg.length) {
+    parts.push(`<div class="section-head"><h2>Fireflies meetings</h2><span class="hint">What each meeting covered, newest first</span></div>
+      <div class="feed">${mtg.map(meetingCard).join("")}</div>`);
+  } else if (!state.errors.fireflies && sourceState.fireflies !== "ok") {
+    parts.push(`<div class="skel"><span class="spin"></span>Reading Fireflies recaps from Outlook…</div>`);
+  } else if (!state.errors.fireflies) {
+    parts.push(`<div class="panel empty">No Fireflies recap emails found in your recent mail.</div>`);
+  }
+
+  if (tm.length) {
+    parts.push(`<div class="section-head"><h2>Teams chatter</h2><span class="hint">Recent messages mentioning project work</span></div>
+      <div class="feed">${tm.map(t => `<div class="fitem">
+        <div class="top">
+          <span class="avatar">${esc(t.from.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
+          <span class="who2">${esc(t.from)}</span><span class="when num">${esc(t.when)}</span></div>
+        <div class="msg">${esc(String(t.text).slice(0, 400))}</div>
+        ${projectTags(p => p.teams.some(x => x.id === t.id))}
+      </div>`).join("")}</div>`);
+  } else if (!state.errors.teams && sourceState.teams !== "ok") {
+    parts.push(`<div class="skel"><span class="spin"></span>Reading Teams messages…</div>`);
+  }
+  return parts.join("");
+}
+
+function errNote(what, err, server) {
+  const cls = AUTHZ.has(err.code) ? "note-critical" : "note-warning";
+  return `<div class="note ${cls}"><h3>${esc(what)} unavailable</h3><p>${esc(fixCopy(err, server))}</p></div>`;
+}
+
+/* ---- shell ---- */
+function render() {
+  const list = filtered();
+  $("#count-stamp").textContent = `${list.length} of ${state.projects.length} projects`;
+
+  let body = "";
+  if (state.view === "pipeline") body = renderPipeline(list);
+  else if (state.view === "numbers") body = renderNumbers();
+  else if (state.view === "mydesk") body = renderMyDesk(list);
+  else if (state.view === "asap") body = renderAsap(list);
+  else if (state.view === "todos") body = renderTodos();
+  else if (state.view === "audits") body = renderAudits(list);
+  else if (state.view === "projects") body = renderProjects(list);
+  else if (state.view === "digest") body = renderDigest(list);
+  else body = renderIntel();
+
+  const src = [];
+  src.push(`<span>monday.com: <b>${state.projects.length}</b> projects · <b>${state.projects.filter(p => p.hasTu).length}</b> joined to the TU tracker</span>`);
+  src.push(`<span>Teams: ${sourceState.teams === "ok" ? `<b>${state.teams.length}</b> messages` : state.errors.teams ? "unavailable" : "loading…"}</span>`);
+  src.push(`<span>Fireflies: ${sourceState.fireflies === "ok" ? `<b>${state.meetings.length}</b> recaps` : state.errors.fireflies ? "unavailable" : "loading…"}</span>`);
+  src.push(`<span>Calendar: ${sourceState.calendar === "ok" ? `<b>${state.calendar.length}</b> meetings` : state.errors.calendar ? "unavailable" : "loading…"}</span>`);
+  if (state.workloadLoaded) src.push(`<span>Workload: <b>${state.todos.length}</b> open to-dos</span>`);
+  if (state.kpisLoaded) src.push(`<span>Monthly KPIs: <b>${state.kpis.length}</b> milestones (13 months)</span>`);
+
+  main.innerHTML = body + `<div class="srcline">${src.join("")}</div>`;
+
+  main.querySelectorAll("[data-engineer]").forEach(b => b.addEventListener("click", () => {
+    state.engineer = b.getAttribute("data-engineer");
+    const sel = document.querySelector("#f-eng");
+    if (sel) sel.value = state.engineer;
+    state.view = "projects";
+    document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x.dataset.view === "projects")));
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }));
+
+  main.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
+    const pre = document.getElementById(b.getAttribute("data-copy"));
+    if (!pre) return;
+    try { await navigator.clipboard.writeText(pre.textContent); b.textContent = "Copied"; }
+    catch { b.textContent = "Select the text to copy"; }
+    setTimeout(() => { b.textContent = "Copy"; }, 1800);
+  }));
+}
+
+function renderBanners() {
+  const b = [];
+  if (state.errors.monday) b.push(errNote("monday.com project data", state.errors.monday, MONDAY));
+  $("#banners").innerHTML = b.join("");
+}
+
+function setStamp() {
+  const el = $("#stamp");
+  if (!state.loadedAt) { el.textContent = ""; return; }
+  const when = new Date(state.storedAt || state.loadedAt);
+  const cached = state.storedAt && (state.loadedAt - state.storedAt > 5000);
+  el.innerHTML = `${cached ? "Cached " : "Read "}<b>${when.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</b>`;
+}
+
+function fillFilters() {
+  const engs = new Map();
+  for (const p of state.projects) {
+    for (const n of p.icfEngs) engs.set(n + " ICF", { n, org: "ICF" });
+    for (const n of p.hbsEngs) engs.set(n + " HBS", { n, org: "HBS" });
+  }
+  const pool = [...engs.values()]
+    .filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"))
+    .map(e => e.n);
+  const uniq = [...new Set(pool)].sort();
+  const sel = $("#f-eng");
+  const cur = state.engineer;
+  sel.innerHTML = `<option value="">All</option>` + uniq.map(n => `<option value="${esc(n)}"${n === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
+  if (!uniq.includes(cur)) { state.engineer = ""; sel.value = ""; }
+
+  const fill = (id, vals) => {
+    const s = $(id), c = s.value;
+    s.innerHTML = `<option value="">All</option>` + [...new Set(vals)].filter(Boolean).sort().map(v => `<option value="${esc(v)}"${v === c ? " selected" : ""}>${esc(v)}</option>`).join("");
+  };
+  fill("#f-util", state.projects.map(p => p.utility));
+  fill("#f-type", state.projects.map(p => p.type));
+}
+
+/* ========================= loading ======================================= */
+async function loadMonday(refresh) {
+  state.storedAt = null;
+  try {
+    const [icfItems, tuItems] = await Promise.all([
+      fetchBoard(BOARD_ICF, ICF_COLS, null, refresh),
+      fetchBoard(BOARD_TU, TU_COLS, [{ columnId: T.rel, operator: "is_not_empty", compareValue: "" }], refresh),
+    ]);
+    state.projects = buildProjects(icfItems, tuItems);
+    state.errors.monday = null;
+    sourceState.monday = "ok";
+  } catch (e) {
+    const err = mcpError(e);
+    state.errors.monday = err;
+    sourceState.monday = "error";
+    if (AUTHZ.has(err.code)) state.projects = [];
+  }
+  state.loadedAt = Date.now();
+}
+
+async function loadTeams() {
+  sourceState.teams = "loading";
+  try {
+    const res = await call(MS365, "chat_message_search", { query: "project", limit: 25 });
+    state.teams = rowsFrom(res).filter(r => r.id && r.createdDateTime).map(r => ({
+      id: String(r.id),
+      source: "Teams",
+      from: (r.from && r.from.displayName) || "Unknown",
+      when: dstr(r.createdDateTime) || "",
+      text: String(r.summary || "").replace(/\s+/g, " ").trim(),
+      url: r.webUrl || "",
+    })).filter(r => r.text);
+    attachMentions(state.projects, state.teams, "teams");
+    state.errors.teams = null;
+    sourceState.teams = "ok";
+  } catch (e) {
+    state.errors.teams = mcpError(e);
+    sourceState.teams = "error";
+  }
+}
+
+/* The recap email links straight back to the full notes in Fireflies. */
+function firefliesLink(html) {
+  try {
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
+    const a = [...doc.querySelectorAll("a[href]")].map(x => x.getAttribute("href"))
+      .find(h => /app\.fireflies\.ai\/view\//i.test(h || ""));
+    return a ? a.split("?")[0] : "";
+  } catch { return ""; }
+}
+
+function bulletsFromRecap(html) {
+  try {
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
+    const cells = [...doc.querySelectorAll("td")];
+    const head = cells.find(td => /meeting overview/i.test(td.textContent || ""));
+    let ul = null;
+    if (head) {
+      let n = head.parentElement;
+      while (n && !ul) { ul = n.querySelector("ul"); n = n.nextElementSibling; }
+    }
+    if (!ul) ul = doc.querySelector("ul");
+    if (!ul) return [];
+    return [...ul.querySelectorAll("li")]
+      .map(li => (li.textContent || "").replace(/\s+/g, " ").trim())
+      .filter(t => t.length > 12).slice(0, 8);
+  } catch { return []; }
+}
+
+async function loadFireflies() {
+  sourceState.fireflies = "loading";
+  try {
+    const res = await call(MS365, "outlook_email_search", { query: "Your meeting recap", limit: 25 });
+    const recaps = rowsFrom(res).filter(r => r.id && typeof r.subject === "string" && /meeting recap/i.test(r.subject)).slice(0, 14);
+
+    state.meetings = recaps.map(r => ({
+      id: String(r.id),
+      uri: r.uri || `mail:///messages/${r.id}`,
+      source: "Fireflies",
+      kind: "recap",
+      title: String(r.subject).replace(/^Your meeting recap\s*-\s*/i, "").trim(),
+      when: dstr(r.receivedDateTime) || "",
+      day: dstr(r.receivedDateTime) || "",
+      url: r.webLink || "",
+      firefliesUrl: "",
+      bullets: [],
+      text: String(r.subject || ""),
+    }));
+    attachMentions(state.projects, state.meetings, "meetings");
+    state.errors.fireflies = null;
+    sourceState.fireflies = "ok";
+    render();
+
+    /* read the bodies one at a time so a slow mailbox never blocks the page */
+    for (const m of state.meetings) {
+      try {
+        const body = await call(MS365, "read_resource", { uri: m.uri });
+        const p = body && body.payload;
+        const html = p && p.body && p.body.content ? p.body.content : "";
+        m.bullets = bulletsFromRecap(html);
+        m.firefliesUrl = firefliesLink(html);
+        m.text = [m.title, ...m.bullets].join(" ");
+      } catch { /* one unreadable recap must not stop the rest */ }
+    }
+    for (const p of state.projects) p.meetings = [];
+    attachMentions(state.projects, state.meetings, "meetings");
+  } catch (e) {
+    state.errors.fireflies = mcpError(e);
+    sourceState.fireflies = "error";
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Monthly KPIs is the company scoreboard: one row per milestone actually
+   reached, carrying the date, the engineer, the incentive and the savings.
+   Thirteen months are pulled so month-on-month and year-to-date both work.
+   Loaded lazily — it is the biggest board in the account.
+--------------------------------------------------------------------------- */
+async function loadKpis() {
+  if (state.kpisLoaded || state.kpisLoading) return;
+  state.kpisLoading = true;
+  render();
+  try {
+    const from = new Date();
+    from.setMonth(from.getMonth() - 13);
+    from.setDate(1);
+    const items = await fetchBoard(BOARD_KPI, Object.values(KPI),
+      [{ columnId: KPI.date, operator: "greater_than_or_equals", compareValue: from.toISOString().slice(0, 10) }], false);
+
+    state.kpis = items.map(it => ({
+      id: String(it.id),
+      name: it.name || "",
+      url: it.url || "",
+      milestone: (it.group && it.group.title) || "",
+      utility: col(it, KPI.utility),
+      source: col(it, KPI.source),
+      engineers: people(it, KPI.engineer),
+      status: col(it, KPI.status),
+      date: dstr(col(it, KPI.date)),
+      when: dparse(col(it, KPI.date)),
+      incentive: num(it, KPI.incentive) || 0,
+      hbsShare: num(it, KPI.hbsShare) || 0,
+      savings: num(it, KPI.savings) || 0,
+    })).filter(k => k.when);
+    state.errors.kpis = null;
+    state.kpisLoaded = true;
+  } catch (e) {
+    state.errors.kpis = mcpError(e);
+  }
+  state.kpisLoading = false;
+  render();
+}
+
+/* ---------------------------------------------------------------------------
+   The workload boards ARE the team's to-do list: each item sits in a group
+   named after the person who owns it, with its own due date and hours. Their
+   lookup columns are mirrors the connector cannot read, so priority, status
+   and notes are joined back from the TU tracker through the relation column.
+   Loaded lazily — only when a board that needs it is opened.
+--------------------------------------------------------------------------- */
+async function loadWorkload() {
+  if (state.workloadLoaded || state.workloadLoading) return;
+  state.workloadLoading = true;
+  try {
+    const cols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO];
+    const [pa, co] = await Promise.all([
+      fetchBoard(BOARD_PA_WORK, cols, null, false),
+      fetchBoard(BOARD_CO_WORK, cols, null, false),
+    ]);
+
+    const raw = [];
+    for (const [items, kind] of [[pa, "Pre-approval"], [co, "Closeout"]]) {
+      for (const it of items) {
+        const group = (it.group && it.group.title) || "";
+        if (WORK_DONE_GROUPS.has(group)) continue;              // finished work is not a to-do
+        if (col(it, W.done)) continue;                          // completed on the board
+        const st = col(it, W.status);
+        if (st === "Done" || st === "Cancelled") continue;
+        raw.push({
+          id: String(it.id), name: it.name || "(untitled)", url: it.url || "",
+          kind, group,
+          person: group === RFI_GROUP ? "" : group,
+          rfiQueue: group === RFI_GROUP,
+          due: dstr(col(it, W.dueDate)) || dstr(col(it, W.due2)) || dstr(col(it, W.due3)),
+          added: dstr(col(it, W_ADDED_PA)) || dstr(col(it, W_ADDED_CO)),
+          hours: num(it, W.hours),
+          status: st,
+          tuIds: relIds(it, W.rel, BOARD_TU),
+        });
+      }
+    }
+
+    /* Enrich from the TU tracker, which holds the real (non-mirror) values. */
+    const need = [...new Set(raw.flatMap(t => t.tuIds))].map(Number).filter(Boolean);
+    const tuById = new Map();
+    for (let i = 0; i < need.length; i += 100) {
+      const chunk = need.slice(i, i + 100);
+      try {
+        const res = await call(MONDAY, "get_board_items_page", {
+          boardId: BOARD_TU, itemIds: chunk, limit: 100, includeColumns: true, includeGroup: true,
+          columnIds: [T.status, T.priority, T.adminNotes, T.dAudit, T.dImpl, T.auditor, T.paLead, T.coLead, T.dealOwner, T.aiSummary],
+        });
+        for (const it of ((res.payload && res.payload.items) || [])) tuById.set(String(it.id), it);
+      } catch { /* a failed chunk just means less detail on those rows */ }
+    }
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    state.todos = raw.map(t => {
+      const tu = t.tuIds.map(id => tuById.get(id)).find(Boolean) || null;
+      const tuStatus = tu ? col(tu, T.status) : "";
+      const rule = TU_ACTIONS[tuStatus] || null;
+      const leads = tu ? [...people(tu, T.paLead), ...people(tu, T.coLead)] : [];
+      const overdue = t.due ? (dparse(t.due) < today) : false;
+      return {
+        ...t, tuStatus,
+        priorityLabel: tu ? col(tu, T.priority) : "",
+        need: rule ? rule.need : (t.rfiQueue ? "Answer the outstanding RFI" : "Progress this item"),
+        sev: rule && rule.sev ? rule.sev : (overdue ? "serious" : "none"),
+        overdue,
+        lead: t.person || leads[0] || "",
+        notes: tu ? latestNoteLine(col(tu, T.adminNotes)) : "",
+        auditDate: tu ? dstr(col(tu, T.dAudit)) : "",
+        implDate: tu ? dstr(col(tu, T.dImpl)) : "",
+      };
+    });
+    state.errors.workload = null;
+    state.workloadLoaded = true;
+  } catch (e) {
+    state.errors.workload = mcpError(e);
+  }
+  state.workloadLoading = false;
+  render();
+}
+
+/* Every meeting on the calendar in a window around today, matched to projects.
+   Fireflies recaps say what was decided; the calendar says what is coming up. */
+async function loadCalendar() {
+  sourceState.calendar = "loading";
+  try {
+    const rows = [];
+    for (let offset = 0; offset < 75; offset += 25) {
+      const res = await call(MS365, "outlook_calendar_search", {
+        query: "*", afterDateTime: isoDay(-21), beforeDateTime: isoDay(21), limit: 25, offset,
+      });
+      const page = rowsFrom(res).filter(r => r.id && r.subject);
+      rows.push(...page);
+      if (page.length < 25) break;
+    }
+    state.calendar = rows.filter(r => !r.isCancelled).map(r => {
+      const att = Array.isArray(r.attendees) ? r.attendees : [];
+      const when = (r.start && r.start.dateTime) ? String(r.start.dateTime).slice(0, 16).replace("T", " ") : "";
+      return {
+        id: String(r.id),
+        source: "Meeting",
+        kind: "calendar",
+        title: String(r.subject).trim(),
+        when,
+        day: (r.start && r.start.dateTime) ? String(r.start.dateTime).slice(0, 10) : "",
+        tz: (r.start && r.start.timeZone) || "",
+        organizer: r.organizer || "",
+        attendees: att,
+        external: att.some(a => !isHbs(a)),
+        withIcf: att.some(isIcf),
+        url: r.webLink || "",
+        bullets: [],
+        text: String(r.subject || ""),
+      };
+    }).sort((a, b) => String(b.day).localeCompare(String(a.day)));
+    attachMentions(state.projects, state.calendar, "calendar");
+    state.errors.calendar = null;
+    sourceState.calendar = "ok";
+  } catch (e) {
+    state.errors.calendar = mcpError(e);
+    sourceState.calendar = "error";
+  }
+}
+function isoDay(deltaDays) {
+  const d = new Date();
+  d.setDate(d.getDate() + deltaDays);
+  return d.toISOString().slice(0, 10);
+}
+
+async function boot(refresh) {
+  $("#refresh").disabled = true;
+  if (!state.projects.length) main.innerHTML = `<div class="skel"><span class="spin"></span>Reading the ICF/HBS Project Tracker and Master TU Tracker…</div>`;
+
+  await loadMonday(refresh);
+  renderBanners();
+  fillFilters();
+  setStamp();
+  $("#controls").hidden = false;
+  render();
+
+  await Promise.all([
+    loadTeams().then(() => render()),
+    loadCalendar().then(() => render()),
+    loadFireflies().then(() => render()),
+  ]);
+  render();
+  $("#refresh").disabled = false;
+}
+
+/* ========================= wiring ======================================== */
+function segment(groupSel, key, after) {
+  document.querySelectorAll(`${groupSel} button`).forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(`${groupSel} button`).forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    state[key] = b.dataset[key];
+    if (after) after();
+    render();
+  }));
+}
+segment("#period-group", "period");
+segment("#org-group", "org", () => fillFilters());
+
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
+  state.view = t.dataset.view;
+  render();
+  if ((state.view === "todos" || state.view === "mydesk") && mcp) loadWorkload();
+  if (state.view === "numbers" && mcp) loadKpis();
+}));
+$("#f-eng").addEventListener("change", e => { state.engineer = e.target.value; render(); });
+$("#f-util").addEventListener("change", e => { state.utility = e.target.value; render(); });
+$("#f-type").addEventListener("change", e => { state.type = e.target.value; render(); });
+let qt = null;
+$("#f-q").addEventListener("input", e => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { state.q = v; render(); }, 160); });
+$("#refresh").addEventListener("click", () => {
+  state.workloadLoaded = false; state.todos = [];
+  state.kpisLoaded = false; state.kpis = [];
+  boot(true).then(() => {
+    if (state.view === "todos" || state.view === "mydesk") loadWorkload();
+    if (state.view === "numbers") loadKpis();
+  });
+});
+
+/* ========================= start ======================================== */
+(async function start() {
+  mcp = await window.claude?.use?.("mcp");
+  if (!mcp) {
+    main.innerHTML = `<div class="note note-critical"><h3>Connectors are not available in this view</h3>
+      <p>This dashboard reads live from your monday.com and Microsoft 365 connectors. Open it from claude.ai, signed in as yourself, and it will fill in.</p></div>`;
+    return;
+  }
+  try {
+    const { servers } = await mcp.listTools();
+    const have = new Set((servers || []).filter(s => (s.tools || []).length).map(s => s.server));
+    const missing = [MONDAY, MS365].filter(s => !have.has(s));
+    if (missing.length) {
+      $("#banners").innerHTML = `<div class="note note-warning"><h3>${esc(missing.join(" and "))} not connected</h3>
+        <p>Add ${esc(missing.join(" and "))} in claude.ai Settings → Connectors, then press Refresh. Everything that does not depend on ${missing.length > 1 ? "them" : "it"} still loads.</p></div>`;
+    }
+  } catch { /* listTools is advisory — the calls themselves report the real state */ }
+  boot(false);
+  setInterval(() => { if (!document.hidden) boot(true); }, 15 * 60 * 1000);
+})();
+</script>
