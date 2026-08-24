@@ -1128,6 +1128,7 @@ const state = {
   utility: "",
   reviewer: "",
   showDone: false,
+  num: { source: "", utility: "", phase: "", engineer: "", pipelineOnly: false, target: null },
   type: "",
   q: "",
   view: "pipeline",
@@ -1424,87 +1425,34 @@ function sumRows(rows) {
   }), { count: 0, incentive: 0, hbsShare: 0, savings: 0 });
 }
 
+/* --------------------------------------------------------------------------
+   Numbers.
+
+   The Monthly KPIs board records one row per milestone reached, across every
+   programme HBS touches and every partner who delivers work — not just the
+   ICF pipeline. That is why totals here are larger than the pipeline's, and
+   why the Source filter matters: HBS is a little under two thirds of it.
+
+   ICF engineers are not on this board at all, so where a KPI row matches a
+   project on the ICF/HBS tracker by name, the reviewer is taken from there.
+   Only that matched subset can be broken down by ICF engineer, and the page
+   says how much of the total it covers.
+-------------------------------------------------------------------------- */
+const KPI_PHASES = ["Audits Performed", "Preapprovals Submitted", "Preapprovals Received",
+  "Implementations Scheduled", "Closeouts Submitted", "Closeouts Received"];
+
+function kpiUtilLabel(key, spellings) {
+  const m = spellings.get(key);
+  if (!m) return "—";
+  const cased = s => /[A-Z]/.test(s) ? 1 : 0;
+  return [...m.entries()].sort((a, b) => b[1] - a[1] || cased(b[0]) - cased(a[0]))[0][0];
+}
+
 function renderNumbers() {
   if (state.kpisLoading) return `<div class="skel"><span class="spin"></span>Reading the Monthly KPIs board — thirteen months of milestones…</div>`;
   if (state.errors.kpis) return errNote("Monthly KPIs board", state.errors.kpis, MONDAY);
   if (!state.kpis.length) return `<div class="panel empty">No KPI rows found in the last thirteen months.</div>`;
 
-  const r = periodRange(state.period, new Date());
-  const inCur = state.kpis.filter(k => inRange(k.when, r.start, r.end));
-  const inPrev = state.kpis.filter(k => inRange(k.when, r.prevStart, r.prevEnd));
-  const cur = sumRows(inCur), prev = sumRows(inPrev);
-  const label = PERIOD_LABEL[state.period];
-
-  const delta = (c, v, fmt) => {
-    const d = c - v;
-    if (!d) return `<span class="num flat" style="font-size:11.5px">level with prior</span>`;
-    const cls = d > 0 ? "up" : "down";
-    const pct = v > 0 ? ` (${d > 0 ? "+" : ""}${Math.round((d / v) * 100)}%)` : "";
-    return `<span class="num ${cls}" style="font-size:11.5px">${d > 0 ? "+" : ""}${fmt(d)}${pct} vs prior</span>`;
-  };
-
-  let out = `<div class="section-head"><h2>Company numbers</h2>
-    <span class="hint">Milestones banked ${esc(label)}, against the period before it. Change the period at the top.</span></div>
-    <div class="stats" style="margin-bottom:6px">
-      <div class="stat"><div class="v num">${money(cur.incentive)}</div><div class="l">Incentive</div><div>${delta(cur.incentive, prev.incentive, money)}</div></div>
-      <div class="stat"><div class="v num">${money(cur.hbsShare)}</div><div class="l">HBS share</div><div>${delta(cur.hbsShare, prev.hbsShare, money)}</div></div>
-      <div class="stat"><div class="v num">${qty(cur.savings)}</div><div class="l">kWh / therms</div><div>${delta(cur.savings, prev.savings, qty)}</div></div>
-      <div class="stat"><div class="v num">${cur.count}</div><div class="l">Milestones</div><div>${delta(cur.count, prev.count, n => String(n))}</div></div>
-    </div>`;
-
-  /* per milestone group */
-  const groups = MILESTONE_ORDER.filter(g => state.kpis.some(k => k.milestone === g));
-  out += `<div class="section-head"><h2>By milestone</h2><span class="hint">What the company actually banked ${esc(label)}</span></div>
-    <div class="panel scroller"><table><thead><tr>
-      <th>Milestone</th><th class="n">Count</th><th class="n">Prev</th><th class="n">Incentive</th><th class="n">HBS share</th><th class="n">kWh / therms</th>
-    </tr></thead><tbody>${groups.map(g => {
-      const c = sumRows(inCur.filter(k => k.milestone === g));
-      const v = sumRows(inPrev.filter(k => k.milestone === g));
-      const d = c.count - v.count;
-      return `<tr><td>${esc(g)}</td>
-        <td class="n num">${c.count}</td>
-        <td class="n num ${d > 0 ? "up" : d < 0 ? "down" : "flat"}">${v.count}${d ? ` (${d > 0 ? "+" : ""}${d})` : ""}</td>
-        <td class="n num">${money(c.incentive)}</td><td class="n num">${money(c.hbsShare)}</td><td class="n num">${qty(c.savings)}</td></tr>`;
-    }).join("")}</tbody></table></div>`;
-
-  /* thirteen-month trend */
-  const months = [];
-  const m0 = new Date(); m0.setDate(1);
-  for (let i = 12; i >= 0; i--) {
-    const d = new Date(m0.getFullYear(), m0.getMonth() - i, 1);
-    const nx = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    const rows = state.kpis.filter(k => k.when >= d && k.when < nx);
-    months.push({ key: d.toLocaleDateString(undefined, { month: "short" }), year: d.getFullYear(), ...sumRows(rows) });
-  }
-  const maxInc = Math.max(1, ...months.map(m => m.incentive));
-  out += `<div class="section-head"><h2>Thirteen-month trend</h2><span class="hint">Incentive banked per month; the last column is the month in progress</span></div>
-    <div class="panel" style="padding:14px 16px">
-      <div class="tbars">${months.map((m, i) => `<div class="tb" title="${esc(m.key)} ${m.year}: ${money(m.incentive)} across ${m.count} milestones">
-        <span class="tv num">${m.incentive ? money(m.incentive) : ""}</span>
-        <span class="tbar${i === months.length - 1 ? " live" : ""}" style="height:${Math.max(2, Math.round((m.incentive / maxInc) * 100))}%"></span>
-        <span class="tl">${esc(m.key)}</span></div>`).join("")}</div>
-    </div>`;
-
-  /* per engineer */
-  const byEng = new Map();
-  for (const k of inCur) for (const n of (k.engineers.length ? k.engineers : ["Unassigned"])) {
-    if (!byEng.has(n)) byEng.set(n, []);
-    byEng.get(n).push(k);
-  }
-  const engRows = [...byEng.entries()].map(([n, rows]) => ({ n, ...sumRows(rows) }))
-    .sort((a, b) => b.incentive - a.incentive || b.count - a.count);
-  out += `<div class="section-head"><h2>By engineer</h2><span class="hint">Credited on the KPI row; a milestone with several names counts for each</span></div>
-    <div class="panel scroller${engRows.length > 14 ? " tall" : ""}"><table><thead><tr>
-      <th>Engineer</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">HBS share</th><th class="n">kWh / therms</th>
-    </tr></thead><tbody>${engRows.map(e => `<tr>
-      <td class="proj-name">${esc(e.n)}</td><td class="n num">${e.count}</td>
-      <td class="n num">${money(e.incentive)}</td><td class="n num">${money(e.hbsShare)}</td><td class="n num">${qty(e.savings)}</td>
-    </tr>`).join("")}</tbody></table></div>`;
-
-  /* Per utility. The KPI board stores this as free text, so "PEPCO" and
-     "Pepco", "Met ED" and "Met-Ed" are the same programme typed differently.
-     Fold on case and punctuation, and label each group with its commonest
-     spelling — programmes that genuinely differ stay separate. */
   const utilKey = u => String(u || "").trim().toLowerCase().replace(/[\s\-_]+/g, " ");
   const spellings = new Map();
   for (const k of state.kpis) {
@@ -1514,22 +1462,223 @@ function renderNumbers() {
     const m = spellings.get(key);
     m.set(k.utility, (m.get(k.utility) || 0) + 1);
   }
-  const labelFor = key => {
-    const m = spellings.get(key);
-    if (!m) return "—";
-    return [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  const uLabel = key => kpiUtilLabel(key, spellings);
+
+  /* Reviewer, borrowed from the ICF board by project name. */
+  const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const icfByName = new Map();
+  for (const p of state.projects) if (p.name) icfByName.set(norm(p.name), p);
+
+  const rows = state.kpis.map(k => {
+    const proj = icfByName.get(norm(k.name)) || null;
+    return { ...k, uKey: utilKey(k.utility), proj,
+             icfEngs: proj ? proj.icfEngs : [], onPipeline: !!proj };
+  });
+
+  /* ---- filters that belong to this board ---- */
+  const f = state.num;
+  const pass = k =>
+    (!f.source   || k.source === f.source) &&
+    (!f.utility  || k.uKey === f.utility) &&
+    (!f.phase    || k.milestone === f.phase) &&
+    (!f.engineer || k.engineers.includes(f.engineer) || k.icfEngs.includes(f.engineer)) &&
+    (!f.pipelineOnly || k.onPipeline);
+
+  const scoped = rows.filter(pass);
+  const r = periodRange(state.period, new Date());
+  const inCur  = scoped.filter(k => inRange(k.when, r.start, r.end));
+  const inPrev = scoped.filter(k => inRange(k.when, r.prevStart, r.prevEnd));
+  const cur = sumRows(inCur), prev = sumRows(inPrev);
+
+  const opts = (vals, sel, labeller) => [...new Set(vals)].filter(Boolean)
+    .sort((a, b) => String(labeller ? labeller(a) : a).localeCompare(String(labeller ? labeller(b) : b)))
+    .map(v => `<option value="${esc(v)}"${v === sel ? " selected" : ""}>${esc(labeller ? labeller(v) : v)}</option>`).join("");
+
+  const engineerNames = new Set();
+  for (const k of rows) { for (const n of k.engineers) engineerNames.add(n); for (const n of k.icfEngs) engineerNames.add(n); }
+
+  let out = `<div class="section-head"><h2>Numbers</h2>
+    <span class="hint">Milestones recorded on the Monthly KPIs board over the last thirteen months.</span></div>
+
+    <div class="panel" style="padding:10px 14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center">
+      <div class="ctl"><label for="n-src">Source</label>
+        <select id="n-src"><option value="">All sources</option>${opts(rows.map(k => k.source), f.source)}</select></div>
+      <div class="ctl"><label for="n-util">Utility</label>
+        <select id="n-util"><option value="">All utilities</option>${opts(rows.map(k => k.uKey), f.utility, uLabel)}</select></div>
+      <div class="ctl"><label for="n-phase">Phase</label>
+        <select id="n-phase"><option value="">All phases</option>${opts(rows.map(k => k.milestone), f.phase)}</select></div>
+      <div class="ctl"><label for="n-eng">Engineer</label>
+        <select id="n-eng"><option value="">Everyone</option>${opts([...engineerNames], f.engineer)}</select></div>
+      <div class="ctl"><label><input type="checkbox" id="n-pipe"${f.pipelineOnly ? " checked" : ""}> ICF pipeline only</label></div>
+      <span class="stamp" style="margin-left:auto">${scoped.length} of ${rows.length} rows</span>
+    </div>`;
+
+  /* ---- what the numbers cover ---- */
+  const bySource = new Map();
+  for (const k of scoped) bySource.set(k.source || "—", (bySource.get(k.source || "—") || 0) + 1);
+  const srcMix = [...bySource.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
+    .map(([s, n]) => `${esc(s)} ${n}`).join(" · ");
+  const matched = scoped.filter(k => k.onPipeline).length;
+  out += `<div class="ans-note" style="margin-bottom:16px">
+    This board records work delivered by HBS <b>and</b> by partner firms, so it is wider than the pipeline.
+    In view: ${srcMix}. ${matched} of ${scoped.length} rows match a project on the ICF/HBS tracker —
+    only those can be broken down by ICF engineer.</div>`;
+
+  /* ---- headline, with averages ---- */
+  const delta = (a, b) => {
+    if (!b) return a ? `<span class="sev sev-good">new</span>` : "";
+    const d = Math.round(((a - b) / b) * 100);
+    if (!d) return `<span class="ev">level</span>`;
+    return `<span class="sev ${d > 0 ? "sev-good" : "sev-critical"}">${d > 0 ? "+" : ""}${d}%</span>`;
   };
+  const per = (total, n) => n ? total / n : 0;
+  const tile = (v, l, sub) => `<div class="stat"><div class="v num">${v}</div><div class="l">${esc(l)}</div>${sub ? `<div class="ev">${sub}</div>` : ""}</div>`;
+
+  out += `<div class="stats" style="margin-bottom:8px">
+    ${tile(cur.count, `Milestones this ${state.period}`, delta(cur.count, prev.count))}
+    ${tile(money(cur.incentive), "Incentive", delta(cur.incentive, prev.incentive))}
+    ${tile(money(cur.hbsShare), "HBS share", delta(cur.hbsShare, prev.hbsShare))}
+    ${tile(qty(cur.savings), "kWh / therms", delta(cur.savings, prev.savings))}
+  </div>
+  <div class="stats" style="margin-bottom:18px">
+    ${tile(money(per(cur.incentive, cur.count)), "Average incentive per milestone", `previous ${money(per(prev.incentive, prev.count))}`)}
+    ${tile(money(per(cur.hbsShare, cur.count)), "Average HBS share", `previous ${money(per(prev.hbsShare, prev.count))}`)}
+    ${tile(qty(Math.round(per(cur.savings, cur.count))), "Average kWh / therms", `previous ${qty(Math.round(per(prev.savings, prev.count)))}`)}
+  </div>`;
+
+  /* ---- per phase, with averages: the PA and CO numbers to move ---- */
+  const byPhase = new Map();
+  for (const k of inCur) {
+    if (!byPhase.has(k.milestone)) byPhase.set(k.milestone, []);
+    byPhase.get(k.milestone).push(k);
+  }
+  const prevPhase = new Map();
+  for (const k of inPrev) prevPhase.set(k.milestone, (prevPhase.get(k.milestone) || 0) + 1);
+
+  const phaseRows = KPI_PHASES.filter(m => byPhase.has(m) || prevPhase.has(m)).map(m => {
+    const rs = byPhase.get(m) || [];
+    const s = sumRows(rs);
+    return { m, ...s, avgInc: per(s.incentive, s.count), avgKwh: per(s.savings, s.count), was: prevPhase.get(m) || 0 };
+  });
+
+  out += `<div class="section-head"><h2>By phase</h2>
+    <span class="hint">Counts and the average size of what went through — the averages are the levers</span></div>
+    <div class="panel scroller" style="margin-bottom:18px"><table><thead><tr>
+      <th>Phase</th><th class="n">Count</th><th class="n">Previous</th><th class="n">Incentive</th>
+      <th class="n">Avg incentive</th><th class="n">kWh / therms</th><th class="n">Avg kWh</th></tr></thead><tbody>
+      ${phaseRows.map(x => `<tr>
+        <td>${esc(x.m)}</td>
+        <td class="n num">${x.count}</td>
+        <td class="n num">${x.was || "—"} ${delta(x.count, x.was)}</td>
+        <td class="n num">${money(x.incentive)}</td>
+        <td class="n num"><b>${money(x.avgInc)}</b></td>
+        <td class="n num">${qty(x.savings)}</td>
+        <td class="n num"><b>${qty(Math.round(x.avgKwh))}</b></td>
+      </tr>`).join("")}
+      </tbody></table></div>`;
+
+  /* ---- per utility, with averages ---- */
   const byUtil = new Map();
   for (const k of inCur) {
-    const u = utilKey(k.utility) || "—";
+    const u = k.uKey || "—";
     if (!byUtil.has(u)) byUtil.set(u, []);
     byUtil.get(u).push(k);
   }
-  const utilRows = [...byUtil.entries()].map(([u, rows]) => ({ u: u === "—" ? "—" : labelFor(u), ...sumRows(rows) }))
-    .sort((a, b) => b.incentive - a.incentive);
-  out += `<div class="section-head"><h2>By utility programme</h2></div>
-    <div class="panel scroller"><table><thead><tr><th>Utility</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">kWh / therms</th></tr></thead>
-    <tbody>${utilRows.map(x => `<tr><td>${esc(x.u)}</td><td class="n num">${x.count}</td><td class="n num">${money(x.incentive)}</td><td class="n num">${qty(x.savings)}</td></tr>`).join("")}</tbody></table></div>`;
+  const months = Math.max(1, Math.round((r.end - r.start) / (30 * 86400000)));
+  const utilRows = [...byUtil.entries()].map(([u, rs]) => {
+    const s = sumRows(rs);
+    return { u: u === "—" ? "—" : uLabel(u), ...s,
+             avgInc: per(s.incentive, s.count), avgKwh: per(s.savings, s.count), perMonth: s.count / months };
+  }).sort((a, b) => b.incentive - a.incentive);
+
+  out += `<div class="section-head"><h2>By utility</h2>
+    <span class="hint">Average size and rate per utility over the selected period</span></div>
+    <div class="panel scroller" style="margin-bottom:18px"><table><thead><tr>
+      <th>Utility</th><th class="n">Milestones</th><th class="n">Per month</th><th class="n">Incentive</th>
+      <th class="n">Avg incentive</th><th class="n">kWh / therms</th><th class="n">Avg kWh</th></tr></thead><tbody>
+      ${utilRows.map(x => `<tr>
+        <td>${esc(x.u)}</td>
+        <td class="n num">${x.count}</td>
+        <td class="n num">${x.perMonth.toFixed(1)}</td>
+        <td class="n num">${money(x.incentive)}</td>
+        <td class="n num"><b>${money(x.avgInc)}</b></td>
+        <td class="n num">${qty(x.savings)}</td>
+        <td class="n num"><b>${qty(Math.round(x.avgKwh))}</b></td>
+      </tr>`).join("")}
+      </tbody></table></div>`;
+
+  /* ---- per engineer, both sides ---- */
+  const engRow = (name, org, rs) => {
+    const s = sumRows(rs);
+    return { name, org, ...s,
+      avgInc: per(s.incentive, s.count),
+      audits: rs.filter(k => k.milestone === "Audits Performed").length,
+      pas:    rs.filter(k => k.milestone === "Preapprovals Submitted").length,
+      cos:    rs.filter(k => k.milestone === "Closeouts Submitted").length };
+  };
+  const hbsMap = new Map(), icfMap = new Map();
+  for (const k of inCur) {
+    for (const n of k.engineers) { if (!hbsMap.has(n)) hbsMap.set(n, []); hbsMap.get(n).push(k); }
+    for (const n of k.icfEngs)   { if (!icfMap.has(n)) icfMap.set(n, []); icfMap.get(n).push(k); }
+  }
+  const engRows = [
+    ...[...hbsMap.entries()].map(([n, rs]) => engRow(n, "HBS", rs)),
+    ...[...icfMap.entries()].map(([n, rs]) => engRow(n, "ICF", rs)),
+  ].sort((a, b) => b.count - a.count);
+
+  /* ---- what it takes ----
+     Given the average size of an audit's incentive, a target implies a number
+     of audits. There is no goal column anywhere in monday, so the target is
+     whatever you type; it starts at the previous period's total so the first
+     answer means "match last period". */
+  const audits = inCur.filter(k => k.milestone === "Audits Performed");
+  const auditSum = sumRows(audits);
+  const avgPerAudit = per(auditSum.incentive, auditSum.count);
+  const avgKwhAudit = per(auditSum.savings, auditSum.count);
+  const target = f.target != null ? f.target : Math.round(prev.incentive || cur.incentive || 0);
+  const needAudits = avgPerAudit > 0 ? Math.ceil(target / avgPerAudit) : null;
+  const gapAudits  = needAudits != null ? needAudits - auditSum.count : null;
+
+  const paRows = inCur.filter(k => k.milestone === "Preapprovals Submitted");
+  const coRows = inCur.filter(k => k.milestone === "Closeouts Submitted");
+  const paSum = sumRows(paRows), coSum = sumRows(coRows);
+  const needPA = per(paSum.incentive, paSum.count) > 0 ? Math.ceil(target / per(paSum.incentive, paSum.count)) : null;
+  const needCO = per(coSum.incentive, coSum.count) > 0 ? Math.ceil(target / per(coSum.incentive, coSum.count)) : null;
+
+  out += `<div class="section-head"><h2>What it takes</h2>
+    <span class="hint">At the current average size, how much work a target implies</span></div>
+    <div class="panel" style="padding:14px 16px;margin-bottom:18px;display:grid;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <label class="ev" for="n-target">Target incentive for this ${esc(state.period)}</label>
+        <input type="number" id="n-target" value="${target}" step="1000" style="width:160px;font:inherit;padding:6px 9px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--surface);color:var(--ink)">
+        <span class="ev">${f.target != null ? "your figure" : `defaulting to the previous ${esc(state.period)}'s ${money(prev.incentive)}`}</span>
+      </div>
+      <div class="stats">
+        ${tile(needAudits == null ? "—" : needAudits, "Audits needed", avgPerAudit ? `at ${money(avgPerAudit)} each` : "no audit incentive recorded")}
+        ${tile(gapAudits == null ? "—" : (gapAudits > 0 ? "+" + gapAudits : "on track"), "Versus audits done", `${auditSum.count} so far`)}
+        ${tile(needPA == null ? "—" : needPA, "Pre-approvals needed", paSum.count ? `at ${money(per(paSum.incentive, paSum.count))} each` : "none submitted")}
+        ${tile(needCO == null ? "—" : needCO, "Closeouts needed", coSum.count ? `at ${money(per(coSum.incentive, coSum.count))} each` : "none submitted")}
+      </div>
+      <div class="ans-note">Raising the average is the other lever: at ${money(avgPerAudit)} an audit you need ${needAudits ?? "—"}, but at ${money(avgPerAudit * 1.25)} you would need ${avgPerAudit ? Math.ceil(target / (avgPerAudit * 1.25)) : "—"}.
+      ${avgKwhAudit ? `Each audit averages ${qty(Math.round(avgKwhAudit))} kWh/therms.` : ""}</div>
+    </div>
+
+  <div class="section-head"><h2>By engineer</h2>
+    <span class="hint">HBS from the KPI board; ICF taken from the pipeline where the project matches</span></div>
+    <div class="panel scroller tall"><table><thead><tr>
+      <th>Engineer</th><th>Side</th><th class="n">Audits</th><th class="n">PAs</th><th class="n">COs</th>
+      <th class="n">$ per engineer</th><th class="n">kWh per engineer</th><th class="n">Avg $ per milestone</th></tr></thead><tbody>
+      ${engRows.length ? engRows.map(x => `<tr>
+        <td><button class="linkish" data-engineer="${esc(x.name)}">${esc(x.name)}</button></td>
+        <td><span class="chip ${x.org === "ICF" ? "chip-icf" : "chip-hbs"}">${x.org}</span></td>
+        <td class="n num">${x.audits || "—"}</td>
+        <td class="n num">${x.pas || "—"}</td>
+        <td class="n num">${x.cos || "—"}</td>
+        <td class="n num"><b>${money(x.incentive)}</b></td>
+        <td class="n num"><b>${qty(x.savings)}</b></td>
+        <td class="n num">${money(x.avgInc)}</td>
+      </tr>`).join("") : `<tr><td colspan="8" class="ev">Nothing in this period.</td></tr>`}
+      </tbody></table></div>`;
 
   return out;
 }
@@ -2775,6 +2924,23 @@ function render() {
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); state.chatFocus = true; chatSend(chatBox.value); }
     });
   }
+  const numCtl = (id, key, prop) => {
+    const el = main.querySelector(id);
+    if (el) el.addEventListener("change", e => {
+      state.num[key] = prop === "checked" ? e.target.checked : e.target.value;
+      render();
+    });
+  };
+  numCtl("#n-src", "source"); numCtl("#n-util", "utility");
+  numCtl("#n-phase", "phase"); numCtl("#n-eng", "engineer");
+  numCtl("#n-pipe", "pipelineOnly", "checked");
+  const tgt = main.querySelector("#n-target");
+  if (tgt) tgt.addEventListener("change", e => {
+    const v = parseFloat(e.target.value);
+    state.num.target = Number.isFinite(v) && v >= 0 ? v : null;
+    render();
+  });
+
   const clearBtn = main.querySelector("#chat-clear");
   if (clearBtn) clearBtn.addEventListener("click", () => {
     /* Only the transcript goes — anything already posted to monday stays there. */
