@@ -186,6 +186,45 @@ reads back fine, which is what makes the projection figures available at all.
 standing engineering meetings, not an authoritative distribution list. Edit it
 to match who should actually receive the update.
 
+## Reviewer addresses
+
+`ICF_EMAILS` in `tracker/weekly-digest.mjs` maps each name on the board's
+**ICF Engineer** dropdown to an address. Those reviewers span three outside
+companies, so the constant's name is historical — every one of them is
+external, and the same rule applies to all of them: a digest bound for any of
+these may use only the shared ICF/HBS board, never the HBS-internal boards,
+notes, chatter or commercials.
+
+| Company | Reviewers |
+|---|---|
+| icf.com | Jason, Jose, Nail, Darren, Victoria |
+| esai.technology | Ven, Kirti, Devashis |
+| mdenergyadvisors.com | Daniel, Devin, Priscille |
+
+### Still without an address
+
+| Label | Active projects | Why |
+|---|---|---|
+| `(unset)` | 116 | No reviewer named on the project at all |
+| `TBD` | 56 | Placeholder, not a person |
+| `ESAI Team` | 28 | A team — Ven, Kirti and Devashis are its members |
+| `Centralized Engineering` | 17 | A group, not a person |
+| `Soham` | 0 | On the dropdown, one completed project, no live work |
+| `Jalen` | 0 | On the dropdown, no projects |
+
+Placeholders and groups stay roll-up only by design. The first two rows are the
+ones worth acting on: 172 active projects have no individual reviewer, so no
+digest can reach anyone about them.
+
+### Named but not on the dropdown
+
+`Justin` (justin.lee@icf.com) and `Junior` (junior.myrie@icf.com) have
+addresses but no dropdown label, so no project maps to them and no digest can
+be addressed to them. They are held in `UNMAPPED_REVIEWERS` and not used. Add
+them to the ICF Engineer dropdown and assign work before enabling them.
+
+Never add an address from a first-name guess — only from a confirmed source.
+
 ## What the dashboard covers
 
 The **Master TU Tracker** (`1069746645`) is the primary source: every project,

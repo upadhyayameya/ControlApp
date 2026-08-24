@@ -36,21 +36,48 @@ const ROLLUP_TO = [
  * Leave a name out rather than guessing — a wrong match sends one engineer's
  * project list to a different company.
  */
-const ICF_EMAILS = {
-  // Confirmed by Ameya, 2026-08-24. Each was matched to a real monday user
-  // record on the ICF or ESAI domain, then confirmed by a person before use.
-  'Jason':    'jason.frazier@icf.com',              // Frazier, Jason
-  'Jose':     'josemaria.navarronava@icf.com',      // Navarro Nava, Jose Maria
-  'Nail':     'nail.rachidi@icf.com',               // Rachidi, Nail
-  'Kirti':    'kirti@esai.technology',              // Kirtivardhan Singh
-  'Ven':      'ven@esai.technology',                // Ven
-  'Devashis': 'dev@esai.technology',                // Devashis Shrestha
+/* Addresses for the reviewers named on the board's ICF Engineer dropdown.
+   They span three outside companies — ICF, ESAI and MD Energy Advisors — so the
+   name is historical; every one of them is external, and the same restriction
+   applies to all: a digest bound for any of these may use only the shared
+   ICF/HBS board, never the HBS-internal boards, notes, chatter or commercials.
 
-  // Still unmapped, so roll-up only. These appear on the board's ICF Engineer
-  // dropdown but have no address anywhere in monday or in mail:
-  //   Soham, Daniel, Devin, Priscille, Jalen, Victoria, Darren
-  // Add them here once confirmed - never from a guessed first-name match.
+   Confirmed by Ameya, 2026-08-24. Never add an address from a first-name
+   guess — only from a confirmed source. */
+const ICF_EMAILS = {
+  // icf.com
+  'Jason':     'jason.frazier@icf.com',
+  'Jose':      'josemaria.navarronava@icf.com',
+  'Nail':      'nail.rachidi@icf.com',
+  'Darren':    'darren.gest@icf.com',
+  'Victoria':  'victoria.browning@icf.com',
+
+  // esai.technology
+  'Ven':       'ven@esai.technology',
+  'Kirti':     'kirti@esai.technology',
+  'Devashis':  'dev@esai.technology',
+
+  // mdenergyadvisors.com
+  'Daniel':    'dyoo@mdenergyadvisors.com',
+  'Devin':     'drohan@mdenergyadvisors.com',
+  'Priscille': 'petoughe@mdenergyadvisors.com',
+
+  // Still unmapped. Soham and Jalen are on the dropdown with no address; Soham
+  // has one completed project and no live work, Jalen none at all. TBD, ESAI
+  // Team and Centralized Engineering are placeholders or groups rather than
+  // people, so they stay roll-up only by design.
 };
+
+/* Named reviewers who are NOT on the board's dropdown, so no project maps to
+   them and no digest can be addressed to them yet:
+     Justin  justin.lee@icf.com
+     Junior  junior.myrie@icf.com
+   Add them to the ICF Engineer dropdown and assign work before enabling. */
+const UNMAPPED_REVIEWERS = {
+  'Justin': 'justin.lee@icf.com',
+  'Junior': 'junior.myrie@icf.com',
+};
+
 
 /* Board labels that are placeholders, not people. Never addressed, never greeted. */
 const NOT_A_PERSON = new Set(['TBD', 'N/A', 'NONE', 'None', '---', 'ESAI Team', 'EASI Team', 'Centralized Engineering']);
