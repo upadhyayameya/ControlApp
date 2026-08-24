@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Monarch Live Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%A6%8B%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- Sign-in gate. Hidden once the server reports an authenticated session. -->
+    <div id="gate" class="gate" hidden>
+      <div class="gate-card">
+        <div class="gate-head">
+          <span class="mark">🦋</span>
+          <div>
+            <h1>Monarch Live Dashboard</h1>
+            <p class="muted">Connect your Monarch account. Everything stays on this machine.</p>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" role="tab" data-tab="password">Email &amp; password</button>
+          <button class="tab" role="tab" data-tab="cookie">Browser session</button>
+        </div>
+
+        <form id="password-form" class="gate-form" data-panel="password">
+          <label>Email<input type="email" name="email" autocomplete="username" required /></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" required /></label>
+          <label id="totp-field" hidden>
+            Two-factor code
+            <input type="text" name="totp" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" />
+          </label>
+          <button class="primary" type="submit">Connect</button>
+        </form>
+
+        <form id="cookie-form" class="gate-form" data-panel="cookie">
+          <p class="muted small">
+            Monarch blocks most programmatic sign-ins, so borrow the session from your browser
+            instead. In Chrome: sign in at <b>app.monarch.com</b>, press
+            <kbd>⌥</kbd><kbd>⌘</kbd><kbd>I</kbd> (Windows: <kbd>F12</kbd>) → <b>Network</b> tab →
+            reload the page → click any request to <code>api.monarch.com</code> → right-click it →
+            <b>Copy</b> → <b>Copy as cURL</b>. Paste the whole thing below — this page pulls out
+            just the session and throws the rest away.
+          </p>
+          <label>Paste from your browser<textarea name="session" rows="5" required placeholder="curl 'https://api.monarch.com/graphql' -H 'cookie: session_id=…'"></textarea></label>
+          <button class="primary" type="submit">Connect</button>
+        </form>
+
+        <p id="gate-error" class="error" hidden></p>
+        <p class="muted small">
+          Monarch has no public API, so this uses the same private endpoints its web app does.
+          Your credentials are sent only to Monarch; the session token is stored locally in
+          <code>.monarch/session.json</code>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="app" class="app" hidden>
+      <header class="topbar">
+        <div class="brand">
+          <span class="mark">🦋</span>
+          <div>
+            <div class="brand-name">Monarch Live</div>
+            <div id="connection" class="muted small">connecting…</div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <span id="live-pill" class="pill"><span class="dot"></span><span id="live-text">live</span></span>
+          <label class="select-wrap">
+            <span class="sr-only">Refresh interval</span>
+            <select id="interval">
+              <option value="30">every 30s</option>
+              <option value="60">every 1m</option>
+              <option value="120" selected>every 2m</option>
+              <option value="300">every 5m</option>
+              <option value="900">every 15m</option>
+            </select>
+          </label>
+          <button id="refresh" class="ghost" title="Re-read data from Monarch">Refresh</button>
+          <button id="sync" class="ghost" title="Ask Monarch to pull fresh data from your banks">Sync banks</button>
+          <button id="theme" class="ghost" title="Toggle light / dark">◐</button>
+          <button id="logout" class="ghost" hidden>Sign out</button>
+        </div>
+      </header>
+
+      <p id="banner" class="banner" hidden></p>
+
+      <main class="grid">
+        <section class="card card-hero" aria-labelledby="nw-title">
+          <div class="card-head">
+            <div>
+              <h2 id="nw-title">Net worth</h2>
+              <div class="hero-figure"><span id="net-worth">—</span></div>
+              <div id="net-worth-delta" class="delta muted">—</div>
+            </div>
+            <div class="range-group" role="group" aria-label="Time range">
+              <button class="range" data-range="30">1M</button>
+              <button class="range" data-range="90">3M</button>
+              <button class="range" data-range="180">6M</button>
+              <button class="range is-active" data-range="365">1Y</button>
+              <button class="range" data-range="all">All</button>
+            </div>
+          </div>
+          <figure class="chart-figure">
+            <div id="nw-chart" class="chart" role="img" aria-label="Net worth over time"></div>
+            <figcaption class="muted small">
+              <span id="nw-caption">Daily net worth from Monarch's balance history.</span>
+            </figcaption>
+          </figure>
+          <div class="split">
+            <div class="stat"><span class="stat-label">Assets</span><span id="assets" class="stat-value">—</span></div>
+            <div class="stat"><span class="stat-label">Liabilities</span><span id="liabilities" class="stat-value">—</span></div>
+          </div>
+        </section>
+        <section class="card" aria-labelledby="cf-title">
+          <div class="card-head">
+            <h2 id="cf-title">This month</h2>
+            <span id="cf-month" class="muted small"></span>
+          </div>
+          <div class="tiles">
+            <div class="stat"><span class="stat-label">Income</span><span id="income" class="stat-value">—</span></div>
+            <div class="stat"><span class="stat-label">Spending</span><span id="expense" class="stat-value">—</span></div>
+            <div class="stat"><span class="stat-label">Saved</span><span id="savings" class="stat-value">—</span></div>
+          </div>
+          <div class="meter-block">
+            <div class="meter-head">
+              <span class="stat-label">Savings rate</span>
+              <span id="savings-rate" class="stat-value small-value">—</span>
+            </div>
+            <div class="meter" role="img" aria-label="Savings rate"><div id="savings-meter" class="meter-fill"></div></div>
+          </div>
+          <p id="cf-error" class="panel-error" hidden></p>
+        </section>
+        <section class="card card-wide" aria-labelledby="tx-title">
+          <div class="card-head">
+            <h2 id="tx-title">Transactions</h2>
+            <span id="tx-meta" class="muted small"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Merchant</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Account</th>
+                  <th scope="col" class="right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="tx-body"></tbody>
+            </table>
+          </div>
+          <button id="tx-more" class="ghost full">Load more</button>
+          <p id="tx-error" class="panel-error" hidden></p>
+        </section>
+        <section class="card" aria-labelledby="accounts-title">
+          <div class="card-head">
+            <h2 id="accounts-title">Accounts</h2>
+            <span id="accounts-count" class="muted small"></span>
+          </div>
+          <div id="accounts" class="accounts"></div>
+          <p id="accounts-error" class="panel-error" hidden></p>
+        </section>
+        <section class="card" aria-labelledby="spend-title">
+          <div class="card-head">
+            <h2 id="spend-title">Where the money went</h2>
+            <span class="muted small">month to date</span>
+          </div>
+          <div id="spend-chart" class="bars"></div>
+          <p id="spend-error" class="panel-error" hidden></p>
+        </section>
+        <section class="card" aria-labelledby="budget-title">
+          <div class="card-head">
+            <h2 id="budget-title">Budget</h2>
+            <span id="budget-meta" class="muted small"></span>
+          </div>
+          <div id="budget" class="budget"></div>
+          <p id="budget-error" class="panel-error" hidden></p>
+        </section>
+        <section class="card" aria-labelledby="activity-title">
+          <div class="card-head">
+            <h2 id="activity-title">Live activity</h2>
+            <span class="muted small">since this page opened</span>
+          </div>
+          <ul id="activity" class="activity"></ul>
+        </section>
+      </main>
+
+      <footer class="foot muted small">
+        <span id="footer-status">—</span>
+        <span>Unofficial — uses Monarch's private web API, which can change without notice.</span>
+      </footer>
+    </div>
+
+    <div id="tooltip" class="tooltip" hidden></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
