@@ -84,6 +84,60 @@ that has been confirmed by a person — a wrong match sends one engineer's proje
 list to someone at another company. Names that are placeholders rather than
 people (`TBD`, `ESAI Team`, `Centralized Engineering`) are never addressed.
 
+## Turning the schedule on
+
+The Routine has to be created from the claude.ai Routines UI rather than from a
+Claude Code session. A Routine carries its own connector grants, and a session
+cannot hand its monday.com and Microsoft 365 connections to one it creates — a
+Routine made that way fires with no connectors and fails every week. Creating it
+in the UI attaches your own connections.
+
+1. Go to claude.ai → **Routines** → **New routine**.
+2. Name it `Weekly ICF x HBS project digests`.
+3. Schedule: **Mondays at 7:00 AM Eastern** (see the note below about UTC).
+4. Connectors: enable **monday.com** and **Microsoft 365**.
+5. Paste this as the prompt:
+
+```
+Send the weekly ICF x HBS per-engineer project digests and the management roll-up.
+
+Work in the repository upadhyayameya/ControlApp on branch
+claude/monday-project-tracker-dashboard-x5zkit.
+
+1. Read tracker/WEEKLY-AUTOMATION.md and follow it exactly. It is the runbook.
+
+2. In short: read tracker/weekly-digest.mjs and run its entire contents as the
+   `code` argument of the monday.com execute_code tool (language "javascript",
+   no vars). The monday sandbox is already authenticated, so it needs no token.
+   It only reads monday.com and sends nothing.
+
+3. The script prints a JSON envelope:
+   { perEngineer, rollup, unroutable, warnings, projectCount }.
+
+   SAFETY CHECK before sending anything: if warnings is non-empty, or
+   projectCount is 0, or projectCount is far below the usual few hundred,
+   send NOTHING. Report the problem and stop.
+
+4. For each entry in perEngineer, send one plain-text email with the
+   Microsoft 365 outlook_send_mail tool using that entry's to, subject and body.
+   One recipient per email - never CC engineers onto each other's digests,
+   because each digest contains only that person's own projects.
+
+5. Send one email to all the addresses in rollup.to using rollup.subject and
+   rollup.body.
+
+6. Reply with a short report: how many digests went out and to whom, plus the
+   unroutable list.
+
+Anything bound for ICF must use only the shared ICF/HBS Project Tracker, never
+the HBS-internal Master TU Tracker, workload boards, admin notes or incentive
+figures. The script already enforces this; do not widen it.
+```
+
+Until that is switched on, the digests can be produced on demand: ask Claude in
+any session with the two connectors to "run the weekly digest runbook", and add
+"preview only, do not send" to see the output without emailing anyone.
+
 ## Schedule
 
 The Routine fires **Mondays at 11:00 UTC**. Cron runs on UTC and does not shift
