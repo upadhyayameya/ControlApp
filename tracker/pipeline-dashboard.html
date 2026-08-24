@@ -100,7 +100,7 @@ body {
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
-.wrap { max-width: 1480px; margin: 0 auto; padding: 0 20px 72px; }
+.wrap { max-width: 1480px; margin: 0 auto; padding: 12px 20px 72px; }
 
 /* ---------- masthead ---------- */
 .masthead {
@@ -141,8 +141,12 @@ button:disabled { opacity: .5; cursor: default; }
 /* ---------- controls ---------- */
 .controls {
   display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
-  padding: 12px 0; margin-bottom: 4px; border-bottom: 1px solid var(--rule);
+  padding: 10px 0 11px; width: 100%;
 }
+/* The masthead carries the tabs and the filters, and stays put while the
+   boards scroll underneath — no going back up to change a filter. */
+.masthead { max-height: 100vh; overflow-y: auto; }
+.masthead-in:last-child { padding-bottom: 0; }
 .ctl { display: flex; align-items: center; gap: 6px; }
 .ctl > label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); font-weight: 600; }
 .segmented { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 5px; overflow: hidden; }
@@ -357,12 +361,8 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="false" data-view="intel">Meetings</button>
     </div>
   </div>
-</div>
-
-<div class="wrap">
-  <div id="banners"></div>
-
-  <div class="controls" id="controls" hidden>
+  <div class="masthead-in" style="padding-top:0">
+    <div class="controls" id="controls" hidden>
     <div class="ctl">
       <label id="lbl-period">Period</label>
       <div class="segmented" role="group" aria-labelledby="lbl-period" id="period-group">
@@ -387,6 +387,11 @@ details.detail summary:hover { color: var(--ink-2); }
     <div class="ctl"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
     <div class="ctl" style="margin-left:auto"><span class="stamp" id="count-stamp"></span></div>
   </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="banners"></div>
 
   <main id="main"><div class="skel"><span class="spin"></span>Connecting to monday.com…</div></main>
 </div>
@@ -827,6 +832,27 @@ function buildProjects(icfItems, tuItems) {
     const ownerNames = rule && rule.role ? (roleOwners[rule.role] || []) : [];
     const ownerOrg   = rule && rule.role === "icf" ? "ICF" : (rule && rule.role ? "HBS" : null);
 
+    /* The ICF board's HBS Engineer column is only one of the ways a person is
+       attached to a project. Auditor, PA lead, CO lead and deal owner all live
+       on the TU tracker, and several people — Ameya among them — appear only
+       there. Group and filter on everyone involved, keeping the role that put
+       them there so the reason is visible. */
+    const roleMap = new Map();
+    const addRole = (names, role) => {
+      for (const n of names) {
+        if (!n) continue;
+        if (!roleMap.has(n)) roleMap.set(n, []);
+        if (!roleMap.get(n).includes(role)) roleMap.get(n).push(role);
+      }
+    };
+    addRole(hbsEngs, "HBS engineer");
+    addRole(auditor, "Auditor");
+    addRole(paLead, "PA lead");
+    addRole(coLead, "CO lead");
+    addRole(owner, "Deal owner");
+    const hbsAll = [...roleMap.keys()];
+    const hbsRoles = Object.fromEntries([...roleMap].map(([k, v]) => [k, v.join(", ")]));
+
     const aging = col(it, C.aging);
     const daysInPhase = (() => { const n = parseFloat(col(it, C.daysPhase)); return Number.isFinite(n) ? n : null; })();
 
@@ -852,7 +878,7 @@ function buildProjects(icfItems, tuItems) {
       utility: col(it, C.utility),
       type: col(it, C.type),
       phase, icfStatus, tuStatus, sowStatus,
-      icfEngs, hbsEngs, auditor, paLead, coLead, owner, revEng,
+      icfEngs, hbsEngs, hbsAll, hbsRoles, auditor, paLead, coLead, owner, revEng,
       ev, current,
       evDates: {
         dSubPA: dstr(col(it, C.dSubPA)), dPAd: dstr(col(it, C.dPAd)),
@@ -974,8 +1000,8 @@ const state = {
 
 function engineersOf(p) {
   if (state.org === "icf") return p.icfEngs;
-  if (state.org === "hbs") return p.hbsEngs;
-  return [...p.icfEngs, ...p.hbsEngs];
+  if (state.org === "hbs") return p.hbsAll;
+  return [...p.icfEngs, ...p.hbsAll];
 }
 function filtered() {
   const q = state.q.trim().toLowerCase();
@@ -983,7 +1009,7 @@ function filtered() {
     if (state.utility && p.utility !== state.utility) return false;
     if (state.type && p.type !== state.type) return false;
     if (state.org === "icf" && !p.icfEngs.length) return false;
-    if (state.org === "hbs" && !p.hbsEngs.length) return false;
+    if (state.org === "hbs" && !p.hbsAll.length) return false;
     if (state.engineer && !engineersOf(p).includes(state.engineer)) return false;
     if (q) {
       const hay = [p.name, p.projectId, p.phase, p.icfStatus, p.tuStatus, p.need, p.ownerNames.join(" "), p.utility, p.type, p.evidence].join(" ").toLowerCase();
@@ -1064,11 +1090,13 @@ function renderPipeline(list) {
     /* an engineer is counted once per project, under the org they are assigned in */
     const pairs = [];
     if (state.org !== "hbs") for (const n of new Set(p.icfEngs)) pairs.push([n, "ICF"]);
-    if (state.org !== "icf") for (const n of new Set(p.hbsEngs)) pairs.push([n, "HBS"]);
+    if (state.org !== "icf") for (const n of new Set(p.hbsAll)) pairs.push([n, "HBS"]);
     for (const [n, org] of pairs) {
       const key = org + " " + n;
-      if (!rows.has(key)) rows.set(key, { name: n, org, counts: {}, open: 0, attention: 0 });
+      if (!rows.has(key)) rows.set(key, { name: n, org, counts: {}, open: 0, attention: 0, roles: new Set() });
       const row = rows.get(key);
+      if (org === "HBS" && p.hbsRoles[n]) for (const r of p.hbsRoles[n].split(", ")) row.roles.add(r);
+      if (org === "ICF") row.roles.add("ICF engineer");
       for (const s of STAGES) if (inRange(p.ev[s.key], r.start, r.end)) row.counts[s.key] = (row.counts[s.key] || 0) + 1;
       row.open++;
       if (p.sev === "critical" || p.sev === "serious") row.attention++;
@@ -1084,7 +1112,8 @@ function renderPipeline(list) {
       <th class="n">Active</th><th class="n">Needs action</th>
     </tr></thead>
     <tbody>${engRows.map(rw => `<tr>
-      <td><button class="linkish" data-engineer="${esc(rw.name)}">${esc(rw.name)}</button></td>
+      <td><button class="linkish" data-engineer="${esc(rw.name)}">${esc(rw.name)}</button>
+          <div class="ev">${esc([...rw.roles].join(", "))}</div></td>
       <td><span class="chip ${rw.org === "ICF" ? "chip-icf" : "chip-hbs"}">${rw.org}</span></td>
       ${STAGES.map(s => { const v = rw.counts[s.key] || 0; return `<td class="n"><span class="cell num ${magClass(v, maxCell)}">${v || "·"}</span></td>`; }).join("")}
       <td class="n num">${rw.open}</td>
@@ -1348,7 +1377,7 @@ function ptable(rows, opts = {}) {
 /* ---- my desk: the manager's own work and the things to chase ---- */
 function renderMyDesk(list) {
   const meIn = arr => arr.some(n => n === ME.name);
-  const mine = list.filter(p => meIn(p.ownerNames) || meIn(p.hbsEngs) || meIn(p.coLead) || meIn(p.paLead) || meIn(p.auditor) || meIn(p.owner));
+  const mine = list.filter(p => meIn(p.hbsAll) || meIn(p.ownerNames));
   const onMe = mine.filter(p => meIn(p.ownerNames)).sort((a, b) => b.priority - a.priority);
   const chase = mine.filter(p => !meIn(p.ownerNames) && (p.band === "critical" || p.band === "serious")).sort((a, b) => b.priority - a.priority);
   const noOwner = list.filter(p => !p.ownerNames.length && p.sev !== "good").sort((a, b) => b.priority - a.priority);
@@ -1709,7 +1738,7 @@ function icfDigestBody(name, mine) {
 /* Splits one engineer's projects into the buckets the digest is built from. */
 function digestFor(name, org, list) {
   if (NOT_A_PERSON.has(name)) return null;
-  const mine = list.filter(p => (org === "ICF" ? p.icfEngs : p.hbsEngs).includes(name));
+  const mine = list.filter(p => (org === "ICF" ? p.icfEngs : p.hbsAll).includes(name));
   if (!mine.length) return null;
   const r = periodRange("week", new Date());
   const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
@@ -1797,7 +1826,7 @@ function renderDigest(list) {
   const names = new Map();
   for (const p of list) {
     for (const n of p.icfEngs) names.set("ICF " + n, { name: n, org: "ICF" });
-    for (const n of p.hbsEngs) names.set("HBS " + n, { name: n, org: "HBS" });
+    for (const n of p.hbsAll) names.set("HBS " + n, { name: n, org: "HBS" });
   }
   const wanted = [...names.values()].filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"));
   const digests = wanted.map(e => digestFor(e.name, e.org, list)).filter(Boolean)
@@ -2002,7 +2031,7 @@ function fillFilters() {
   const engs = new Map();
   for (const p of state.projects) {
     for (const n of p.icfEngs) engs.set(n + " ICF", { n, org: "ICF" });
-    for (const n of p.hbsEngs) engs.set(n + " HBS", { n, org: "HBS" });
+    for (const n of p.hbsAll) engs.set(n + " HBS", { n, org: "HBS" });
   }
   const pool = [...engs.values()]
     .filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"))

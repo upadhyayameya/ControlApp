@@ -145,6 +145,47 @@ with daylight saving, so that is 7:00 AM Eastern from March to November and
 6:00 AM Eastern from November to March. Adjust the cron to `0 12 * * 1` over the
 winter if the hour matters.
 
+## The Monday team update (draft, not sent)
+
+`tracker/weekly-team-update.mjs` builds a whole-team **engineering execution
+update** — the counterpart to Harry's Monday revenue scoreboard rather than a
+second copy of it. It reports what actually moved through the funnel last week,
+what is blocked, and what has to happen this week. It needs no manually
+maintained goals.
+
+It is created as an Outlook **draft**, never sent automatically, so it is read
+before it goes to the team.
+
+### Steps
+
+1. Read `tracker/weekly-team-update.mjs` and run its entire contents as the
+   `code` argument of the monday.com `execute_code` tool (language
+   `"javascript"`). Pass `vars: { "UPDATE_MODE": "summary" }` to preview it.
+2. It prints `{ weekEnding, subject, body, suggestedTo, stats, warnings }`.
+   If `warnings` is non-empty, stop and report.
+3. Create an Outlook **draft** with the Microsoft 365 `outlook_create_draft`
+   tool using `subject`, `body` and `suggestedTo`. Do not send it.
+4. Reply with the headline stats so it is clear what the draft says.
+
+### What it draws on
+
+| Source | What it contributes |
+|---|---|
+| Monthly KPIs | Milestones reached last week vs the week before vs month to date, and the incentive / HBS share / savings banked |
+| ICF/HBS Project Tracker + Master TU Tracker | RFIs, flawed applications, closeouts ready to move, ageing projects, projects with no engineer |
+| Preapproval + Closeout Workload | Open and overdue to-dos per person |
+| Projections/Actuals boards | This month's projected closeout value per programme, and invoiced-to-date against it |
+
+The Projections/Actuals boards store their value in a formula column wrapping a
+mirror. The mirror itself is unreadable through the connector, but the formula
+reads back fine, which is what makes the projection figures available at all.
+
+### Recipients
+
+`SUGGESTED_TO` at the top of the script is a starting point taken from the
+standing engineering meetings, not an authoritative distribution list. Edit it
+to match who should actually receive the update.
+
 ## Changing what the digests say
 
 The stage definitions and the "what needs to happen / who owns it" rules live in

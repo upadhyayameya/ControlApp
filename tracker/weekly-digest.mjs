@@ -37,12 +37,19 @@ const ROLLUP_TO = [
  * project list to a different company.
  */
 const ICF_EMAILS = {
-  // 'Jason':     'jason.frazier@icf.com',
-  // 'Jose':      'josemaria.navarronava@icf.com',
-  // 'Nail':      'nail.rachidi@icf.com',
-  // 'Kirti':     'kirti@esai.technology',
-  // 'Ven':       'ven@esai.technology',
-  // 'Devashis':  'dev@esai.technology',
+  // Confirmed by Ameya, 2026-08-24. Each was matched to a real monday user
+  // record on the ICF or ESAI domain, then confirmed by a person before use.
+  'Jason':    'jason.frazier@icf.com',              // Frazier, Jason
+  'Jose':     'josemaria.navarronava@icf.com',      // Navarro Nava, Jose Maria
+  'Nail':     'nail.rachidi@icf.com',               // Rachidi, Nail
+  'Kirti':    'kirti@esai.technology',              // Kirtivardhan Singh
+  'Ven':      'ven@esai.technology',                // Ven
+  'Devashis': 'dev@esai.technology',                // Devashis Shrestha
+
+  // Still unmapped, so roll-up only. These appear on the board's ICF Engineer
+  // dropdown but have no address anywhere in monday or in mail:
+  //   Soham, Daniel, Devin, Priscille, Jalen, Victoria, Darren
+  // Add them here once confirmed - never from a guessed first-name match.
 };
 
 /* Board labels that are placeholders, not people. Never addressed, never greeted. */
