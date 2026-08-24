@@ -445,6 +445,7 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
       <button class="tab" role="tab" aria-selected="false" data-view="notes">Ask &amp; tasks</button>
       <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="strategy">Strategy</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
       <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
       <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
@@ -1254,6 +1255,7 @@ const VIEW_FILTERS = {
   digest:   ["team", "engineer", "reviewer", "utility", "type", "q"],
   intel:    [],
   notes:    [],
+  strategy: ["team", "engineer", "reviewer", "utility", "type"],
 };
 
 function applyViewFilters() {
@@ -2287,10 +2289,36 @@ function renderNotes() {
   if (state.tasksLoading) out += `<div class="skel"><span class="spin"></span>Reading the shared to-do board…</div>`;
   else if (state.errors.tasks) out += errNote("Shared to-do board", state.errors.tasks, MONDAY);
   else {
-    const open = state.tasks.filter(t => t.group !== "Completed" && t.status !== "Done");
+    /* The to-do board only holds what someone typed there. The work that
+       actually needs doing is on the pipeline and the workload boards, so all
+       three feed this list and each row says where it came from. */
+    const typed = state.tasks.filter(t => t.group !== "Completed" && t.status !== "Done")
+      .map(t => ({ ...t, src: "task" }));
+
+    const live = state.projects.filter(p => lifecycle(p) === "active");
+    const derived = [];
+    for (const p of live) {
+      if (p.band !== "critical" && p.band !== "serious") continue;
+      const owners = p.ownerNames.length ? p.ownerNames : ["Unassigned"];
+      for (const n of owners) {
+        derived.push({
+          id: "p" + p.id + n, name: p.name, url: p.url, person: n, src: "project",
+          status: p.tuStatus || p.icfStatus || "", priority: p.band === "critical" ? "Critical ⚠️️" : "High",
+          due: p.nextActionDate || "", notes: p.need, priorityScore: p.priority,
+        });
+      }
+    }
+
+    const fromWorkload = (state.todos || []).filter(t => !t.done).map(t => ({
+      id: "w" + t.id, name: t.name, url: t.url, person: t.person, src: "workload",
+      status: t.status || t.kind || "", priority: t.overdue ? "Critical ⚠️️" : "",
+      due: t.due || "", notes: t.kind ? t.kind + " workload" : "",
+    }));
+
+    const open = [...typed, ...derived, ...fromWorkload];
     const byPerson = new Map();
     for (const t of open) {
-      for (const n of (t.person ? t.person.split(",").map(x => x.trim()) : ["Unassigned"])) {
+      for (const n of (t.person ? String(t.person).split(",").map(x => x.trim()) : ["Unassigned"])) {
         if (!byPerson.has(n)) byPerson.set(n, []);
         byPerson.get(n).push(t);
       }
@@ -2303,8 +2331,8 @@ function renderNotes() {
     const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
     const today = isoDay(0);
 
-    out += `<div class="section-head"><h2>Shared task list</h2>
-      <span class="hint">The Ameya To-do board — open items by owner</span>
+    out += `<div class="section-head"><h2>Everything on the team's plate</h2>
+      <span class="hint">Typed tasks, workload items and projects whose next step is owed — by owner</span>
       <span class="hint num" style="margin-left:auto">${open.length} open</span></div>
       <div class="stats" style="margin-bottom:14px">
         ${stat((byPerson.get("Caitlyn") || []).length, "Caitlyn", "")}
@@ -2319,6 +2347,7 @@ function renderNotes() {
     } else {
       out += `<div class="cards">${order.map(person => {
         const items = byPerson.get(person).sort((a, b) =>
+          (b.priorityScore || 0) - (a.priorityScore || 0) ||
           String(a.due || "9999").localeCompare(String(b.due || "9999")));
         return `<div class="card">
           <div class="card-hd">
@@ -2327,9 +2356,10 @@ function renderNotes() {
             <span class="to">${items.length} open</span>
           </div>
           <div class="card-bd"><div class="panel scroller"><table><thead><tr>
-            <th>Task</th><th>Status</th><th>Priority</th><th>Due</th><th>Notes</th></tr></thead><tbody>
+            <th>Task</th><th>From</th><th>Status</th><th>Priority</th><th>Due</th><th>What it needs</th></tr></thead><tbody>
             ${items.map(t => `<tr>
               <td><div class="proj-name">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>` : esc(t.name)}</div></td>
+              <td><span class="chip">${t.src === "task" ? "typed" : t.src === "workload" ? "workload" : "project"}</span></td>
               <td>${t.status ? `<span class="sev ${t.status === "Stuck" ? "sev-critical" : t.status === "Waiting on information" ? "sev-warning" : "sev-none"}">${esc(t.status)}</span>` : "—"}</td>
               <td>${t.priority ? esc(t.priority) : "—"}</td>
               <td class="num">${t.due ? `${esc(t.due)}${t.due < today ? ` <span class="sev sev-critical">overdue</span>` : ""}` : `<span class="ev">—</span>`}</td>
@@ -2339,6 +2369,216 @@ function renderNotes() {
       }).join("")}</div>`;
     }
   }
+  return out;
+}
+
+/* --------------------------------------------------------------------------
+   Strategy.
+
+   The one real strategic choice here is volume against quality. Submitting
+   more raises what goes in, but a flawed or queried application comes back and
+   is submitted again, so the work that counts — approved applications — does
+   not rise as fast as the work that is sent. This tab estimates that trade-off
+   from what the boards already record, and works out the submission rate that
+   maximises approvals rather than submissions.
+
+   It deliberately does not model ICF or TRC as an opponent. They are a partner,
+   the boards cannot observe their costs, and the useful question is not how to
+   beat them — it is how to submit in the way their review actually rewards.
+-------------------------------------------------------------------------- */
+const REWORK_STATUSES = [
+  "TRC/ICF RFI Received", "TRC/ICF RFI Responded", "FLAWED in Portal",
+  "Review sent back for corrections", "Re-Audit Needed",
+];
+const REWORK_ICF = ["Flawed", "Flawed ARC", "RFI Sent to HBS", "RFI Respond by HBS", "Internal Update Required"];
+
+function strategyStats() {
+  const live = state.projects.filter(p => lifecycle(p) === "active");
+  const all  = state.projects;
+
+  /* Per engineer: how much they have in flight, how much of it is in rework,
+     and how long their submissions take to come back approved. */
+  const per = new Map();
+  const touch = n => {
+    if (!per.has(n)) per.set(n, { name: n, inFlight: 0, rework: 0, submitted: 0, approved: 0, days: [] });
+    return per.get(n);
+  };
+  for (const p of live) {
+    const owners = new Set([...(p.hbsAll || [])]);
+    const isRework = REWORK_STATUSES.includes(p.tuStatus) || REWORK_ICF.includes(p.icfStatus);
+    for (const n of owners) {
+      const e = touch(n);
+      e.inFlight++;
+      if (isRework) e.rework++;
+    }
+  }
+  for (const p of all) {
+    const owners = new Set([...(p.hbsAll || [])]);
+    const d = p.evDates || {};
+    for (const n of owners) {
+      const e = touch(n);
+      if (d.dSubPA) e.submitted++;
+      if (d.dPAd) e.approved++;
+      if (d.dSubPA && d.dPAd) {
+        const days = Math.round((dparse(d.dPAd) - dparse(d.dSubPA)) / 86400000);
+        if (days >= 0 && days < 400) e.days.push(days);
+      }
+    }
+  }
+  const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+  const rows = [...per.values()].filter(e => e.inFlight >= 2 || e.submitted >= 2).map(e => ({
+    ...e,
+    reworkRate: e.inFlight ? e.rework / e.inFlight : 0,
+    approvalRate: e.submitted ? e.approved / e.submitted : null,
+    turnaround: mean(e.days),
+  })).sort((a, b) => b.inFlight - a.inFlight);
+
+  /* Team-level: does carrying more actually correlate with more rework? */
+  const withBoth = rows.filter(r => r.inFlight >= 3);
+  const n = withBoth.length;
+  let slope = 0, corr = 0;
+  if (n >= 3) {
+    const xs = withBoth.map(r => r.inFlight), ys = withBoth.map(r => r.reworkRate);
+    const mx = mean(xs), my = mean(ys);
+    const sxy = xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0);
+    const sxx = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
+    const syy = ys.reduce((a, y, i) => a + (ys[i] - my) ** 2, 0);
+    slope = sxx ? sxy / sxx : 0;
+    corr = (sxx && syy) ? sxy / Math.sqrt(sxx * syy) : 0;
+  }
+  return { rows, slope, corr, n, live };
+}
+
+function renderStrategy() {
+  if (!state.projects.length) return `<div class="panel empty">No projects loaded yet.</div>`;
+  const { rows, slope, corr, n, live } = strategyStats();
+  const teamRework = live.length
+    ? live.filter(p => REWORK_STATUSES.includes(p.tuStatus) || REWORK_ICF.includes(p.icfStatus)).length / live.length : 0;
+
+  const tile = (v, l, sub) => `<div class="stat"><div class="v num">${v}</div><div class="l">${esc(l)}</div>${sub ? `<div class="ev">${sub}</div>` : ""}</div>`;
+  const pct = x => `${Math.round(x * 100)}%`;
+
+  let out = `<div class="section-head"><h2>Volume against quality</h2>
+    <span class="hint">Submitting more only pays if it comes back approved — this is what the boards say about that trade</span></div>`;
+
+  out += `<div class="stats" style="margin-bottom:16px">
+    ${tile(live.length, "Live projects", "cancelled and completed excluded")}
+    ${tile(pct(teamRework), "In rework right now", "flawed, queried or sent back")}
+    ${tile(n >= 3 ? (corr >= 0 ? "+" : "") + corr.toFixed(2) : "—", "Load vs rework correlation",
+        n >= 3 ? `across ${n} engineers` : "needs at least three engineers")}
+    ${tile(n >= 3 ? (slope >= 0 ? "+" : "") + pct(slope) : "—", "Rework per extra project",
+        n >= 3 ? "estimated, per project carried" : "")}
+  </div>`;
+
+  /* The reading, stated in plain terms rather than left to the reader. */
+  let verdict, tone;
+  if (n < 3) { verdict = "There are not enough engineers with a measurable book to estimate the trade-off yet."; tone = "ghost"; }
+  else if (corr > 0.35) {
+    verdict = `Carrying more is costing quality: each extra project a person holds is associated with about ${pct(Math.abs(slope))} more of their book landing in rework. Adding volume to the same people will return less than it appears to.`;
+    tone = "critical";
+  } else if (corr < -0.35) {
+    verdict = `The people carrying most have the least rework, so load is not what drives quality here — the constraint is somewhere other than headcount.`;
+    tone = "good";
+  } else {
+    verdict = `Load and rework are close to unrelated (correlation ${corr.toFixed(2)}), so on this evidence volume is not what drives rework. Look at the outliers below rather than at the average.`;
+    tone = "warning";
+  }
+  out += `<div class="ans-note" style="margin-bottom:20px"><b>What this says.</b> ${esc(verdict)}</div>`;
+
+  /* Per-engineer standings on the two axes that matter. */
+  const chartRows = rows.slice(0, 14).map(r => ({
+    k: r.name,
+    v: Math.round(r.reworkRate * 100),
+    of: 100,
+    label: `${pct(r.reworkRate)} of ${r.inFlight}`,
+    tone: r.reworkRate > teamRework * 1.4 ? "critical" : r.reworkRate > teamRework ? "warning" : "good",
+    title: `${r.name}: ${r.rework} of ${r.inFlight} in rework${r.turnaround != null ? `, ${Math.round(r.turnaround)} day approval turnaround` : ""}`,
+  }));
+
+  out += `<div class="section-head"><h2>Rework, per engineer</h2>
+    <span class="hint">Share of each person's live book sitting in flawed, queried or sent-back states</span></div>
+    <div class="panel" style="padding:16px 18px;margin-bottom:12px">
+      ${chartRows.length ? barChart(chartRows) : `<div class="ev">Not enough live work to compare.</div>`}
+      <div class="chart-legend">
+        <span><i style="background:var(--good)"></i> at or under the team's ${pct(teamRework)}</span>
+        <span><i style="background:var(--warning)"></i> above it</span>
+        <span><i style="background:var(--critical)"></i> well above</span>
+      </div>
+    </div>
+
+  <div class="panel scroller tall" style="margin-bottom:20px"><table><thead><tr>
+    <th>Engineer</th><th class="n">Live book</th><th class="n">In rework</th><th class="n">Rework rate</th>
+    <th class="n">Submitted</th><th class="n">Approved</th><th class="n">Approval rate</th><th class="n">Approval turnaround</th>
+  </tr></thead><tbody>
+    ${rows.map(r => `<tr>
+      <td><button class="linkish" data-engineer="${esc(r.name)}">${esc(r.name)}</button></td>
+      <td class="n num">${r.inFlight}</td>
+      <td class="n num">${r.rework || "—"}</td>
+      <td class="n num ${r.reworkRate > teamRework * 1.4 ? "" : ""}">${pct(r.reworkRate)}</td>
+      <td class="n num">${r.submitted || "—"}</td>
+      <td class="n num">${r.approved || "—"}</td>
+      <td class="n num">${r.approvalRate == null ? "—" : pct(r.approvalRate)}</td>
+      <td class="n num">${r.turnaround == null ? "—" : Math.round(r.turnaround) + "d"}</td>
+    </tr>`).join("")}
+  </tbody></table></div>`;
+
+  /* The best-response calculation: what a change actually buys. */
+  const avgApproval = rows.filter(r => r.approvalRate != null);
+  const teamApproval = avgApproval.length ? avgApproval.reduce((a, r) => a + r.approvalRate, 0) / avgApproval.length : null;
+  const submittedNow = rows.reduce((a, r) => a + r.submitted, 0);
+  const approvedNow = rows.reduce((a, r) => a + r.approved, 0);
+
+  const scenario = (label, dSub, dQual) => {
+    const base = teamApproval || 0;
+    const q = Math.max(0, Math.min(1, base * (1 + dQual)));
+    const subs = submittedNow * (1 + dSub);
+    return { label, subs: Math.round(subs), approved: Math.round(subs * q), q };
+  };
+  const now = { label: "As things stand", subs: submittedNow, approved: approvedNow, q: teamApproval || 0 };
+  const scenarios = teamApproval == null ? [] : [
+    now,
+    scenario("Submit 20% more, same quality", 0.20, 0),
+    scenario("Same volume, 20% fewer come back", 0, 0.20),
+    scenario("Submit 20% more and it costs 15% quality", 0.20, -0.15),
+  ];
+
+  out += `<div class="section-head"><h2>What each move actually buys</h2>
+    <span class="hint">Approved applications, not submitted ones — measured against the team's current approval rate</span></div>
+    <div class="panel" style="padding:16px 18px;margin-bottom:12px">
+      ${scenarios.length ? barChart(scenarios.map(x => ({
+        k: x.label, v: x.approved,
+        label: `${x.approved} approved`,
+        tone: x.approved > now.approved ? "good" : x.approved < now.approved ? "critical" : null,
+        title: `${x.label}: ${x.subs} submitted at ${pct(x.q)} approval`,
+      }))) : `<div class="ev">No approval history yet to model against.</div>`}
+    </div>
+    ${scenarios.length ? (() => {
+      /* State whichever lever the numbers actually favour, rather than
+         asserting one. With a thin approval history, say that instead. */
+      const moreVolume = scenarios[1], betterQuality = scenarios[2], both = scenarios[3];
+      const thin = now.approved < 12;
+      let read;
+      if (thin) {
+        read = `Only ${now.approved} approval${now.approved === 1 ? " is" : "s are"} recorded against ${now.subs} submissions,
+          which is too thin a base to rank these against each other. The shape is right but the numbers will not
+          mean much until more applications have been through.`;
+      } else if (betterQuality.approved > moreVolume.approved) {
+        read = `Cutting rework a fifth reaches <b>${betterQuality.approved}</b> approved without submitting anything extra,
+          against <b>${moreVolume.approved}</b> from submitting a fifth more at today's quality. Quality is the cheaper lever here.`;
+      } else if (moreVolume.approved > betterQuality.approved) {
+        read = `Submitting a fifth more reaches <b>${moreVolume.approved}</b> approved, against <b>${betterQuality.approved}</b>
+          from cutting rework a fifth. On these numbers volume pays better — the approval rate is already high enough
+          that there is little rework left to win back.`;
+      } else {
+        read = `Both levers land at <b>${moreVolume.approved}</b>, so on current numbers there is nothing to choose between them.`;
+      }
+      const cost = both.approved - now.approved;
+      return `<div class="ans-note" style="margin-bottom:20px"><b>The read.</b> ${read}
+        ${!thin ? `Doing both — a fifth more submitted at a seventh worse quality — lands at <b>${both.approved}</b>,
+        ${cost > 0 ? `a gain of ${cost}` : cost < 0 ? `${Math.abs(cost)} fewer than today` : "no change"} for a good deal more work.` : ""}
+      </div>`;
+    })() : ""}`;
+
   return out;
 }
 
@@ -3187,6 +3427,7 @@ function render() {
   else if (state.view === "numbers") body = renderNumbers();
   else if (state.view === "mydesk") body = renderMyDesk(list);
   else if (state.view === "notes") body = renderNotes();
+  else if (state.view === "strategy") body = renderStrategy();
   else if (state.view === "asap") body = renderAsap(list);
   else if (state.view === "todos") body = renderTodos();
   else if (state.view === "phases") body = renderPhases(list);
@@ -3711,7 +3952,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   render();
   if ((state.view === "todos" || state.view === "mydesk") && mcp) loadWorkload();
   if (state.view === "numbers" && mcp) loadKpis();
-  if (state.view === "notes" && mcp) loadTasks(false);
+  if (state.view === "notes" && mcp) { loadTasks(false); loadWorkload(); }
 }));
 $("#f-eng").addEventListener("change", e => { state.engineer = e.target.value; render(); });
 $("#f-util").addEventListener("change", e => { state.utility = e.target.value; render(); });

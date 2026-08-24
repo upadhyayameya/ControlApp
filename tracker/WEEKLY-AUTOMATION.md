@@ -252,6 +252,31 @@ punctuation and are shown under one spelling, preferring a properly capitalised
 one. Programmes that genuinely differ, such as Dominion and Dominion - TRC, fold
 to different keys and stay separate.
 
+## Strategy
+
+The **Strategy** tab models the one real strategic choice in the data: volume
+against quality. Submitting more raises what goes in, but a flawed or queried
+application comes back and is submitted again, so approvals do not rise as fast
+as submissions.
+
+It deliberately does not model ICF or TRC as an opponent. They are a partner,
+the boards cannot observe their costs, and the useful question is not how to
+beat them — it is how to submit in the way their review actually rewards.
+
+| Section | What it does |
+|---|---|
+| Volume against quality | Correlates each engineer's live book against the share of it in rework, and states in plain terms whether load is costing quality |
+| Rework, per engineer | Share of each person's book sitting flawed, queried or sent back, against the team rate |
+| What each move actually buys | Approved applications, not submitted ones, under four scenarios |
+
+Rework is read from the statuses that mean an application came back: on the TU
+tracker `TRC/ICF RFI Received`, `FLAWED in Portal`, `Review sent back for
+corrections`, `Re-Audit Needed`; on the ICF board `Flawed`, `Flawed ARC`,
+`RFI Sent to HBS`, `RFI Respond by HBS`, `Internal Update Required`.
+
+The conclusion is derived from the numbers, never asserted. Where the approval
+history is too thin to rank the levers, the page says so instead of picking one.
+
 ## Ask the tracker (in the dashboard)
 
 The **Ask & tasks** tab is a conversation with the boards. It answers from the
