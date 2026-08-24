@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+*.log
+
+# Local Monarch session (auth token / cookies) — never commit this.
+.monarch/
+.env

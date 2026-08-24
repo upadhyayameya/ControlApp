@@ -1,0 +1,16 @@
+{
+  "name": "monarch-live-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A local, live dashboard for a Monarch Money account — zero npm dependencies.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/server.mjs",
+    "demo": "MONARCH_DEMO=1 node server/server.mjs",
+    "check": "node --check server/server.mjs && node --check server/monarch.mjs && node --check server/snapshot.mjs && node --check server/demo.mjs && node --check server/queries.mjs && node --check server/session.mjs && node --check public/app.js",
+    "test": "node --test test/*.test.mjs"
+  }
+}
