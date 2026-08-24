@@ -186,6 +186,70 @@ reads back fine, which is what makes the projection figures available at all.
 standing engineering meetings, not an authoritative distribution list. Edit it
 to match who should actually receive the update.
 
+## Utility portal reconciliation
+
+`tracker/portal-reconcile.mjs` closes the gap where a project sits in **Flawed**
+status in a utility portal and nobody notices until someone opens the portal and
+looks.
+
+The portals cannot be scraped from here — each needs an authenticated session —
+but every one of them has an **Export CSV** button on its My Applications page.
+That export carries the portal's own Status per application, which is all the
+reconciliation needs.
+
+### Steps
+
+1. In the portal (e.g. `https://pepco-rcx-full.customerapplication.com/customer-home`),
+   open **My Applications** and press **Export CSV**.
+2. Run `tracker/portal-reconcile.mjs` through the monday.com `execute_code` tool
+   with the file contents in the `CSV` variable:
+   `vars: { "CSV": "<file contents>", "RECONCILE_MODE": "summary" }`
+3. Read the report. It returns:
+
+   | Section | Meaning |
+   |---|---|
+   | `flawedInPortalNotOnBoard` | Rejected in the portal, not flagged on the board — the case that currently goes unnoticed |
+   | `statusMismatches` | Every other portal-vs-board status disagreement |
+   | `inPortalNotOnBoards` | Applications with no matching project on either board |
+   | `onBoardNotInExport` | Board projects for that programme absent from the export |
+   | `proposedStatusUpdates` | What would be written back |
+
+4. To write the statuses back to the ICF/HBS board, re-run with
+   `vars: { "CSV": "...", "APPLY": "true" }`. **It is read-only otherwise** —
+   nothing is written unless `APPLY` is set, and only the ICF board's status
+   column is touched, only where portal and board actually disagree.
+
+### How matching works
+
+On the utility **Project Number**, which is already on both boards:
+`text_mm5wf2g3` on the ICF/HBS Project Tracker (78% populated) and `text8` on
+the Master TU Tracker (71%). The prefix identifies the programme:
+
+| Prefix | Programme | On the boards |
+|---|---|---|
+| `BGRCVA`, `BGRFVA`, `BGPTPS` | BGE | 267 |
+| `PCRCVA`, `PCRFPS` | Pepco | 120 |
+| `DPRCVA`, `DPCCPS` | Delmarva | 44 |
+| `SMRCVA` | SMECO | 9 |
+| `WGCPPS` | Washington Gas | 36 |
+
+The same script works for every utility — the programme is inferred from the
+prefixes present in whichever export is supplied.
+
+### Header matching
+
+Portal exports differ in their column headings, so the parser matches on meaning
+rather than exact text (project number / application number / id, status /
+application status, and so on) and reports `headersSeen` on every run. If a
+portal uses wording it does not recognise, it says so and lists the headers it
+found instead of guessing.
+
+### What this does not do
+
+It cannot log in to the portals, so the export is still a manual click. If the
+utilities offer an API or a scheduled emailed report, that export step can be
+automated too and the whole loop becomes hands-off.
+
 ## Changing what the digests say
 
 The stage definitions and the "what needs to happen / who owns it" rules live in
