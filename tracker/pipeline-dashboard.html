@@ -262,6 +262,37 @@ a:hover { text-decoration: underline; }
 .tb .tl { font-size: 10px; color: var(--ink-3); text-align: center; }
 .tb:hover .tbar { filter: brightness(1.15); }
 
+/* the assistant: a transcript, suggestions, and a composer */
+.chat { display: grid; gap: 12px; }
+.chat-feed {
+  display: grid; gap: 10px; align-content: start;
+  max-height: 56vh; overflow-y: auto; padding: 14px 16px;
+  border: 1px solid var(--rule); border-radius: 8px; background: var(--panel);
+}
+.bub { max-width: 78%; padding: 10px 13px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
+.bub p { margin: 0 0 8px; }
+.bub p:last-child { margin-bottom: 0; }
+.bub.you { justify-self: end; background: var(--accent); color: #fff; border-bottom-right-radius: 3px; white-space: pre-wrap; }
+.bub.bot { justify-self: start; background: var(--surface); border: 1px solid var(--rule); border-bottom-left-radius: 3px; max-width: 88%; }
+.ans-row { border-left: 3px solid var(--rule-strong); padding: 2px 0 2px 10px; margin: 8px 0; }
+.ans-row .t { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.ans-row .s { font-size: 13px; margin-top: 2px; }
+.ans-row .m { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.ans-note { font-size: 12.5px; color: var(--ink-2); background: var(--panel); border-radius: 6px; padding: 7px 9px; margin-top: 8px; }
+.bub-acts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.bub-acts button { font-size: 12.5px; padding: 5px 11px; }
+.chat-sugg { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip-btn {
+  font-size: 12.5px; padding: 5px 11px; border-radius: 999px;
+  border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-2); cursor: pointer;
+}
+.chip-btn:hover { color: var(--ink); border-color: var(--accent); }
+.chat-input { display: flex; gap: 8px; align-items: flex-end; }
+.chat-input textarea {
+  flex: 1; font: inherit; padding: 9px 12px; border-radius: 8px; resize: vertical;
+  border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink);
+}
+
 /* a folded-away section: closed by default, still one click from everything */
 details.fold { margin-top: 22px; border-top: 1px solid var(--rule); padding-top: 12px; }
 details.fold > summary {
@@ -369,7 +400,7 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="true"  data-view="pipeline">Pipeline</button>
       <button class="tab" role="tab" aria-selected="false" data-view="numbers">Numbers</button>
       <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="notes">Notes &amp; tasks</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="notes">Ask &amp; tasks</button>
       <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
       <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
@@ -1017,6 +1048,7 @@ const state = {
   view: "pipeline",
   phaseTab: "audits",
   noteFocus: false,
+  chatFocus: false,
   noteCaret: null,
   projects: [],
   errors: {},
@@ -1028,6 +1060,8 @@ const state = {
   tasksLoaded: false,
   tasksLoading: false,
   note: "",
+  chat: [],
+  chatDraft: "",
   noteBusy: false,
   noteResult: null,
   kpis: [],
@@ -1479,43 +1513,235 @@ async function addTask(fields) {
   }
 }
 
-function renderNotes() {
-  const { matches, unplaced } = noteMatches(state.note);
-  const busy = state.noteBusy;
-  const r = state.noteResult;
+/* --------------------------------------------------------------------------
+   The assistant.
 
-  let out = `<div class="section-head"><h2>Notes and tasks</h2>
-    <span class="hint">Write what needs to happen. Anything naming a project posts to that project; anything that is an action becomes a task.</span></div>`;
+   It answers from the boards, not from a language model: it recognises the
+   projects and people you name, works out whether you are asking something or
+   telling it something, replies with what it knows, and offers the write-backs
+   that follow. Every answer is traceable to a row on a board.
+-------------------------------------------------------------------------- */
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-  if (r) {
-    const good = r.ok.length, bad = r.failed.length;
-    out += `<div class="note ${bad ? "note-warning" : ""}">
-      <h3>${bad ? "Partly posted" : r.kind === "task" ? "Task added" : "Posted"}</h3>
-      <p>${good ? esc(r.kind === "task" ? `Added “${r.ok[0]}” to the to-do board.` : `Posted to ${good} project${good > 1 ? "s" : ""}: ${r.ok.join(", ")}.`) : ""}
-      ${bad ? esc(`Failed on ${r.failed.map(f => f.name).join(", ")} — ${fixCopy(r.failed[0].err, MONDAY)}`) : ""}</p></div>`;
+/* "friday", "tomorrow", "next week", "in 3 days", "on the 28th" */
+function readDate(text) {
+  const t = text.toLowerCase();
+  const base = new Date(); base.setHours(0, 0, 0, 0);
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  if (/\btoday\b/.test(t)) return iso(base);
+  if (/\btomorrow\b/.test(t)) { const d = new Date(base); d.setDate(d.getDate() + 1); return iso(d); }
+  if (/\bnext week\b/.test(t)) { const d = new Date(base); d.setDate(d.getDate() + 7); return iso(d); }
+  const inDays = t.match(/\bin (\d{1,2}) days?\b/);
+  if (inDays) { const d = new Date(base); d.setDate(d.getDate() + Number(inDays[1])); return iso(d); }
+  const explicit = t.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+  if (explicit) return explicit[1];
+  for (let i = 0; i < 7; i++) {
+    if (new RegExp(`\\b(next |this )?${WEEKDAYS[i]}\\b`).test(t)) {
+      const d = new Date(base);
+      let delta = (i - d.getDay() + 7) % 7;
+      if (delta === 0) delta = 7;
+      if (/\bnext /.test(t)) delta += 7;
+      d.setDate(d.getDate() + delta);
+      return iso(d);
+    }
+  }
+  return "";
+}
+
+function peopleIndex() {
+  const names = new Set();
+  for (const p of state.projects) { for (const n of p.hbsAll) names.add(n); for (const n of p.icfEngs) names.add(n); }
+  return [...names];
+}
+
+function readPeople(text) {
+  const t = text.toLowerCase();
+  return peopleIndex().filter(n => {
+    const parts = n.toLowerCase().split(/\s+/);
+    if (t.includes(n.toLowerCase())) return true;
+    return parts[0].length >= 4 && new RegExp(`\\b${parts[0]}\\b`).test(t);
+  });
+}
+
+const ASK = /^(who|what|when|which|how many|how much|where|why|is |are |does |do |can )/i;
+const ACTION_VERBS = /\b(chase|call|email|schedule|submit|resubmit|assign|follow up|send|check|book|order|fix|review|remind|escalate|close out|invoice)\b/i;
+
+function projectLine(p) {
+  const bits = [p.phase, p.icfStatus || p.tuStatus, p.utility].filter(Boolean).join(" · ");
+  return `<div class="ans-row">
+    <div class="t">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}
+      <span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}"
+            title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></div>
+    <div class="s">${esc(p.need)}${p.ownerNames.length ? ` — <b>${esc(p.ownerNames.join(", "))}</b>` : ` — <b>nobody assigned</b>`}</div>
+    <div class="m">${esc(bits)}${p.daysInPhase != null ? ` · ${p.daysInPhase} days in phase` : ""}</div>
+    ${p.evidence ? `<div class="m"><b>Latest:</b> ${esc(p.evidence.slice(0, 160))}</div>` : ""}
+  </div>`;
+}
+
+/* Work out what was said, and answer it from the boards. */
+function assistantReply(text) {
+  const raw = text.trim();
+  const t = raw.toLowerCase();
+  const list = state.projects;
+  const { matches, unplaced } = noteMatches(raw);
+  const named = matches.map(m => m.project);
+  const people = readPeople(raw);
+  const asking = ASK.test(raw) || raw.trim().endsWith("?");
+  const actions = [];
+  let html = "";
+
+  const me = n => n && ME.name && n.toLowerCase().includes(ME.name.split(" ")[0].toLowerCase());
+
+  /* ---- a project was named ---- */
+  if (named.length) {
+    html += `<p>${named.length === 1 ? "Here is where that stands." : `Here is where those ${named.length} stand.`}</p>`;
+    html += named.map(projectLine).join("");
+
+    const chatter = named.flatMap(p => [
+      ...(p.teams || []).map(m => ({ ...m, src: "Teams" })),
+      ...(p.meetings || []).map(m => ({ title: m.title, when: m.when, src: "Fireflies" })),
+    ]).slice(0, 3);
+    if (chatter.length) {
+      html += `<div class="ans-note"><b>Recently mentioned in</b><br>${chatter.map(c =>
+        `${esc(c.src)} · ${esc(c.when || "")} — ${esc((c.text || c.title || "").slice(0, 120))}`).join("<br>")}</div>`;
+    }
+
+    if (!asking) {
+      actions.push({ kind: "note", label: `Log this on ${named.length} project${named.length > 1 ? "s" : ""}` });
+      if (ACTION_VERBS.test(raw)) {
+        const due = readDate(raw);
+        const owner = people.find(n => !me(n)) || named[0].ownerNames[0] || "";
+        actions.push({ kind: "task", label: `Make it a task${due ? ` due ${due}` : ""}`, due, owner });
+      } else {
+        actions.push({ kind: "task", label: "Make it a task", due: readDate(raw), owner: people[0] || "" });
+      }
+    }
+    if (unplaced.length && !asking) {
+      html += `<div class="ans-note">${unplaced.length} line${unplaced.length > 1 ? "s" : ""} didn't name a project, so ${unplaced.length > 1 ? "they are" : "it is"} not going anywhere on their own.</div>`;
+    }
+    return { html, actions };
   }
 
-  out += `<div class="panel" style="padding:14px 16px;display:grid;gap:12px">
-    <textarea id="note-box" rows="6" placeholder="e.g.  Ice World — client still owes the ECM list, I'm chasing Robert again Friday.&#10;&#10;Greenleigh at Crossroads — crew booked for the 28th, needs thermostats released from the warehouse first."
-      style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--surface);color:var(--ink);resize:vertical">${esc(state.note)}</textarea>
+  /* ---- a person was named ---- */
+  if (people.length && !named.length) {
+    const who = people[0];
+    const theirs = list.filter(p => p.hbsAll.includes(who) || p.icfEngs.includes(who));
+    const owed = theirs.filter(p => p.ownerNames.includes(who)).sort((a, b) => b.priority - a.priority);
+    const aged = theirs.filter(p => p.aging === "Critical");
+    html += `<p><b>${esc(who)}</b> — ${theirs.length} active project${theirs.length === 1 ? "" : "s"}, ${owed.length} where the next step is theirs, ${aged.length} past 60 days.</p>`;
+    if (owed.length) html += owed.slice(0, 6).map(projectLine).join("");
+    else html += `<div class="ans-note">Nothing is currently sitting with them.</div>`;
+    if (theirs.length) actions.push({ kind: "goto", label: `Open ${who.split(" ")[0]}'s projects`, engineer: who });
+    if (ACTION_VERBS.test(raw)) actions.push({ kind: "task", label: "Make it a task", due: readDate(raw), owner: who });
+    return { html, actions };
+  }
 
-    <div class="ev">${matches.length
-      ? `Recognised ${matches.length} project${matches.length > 1 ? "s" : ""}: ` + matches.map(m => `<span class="tag">${esc(m.project.name)}</span>`).join(" ")
-      : state.note.trim() ? `No project recognised yet — name the site and it will pick it up.` : `Mention a project by name or number and it will be recognised as you type.`}
-      ${unplaced.length ? `<div style="margin-top:5px">${unplaced.length} line${unplaced.length > 1 ? "s" : ""} not tied to a project — those stay here unless you make them a task.</div>` : ""}</div>
+  /* ---- general questions ---- */
+  const rfis = list.filter(p => p.tuStatus === "TRC/ICF RFI Received" || p.icfStatus === "RFI Sent to HBS" || p.icfStatus === "RFI Respond by HBS");
+  const flawed = list.filter(p => /Flawed|FLAWED/.test(`${p.tuStatus} ${p.icfStatus}`));
+  const noOwner = list.filter(p => !p.ownerNames.length && p.phase !== "Completed Project");
+  const aged = list.filter(p => p.aging === "Critical").sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0));
+  const mine = list.filter(p => p.hbsAll.some(me) || p.ownerNames.some(me));
 
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-      <button id="note-post" class="btn-primary" ${!matches.length || busy ? "disabled" : ""}>
-        ${busy ? "Posting…" : matches.length ? `Post to ${matches.length} project${matches.length > 1 ? "s" : ""}` : "Post to projects"}</button>
-      <span style="width:1px;height:22px;background:var(--rule)"></span>
-      <label class="ev" for="task-person">Task for</label>
-      <select id="task-person">${TODO_PEOPLE.map(n => `<option${n === "Caitlyn" ? " selected" : ""}>${esc(n)}</option>`).join("")}</select>
-      <select id="task-priority">${TODO_PRIORITY.map(n => `<option${n === "Medium" ? " selected" : ""}>${esc(n)}</option>`).join("")}</select>
-      <select id="task-status">${TODO_STATUS.map(n => `<option>${esc(n)}</option>`).join("")}</select>
-      <input type="date" id="task-due" aria-label="Due date">
-      <button id="task-add" ${!state.note.trim() || busy ? "disabled" : ""}>${busy ? "Adding…" : "Add as task"}</button>
+  const answer = (title, rows, empty) => {
+    html += `<p>${title}</p>`;
+    html += rows.length ? rows.slice(0, 8).map(projectLine).join("") +
+      (rows.length > 8 ? `<div class="ans-note">…and ${rows.length - 8} more.</div>` : "")
+      : `<div class="ans-note">${empty}</div>`;
+  };
+
+  if (/\brfi/.test(t)) { answer(`${rfis.length} RFI${rfis.length === 1 ? "" : "s"} outstanding.`, rfis, "No RFIs outstanding."); actions.push({ kind: "goto", label: "Open ASAP", view: "asap" }); }
+  else if (/\bflaw/.test(t)) answer(`${flawed.length} flawed.`, flawed, "Nothing is flawed.");
+  else if (/(no one|nobody|unassigned|no owner|who owns nothing)/.test(t)) answer(`${noOwner.length} with nobody assigned.`, noOwner, "Everything has an owner.");
+  else if (/(stuck|ag(e)?ing|oldest|stale|60 days)/.test(t)) answer(`${aged.length} past 60 days.`, aged, "Nothing is past 60 days.");
+  else if (/\b(mine|my|i own|on me)\b/.test(t)) { answer(`${mine.length} on you.`, mine.sort((a, b) => b.priority - a.priority), "Nothing is assigned to you."); actions.push({ kind: "goto", label: "Open My desk", view: "mydesk" }); }
+  else if (/\b(today|this week|due|deadline|coming up)\b/.test(t)) {
+    const soon = list.filter(p => p.nextActionDate && p.nextActionDate >= isoDay(0) && p.nextActionDate <= isoDay(7))
+      .sort((a, b) => String(a.nextActionDate).localeCompare(String(b.nextActionDate)));
+    answer(`${soon.length} with a next action inside seven days.`, soon, "Nothing dated in the next seven days.");
+  }
+  else if (/\b(priorit|asap|urgent|worst|attention)\b/.test(t)) { answer("Highest priority right now.", list.slice().sort((a, b) => b.priority - a.priority), "Nothing ranked."); actions.push({ kind: "goto", label: "Open ASAP", view: "asap" }); }
+  else if (asking) {
+    html += `<p>I couldn't tie that to a project or a person. I answer from the boards, so I do best with a name.</p>
+      <div class="ans-note">Try a site name, an engineer, or one of: RFIs · flawed · unassigned · stuck · what's mine · due this week · priorities.</div>`;
+  }
+  else {
+    html += `<p>Nothing in that named a project, so I can't file it against one.</p>
+      <div class="ans-note">Name the site and I'll log it there, or make it a standalone task.</div>`;
+    actions.push({ kind: "task", label: "Make it a task anyway", due: readDate(raw), owner: people[0] || "" });
+  }
+  return { html, actions };
+}
+
+async function chatSend(text) {
+  const raw = (text || "").trim();
+  if (!raw || state.noteBusy) return;
+  state.chat.push({ who: "you", text: raw });
+  const { html, actions } = assistantReply(raw);
+  state.chat.push({ who: "tracker", html, actions, source: raw });
+  state.note = "";
+  state.chatDraft = "";
+  render();
+  const feed = $("#chat-feed"); if (feed) feed.scrollTop = feed.scrollHeight;
+}
+
+async function runChatAction(idx, ai) {
+  const msg = state.chat[idx];
+  if (!msg || !msg.actions) return;
+  const a = msg.actions[ai];
+  if (!a) return;
+  if (a.kind === "goto") {
+    state.view = a.view || "projects";
+    if (a.engineer) state.engineer = a.engineer;
+    render();
+    return;
+  }
+  state.note = msg.source;
+  if (a.kind === "note") {
+    await postNote();
+    state.chat.push({ who: "tracker", html: state.noteResult && !state.noteResult.failed.length
+      ? `<p>Logged on ${state.noteResult.ok.length} project${state.noteResult.ok.length > 1 ? "s" : ""}: ${esc(state.noteResult.ok.join(", "))}.</p>`
+      : `<p>That didn't post — ${esc(state.noteResult ? fixCopy(state.noteResult.failed[0].err, MONDAY) : "unknown error")}</p>` });
+  } else if (a.kind === "task") {
+    /* Name it after the project and the first clause, not the whole paragraph. */
+    const first = msg.source.split(/\n/)[0].replace(/^[-*•]\s*/, "").trim();
+    const clause = (first.split(/(?<=[.;])\s|,\s(?=(?:chase|call|email|schedule|submit|resubmit|assign|follow|send|check|book|order|fix|review|remind)\b)/i)[0] || first).trim();
+    let name = clause.length > 5 ? clause : first;
+    if (name.length > 90) name = name.slice(0, 87).replace(/\s+\S*$/, "") + "…";
+    await addTask({ name, notes: msg.source.slice(name.length).trim().slice(0, 500),
+      person: a.owner && TODO_PEOPLE.includes(a.owner.split(" ")[0]) ? a.owner.split(" ")[0] : "Caitlyn",
+      priority: "Medium", status: "Working on it", due: a.due || "" });
+    state.chat.push({ who: "tracker", html: state.noteResult && !state.noteResult.failed.length
+      ? `<p>Added “${esc(name)}” to the task list${a.due ? `, due ${esc(a.due)}` : ""}.</p>`
+      : `<p>That didn't save — ${esc(state.noteResult ? fixCopy(state.noteResult.failed[0].err, MONDAY) : "unknown error")}</p>` });
+  }
+  render();
+  const feed = $("#chat-feed"); if (feed) feed.scrollTop = feed.scrollHeight;
+}
+
+const CHAT_SUGGESTIONS = ["What's on me?", "Any RFIs outstanding?", "What's stuck?", "Which have nobody assigned?", "Priorities"];
+
+function renderNotes() {
+  let out = `<div class="section-head"><h2>Ask the tracker</h2>
+    <span class="hint">Answers come from the boards, not a language model — name a project or a person and it will tell you what it knows, then offer to write it back.</span></div>`;
+
+  out += `<div class="chat">
+    <div class="chat-feed" id="chat-feed">
+      ${state.chat.length ? state.chat.map((m, i) => m.who === "you"
+        ? `<div class="bub you">${esc(m.text)}</div>`
+        : `<div class="bub bot">${m.html}${m.actions && m.actions.length
+            ? `<div class="bub-acts">${m.actions.map((a, ai) =>
+                `<button data-chat-act="${i}:${ai}" ${state.noteBusy ? "disabled" : ""}>${esc(a.label)}</button>`).join("")}</div>` : ""}</div>`).join("")
+        : `<div class="bub bot"><p>Tell me what's happening, or ask me something.</p>
+           <div class="ans-note">“Ice World is waiting on the client for the ECM list, chase Robert Friday” — I'll show you the project and offer to log it or turn it into a task.</div></div>`}
+      ${state.noteBusy ? `<div class="bub bot"><span class="spin"></span> Working…</div>` : ""}
     </div>
-    <div class="ev">Posting writes a comment on the project — it never changes a column, and you can delete it. Tasks go to the shared to-do board.</div>
+    <div class="chat-sugg">${CHAT_SUGGESTIONS.map(s => `<button class="chip-btn" data-chat-sugg="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+    <div class="chat-input">
+      <textarea id="chat-box" rows="2" placeholder="Name a site or a person…">${esc(state.chatDraft || "")}</textarea>
+      <button id="chat-send" class="btn-primary" ${state.noteBusy ? "disabled" : ""}>Send</button>
+    </div>
+    <div class="ev">Enter to send, Shift+Enter for a new line. Nothing is written to monday until you press one of the buttons in a reply.</div>
   </div>`;
 
   /* ---- the shared task list ---- */
@@ -2438,6 +2664,31 @@ function render() {
   if (state.kpisLoaded) src.push(`<span>Monthly KPIs: <b>${state.kpis.length}</b> milestones (13 months)</span>`);
 
   main.innerHTML = body + `<div class="srcline">${src.join("")}</div>`;
+
+  const chatBox = main.querySelector("#chat-box");
+  if (chatBox) {
+    if (state.chatFocus) { chatBox.focus(); chatBox.setSelectionRange(chatBox.value.length, chatBox.value.length); }
+    chatBox.addEventListener("focus", () => { state.chatFocus = true; });
+    chatBox.addEventListener("blur", () => { state.chatFocus = false; });
+    chatBox.addEventListener("input", e => { state.chatDraft = e.target.value; });
+    chatBox.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); state.chatFocus = true; chatSend(chatBox.value); }
+    });
+  }
+  const sendBtn = main.querySelector("#chat-send");
+  if (sendBtn) sendBtn.addEventListener("click", () => {
+    state.chatFocus = true;
+    chatSend(main.querySelector("#chat-box")?.value || "");
+  });
+  main.querySelectorAll("[data-chat-sugg]").forEach(b => b.addEventListener("click", () => {
+    state.chatFocus = true; chatSend(b.getAttribute("data-chat-sugg"));
+  }));
+  main.querySelectorAll("[data-chat-act]").forEach(b => b.addEventListener("click", () => {
+    const [i, ai] = b.getAttribute("data-chat-act").split(":").map(Number);
+    runChatAction(i, ai);
+  }));
+  const feed = main.querySelector("#chat-feed");
+  if (feed) feed.scrollTop = feed.scrollHeight;
 
   const box = main.querySelector("#note-box");
   if (box) {

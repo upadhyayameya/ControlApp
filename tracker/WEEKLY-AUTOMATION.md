@@ -186,32 +186,40 @@ reads back fine, which is what makes the projection figures available at all.
 standing engineering meetings, not an authoritative distribution list. Edit it
 to match who should actually receive the update.
 
-## Notes and tasks (in the dashboard)
+## Ask the tracker (in the dashboard)
 
-The **Notes & tasks** tab is where a thought becomes something that has
-actually moved. Type what needs to happen; anything naming a project is
-recognised as you type.
+The **Ask & tasks** tab is a conversation with the boards. It answers from the
+data, not from a language model — there is no model available to a published
+artifact on this account — so it recognises what you name and replies from the
+rows behind it. Every answer is traceable to a board.
 
-- **Post to projects** writes your note to each recognised project as a monday
-  **update** — the item's comment thread. It never changes a column, so nothing
-  is overwritten, and any entry can be deleted.
-- **Add as task** creates an item on the shared **Ameya To-do** board
-  (`4559143382`) with an owner, priority, status and due date.
+What it understands:
 
-The same conservative matcher used by the meeting briefs and the reply logger
-applies: a paragraph naming no project, or more than three, is left alone and
-called out rather than posted to a guessed item.
+| You say | It does |
+|---|---|
+| A project name, or a `PCRCVA…` number | Shows phase, status, next step, owner, days in phase, latest note, and recent Teams/Fireflies mentions |
+| A person's name | Their active count, how many have the next step sitting with them, how many are past 60 days |
+| RFIs · flawed · unassigned · stuck · what's mine · due this week · priorities | Answers that question from the boards |
+| A note naming a project | Offers to log it on that project |
+| A note with an action verb and a day ("chase Robert Friday") | Offers a task with the owner and due date already filled in |
+
+It reads relative dates (today, tomorrow, Friday, next week, in 3 days) and
+"assign to <name>". When it cannot tie something to a project or a person it
+says so and lists what it does understand, rather than guessing.
+
+Nothing is written to monday until you press a button in a reply:
+
+- **Log this on N projects** posts a monday **update** — the comment thread,
+  never a column edit, so nothing is overwritten and it can be deleted.
+- **Make it a task** creates an item on the shared **Ameya To-do** board
+  (`4559143382`) with owner, priority, status and due date.
 
 ### The shared task list
 
-Below the composer, the to-do board is shown grouped by owner, Caitlyn and
-Ameya first, with counts for overdue, critical and blocked. `Caitlyn` was added
-to the board's **Person responsible** dropdown; the board is private to Ameya,
-so it needs sharing with her before she can see it in monday itself.
-
-Board columns used: `dropdown` (Person responsible), `status`
-(Working on it / Waiting on information / Stuck / Done), `priority`
-(Critical / High / Medium / Low), `date4` (Date), `text` (Notes).
+Below the conversation, that board is shown grouped by owner, Caitlyn and Ameya
+first, with counts for overdue, critical and blocked. `Caitlyn` was added to the
+board's **Person responsible** dropdown; the board is private to Ameya, so it
+needs sharing with her before she can see it in monday itself.
 
 ## Logging engineer replies
 
