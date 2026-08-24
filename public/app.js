@@ -40,6 +40,9 @@ for (const tab of document.querySelectorAll('.tab')) {
     for (const panel of document.querySelectorAll('[data-panel]')) {
       panel.hidden = panel.dataset.panel !== tab.dataset.tab
     }
+    // The error line is shared, so a message from the other tab would read as
+    // if it belonged to this one.
+    gateError('')
   })
 }
 

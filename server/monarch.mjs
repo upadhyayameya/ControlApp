@@ -153,9 +153,15 @@ export class MonarchClient {
             'Monarch is requiring a CAPTCHA for programmatic sign-in. Use the browser-cookie option instead.',
         }
       }
+      // Monarch answers 403 both for "send me the second factor" and for a
+      // blocked sign-in, so say what to do in either case.
       return {
         status: 'mfa_required',
-        message: payload?.detail || 'Monarch wants your two-factor code.',
+        message:
+          'Monarch asked for a second factor. Enter the 6-digit code from your authenticator app. ' +
+          "If you don't have two-factor turned on, Monarch is refusing this sign-in — " +
+          'use the Browser session tab instead.' +
+          (payload?.detail ? ` (Monarch said: ${payload.detail})` : ''),
       }
     }
 
