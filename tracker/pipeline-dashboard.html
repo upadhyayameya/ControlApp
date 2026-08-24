@@ -160,7 +160,8 @@ button:disabled { opacity: .5; cursor: default; }
 input[type="search"] { min-width: 220px; }
 
 /* ---------- funnel rail ---------- */
-.section-head { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 10px; }
+.section-head { display: flex; align-items: baseline; gap: 10px; margin: 30px 0 11px; }
+.section-head:first-child { margin-top: 4px; }
 .section-head h2 { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin: 0; }
 .section-head .hint { font-size: 12px; color: var(--ink-3); }
 
@@ -182,7 +183,7 @@ input[type="search"] { min-width: 220px; }
 .stage .bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); }
 
 /* ---------- panels & tables ---------- */
-.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; }
 .scroller { overflow-x: auto; }
 .scroller.tall { max-height: 72vh; overflow-y: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
@@ -262,6 +263,48 @@ a:hover { text-decoration: underline; }
 .tb .tl { font-size: 10px; color: var(--ink-3); text-align: center; }
 .tb:hover .tbar { filter: brightness(1.15); }
 
+/* Charts. One accent for magnitude, status colours reserved for state; a bar
+   carries a hover title so a value is always reachable without a number on
+   every mark. Rounded ends sit at the data end only, anchored to the baseline. */
+.chart { display: grid; gap: 9px; }
+.chart-row { display: grid; grid-template-columns: minmax(120px, 190px) 1fr auto; gap: 12px; align-items: center; }
+.chart-row .k { font-size: 12.5px; color: var(--ink-2); text-align: right; }
+.chart-track {
+  position: relative; height: 16px; border-radius: 3px;
+  background: linear-gradient(to right, var(--rule) 1px, transparent 1px) 0 0 / 25% 100%;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+.chart-track::after {
+  content: ""; position: absolute; inset: 0; border-bottom: 1px solid var(--rule);
+}
+.chart-bar {
+  position: absolute; left: 0; top: 2px; bottom: 2px; min-width: 2px;
+  background: var(--accent); border-radius: 0 4px 4px 0;
+}
+.chart-bar.is-good { background: var(--good); }
+.chart-bar.is-warning { background: var(--warning); }
+.chart-bar.is-critical { background: var(--critical); }
+.chart-bar.is-ghost { background: var(--rule-strong); }
+.chart-row .v { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink); min-width: 92px; text-align: right; }
+.chart-target { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink-3); }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+
+.mrow { display: grid; grid-template-columns: minmax(120px, 170px) 1fr 92px; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--rule); }
+.mrow:first-child { border-top: 0; }
+.mrow-k { font-size: 12.5px; font-weight: 600; color: var(--ink-2); text-align: right; }
+.mrow-v { font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+.cols .c.is-good { background: var(--good); }
+.cols .c.is-warning { background: var(--warning); }
+
+/* columns for the month-by-month trend */
+.cols { display: flex; align-items: flex-end; gap: 3px; height: 90px; }
+.cols .c { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; opacity: .85; }
+.cols .c:hover { opacity: 1; }
+.col-labels { display: flex; gap: 3px; margin-top: 5px; }
+.col-labels span { flex: 1; font-size: 10px; color: var(--ink-3); text-align: center; overflow: hidden; white-space: nowrap; }
+
 /* the assistant: a transcript, suggestions, and a composer */
 .chat { display: grid; gap: 12px; }
 .chat-feed {
@@ -322,7 +365,7 @@ button.linkish:hover { text-decoration: underline; background: none; }
 
 /* ---------- digest & intel cards ---------- */
 .cards { display: grid; gap: 12px; }
-.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
 .card-hd { display: flex; align-items: center; gap: 9px; padding: 12px 15px 0; flex-wrap: wrap; }
 .card-hd .nm { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
 .card-hd .to { margin-left: auto; font-size: 11.5px; color: var(--ink-3); }
@@ -332,7 +375,7 @@ button.linkish:hover { text-decoration: underline; background: none; }
 .stats { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--surface); }
 .stat { flex: 1 1 0; min-width: 74px; padding: 6px 11px; border-right: 1px solid var(--rule); }
 .stat:last-child { border-right: none; }
-.stat .v { font-size: 19px; font-weight: 600; line-height: 1.15; letter-spacing: -.02em; }
+.stat .v { font-size: 23px; font-weight: 600; line-height: 1.15; letter-spacing: -.025em; }
 .stat .l { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; margin-top: 1px; }
 .stat.is-critical .v { color: var(--critical); }
 .stat.is-serious  .v { color: var(--serious); }
@@ -1448,6 +1491,88 @@ function kpiUtilLabel(key, spellings) {
   return [...m.entries()].sort((a, b) => b[1] - a[1] || cased(b[0]) - cased(a[0]))[0][0];
 }
 
+/* rows: [{k, v, of, tone, label}] — `of` is the bar's own denominator so a
+   row can be shown against a target rather than against the largest row. */
+function barChart(rows, opts) {
+  const o = opts || {};
+  /* A row carrying its own denominator is scaled against that, so the bar
+     length reads as attainment and the marker always sits at 100%. Rows
+     without one share a scale, so their lengths compare to each other. */
+  const shared = o.max || Math.max(1, ...rows.filter(r => !r.of).map(r => r.v), 1);
+  return `<div class="chart">${rows.map(r => {
+    const denom = r.of || shared;
+    const pct = Math.max(0, Math.min(100, (r.v / denom) * 100));
+    const tPct = r.of ? 100 : null;
+    return `<div class="chart-row">
+      <div class="k">${esc(r.k)}</div>
+      <div class="chart-track" title="${esc(r.title || `${r.k}: ${r.label ?? r.v}`)}">
+        <div class="chart-bar ${r.tone ? "is-" + r.tone : ""}" style="width:${pct}%"></div>
+        ${tPct != null ? `<div class="chart-target" style="left:calc(${tPct}% - 2px)" title="needs ${esc(String(r.of))}"></div>` : ""}
+      </div>
+      <div class="v">${esc(String(r.label ?? r.v))}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+/* How long the HBS side takes on each leg, per engineer.
+     audit  -> PA submitted   is the engineer preparing the application
+     impl   -> CO submitted   is the engineer preparing the closeout
+   The reviewer's own turnaround (submitted -> received) is a separate thing and
+   is not mixed in here. */
+function cycleByEngineer(projects) {
+  const per = new Map();
+  const add = (name, key, days) => {
+    if (!name || !Number.isFinite(days) || days < 0 || days > 720) return;
+    if (!per.has(name)) per.set(name, { pa: [], co: [] });
+    per.get(name)[key].push(days);
+  };
+  const gap = (a, b) => (a && b) ? Math.round((dparse(b) - dparse(a)) / 86400000) : NaN;
+
+  for (const p of projects) {
+    const d = p.evDates || {};
+    const paDays = gap(d.dAudit, d.dSubPA);
+    const coDays = gap(d.dImpl, d.dSubCO);
+    for (const n of new Set([...(p.paLead || []), ...(p.hbsEngs || [])])) add(n, "pa", paDays);
+    for (const n of new Set([...(p.coLead || []), ...(p.hbsEngs || [])])) add(n, "co", coDays);
+  }
+  const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+  return [...per.entries()].map(([name, v]) => ({
+    name, paN: v.pa.length, coN: v.co.length,
+    paDays: mean(v.pa), coDays: mean(v.co),
+  })).filter(x => x.paN || x.coN).sort((a, b) => (b.paN + b.coN) - (a.paN + a.coN));
+}
+
+/* What is sitting in each queue right now, waiting for an HBS engineer to
+   submit it. These are the two legs the team actually controls. */
+function workInHand(projects) {
+  const awaitingPA = projects.filter(p => !p.evDates.dSubPA &&
+    (p.evDates.dAudit || p.tuStatus === "Audit Phase Complete" || p.phase === "Pre-Approval Phase"));
+  const awaitingCO = projects.filter(p => !p.evDates.dSubCO &&
+    (p.tuStatus === "Implementation & MV Complete" || p.tuStatus === "CD to Submit" ||
+     p.phase === "Closeout Phase" || p.evDates.dImpl));
+  return { awaitingPA, awaitingCO };
+}
+
+/* A month-by-month column chart on a shared axis, so several of them stack
+   into one story: what an audit was worth, how many were done, and how many
+   made it through each later stage. */
+function monthCols(series, months, opts) {
+  const o = opts || {};
+  const max = Math.max(1, ...series);
+  return `<div class="mrow">
+    <div class="mrow-k">${esc(o.k || "")}${o.sub ? `<div class="ev">${esc(o.sub)}</div>` : ""}</div>
+    <div class="mrow-c">
+      <div class="cols">${series.map((v, i) => `<div class="c${o.tone ? " is-" + o.tone : ""}"
+        style="height:${Math.max(2, (v / max) * 100)}%"
+        title="${esc(months[i])}: ${esc(o.fmt ? o.fmt(v) : String(v))}"></div>`).join("")}</div>
+      <div class="col-labels">${months.map((m, i) =>
+        `<span>${i === 0 || i === months.length - 1 || m.startsWith("Jan") ? esc(m) : ""}</span>`).join("")}</div>
+    </div>
+    <div class="mrow-v">${esc(o.fmt ? o.fmt(series[series.length - 1]) : String(series[series.length - 1]))}
+      <div class="ev">latest</div></div>
+  </div>`;
+}
+
 function renderNumbers() {
   if (state.kpisLoading) return `<div class="skel"><span class="spin"></span>Reading the Monthly KPIs board — thirteen months of milestones…</div>`;
   if (state.errors.kpis) return errNote("Monthly KPIs board", state.errors.kpis, MONDAY);
@@ -1592,7 +1717,13 @@ function renderNumbers() {
   }).sort((a, b) => b.incentive - a.incentive);
 
   out += `<div class="section-head"><h2>By utility</h2>
-    <span class="hint">Average size and rate per utility over the selected period</span></div>
+    <span class="hint">Where the incentive sits, then the averages behind it</span></div>
+    <div class="panel" style="padding:16px 18px;margin-bottom:12px">
+      ${utilRows.length ? barChart(utilRows.slice(0, 10).map(x => ({
+        k: x.u, v: x.incentive, label: money(x.incentive),
+        title: `${x.u}: ${money(x.incentive)} across ${x.count} milestones, averaging ${money(x.avgInc)}`,
+      }))) : `<div class="ev">Nothing in this period.</div>`}
+    </div>
     <div class="panel scroller" style="margin-bottom:18px"><table><thead><tr>
       <th>Utility</th><th class="n">Milestones</th><th class="n">Per month</th><th class="n">Incentive</th>
       <th class="n">Avg incentive</th><th class="n">kWh / therms</th><th class="n">Avg kWh</th></tr></thead><tbody>
@@ -1645,7 +1776,33 @@ function renderNumbers() {
   const needPA = per(paSum.incentive, paSum.count) > 0 ? Math.ceil(target / per(paSum.incentive, paSum.count)) : null;
   const needCO = per(coSum.incentive, coSum.count) > 0 ? Math.ceil(target / per(coSum.incentive, coSum.count)) : null;
 
-  out += `<div class="section-head"><h2>What it takes</h2>
+  /* Attainment per phase: what each phase delivered against what the target
+     implies at that phase's own average size. One bar per phase, the marker
+     showing the required count. */
+  const attain = KPI_PHASES.map(m => {
+    const rs = (byPhase.get(m) || []);
+    const s2 = sumRows(rs);
+    const avg = per(s2.incentive, s2.count);
+    const need = avg > 0 ? Math.ceil((f.target != null ? f.target : Math.round(prev.incentive || cur.incentive || 0)) / avg) : 0;
+    const pct = need ? Math.round((s2.count / need) * 100) : null;
+    return { k: m, v: s2.count, of: need, label: need ? `${s2.count} / ${need}  (${pct}%)` : `${s2.count}`,
+             tone: pct == null ? "ghost" : pct >= 100 ? "good" : pct >= 60 ? "warning" : "critical",
+             title: `${m}: ${s2.count} done${need ? `, ${need} needed at ${money(avg)} each` : ""}` };
+  }).filter(x => x.v || x.of);
+
+  out += `<div class="section-head"><h2>Reaching the target, by phase</h2>
+    <span class="hint">Each bar is what that phase delivered; the marker is what the target needs at that phase's average size</span></div>
+    <div class="panel" style="padding:16px 18px;margin-bottom:18px">
+      ${attain.length ? barChart(attain) : `<div class="ev">Nothing recorded in this period.</div>`}
+      <div class="chart-legend">
+        <span><i style="background:var(--good)"></i> at or past the mark</span>
+        <span><i style="background:var(--warning)"></i> 60% or more</span>
+        <span><i style="background:var(--critical)"></i> under 60%</span>
+        <span><i style="background:var(--ink-3)"></i> required</span>
+      </div>
+    </div>
+
+  <div class="section-head"><h2>What it takes</h2>
     <span class="hint">At the current average size, how much work a target implies</span></div>
     <div class="panel" style="padding:14px 16px;margin-bottom:18px;display:grid;gap:12px">
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
@@ -1663,6 +1820,91 @@ function renderNumbers() {
       ${avgKwhAudit ? `Each audit averages ${qty(Math.round(avgKwhAudit))} kWh/therms.` : ""}</div>
     </div>
 
+  ${(() => {
+    /* ---- how many engineers the work in hand needs ----
+       One engineer clears a period's worth of days divided by the average days
+       a leg takes. Compare that against the queue and against the people who
+       have actually moved something this period. */
+    const live = state.projects.filter(p => lifecycle(p) === "active");
+    const { awaitingPA, awaitingCO } = workInHand(live);
+    const cyc = cycleByEngineer(live);
+    const avgOf = key => {
+      const vals = cyc.map(c => c[key]).filter(v => v != null);
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    };
+    const paDays = avgOf("paDays"), coDays = avgOf("coDays");
+
+    /* Capacity is measured, not derived from cycle time. An engineer carries a
+       portfolio in parallel, so elapsed days from audit to submission says
+       nothing about how many they can carry at once — dividing a queue by it
+       gives an absurd headcount. What answers the question is how many each
+       engineer actually submitted per period, taken from the KPI board. */
+    const perEngine = (phase) => {
+      const rows2 = inCur.filter(k => k.milestone === phase);
+      const people2 = new Set(rows2.flatMap(k => k.engineers));
+      return people2.size ? { rate: rows2.length / people2.size, n: people2.size, done: rows2.length } : null;
+    };
+    const paThru = perEngine("Preapprovals Submitted");
+    const coThru = perEngine("Closeouts Submitted");
+    const needEngPA = paThru && paThru.rate > 0 ? Math.ceil(awaitingPA.length / paThru.rate) : null;
+    const needEngCO = coThru && coThru.rate > 0 ? Math.ceil(awaitingCO.length / coThru.rate) : null;
+    const activeEng = new Set(inCur.flatMap(k => k.engineers)).size;
+
+    const rowsChart = cyc.filter(c => c.paDays != null || c.coDays != null).slice(0, 12).map(c => ({
+      k: c.name,
+      v: Math.round(c.paDays ?? c.coDays ?? 0),
+      label: [c.paDays != null ? `PA ${Math.round(c.paDays)}d` : null,
+              c.coDays != null ? `CO ${Math.round(c.coDays)}d` : null].filter(Boolean).join("  ·  "),
+      tone: (c.paDays ?? c.coDays) > (paDays || 45) * 1.35 ? "critical"
+          : (c.paDays ?? c.coDays) > (paDays || 45) ? "warning" : "good",
+      title: `${c.name}: ${c.paN} pre-approvals, ${c.coN} closeouts measured`,
+    }));
+
+    return `<div class="section-head"><h2>How many engineers the work in hand needs</h2>
+      <span class="hint">Queue size divided by how many each engineer actually submitted this period</span></div>
+      <div class="panel" style="padding:16px 18px;margin-bottom:18px;display:grid;gap:14px">
+        <div class="stats">
+          ${tile(awaitingPA.length, "Awaiting a pre-approval submission", paThru ? `${paThru.rate.toFixed(1)} per engineer this ${esc(state.period)}` : "no throughput measured")}
+          ${tile(needEngPA == null ? "—" : needEngPA, "Engineers that would need", paThru ? `${paThru.n} submitted ${paThru.done} between them` : "")}
+          ${tile(awaitingCO.length, "Awaiting a closeout submission", coThru ? `${coThru.rate.toFixed(1)} per engineer this ${esc(state.period)}` : "no throughput measured")}
+          ${tile(needEngCO == null ? "—" : needEngCO, "Engineers that would need", coThru ? `${coThru.n} submitted ${coThru.done} between them` : "")}
+          ${tile(activeEng || "—", "Engineers who moved something", "this period, on the KPI board")}
+        </div>
+        ${(needEngPA != null || needEngCO != null) ? `<div class="ans-note">
+          At the rate each engineer actually submitted this ${esc(state.period)}, clearing both queues would take about
+          <b>${Math.max(needEngPA || 0, needEngCO || 0)}</b> engineer${Math.max(needEngPA || 0, needEngCO || 0) === 1 ? "" : "s"}
+          working both legs${activeEng ? `, against ${activeEng} who moved something` : ""}.
+          Raising the rate is the alternative to adding people: one more pre-approval each per ${esc(state.period)}
+          ${paThru ? `takes it from ${paThru.rate.toFixed(1)} to ${(paThru.rate + 1).toFixed(1)}, and the queue from
+          ${needEngPA} engineers to ${Math.ceil(awaitingPA.length / (paThru.rate + 1))}` : ""}.
+          <br><br>This counts submissions per engineer, not elapsed days — an engineer carries several projects at once,
+          so the days below measure how long a project waits, not how many one person can hold.
+        </div>` : `<div class="ev">Not enough submitted this period to measure a rate.</div>`}
+      </div>
+
+    <div class="section-head"><h2>Days per engineer</h2>
+      <span class="hint">Average days from audit to pre-approval submitted, and from implementation to closeout submitted</span></div>
+      <div class="panel" style="padding:16px 18px;margin-bottom:12px">
+        ${rowsChart.length ? barChart(rowsChart) : `<div class="ev">No completed legs to measure.</div>`}
+        <div class="chart-legend">
+          <span><i style="background:var(--good)"></i> at or under the team average</span>
+          <span><i style="background:var(--warning)"></i> above average</span>
+          <span><i style="background:var(--critical)"></i> well above</span>
+        </div>
+      </div>
+      <div class="panel scroller" style="margin-bottom:18px"><table><thead><tr>
+        <th>Engineer</th><th class="n">Days to submit PA</th><th class="n">Measured on</th>
+        <th class="n">Days to submit CO</th><th class="n">Measured on</th></tr></thead><tbody>
+        ${cyc.map(c => `<tr>
+          <td><button class="linkish" data-engineer="${esc(c.name)}">${esc(c.name)}</button></td>
+          <td class="n num">${c.paDays != null ? Math.round(c.paDays) : "—"}</td>
+          <td class="n num ev">${c.paN || "—"}</td>
+          <td class="n num">${c.coDays != null ? Math.round(c.coDays) : "—"}</td>
+          <td class="n num ev">${c.coN || "—"}</td>
+        </tr>`).join("")}
+        </tbody></table></div>`;
+  })()}
+
   <div class="section-head"><h2>By engineer</h2>
     <span class="hint">HBS from the KPI board; ICF taken from the pipeline where the project matches</span></div>
     <div class="panel scroller tall"><table><thead><tr>
@@ -1679,6 +1921,54 @@ function renderNumbers() {
         <td class="n num">${money(x.avgInc)}</td>
       </tr>`).join("") : `<tr><td colspan="8" class="ev">Nothing in this period.</td></tr>`}
       </tbody></table></div>`;
+
+  /* ---- thirteen months, stage by stage ---- */
+  const now2 = new Date();
+  const buckets = [];
+  for (let i = 12; i >= 0; i--) {
+    const d = new Date(now2.getFullYear(), now2.getMonth() - i, 1);
+    buckets.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+                   label: d.toLocaleString("en-US", { month: "short" }) + (d.getMonth() === 0 ? " " + String(d.getFullYear()).slice(2) : "") });
+  }
+  const idxOf = when => {
+    if (!when) return -1;
+    const d = dparse(when) || when;
+    if (!(d instanceof Date) || isNaN(d)) return -1;
+    return buckets.findIndex(b => b.key === `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  };
+  const monthly = phase => {
+    const n = buckets.map(() => 0), inc = buckets.map(() => 0), kwh = buckets.map(() => 0);
+    for (const k of scoped) {
+      if (phase && k.milestone !== phase) continue;
+      const i = idxOf(k.when);
+      if (i < 0) continue;
+      n[i]++; inc[i] += k.incentive || 0; kwh[i] += k.savings || 0;
+    }
+    return { n, inc, kwh, avgInc: n.map((c, i) => c ? inc[i] / c : 0), avgKwh: n.map((c, i) => c ? kwh[i] / c : 0) };
+  };
+  const mAudit = monthly("Audits Performed");
+  const mPAs   = monthly("Preapprovals Submitted");
+  const mPAr   = monthly("Preapprovals Received");
+  const mImpl  = monthly("Implementations Scheduled");
+  const mCO    = monthly("Closeouts Received");
+  const labels = buckets.map(b => b.label);
+
+  out += `<div class="section-head"><h2>Thirteen months, stage by stage</h2>
+    <span class="hint">What an audit was worth, then how much of it made it through each stage</span></div>
+    <div class="panel" style="padding:6px 18px 14px">
+      ${monthCols(mAudit.avgInc, labels, { k: "Average audit value", sub: "incentive per audit", fmt: money })}
+      ${monthCols(mAudit.avgKwh, labels, { k: "Average audit savings", sub: "kWh / therms per audit", fmt: v => qty(Math.round(v)) })}
+      ${monthCols(mAudit.n, labels, { k: "Audits completed", tone: "good" })}
+      ${monthCols(mPAs.n, labels, { k: "Pre-approvals submitted" })}
+      ${monthCols(mPAr.n, labels, { k: "Pre-approvals received" })}
+      ${monthCols(mImpl.n, labels, { k: "Implementations scheduled", tone: "warning" })}
+      ${monthCols(mCO.n, labels, { k: "Closeouts completed", tone: "good" })}
+    </div>
+    <div class="ans-note" style="margin-bottom:20px">
+      Read top to bottom: the first two rows are what one audit is worth, the rest are how many
+      survived each stage that month. Implementations scheduled is recorded on only
+      ${mImpl.n.reduce((a, b) => a + b, 0)} rows across the whole period, so that row understates the real work.
+    </div>`;
 
   return out;
 }
