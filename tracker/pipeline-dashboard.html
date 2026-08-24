@@ -87,6 +87,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   background: var(--surface);
@@ -368,6 +369,7 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="true"  data-view="pipeline">Pipeline</button>
       <button class="tab" role="tab" aria-selected="false" data-view="numbers">Numbers</button>
       <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="notes">Notes &amp; tasks</button>
       <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
       <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
@@ -429,6 +431,17 @@ const MS365  = "Microsoft 365";
 
 const BOARD_ICF = 18424932045;
 const BOARD_TU  = 1069746645;
+const BOARD_TODO = 4559143382;      // Ameya To-do — the shared task list
+const TODO = {
+  person: "dropdown",        // Person responsible
+  status: "status",          // Working on it / Stuck / Waiting on information / Done
+  priority: "priority",      // Critical / High / Medium / Low
+  due: "date4",
+  notes: "text",
+};
+const TODO_PEOPLE = ["Ameya", "Caitlyn", "Soumya", "David", "Devon", "Harry", "Devashis", "Vaidehi", "Mike", "Solomon", "CSE"];
+const TODO_STATUS = ["Working on it", "Waiting on information", "Stuck", "Done"];
+const TODO_PRIORITY = ["Critical ⚠️️", "High", "Medium", "Low"];
 const BOARD_KPI = 1069742731;       // Monthly KPIs — one row per milestone, with money on it
 const KPI = {
   utility: "text", source: "text8", engineer: "person", status: "status",
@@ -998,12 +1011,20 @@ const state = {
   q: "",
   view: "pipeline",
   phaseTab: "audits",
+  noteFocus: false,
+  noteCaret: null,
   projects: [],
   errors: {},
   teams: [],
   meetings: [],
   calendar: [],
   todos: [],
+  tasks: [],
+  tasksLoaded: false,
+  tasksLoading: false,
+  note: "",
+  noteBusy: false,
+  noteResult: null,
   kpis: [],
   kpisLoaded: false,
   kpisLoading: false,
@@ -1048,6 +1069,7 @@ const VIEW_FILTERS = {
   projects: ["team", "engineer", "utility", "type", "q", "count"],
   digest:   ["team", "engineer", "utility", "type", "q"],
   intel:    [],
+  notes:    [],
 };
 
 function applyViewFilters() {
@@ -1350,6 +1372,182 @@ function renderNumbers() {
     <div class="panel scroller"><table><thead><tr><th>Utility</th><th class="n">Milestones</th><th class="n">Incentive</th><th class="n">kWh / therms</th></tr></thead>
     <tbody>${utilRows.map(x => `<tr><td>${esc(x.u)}</td><td class="n num">${x.count}</td><td class="n num">${money(x.incentive)}</td><td class="n num">${qty(x.savings)}</td></tr>`).join("")}</tbody></table></div>`;
 
+  return out;
+}
+
+/* --------------------------------------------------------------------------
+   Notes and tasks.
+
+   Type what needs to happen. Whatever names a project is posted to that
+   project as a monday update — the comment thread, so nothing is overwritten
+   and any entry can be deleted. Anything that is an action becomes a task on
+   the shared to-do board with an owner and a due date.
+
+   Matching is the same one the meeting briefs and reply logger use, and the
+   page never posts to a project it had to guess at.
+-------------------------------------------------------------------------- */
+function noteMatches(text) {
+  const paras = String(text).split(/\n\s*\n|\n(?=\s*[-*•]\s)/).map(p => p.trim()).filter(p => p.length > 3);
+  const index = state.projects.map(p => ({ p, keys: matchKeys(p.name), pid: (p.projectId || "").toUpperCase() }));
+  const perProject = new Map();
+  const unplaced = [];
+  for (const para of paras) {
+    const hay = para.toLowerCase(), up = para.toUpperCase();
+    const hits = index.filter(e => (e.pid.length >= 8 && up.includes(e.pid)) || e.keys.some(k => hay.includes(k)));
+    if (!hits.length || hits.length > 3) { unplaced.push(para); continue; }
+    for (const h of hits) {
+      if (!perProject.has(h.p.id)) perProject.set(h.p.id, { project: h.p, paras: [] });
+      perProject.get(h.p.id).paras.push(para);
+    }
+  }
+  return { matches: [...perProject.values()], unplaced, paragraphs: paras.length };
+}
+
+async function postNote() {
+  const text = state.note.trim();
+  if (!text || state.noteBusy) return;
+  const { matches } = noteMatches(text);
+  if (!matches.length) return;
+  state.noteBusy = true; state.noteResult = null; render();
+
+  const stamp = new Date().toLocaleDateString(undefined, { dateStyle: "medium" });
+  const ok = [], failed = [];
+  for (const m of matches) {
+    const body = `<b>${esc(ME.name)}</b> noted on ${esc(stamp)}:<br><br>` +
+      m.paras.map(p => esc(p).replace(/\n/g, "<br>")).join("<br><br>");
+    try {
+      await call(MONDAY, "create_update", { itemId: Number(m.project.id), body }, { retry: false });
+      ok.push(m.project.name);
+    } catch (e) {
+      failed.push({ name: m.project.name, err: mcpError(e) });
+    }
+  }
+  state.noteBusy = false;
+  state.noteResult = { kind: "note", ok, failed };
+  if (!failed.length) state.note = "";
+  render();
+}
+
+async function addTask(fields) {
+  if (state.noteBusy) return;
+  state.noteBusy = true; state.noteResult = null; render();
+  const cols = {};
+  if (fields.person) cols[TODO.person] = { labels: [fields.person] };
+  if (fields.status) cols[TODO.status] = { label: fields.status };
+  if (fields.priority) cols[TODO.priority] = { label: fields.priority };
+  if (fields.due) cols[TODO.due] = { date: fields.due };
+  if (fields.notes) cols[TODO.notes] = fields.notes;
+  try {
+    await call(MONDAY, "create_item", {
+      boardId: BOARD_TODO, groupId: "topics", name: fields.name.slice(0, 255),
+      columnValues: JSON.stringify(cols),
+    }, { retry: false });
+    state.noteBusy = false;
+    state.noteResult = { kind: "task", ok: [fields.name], failed: [] };
+    state.note = "";
+    await loadTasks(true);
+  } catch (e) {
+    state.noteBusy = false;
+    state.noteResult = { kind: "task", ok: [], failed: [{ name: fields.name, err: mcpError(e) }] };
+    render();
+  }
+}
+
+function renderNotes() {
+  const { matches, unplaced } = noteMatches(state.note);
+  const busy = state.noteBusy;
+  const r = state.noteResult;
+
+  let out = `<div class="section-head"><h2>Notes and tasks</h2>
+    <span class="hint">Write what needs to happen. Anything naming a project posts to that project; anything that is an action becomes a task.</span></div>`;
+
+  if (r) {
+    const good = r.ok.length, bad = r.failed.length;
+    out += `<div class="note ${bad ? "note-warning" : ""}">
+      <h3>${bad ? "Partly posted" : r.kind === "task" ? "Task added" : "Posted"}</h3>
+      <p>${good ? esc(r.kind === "task" ? `Added “${r.ok[0]}” to the to-do board.` : `Posted to ${good} project${good > 1 ? "s" : ""}: ${r.ok.join(", ")}.`) : ""}
+      ${bad ? esc(`Failed on ${r.failed.map(f => f.name).join(", ")} — ${fixCopy(r.failed[0].err, MONDAY)}`) : ""}</p></div>`;
+  }
+
+  out += `<div class="panel" style="padding:14px 16px;display:grid;gap:12px">
+    <textarea id="note-box" rows="6" placeholder="e.g.  Ice World — client still owes the ECM list, I'm chasing Robert again Friday.&#10;&#10;Greenleigh at Crossroads — crew booked for the 28th, needs thermostats released from the warehouse first."
+      style="width:100%;font:inherit;padding:10px 12px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--surface);color:var(--ink);resize:vertical">${esc(state.note)}</textarea>
+
+    <div class="ev">${matches.length
+      ? `Recognised ${matches.length} project${matches.length > 1 ? "s" : ""}: ` + matches.map(m => `<span class="tag">${esc(m.project.name)}</span>`).join(" ")
+      : state.note.trim() ? `No project recognised yet — name the site and it will pick it up.` : `Mention a project by name or number and it will be recognised as you type.`}
+      ${unplaced.length ? `<div style="margin-top:5px">${unplaced.length} line${unplaced.length > 1 ? "s" : ""} not tied to a project — those stay here unless you make them a task.</div>` : ""}</div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      <button id="note-post" class="btn-primary" ${!matches.length || busy ? "disabled" : ""}>
+        ${busy ? "Posting…" : matches.length ? `Post to ${matches.length} project${matches.length > 1 ? "s" : ""}` : "Post to projects"}</button>
+      <span style="width:1px;height:22px;background:var(--rule)"></span>
+      <label class="ev" for="task-person">Task for</label>
+      <select id="task-person">${TODO_PEOPLE.map(n => `<option${n === "Caitlyn" ? " selected" : ""}>${esc(n)}</option>`).join("")}</select>
+      <select id="task-priority">${TODO_PRIORITY.map(n => `<option${n === "Medium" ? " selected" : ""}>${esc(n)}</option>`).join("")}</select>
+      <select id="task-status">${TODO_STATUS.map(n => `<option>${esc(n)}</option>`).join("")}</select>
+      <input type="date" id="task-due" aria-label="Due date">
+      <button id="task-add" ${!state.note.trim() || busy ? "disabled" : ""}>${busy ? "Adding…" : "Add as task"}</button>
+    </div>
+    <div class="ev">Posting writes a comment on the project — it never changes a column, and you can delete it. Tasks go to the shared to-do board.</div>
+  </div>`;
+
+  /* ---- the shared task list ---- */
+  if (state.tasksLoading) out += `<div class="skel"><span class="spin"></span>Reading the shared to-do board…</div>`;
+  else if (state.errors.tasks) out += errNote("Shared to-do board", state.errors.tasks, MONDAY);
+  else {
+    const open = state.tasks.filter(t => t.group !== "Completed" && t.status !== "Done");
+    const byPerson = new Map();
+    for (const t of open) {
+      for (const n of (t.person ? t.person.split(",").map(x => x.trim()) : ["Unassigned"])) {
+        if (!byPerson.has(n)) byPerson.set(n, []);
+        byPerson.get(n).push(t);
+      }
+    }
+    /* Caitlyn and Ameya first — this list exists for the two of them. */
+    const order = [...byPerson.keys()].sort((a, b) => {
+      const rank = n => n === "Caitlyn" ? 0 : n === "Ameya" ? 1 : 2;
+      return rank(a) - rank(b) || byPerson.get(b).length - byPerson.get(a).length || a.localeCompare(b);
+    });
+    const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+    const today = isoDay(0);
+
+    out += `<div class="section-head"><h2>Shared task list</h2>
+      <span class="hint">The Ameya To-do board — open items by owner</span>
+      <span class="hint num" style="margin-left:auto">${open.length} open</span></div>
+      <div class="stats" style="margin-bottom:14px">
+        ${stat((byPerson.get("Caitlyn") || []).length, "Caitlyn", "")}
+        ${stat((byPerson.get("Ameya") || []).length, "Ameya", "")}
+        ${stat(open.filter(t => t.due && t.due < today).length, "Overdue", "is-critical")}
+        ${stat(open.filter(t => /Critical/.test(t.priority)).length, "Critical", "is-critical")}
+        ${stat(open.filter(t => t.status === "Stuck" || t.status === "Waiting on information").length, "Blocked", "is-serious")}
+      </div>`;
+
+    if (!order.length) {
+      out += `<div class="panel empty">No open tasks yet. Write a note above and press “Add as task”.</div>`;
+    } else {
+      out += `<div class="cards">${order.map(person => {
+        const items = byPerson.get(person).sort((a, b) =>
+          String(a.due || "9999").localeCompare(String(b.due || "9999")));
+        return `<div class="card">
+          <div class="card-hd">
+            <span class="avatar">${esc(person.slice(0, 2).toUpperCase())}</span>
+            <span class="nm">${esc(person)}</span>
+            <span class="to">${items.length} open</span>
+          </div>
+          <div class="card-bd"><div class="panel scroller"><table><thead><tr>
+            <th>Task</th><th>Status</th><th>Priority</th><th>Due</th><th>Notes</th></tr></thead><tbody>
+            ${items.map(t => `<tr>
+              <td><div class="proj-name">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>` : esc(t.name)}</div></td>
+              <td>${t.status ? `<span class="sev ${t.status === "Stuck" ? "sev-critical" : t.status === "Waiting on information" ? "sev-warning" : "sev-none"}">${esc(t.status)}</span>` : "—"}</td>
+              <td>${t.priority ? esc(t.priority) : "—"}</td>
+              <td class="num">${t.due ? `${esc(t.due)}${t.due < today ? ` <span class="sev sev-critical">overdue</span>` : ""}` : `<span class="ev">—</span>`}</td>
+              <td class="ev">${esc(t.notes.slice(0, 120))}</td>
+            </tr>`).join("")}</tbody></table></div></div>
+        </div>`;
+      }).join("")}</div>`;
+    }
+  }
   return out;
 }
 
@@ -2197,6 +2395,7 @@ function render() {
   if (state.view === "pipeline") body = renderPipeline(list);
   else if (state.view === "numbers") body = renderNumbers();
   else if (state.view === "mydesk") body = renderMyDesk(list);
+  else if (state.view === "notes") body = renderNotes();
   else if (state.view === "asap") body = renderAsap(list);
   else if (state.view === "todos") body = renderTodos();
   else if (state.view === "phases") body = renderPhases(list);
@@ -2213,6 +2412,38 @@ function render() {
   if (state.kpisLoaded) src.push(`<span>Monthly KPIs: <b>${state.kpis.length}</b> milestones (13 months)</span>`);
 
   main.innerHTML = body + `<div class="srcline">${src.join("")}</div>`;
+
+  const box = main.querySelector("#note-box");
+  if (box) {
+    if (state.noteFocus) {
+      box.focus();
+      box.setSelectionRange(state.noteCaret ?? box.value.length, state.noteCaret ?? box.value.length);
+    }
+    box.addEventListener("focus", () => { state.noteFocus = true; });
+    box.addEventListener("blur", () => { state.noteFocus = false; });
+    let t = null;
+    box.addEventListener("input", e => {
+      state.note = e.target.value;
+      state.noteCaret = e.target.selectionStart;
+      clearTimeout(t);
+      t = setTimeout(() => render(), 350);   // debounce so typing is not interrupted
+    });
+  }
+  const postBtn = main.querySelector("#note-post");
+  if (postBtn) postBtn.addEventListener("click", () => postNote());
+  const addBtn = main.querySelector("#task-add");
+  if (addBtn) addBtn.addEventListener("click", () => {
+    const first = state.note.trim().split(/\n/)[0].replace(/^[-*•]\s*/, "").trim();
+    if (!first) return;
+    addTask({
+      name: first,
+      notes: state.note.trim().slice(first.length).trim().slice(0, 500),
+      person: main.querySelector("#task-person")?.value || "",
+      priority: main.querySelector("#task-priority")?.value || "",
+      status: main.querySelector("#task-status")?.value || "",
+      due: main.querySelector("#task-due")?.value || "",
+    });
+  });
 
   main.querySelectorAll("[data-phasetab]").forEach(b => b.addEventListener("click", () => {
     state.phaseTab = b.getAttribute("data-phasetab");
@@ -2435,6 +2666,32 @@ async function loadKpis() {
    and notes are joined back from the TU tracker through the relation column.
    Loaded lazily — only when a board that needs it is opened.
 --------------------------------------------------------------------------- */
+/* The shared task list. Read lazily, and re-read after anything is written so
+   what you see is what the board actually holds rather than an optimistic echo. */
+async function loadTasks(force) {
+  if (state.tasksLoading) return;
+  if (state.tasksLoaded && !force) return;
+  state.tasksLoading = true;
+  try {
+    const items = await fetchBoard(BOARD_TODO, Object.values(TODO), null, !!force);
+    state.tasks = items.map(it => ({
+      id: String(it.id), name: it.name || "(untitled)", url: it.url || "",
+      group: (it.group && it.group.title) || "",
+      person: col(it, TODO.person) || "",
+      status: col(it, TODO.status) || "",
+      priority: col(it, TODO.priority) || "",
+      due: dstr(col(it, TODO.due)),
+      notes: col(it, TODO.notes) || "",
+    }));
+    state.errors.tasks = null;
+    state.tasksLoaded = true;
+  } catch (e) {
+    state.errors.tasks = mcpError(e);
+  }
+  state.tasksLoading = false;
+  render();
+}
+
 async function loadWorkload() {
   if (state.workloadLoaded || state.workloadLoading) return;
   state.workloadLoading = true;
@@ -2594,6 +2851,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   render();
   if ((state.view === "todos" || state.view === "mydesk") && mcp) loadWorkload();
   if (state.view === "numbers" && mcp) loadKpis();
+  if (state.view === "notes" && mcp) loadTasks(false);
 }));
 $("#f-eng").addEventListener("change", e => { state.engineer = e.target.value; render(); });
 $("#f-util").addEventListener("change", e => { state.utility = e.target.value; render(); });

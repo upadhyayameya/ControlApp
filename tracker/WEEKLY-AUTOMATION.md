@@ -186,6 +186,33 @@ reads back fine, which is what makes the projection figures available at all.
 standing engineering meetings, not an authoritative distribution list. Edit it
 to match who should actually receive the update.
 
+## Notes and tasks (in the dashboard)
+
+The **Notes & tasks** tab is where a thought becomes something that has
+actually moved. Type what needs to happen; anything naming a project is
+recognised as you type.
+
+- **Post to projects** writes your note to each recognised project as a monday
+  **update** — the item's comment thread. It never changes a column, so nothing
+  is overwritten, and any entry can be deleted.
+- **Add as task** creates an item on the shared **Ameya To-do** board
+  (`4559143382`) with an owner, priority, status and due date.
+
+The same conservative matcher used by the meeting briefs and the reply logger
+applies: a paragraph naming no project, or more than three, is left alone and
+called out rather than posted to a guessed item.
+
+### The shared task list
+
+Below the composer, the to-do board is shown grouped by owner, Caitlyn and
+Ameya first, with counts for overdue, critical and blocked. `Caitlyn` was added
+to the board's **Person responsible** dropdown; the board is private to Ameya,
+so it needs sharing with her before she can see it in monday itself.
+
+Board columns used: `dropdown` (Person responsible), `status`
+(Working on it / Waiting on information / Stuck / Done), `priority`
+(Critical / High / Medium / Low), `date4` (Date), `text` (Notes).
+
 ## Logging engineer replies
 
 When an engineer replies to their Monday digest saying what a project needs,
