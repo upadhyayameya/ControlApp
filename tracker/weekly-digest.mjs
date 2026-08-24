@@ -61,26 +61,49 @@ const ICF_EMAILS = {
   'Daniel':    'dyoo@mdenergyadvisors.com',
   'Devin':     'drohan@mdenergyadvisors.com',
   'Priscille': 'petoughe@mdenergyadvisors.com',
-
-  // Still unmapped. Soham and Jalen are on the dropdown with no address; Soham
-  // has one completed project and no live work, Jalen none at all. TBD, ESAI
-  // Team and Centralized Engineering are placeholders or groups rather than
-  // people, so they stay roll-up only by design.
 };
 
-/* Named reviewers who are NOT on the board's dropdown, so no project maps to
-   them and no digest can be addressed to them yet:
-     Justin  justin.lee@icf.com
-     Junior  junior.myrie@icf.com
-   Add them to the ICF Engineer dropdown and assign work before enabling. */
+/* Some dropdown values name a group rather than a person. Expand them to the
+   people who actually do the work, so those projects reach someone. */
+const ICF_GROUPS = {
+  'ESAI Team':               ['Devashis', 'Ven', 'Kirti'],
+  'Centralized Engineering': ['Jason'],   // no address of their own; Jason covers it
+};
+
+/* Values that mean "no reviewer yet" rather than naming anyone. Projects
+   carrying these are counted as unassigned and reported to management, never
+   emailed to a reviewer. */
+const ICF_UNASSIGNED = new Set(['TBD']);
+
+/* Named, with an address, but not on the board's dropdown — so no project maps
+   to them and no digest can be addressed to them. Held here, not used. Add them
+   to the ICF Engineer dropdown and assign work before enabling. */
 const UNMAPPED_REVIEWERS = {
   'Justin': 'justin.lee@icf.com',
   'Junior': 'junior.myrie@icf.com',
 };
 
+/* Expand a project's ICF Engineer value into real people, and say whether it
+   was left unassigned. Returns { names, unassigned }. */
+function expandReviewers(names) {
+  const out = [];
+  let unassigned = false;
+  for (const n of names) {
+    if (!n) continue;
+    if (ICF_UNASSIGNED.has(n)) { unassigned = true; continue; }
+    const group = ICF_GROUPS[n];
+    if (group) { out.push(...group); continue; }
+    out.push(n);
+  }
+  return { names: [...new Set(out)], unassigned: unassigned || out.length === 0 };
+}
+
+
 
 /* Board labels that are placeholders, not people. Never addressed, never greeted. */
-const NOT_A_PERSON = new Set(['TBD', 'N/A', 'NONE', 'None', '---', 'ESAI Team', 'EASI Team', 'Centralized Engineering']);
+/* Values that name nobody. The group labels are expanded upstream by
+   expandReviewers, so they never reach here. */
+const NOT_A_PERSON = new Set(['TBD', 'N/A', 'NONE', 'None', '---']);
 
 /* ------------------------------------------------------------------ columns */
 const C = {
@@ -264,7 +287,9 @@ const projects = icfItems.map(it => {
   const phase = txt(it, C.phase), icfStatus = txt(it, C.status);
   const tuStatus = g(T.status), sowStatus = g(T.sowStatus);
 
-  const icfEngs = list(it, C.icfEng);
+  /* Group values expand to the people behind them; "TBD" means nobody yet. */
+  const icfRaw = list(it, C.icfEng);
+  const { names: icfEngs, unassigned: icfUnassigned } = expandReviewers(icfRaw);
   const hbsEngs = list(it, C.hbsEng);
   const auditor = gl(T.auditor), paLead = gl(T.paLead), coLead = gl(T.coLead), owner = gl(T.dealOwner);
   const revEng = gl(T.reviewEng).map(s => s.replace(/^ICF\s*-\s*/, '').replace(/^TRC\s*-\s*/, ''));
@@ -321,7 +346,7 @@ const projects = icfItems.map(it => {
       submittedCO: txt(it, C.dSubCO), coDate: txt(it, C.dCOd),
       nextAction: txt(it, C.dNextAct),
     },
-    icfEngs, hbsEngs, ev, current,
+    icfEngs, icfRaw, icfUnassigned, hbsEngs, ev, current,
     need: rule ? rule.need : 'No status recorded — set a status on the board',
     ownerNames, sev, aging,
     daysInPhase: Number.isFinite(dip) ? dip : null,
@@ -482,6 +507,19 @@ function rollupBody() {
   const ageing = projects.filter(p => p.aging === 'Critical');
   const unassigned = projects.filter(p => !p.ownerNames.length && p.sev !== 'good');
   L.push('', `ACTION OWED: ${critical.length}   AGEING PAST 60 DAYS: ${ageing.length}   NO OWNER ON NEXT STEP: ${unassigned.length}`);
+
+  /* Projects with no named reviewer reach nobody by email, so management is
+     the only place they can surface. */
+  const noReviewer = projects.filter(p => p.icfUnassigned);
+  if (noReviewer.length) {
+    const tbd = noReviewer.filter(p => p.icfRaw.includes('TBD')).length;
+    L.push('', `NO ICF REVIEWER NAMED: ${noReviewer.length}  (${tbd} marked TBD, ${noReviewer.length - tbd} left blank)`);
+    L.push('  These get no reviewer digest until someone is assigned on the board.');
+    for (const p of noReviewer.sort((a, b) => b.priority - a.priority).slice(0, 10)) {
+      L.push(`  * ${p.name} - ${p.phase}${p.icfStatus ? ' / ' + p.icfStatus : ''}`);
+    }
+    if (noReviewer.length > 10) L.push(`  ... and ${noReviewer.length - 10} more`);
+  }
 
   L.push('', 'BY ENGINEER                     active  action owed  ageing');
   const rows = [];

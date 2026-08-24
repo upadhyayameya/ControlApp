@@ -436,6 +436,9 @@ details.detail summary:hover { color: var(--ink-2); }
     <div class="ctl" data-filter="utility"><label for="f-util">Utility</label><select id="f-util"><option value="">All</option></select></div>
     <div class="ctl" data-filter="type"><label for="f-type">Type</label><select id="f-type"><option value="">All</option></select></div>
     <div class="ctl" data-filter="q"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
+    <div class="ctl" data-filter="done">
+      <label><input type="checkbox" id="f-done"> Show completed</label>
+    </div>
     <div class="ctl" data-filter="count" style="margin-left:auto"><span class="stamp" id="count-stamp"></span></div>
   </div>
   </div>
@@ -848,6 +851,31 @@ function pairBoards(icfItems, tuItems) {
    "PEPCO" and "Pepco", "Met ED" and "Met-Ed". Fold on case and punctuation and
    settle on one spelling. Programmes that genuinely differ — Dominion and
    Dominion - TRC — fold to different keys and stay separate. */
+/* Some ICF Engineer values name a group rather than a person; expand them to
+   the people who do the work so those projects reach someone. "TBD" means no
+   reviewer has been picked yet, so it counts as unassigned rather than as a
+   name. Confirmed by Ameya: Centralized Engineering is covered by Jason, and
+   ESAI Team is Devashis, Ven and Kirti. */
+const ICF_GROUPS = {
+  "ESAI Team":               ["Devashis", "Ven", "Kirti"],
+  "EASI Team":               ["Devashis", "Ven", "Kirti"],   // spelling seen on the TU board
+  "Centralized Engineering": ["Jason"],
+};
+const ICF_UNASSIGNED = new Set(["TBD", "N/A", "NONE", "None", "---"]);
+
+function expandReviewers(names) {
+  const out = [];
+  let unassigned = false;
+  for (const n of names) {
+    if (!n) continue;
+    if (ICF_UNASSIGNED.has(n)) { unassigned = true; continue; }
+    const group = ICF_GROUPS[n];
+    if (group) { out.push(...group); continue; }
+    out.push(n);
+  }
+  return { names: [...new Set(out)], unassigned: unassigned || out.length === 0 };
+}
+
 const UTILITY_KEY = u => String(u || "").trim().toLowerCase().replace(/[\s\-_]+/g, " ");
 const utilitySpellings = new Map();
 function normUtility(u) {
@@ -892,7 +920,8 @@ function buildProjects(icfItems, tuItems) {
       : /\bTRC\b/i.test(utility) ? "TRC"
       : "In-house";
 
-    const icfEngs = (icf ? people(icf, C.icfEng) : []);
+    const icfRaw = (icf ? people(icf, C.icfEng) : []);
+    const { names: icfEngs, unassigned: icfUnassigned } = expandReviewers(icfRaw);
     const hbsEngs = (icf ? people(icf, C.hbsEng) : []);
     const auditor = tu ? people(tu, T.auditor) : [];
     const paLead  = tu ? people(tu, T.paLead)  : [];
@@ -996,7 +1025,7 @@ function buildProjects(icfItems, tuItems) {
       projectId: ci(C.projectId) || g(T.projectId),
       phase, icfStatus, tuStatus, sowStatus,
       utility, type, reviewer,
-      icfEngs, hbsEngs, hbsAll, hbsRoles, auditor, paLead, coLead, owner, revEng,
+      icfEngs, icfRaw, icfUnassigned, hbsEngs, hbsAll, hbsRoles, auditor, paLead, coLead, owner, revEng,
       ev, current,
       evDates: {
         dSubPA: dstr(ci(C.dSubPA)), dPAd: dstr(ci(C.dPAd)),
@@ -1098,6 +1127,7 @@ const state = {
   engineer: "",
   utility: "",
   reviewer: "",
+  showDone: false,
   type: "",
   q: "",
   view: "pipeline",
@@ -1133,9 +1163,24 @@ function engineersOf(p) {
   if (state.org === "hbs") return p.hbsAll;
   return [...p.icfEngs, ...p.hbsAll];
 }
-function filtered() {
+/* Where a project sits in its life. Cancelled work is gone for good and never
+   shown. Completed work is finished, so it is out of the working views by
+   default — but it still counts toward the period funnel, otherwise "closeouts
+   completed this month" would read zero the moment they were done. */
+function lifecycle(p) {
+  if (p.tuStatus === "Cancelled" || p.group === "Cancelled Projects") return "cancelled";
+  if (p.phase === "Completed Project" || p.group === "Completed Projects" ||
+      p.tuStatus === "Complete/Paid") return "completed";
+  return "active";
+}
+
+function filtered(opts) {
+  const includeDone = !!(opts && opts.includeDone) || state.showDone;
   const q = state.q.trim().toLowerCase();
   return state.projects.filter(p => {
+    const life = lifecycle(p);
+    if (life === "cancelled") return false;
+    if (life === "completed" && !includeDone) return false;
     if (state.utility && p.utility !== state.utility) return false;
     if (state.reviewer && p.reviewer !== state.reviewer) return false;
     if (state.type && p.type !== state.type) return false;
@@ -1155,13 +1200,13 @@ function filtered() {
    My desk is already scoped to one person — narrowing those by engineer or
    team would be a control that quietly does nothing. */
 const VIEW_FILTERS = {
-  pipeline: ["period", "team", "engineer", "reviewer", "utility", "type", "q", "count"],
+  pipeline: ["period", "team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
   numbers:  ["period"],
   mydesk:   ["utility", "type", "q"],
   asap:     ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
   todos:    [],
-  phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "q", "count"],
-  projects: ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
+  phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
+  projects: ["team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
   digest:   ["team", "engineer", "reviewer", "utility", "type", "q"],
   intel:    [],
   notes:    [],
@@ -1217,14 +1262,15 @@ function renderPipeline(list) {
   const r = periodRange(state.period, now);
   const counts = {}, prev = {}, open = {};
   for (const s of STAGES) { counts[s.key] = 0; prev[s.key] = 0; open[s.key] = 0; }
-  for (const p of list) {
+  /* Throughput counts finished work; "open now" counts only what is still live. */
+  for (const p of filtered({ includeDone: true })) {
     for (const s of STAGES) {
       const d = p.ev[s.key];
       if (inRange(d, r.start, r.end)) counts[s.key]++;
       if (inRange(d, r.prevStart, r.prevEnd)) prev[s.key]++;
     }
-    if (p.current) open[p.current]++;
   }
+  for (const p of list) if (p.current) open[p.current]++;
   const maxOpen = Math.max(1, ...Object.values(open));
 
   const tiles = STAGES.map((s, i) => {
@@ -3214,6 +3260,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
 $("#f-eng").addEventListener("change", e => { state.engineer = e.target.value; render(); });
 $("#f-util").addEventListener("change", e => { state.utility = e.target.value; render(); });
 $("#f-rev").addEventListener("change", e => { state.reviewer = e.target.value; render(); });
+$("#f-done").addEventListener("change", e => { state.showDone = e.target.checked; render(); });
 $("#f-type").addEventListener("change", e => { state.type = e.target.value; render(); });
 let qt = null;
 $("#f-q").addEventListener("input", e => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { state.q = v; render(); }, 160); });
