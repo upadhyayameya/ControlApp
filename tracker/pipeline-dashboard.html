@@ -351,7 +351,7 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
       <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="audits">Audits</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
       <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
       <button class="tab" role="tab" aria-selected="false" data-view="digest">Weekly digest</button>
       <button class="tab" role="tab" aria-selected="false" data-view="intel">Meetings</button>
@@ -956,6 +956,7 @@ const state = {
   type: "",
   q: "",
   view: "pipeline",
+  phaseTab: "audits",
   projects: [],
   errors: {},
   teams: [],
@@ -1501,53 +1502,136 @@ function renderAsap(list) {
   return out;
 }
 
-/* ---- audits in flight, for the HBS side ---- */
-function renderAudits(list) {
+/* ---------------------------------------------------------------------------
+   Phase boards: audits, pre-approvals and closeouts share one shape —
+   what is in flight, when it is dated, who leads it, what it still needs.
+--------------------------------------------------------------------------- */
+const PA_STATUSES = ["Audit Phase Complete", "PA Submitted", "PA Received", "Sent for Review/QAQC",
+  "Review sent back for corrections", "Signed PA/RA Needed", "Signed SOW Received"];
+const CO_STATUSES = ["Implementation & MV Complete", "CD to Submit", "CO Submitted", "CO Received",
+  "CO Processed/Need Signed PA/RA"];
+
+const PHASE_VIEWS = {
+  audits: {
+    label: "Audits",
+    hint: "Every project in or around the audit phase.",
+    test: p => p.phase === "Audit Phase" || p.current === "scheduled" || p.current === "audited" ||
+      ["Audit Ready to Schedule", "Scheduled", "Re-Audit Needed", "Audit Phase Complete"].includes(p.tuStatus),
+    dateLabel: "Audit date",
+    dateOf: p => p.evDates.dAudit,
+    doneLabel: "Audited",
+    doneOf: p => (p.evDates.dAudit && dparse(p.evDates.dAudit) <= new Date() ? p.evDates.dAudit : ""),
+    leadLabel: "Auditor",
+    leadOf: p => p.auditor,
+    inPeriodLabel: "Audits this period",
+    gaps: p => {
+      const g = [];
+      if (!p.evDates.dAudit) g.push("no audit date");
+      if (!p.auditor.length && !p.hbsEngs.length) g.push("no auditor");
+      if (!p.hasTu) g.push("not linked to TU tracker");
+      if (!p.utility) g.push("no utility");
+      if (!p.type) g.push("no project type");
+      return g;
+    },
+  },
+  preapprovals: {
+    label: "Pre-approvals",
+    hint: "Applications being built, submitted or reviewed by ICF.",
+    test: p => p.phase === "Pre-Approval Phase" || PA_STATUSES.includes(p.tuStatus) ||
+      ["Pre-approval", "Technical Review", "Post-Tech Review", "ARC", "Flawed", "Flawed ARC"].includes(p.icfStatus),
+    dateLabel: "Submitted for PA",
+    dateOf: p => p.evDates.dSubPA,
+    doneLabel: "Pre-approved",
+    doneOf: p => p.evDates.dPAd,
+    leadLabel: "PA lead",
+    leadOf: p => p.paLead,
+    inPeriodLabel: "Submitted this period",
+    gaps: p => {
+      const g = [];
+      if (!p.evDates.dSubPA) g.push("no submission date");
+      if (!p.paLead.length && !p.hbsEngs.length) g.push("no PA lead");
+      if (!p.icfEngs.length) g.push("no ICF reviewer");
+      if (p.incentive == null) g.push("no incentive figure");
+      if (!p.hasTu) g.push("not linked to TU tracker");
+      return g;
+    },
+  },
+  closeouts: {
+    label: "Closeouts",
+    hint: "Implementation done or nearly done, and the closeout package in flight.",
+    test: p => p.phase === "Closeout Phase" || CO_STATUSES.includes(p.tuStatus) ||
+      ["Site Inspection Pending", "Site Inspection Scheduled", "Site Inspection Completed"].includes(p.icfStatus),
+    dateLabel: "Submitted for CO",
+    dateOf: p => p.evDates.dSubCO,
+    doneLabel: "Closed out",
+    doneOf: p => p.evDates.dCOd,
+    leadLabel: "CO lead",
+    leadOf: p => p.coLead,
+    inPeriodLabel: "Submitted this period",
+    gaps: p => {
+      const g = [];
+      if (!p.evDates.dSubCO) g.push("no CO submission date");
+      if (!p.coLead.length && !p.hbsEngs.length) g.push("no CO lead");
+      if (!p.evDates.dImpl) g.push("no implementation date");
+      if (p.incentive == null) g.push("no incentive figure");
+      if (!p.hasTu) g.push("not linked to TU tracker");
+      return g;
+    },
+  },
+};
+
+function renderPhases(list) {
+  const key = PHASE_VIEWS[state.phaseTab] ? state.phaseTab : "audits";
+  const V = PHASE_VIEWS[key];
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const inAudit = list.filter(p => p.phase === "Audit Phase" || p.current === "scheduled" || p.current === "audited" ||
-    ["Audit Ready to Schedule", "Scheduled", "Re-Audit Needed", "Audit Phase Complete"].includes(p.tuStatus));
-  const rows = inAudit.map(p => {
-    const d = p.evDates.dAudit ? dparse(p.evDates.dAudit) : null;
-    return { p, when: p.evDates.dAudit, upcoming: !!(d && d >= today), missing: infoGaps(p) };
+  const r = periodRange(state.period, new Date());
+
+  const rows = list.filter(V.test).map(p => {
+    const when = V.dateOf(p);
+    const done = V.doneOf(p);
+    const d = when ? dparse(when) : null;
+    return {
+      p, when, done,
+      upcoming: !!(d && d >= today),
+      inPeriod: inRange(d, r.start, r.end) || inRange(done ? dparse(done) : null, r.start, r.end),
+      gaps: V.gaps(p),
+    };
   }).sort((a, b) => b.p.priority - a.p.priority || String(a.when || "9999").localeCompare(String(b.when || "9999")));
 
   const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
-  return `<div class="section-head"><h2>Audits in flight</h2>
-    <span class="hint">Every project in or around the audit phase, with the next step, who leads it and what is still missing.</span></div>
+
+  const subtabs = `<div class="segmented" role="group" aria-label="Phase" style="margin-bottom:14px">
+    ${Object.entries(PHASE_VIEWS).map(([k, v]) =>
+      `<button data-phasetab="${k}" aria-pressed="${k === key}">${esc(v.label)} <span class="num" style="opacity:.7">${list.filter(v.test).length}</span></button>`).join("")}
+  </div>`;
+
+  return `<div class="section-head"><h2>${esc(V.label)} in flight</h2><span class="hint">${esc(V.hint)}</span></div>
+    ${subtabs}
     <div class="stats" style="margin-bottom:16px">
-      ${stat(rows.length, "In audit phase", "")}
-      ${stat(rows.filter(r => r.upcoming).length, "Audit upcoming", "")}
-      ${stat(rows.filter(r => !r.when).length, "No audit date", "is-critical")}
-      ${stat(rows.filter(r => r.missing.length).length, "Missing info", "is-serious")}
+      ${stat(rows.length, "In flight", "")}
+      ${stat(rows.filter(x => x.inPeriod).length, V.inPeriodLabel, "is-good")}
+      ${stat(rows.filter(x => x.upcoming).length, "Dated ahead", "")}
+      ${stat(rows.filter(x => !x.when).length, "No date set", "is-critical")}
+      ${stat(rows.filter(x => x.gaps.length).length, "Missing info", "is-serious")}
     </div>
     <div class="panel scroller tall"><table><thead><tr>
-      <th>Project</th><th class="n">Pri</th><th>Audit date</th><th>Status</th><th>Next step</th><th>Lead</th><th>Is the info here?</th>
-    </tr></thead><tbody>${rows.map(({ p, when, upcoming, missing }) => `<tr>
+      <th>Project</th><th class="n">Pri</th><th>${esc(V.dateLabel)}</th><th>${esc(V.doneLabel)}</th>
+      <th>Status</th><th>Next step</th><th>${esc(V.leadLabel)}</th><th>Is the info here?</th>
+    </tr></thead><tbody>${rows.map(({ p, when, done, upcoming, inPeriod, gaps }) => `<tr>
       <td><div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
           <div class="ev">${esc([p.utility, p.type].filter(Boolean).join(" · "))}</div></td>
       <td class="n"><span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}" title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></td>
-      <td class="num">${when ? `${esc(when)}${upcoming ? ` <span class="sev sev-good">upcoming</span>` : ""}` : `<span class="sev sev-critical">${sevIcon("critical")}not set</span>`}</td>
+      <td class="num">${when
+        ? `${esc(when)}${upcoming ? ` <span class="sev sev-good">ahead</span>` : ""}${inPeriod ? ` <span class="chip">this period</span>` : ""}`
+        : `<span class="sev sev-critical">${sevIcon("critical")}not set</span>`}</td>
+      <td class="num">${done ? esc(done) : `<span class="ev">—</span>`}</td>
       <td>${esc(p.tuStatus || p.icfStatus || "—")}</td>
       <td><div class="need">${esc(p.need)}</div>${p.evidence ? `<div class="ev"><b>Latest:</b> ${esc(p.evidence.slice(0, 130))}</div>` : ""}</td>
-      <td>${p.auditor.length ? `<span class="who">${esc(p.auditor.join(", "))}</span>` : ownerCell(p)}</td>
-      <td>${missing.length
-        ? `<span class="sev sev-serious">${sevIcon("serious")}${missing.length} gap${missing.length > 1 ? "s" : ""}</span><div class="ev">${esc(missing.join(", "))}</div>`
+      <td>${V.leadOf(p).length ? `<span class="who">${esc(V.leadOf(p).join(", "))}</span>` : ownerCell(p)}</td>
+      <td>${gaps.length
+        ? `<span class="sev sev-serious">${sevIcon("serious")}${gaps.length} gap${gaps.length > 1 ? "s" : ""}</span><div class="ev">${esc(gaps.join(", "))}</div>`
         : `<span class="sev sev-good">${sevIcon("good")}complete</span>`}</td>
     </tr>`).join("")}</tbody></table></div>`;
-}
-
-/* What a project is missing before it can move on — read off the board, not guessed. */
-function infoGaps(p) {
-  const gaps = [];
-  if (!p.evDates.dAudit) gaps.push("no audit date");
-  if (!p.auditor.length && !p.hbsEngs.length) gaps.push("no auditor");
-  if (!p.icfEngs.length) gaps.push("no ICF engineer");
-  if (!p.hbsEngs.length) gaps.push("no HBS engineer");
-  if (!p.hasTu) gaps.push("not linked to TU tracker");
-  if (!p.utility) gaps.push("no utility");
-  if (!p.type) gaps.push("no project type");
-  if (p.incentive == null) gaps.push("no incentive figure");
-  return gaps;
 }
 
 /* Placeholder assignments on the board are not people — never address a digest to one. */
@@ -1861,7 +1945,7 @@ function render() {
   else if (state.view === "mydesk") body = renderMyDesk(list);
   else if (state.view === "asap") body = renderAsap(list);
   else if (state.view === "todos") body = renderTodos();
-  else if (state.view === "audits") body = renderAudits(list);
+  else if (state.view === "phases") body = renderPhases(list);
   else if (state.view === "projects") body = renderProjects(list);
   else if (state.view === "digest") body = renderDigest(list);
   else body = renderIntel();
@@ -1875,6 +1959,11 @@ function render() {
   if (state.kpisLoaded) src.push(`<span>Monthly KPIs: <b>${state.kpis.length}</b> milestones (13 months)</span>`);
 
   main.innerHTML = body + `<div class="srcline">${src.join("")}</div>`;
+
+  main.querySelectorAll("[data-phasetab]").forEach(b => b.addEventListener("click", () => {
+    state.phaseTab = b.getAttribute("data-phasetab");
+    render();
+  }));
 
   main.querySelectorAll("[data-engineer]").forEach(b => b.addEventListener("click", () => {
     state.engineer = b.getAttribute("data-engineer");
