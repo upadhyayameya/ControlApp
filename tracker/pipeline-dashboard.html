@@ -1676,24 +1676,35 @@ function renderNumbers() {
   const per = (total, n) => n ? total / n : 0;
   const tile = (v, l, sub) => `<div class="stat"><div class="v num">${v}</div><div class="l">${esc(l)}</div>${sub ? `<div class="ev">${sub}</div>` : ""}</div>`;
 
-  out += `<div class="stats" style="margin-bottom:8px">
-    ${tile(cur.count, `Milestones this ${state.period}`, delta(cur.count, prev.count))}
-    ${tile(money(cur.incentive), "Incentive", delta(cur.incentive, prev.incentive))}
-    ${tile(money(cur.hbsShare), "HBS share", delta(cur.hbsShare, prev.hbsShare))}
-    ${tile(qty(cur.savings), "kWh / therms", delta(cur.savings, prev.savings))}
+  /* One project crosses several stages, carrying its incentive each time, so a
+     figure summed across stages counts the same money repeatedly. Nothing here
+     is totalled across stages: each stage is reported on its own. */
+  const stageOf = m => {
+    const rs = inCur.filter(k => k.milestone === m), ps = inPrev.filter(k => k.milestone === m);
+    const a = sumRows(rs), b = sumRows(ps);
+    return { m, ...a, prevCount: b.count, prevInc: b.incentive };
+  };
+  const HEADLINE = ["Audits Performed", "Preapprovals Submitted", "Preapprovals Received",
+    "Implementations Scheduled", "Closeouts Submitted", "Closeouts Received"];
+  const stages = HEADLINE.map(stageOf).filter(x => x.count || x.prevCount);
+
+  /* The target is the value of work approved — pre-approvals received — not a
+     sum across stages. That is the figure the business actually wins. */
+  const approvedStage = stages.find(x => x.m === "Preapprovals Received");
+  const defaultTarget = Math.round((approvedStage && (approvedStage.prevInc || approvedStage.incentive)) || 0);
+  const TARGET = f.target != null ? f.target : defaultTarget;
+
+  out += `<div class="stats" style="margin-bottom:10px">
+    ${stages.map(x => tile(
+      x.count,
+      x.m.replace("Preapprovals", "Pre-approvals"),
+      `${x.incentive ? money(x.incentive) : "no incentive recorded"} ${delta(x.count, x.prevCount)}`
+    )).join("")}
   </div>
-  <div class="stats" style="margin-bottom:18px">
-    ${tile(money(per(cur.incentive, cur.count)), "Average incentive per milestone", `previous ${money(per(prev.incentive, prev.count))}`)}
-    ${tile(money(per(cur.hbsShare, cur.count)), "Average HBS share", `previous ${money(per(prev.hbsShare, prev.count))}`)}
-    ${(() => {
-      const withKwh = inCur.filter(k => (k.savings || 0) > 0);
-      const prevKwh = inPrev.filter(k => (k.savings || 0) > 0);
-      const a = withKwh.length ? withKwh.reduce((x, k) => x + k.savings, 0) / withKwh.length : 0;
-      const b = prevKwh.length ? prevKwh.reduce((x, k) => x + k.savings, 0) / prevKwh.length : 0;
-      return tile(qty(Math.round(a)), "Average kWh / therms",
-        `across the ${withKwh.length} that record it${b ? ` · previous ${qty(Math.round(b))}` : ""}`);
-    })()}
-  </div>`;
+  <div class="ans-note" style="margin-bottom:18px">Each stage is counted and valued on its own. Nothing is added
+  across stages: a project that was audited, pre-approved and closed out in this period appears at all three,
+  carrying its incentive each time, so a combined total would count the same money more than once.
+  ${stages.some(x => x.count && !x.incentive) ? `Audits carry no incentive on this board, which is why that figure is blank rather than zero.` : ""}</div>`;
 
   /* ---- per phase, with averages: the PA and CO numbers to move ---- */
   const byPhase = new Map();
@@ -1814,19 +1825,35 @@ function renderNumbers() {
      of audits. There is no goal column anywhere in monday, so the target is
      whatever you type; it starts at the previous period's total so the first
      answer means "match last period". */
-  const audits = inCur.filter(k => k.milestone === "Audits Performed");
-  const auditSum = sumRows(audits);
-  const avgPerAudit = per(auditSum.incentive, auditSum.count);
-  const avgKwhAudit = per(auditSum.savings, auditSum.count);
-  const target = f.target != null ? f.target : Math.round(prev.incentive || cur.incentive || 0);
-  const needAudits = avgPerAudit > 0 ? Math.ceil(target / avgPerAudit) : null;
-  const gapAudits  = needAudits != null ? needAudits - auditSum.count : null;
+  /* Audits carry no incentive on this board, so the number of audits a target
+     needs cannot come from an average audit value. It comes from what an
+     approved pre-approval is worth, walked back up the funnel through the rates
+     at which audits become submissions and submissions become approvals. */
+  const cnt = m => (stages.find(x => x.m === m) || { count: 0, incentive: 0 }).count;
+  const val = m => (stages.find(x => x.m === m) || { count: 0, incentive: 0 }).incentive;
 
-  const paRows = inCur.filter(k => k.milestone === "Preapprovals Submitted");
-  const coRows = inCur.filter(k => k.milestone === "Closeouts Submitted");
-  const paSum = sumRows(paRows), coSum = sumRows(coRows);
-  const needPA = per(paSum.incentive, paSum.count) > 0 ? Math.ceil(target / per(paSum.incentive, paSum.count)) : null;
-  const needCO = per(coSum.incentive, coSum.count) > 0 ? Math.ceil(target / per(coSum.incentive, coSum.count)) : null;
+  const auditN = cnt("Audits Performed");
+  const paSubN = cnt("Preapprovals Submitted"), paRecN = cnt("Preapprovals Received");
+  const coSubN = cnt("Closeouts Submitted"), coRecN = cnt("Closeouts Received");
+
+  const avgApproved = paRecN ? val("Preapprovals Received") / paRecN : 0;
+  /* Within one period these compare different cohorts — the projects approved
+     this month are rarely the ones audited this month — so a rate can come out
+     above 1. Clamp for the arithmetic and say so rather than printing 115%. */
+  const rawSubmit  = auditN ? paSubN / auditN : null;
+  const rawApprove = paSubN ? paRecN / paSubN : null;
+  const overflow = (rawSubmit != null && rawSubmit > 1) || (rawApprove != null && rawApprove > 1);
+  const rSubmit  = rawSubmit  == null ? null : Math.min(1, rawSubmit);
+  const rApprove = rawApprove == null ? null : Math.min(1, rawApprove);
+  const valuePerAudit = (avgApproved && rSubmit != null && rApprove != null)
+    ? avgApproved * rSubmit * rApprove : null;
+
+  const target = TARGET;
+  const needAudits = valuePerAudit > 0 ? Math.ceil(target / valuePerAudit) : null;
+  const gapAudits  = needAudits != null ? needAudits - auditN : null;
+  const needPA = avgApproved > 0 ? Math.ceil(target / avgApproved) : null;
+  const avgCO = coRecN ? val("Closeouts Received") / coRecN : 0;
+  const needCO = avgCO > 0 ? Math.ceil(target / avgCO) : null;
 
   /* Attainment per phase: what each phase delivered against what the target
      implies at that phase's own average size. One bar per phase, the marker
@@ -1835,7 +1862,7 @@ function renderNumbers() {
     const rs = (byPhase.get(m) || []);
     const s2 = sumRows(rs);
     const avg = per(s2.incentive, s2.count);
-    const need = avg > 0 ? Math.ceil((f.target != null ? f.target : Math.round(prev.incentive || cur.incentive || 0)) / avg) : 0;
+    const need = avg > 0 ? Math.ceil(TARGET / avg) : 0;
     const pct = need ? Math.round((s2.count / need) * 100) : null;
     return { k: m, v: s2.count, of: need, label: need ? `${s2.count} / ${need}  (${pct}%)` : `${s2.count}`,
              tone: pct == null ? "ghost" : pct >= 100 ? "good" : pct >= 60 ? "warning" : "critical",
@@ -1858,18 +1885,34 @@ function renderNumbers() {
     <span class="hint">At the current average size, how much work a target implies</span></div>
     <div class="panel" style="padding:14px 16px;margin-bottom:18px;display:grid;gap:12px">
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-        <label class="ev" for="n-target">Target incentive for this ${esc(state.period)}</label>
+        <label class="ev" for="n-target">Target value approved this ${esc(state.period)}</label>
         <input type="number" id="n-target" value="${target}" step="1000" style="width:160px;font:inherit;padding:6px 9px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--surface);color:var(--ink)">
-        <span class="ev">${f.target != null ? "your figure" : `defaulting to the previous ${esc(state.period)}'s ${money(prev.incentive)}`}</span>
+        <span class="ev">${f.target != null ? "your figure" : `defaulting to the previous ${esc(state.period)}'s approved value, ${money(defaultTarget)}`}</span>
       </div>
       <div class="stats">
-        ${tile(needAudits == null ? "—" : needAudits, "Audits needed", avgPerAudit ? `at ${money(avgPerAudit)} each` : "no audit incentive recorded")}
-        ${tile(gapAudits == null ? "—" : (gapAudits > 0 ? "+" + gapAudits : "on track"), "Versus audits done", `${auditSum.count} so far`)}
-        ${tile(needPA == null ? "—" : needPA, "Pre-approvals needed", paSum.count ? `at ${money(per(paSum.incentive, paSum.count))} each` : "none submitted")}
-        ${tile(needCO == null ? "—" : needCO, "Closeouts needed", coSum.count ? `at ${money(per(coSum.incentive, coSum.count))} each` : "none submitted")}
+        ${tile(needAudits == null ? "—" : needAudits, "Audits needed",
+          valuePerAudit ? `each is worth ${money(valuePerAudit)} once the funnel is applied` : "not enough of the funnel recorded")}
+        ${tile(gapAudits == null ? "—" : (gapAudits > 0 ? "+" + gapAudits : "on track"), "Versus audits done", `${auditN} so far`)}
+        ${tile(needPA == null ? "—" : needPA, "Approvals needed", avgApproved ? `at ${money(avgApproved)} each` : "none approved")}
+        ${tile(needCO == null ? "—" : needCO, "Closeouts needed", avgCO ? `at ${money(avgCO)} each` : "none received")}
       </div>
-      <div class="ans-note">Raising the average is the other lever: at ${money(avgPerAudit)} an audit you need ${needAudits ?? "—"}, but at ${money(avgPerAudit * 1.25)} you would need ${avgPerAudit ? Math.ceil(target / (avgPerAudit * 1.25)) : "—"}.
-      ${avgKwhAudit ? `Each audit averages ${qty(Math.round(avgKwhAudit))} kWh/therms.` : ""}</div>
+      <div class="ans-note">${valuePerAudit ? (() => {
+        const better = Math.min(1, (rApprove || 0) * 1.25);
+        const lift = better / (rApprove || 1);
+        const headroom = better > (rApprove || 0);
+        return `An audit is worth ${money(valuePerAudit)} on average once the funnel is applied:
+          ${Math.round((rSubmit || 0) * 100)}% of audits reach a submission, ${Math.round((rApprove || 0) * 100)}% of
+          submissions are approved, and an approval averages ${money(avgApproved)}.
+          ${headroom ? `Raising the approval rate to ${Math.round(better * 100)}% would need
+            ${Math.ceil(target / (valuePerAudit * lift))} audits instead of ${needAudits}.`
+          : `Approvals are already at the ceiling for this period, so volume is the only lever left in this view.`}`;
+      })() : `Not enough of the funnel is recorded this ${esc(state.period)} to work back from a target.`}
+        <br><br>${overflow
+          ? `More reached a later stage than an earlier one this ${esc(state.period)}, which happens because these are
+             different cohorts — the projects approved now were audited months ago. The rates above are capped at 100%
+             for the arithmetic; pick a quarter or a year for a rate that means something.`
+          : `Conversion is measured across this period, so it compares different cohorts — a project audited now is
+             rarely the one approved now. Over a quarter or a year it settles down.`}</div>
     </div>
 
   ${(() => {
