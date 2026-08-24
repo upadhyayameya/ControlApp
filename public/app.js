@@ -8,6 +8,7 @@ const state = {
   authed: false,
   demo: false,
   range: 365,
+  mode: null,
   transactions: [],
   seenIds: new Set(),
   freshIds: new Set(),
@@ -81,11 +82,11 @@ $('cookie-form').addEventListener('submit', async (event) => {
   button.disabled = true
   gateError('')
   try {
-    const result = await postJson('/api/auth/cookie', {
-      cookie: new FormData(form).get('cookie'),
+    const result = await postJson('/api/auth/session', {
+      session: new FormData(form).get('session'),
     })
     if (result.authed) return location.reload()
-    gateError(result.error || 'Those cookies were rejected.')
+    gateError(result.error || 'Monarch rejected that session.')
   } catch (error) {
     gateError(error.message)
   } finally {
@@ -212,6 +213,7 @@ function openStream() {
 function applyState(data) {
   state.authed = Boolean(data.authed)
   state.demo = Boolean(data.demo)
+  state.mode = data.mode || state.mode
   state.status = data.status || state.status
   state.activity = data.activity || []
   $('gate').hidden = state.authed
@@ -274,7 +276,7 @@ function renderStatus() {
 
   const bits = []
   if (state.demo) bits.push('demo data')
-  else bits.push(status.mode === 'cookie' ? 'browser session' : 'connected')
+  else bits.push(state.mode === 'cookie' ? 'browser session' : 'connected')
   if (snapshot?.fetchedAt) bits.push(`updated ${relativeTime(snapshot.fetchedAt)}`)
   $('connection').textContent = bits.join(' · ')
 

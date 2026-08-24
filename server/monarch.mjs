@@ -43,6 +43,58 @@ export function parseCookieString(cookieString) {
   return cookies
 }
 
+/**
+ * Work out what someone pasted from their browser. Copying one exact header out
+ * of DevTools is fiddly and easy to get wrong, so accept every form the browser
+ * hands over easily:
+ *
+ *   - a whole `curl` command (Chrome's "Copy as cURL" — by far the easiest)
+ *   - a raw `Cookie:` header line, or just the cookie pairs
+ *   - an `Authorization: Token …` line, or the bare token on its own
+ *
+ * @returns {{kind: 'token', token: string} | {kind: 'cookies', cookies: Record<string,string>}}
+ */
+export function parseSessionPaste(pasted) {
+  const text = String(pasted || '').trim()
+  if (!text) {
+    throw new MonarchError('Paste something from your signed-in browser tab first.', { code: 'PASTE_EMPTY' })
+  }
+
+  // An auth token, whether inside a curl command, a header line, or bare.
+  const tokenMatch =
+    text.match(/authorization:\s*Token\s+([A-Za-z0-9._~+/=-]{16,})/i) ||
+    text.match(/^Token\s+([A-Za-z0-9._~+/=-]{16,})$/i) ||
+    text.match(/^([A-Za-z0-9._~+/=-]{24,})$/)
+
+  // Cookies, from -b/--cookie, a cookie header (in curl or on its own), or raw pairs.
+  const cookieSource =
+    text.match(/(?:-b|--cookie)\s+(['"])([\s\S]*?)\1/)?.[2] ??
+    text.match(/-H\s+(['"])\s*cookie:\s*([\s\S]*?)\1/i)?.[2] ??
+    text.match(/^\s*cookie:\s*(.+)$/im)?.[1] ??
+    (text.includes('session_id=') ? text : null)
+
+  if (cookieSource) {
+    const cookies = parseCookieString(cookieSource)
+    const missing = REQUIRED_COOKIES.filter((name) => !cookies[name])
+    if (!missing.length) return { kind: 'cookies', cookies }
+    if (!tokenMatch) {
+      throw new MonarchError(
+        `That paste is missing the ${missing.join(' and ')} cookie${missing.length > 1 ? 's' : ''}. ` +
+          'Make sure you copied a request to api.monarch.com while signed in.',
+        { code: 'COOKIES_INCOMPLETE' },
+      )
+    }
+  }
+
+  if (tokenMatch) return { kind: 'token', token: tokenMatch[1] }
+
+  throw new MonarchError(
+    "That doesn't look like a browser session. Paste the whole \"Copy as cURL\" command, " +
+      'or the Cookie / Authorization header from a request to api.monarch.com.',
+    { code: 'PASTE_UNRECOGNIZED' },
+  )
+}
+
 export class MonarchClient {
   /**
    * @param {{token?: string|null, cookies?: Record<string,string>|null, timeoutMs?: number}} [options]

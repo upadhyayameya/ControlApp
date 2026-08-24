@@ -35,14 +35,16 @@
           <button class="primary" type="submit">Connect</button>
         </form>
 
-        <form id="cookie-form" class="gate-form" data-panel="cookie" hidden>
+        <form id="cookie-form" class="gate-form" data-panel="cookie">
           <p class="muted small">
-            If Monarch shows a CAPTCHA on programmatic sign-in, use this instead. Sign in at
-            app.monarch.com, open DevTools → Network → any request → copy the whole
-            <code>Cookie</code> request header (it must contain <code>session_id</code> and
-            <code>csrftoken</code>) and paste it here.
+            Monarch blocks most programmatic sign-ins, so borrow the session from your browser
+            instead. In Chrome: sign in at <b>app.monarch.com</b>, press
+            <kbd>⌥</kbd><kbd>⌘</kbd><kbd>I</kbd> (Windows: <kbd>F12</kbd>) → <b>Network</b> tab →
+            reload the page → click any request to <code>api.monarch.com</code> → right-click it →
+            <b>Copy</b> → <b>Copy as cURL</b>. Paste the whole thing below — this page pulls out
+            just the session and throws the rest away.
           </p>
-          <label>Cookie header<textarea name="cookie" rows="4" required placeholder="session_id=…; csrftoken=…"></textarea></label>
+          <label>Paste from your browser<textarea name="session" rows="5" required placeholder="curl 'https://api.monarch.com/graphql' -H 'cookie: session_id=…'"></textarea></label>
           <button class="primary" type="submit">Connect</button>
         </form>
 

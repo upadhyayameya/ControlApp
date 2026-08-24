@@ -13,7 +13,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs'
 import { extname, join, normalize, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { MonarchClient, MonarchError, AuthExpiredError, parseCookieString } from './monarch.mjs'
+import { MonarchClient, MonarchError, AuthExpiredError, parseSessionPaste } from './monarch.mjs'
 import { SessionStore } from './session.mjs'
 import { MonarchSource, SnapshotService, TRANSACTION_PAGE, normalizeTransactions } from './snapshot.mjs'
 import { DemoSource } from './demo.mjs'
@@ -139,21 +139,29 @@ async function handleApi(request, response, url) {
       return sendJson(response, 200, { authed: true, status: 'ok' })
     }
 
+    case 'POST /api/auth/session':
     case 'POST /api/auth/cookie': {
       const body = await readBody(request)
-      const cookies = parseCookieString(body.cookie || '')
-      client.setCookies(cookies)
+      const parsed = parseSessionPaste(body.session ?? body.cookie ?? '')
+      if (parsed.kind === 'cookies') client.setCookies(parsed.cookies)
+      else {
+        client.cookies = null
+        client.token = parsed.token
+      }
+
+      // Prove the pasted session actually works before saving it.
       service.setSource(new MonarchSource(client))
       try {
-        await service.refresh('cookie-login')
+        await service.refresh('browser-session')
       } catch (error) {
         client.clear()
         return sendJson(response, 401, { authed: false, error: error.message })
       }
+
       authEmail = body.email || null
-      sessions.save({ cookies, email: authEmail })
+      sessions.save({ token: client.token, cookies: client.cookies, email: authEmail })
       service.start()
-      return sendJson(response, 200, { authed: true, status: 'ok' })
+      return sendJson(response, 200, { authed: true, status: 'ok', mode: client.mode })
     }
 
     case 'POST /api/auth/logout': {

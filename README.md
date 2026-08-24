@@ -38,10 +38,14 @@ Two ways, both offered on the sign-in page:
 does. If your account has two-factor auth, the page asks for the six-digit code
 and retries. Monarch returns a long-lived token, which is what gets stored.
 
-**Browser session** *(fallback)* — Monarch sometimes puts a CAPTCHA in front of
-programmatic sign-in. When that happens the page says so and points you here: sign
-in at app.monarch.com, open DevTools → Network → click any request → copy the whole
-`Cookie` request header (it needs `session_id` and `csrftoken`) and paste it in.
+**Browser session** *(the one that usually works)* — Monarch blocks most programmatic
+sign-ins, answering 403 whether or not you have two-factor turned on. Borrow the
+session from a browser instead: sign in at app.monarch.com, open DevTools → Network,
+reload, right-click any request to `api.monarch.com` → **Copy as cURL**, and paste the
+whole command in. The paste box also accepts a bare `Cookie:` header, an
+`Authorization: Token …` line, or just the token — whatever your browser makes easy.
+Only the session is kept; the rest of the paste is discarded, and it's verified against
+Monarch before it's saved.
 
 Either way the session lands in `.monarch/session.json` with `0600` permissions and
 is reused on restart. It's gitignored. **Your password is never written to disk.**

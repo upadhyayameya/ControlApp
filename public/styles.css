@@ -318,3 +318,13 @@ figcaption { margin-top: 6px; }
   max-width: 240px;
 }
 .tooltip b { font-variant-numeric: tabular-nums; }
+
+kbd {
+  font: inherit;
+  font-size: 11px;
+  background: var(--plane);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0 4px;
+}
