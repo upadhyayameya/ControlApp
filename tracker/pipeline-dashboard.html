@@ -715,6 +715,46 @@ const T = {
 const ICF_COLS = Object.values(C);
 const TU_COLS  = Object.values(T);
 
+/* ---------------------------------------------------------------------------
+   The BGE BPTU tracker.
+
+   HBS runs its tune-up work across more than one project tracker. The Master
+   TU Tracker holds the tune-ups; the BGE BPTU Tracker holds the BPTU work, and
+   those projects are just as much ours -- they are audited, pre-approved,
+   implemented and closed out by the same engineers. Reading only the TU
+   tracker left every one of them out of the audit, pre-approval,
+   implementation and closeout counts.
+
+   It is the same record under different column ids, so rather than a second
+   code path its ids are translated to the TU tracker's and it flows through
+   the same build. Columns whose ids already match need no entry.
+--------------------------------------------------------------------------- */
+const BOARD_BPTU = 6530139050;
+const BPTU_TO_TU = {
+  "text__1":                  T.company,
+  "text_mkpea39n":            T.utility,
+  "multiple_person_mkwfcjvn": T.dealOwner,
+  "dropdown_mm4cy96d":        T.reviewEng,
+  "date_mkrv8cn5":            T.dAudit,
+  "date_mm0whh86":            T.dImpl,
+  "color_mm4ff52g":           T.sowStatus,
+  "date_mm5r4s7c":            T.dSowRahls,
+  "date_mm5rc5cc":            T.dSowClient,
+  "board_relation_mm5xs2ff":  T.rel,     // link to the ICF/HBS Project Tracker
+};
+/* Same ids on both boards: status, type, dropdown (Source), text8, person,
+   people, people__1, status_1, long_text, date73, date1, date__1, numbers. */
+const BPTU_SAME = ["status", "type", "dropdown", "text8", "person", "people", "people__1",
+  "status_1", "long_text", "date73", "date1", "date__1", "numbers"];
+const BPTU_COLS = [...Object.keys(BPTU_TO_TU), ...BPTU_SAME];
+
+/* Rewrite one BPTU item so the rest of the code can read it as a TU row. */
+function bptuAsTu(it) {
+  const out = {};
+  for (const [k, v] of Object.entries(it.column_values || {})) out[BPTU_TO_TU[k] || k] = v;
+  return { ...it, column_values: out, fromBptu: true };
+}
+
 /* label sets used to read stage progress out of the two status columns */
 const SOW_SENT_LABELS   = new Set(["Sent to Client / CGS", "Approved by Rahl's", "Sent to Rahl's", "SOW Call Scheduled", "SOW Call Complete"]);
 const SOW_SIGNED_LABELS = new Set(["Signed SOW received"]);
@@ -1199,6 +1239,7 @@ function buildProjects(icfItems, tuItems) {
       tuUrl: tu ? (tu.url || "") : "",
       group: (it.group && it.group.title) || "",
       projectId: ci(C.projectId) || g(T.projectId),
+      tracker: tu ? (tu.fromBptu ? "BGE BPTU Tracker" : "Master TU Tracker") : "ICF board only",
       phase: phaseResolved,
       phaseOnBoard: phase,
       phaseDerived: !phase && !!phaseResolved,
@@ -3645,8 +3686,21 @@ function renderGoals() {
   const submittedNotBack    = live.filter(p => p.evDates.dSubPA && !p.evDates.dPAd);
   const implNotClosedOut    = live.filter(p => p.evDates.dImpl && !p.evDates.dSubCO);
 
-  const RFI_RE = /RFI|Flawed/i;
-  const rfiNow = live.filter(p => RFI_RE.test(p.tuStatus || "") || RFI_RE.test(p.icfStatus || ""));
+  /* An RFI owed by us and an RFI already answered are not the same problem.
+     One is work on somebody's desk this week; the other is waiting on ICF and
+     nothing HBS does moves it. Counting them together overstates the load. */
+  const RFI_RE   = /RFI|Flawed/i;
+  const ANSWERED = /RFI Responded/i;
+  const rfiAll   = live.filter(p => RFI_RE.test(p.tuStatus || "") || RFI_RE.test(p.icfStatus || ""));
+  const rfiOwed  = rfiAll.filter(p => !ANSWERED.test(p.tuStatus || ""));
+  const rfiSent  = rfiAll.filter(p =>  ANSWERED.test(p.tuStatus || ""));
+  const rfiNow   = rfiOwed;
+  /* Which tracker each one is on, because the boards are asked about separately. */
+  const rfiByTracker = new Map();
+  for (const p of rfiAll) {
+    const k = p.tracker || "Master TU Tracker";
+    rfiByTracker.set(k, (rfiByTracker.get(k) || 0) + 1);
+  }
   const rfiQueue = state.workloadLoaded ? state.todos.filter(t => t.rfiQueue) : [];
 
   const auditsRecent = avgField(recent, "audit"), auditsPrior = avgField(prior, "audit");
@@ -3721,10 +3775,11 @@ function renderGoals() {
     claims.push({
       claim: "A lot of RFIs",
       verdict,
-      headline: `${rfiNow.length} of ${live.length} live projects (${Math.round(share * 100)}%)`,
+      headline: `${rfiOwed.length} owed of ${live.length} live projects (${Math.round(share * 100)}%)`,
       rule: "Supported when more than one live project in ten is sitting in an RFI or flawed state.",
       evidence: [
-        `${rfiNow.length} live project${rfiNow.length === 1 ? " is" : "s are"} in an RFI or flawed status right now.`,
+        `${rfiOwed.length} live project${rfiOwed.length === 1 ? " is" : "s are"} sitting on an RFI or flawed status owed by HBS; a further ${rfiSent.length} have been answered and are back with ICF.`,
+        `Across the trackers: ${[...rfiByTracker].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(", ")}.`,
         state.workloadLoaded
           ? `${rfiQueue.length} row${rfiQueue.length === 1 ? "" : "s"} sit in the shared "RFI's to Answer" queue across the two workload boards${rfiQueue.length ? `, the oldest waiting ${Math.max(...rfiQueue.map(t => t.waiting || 0))} days` : ""}.`
           : `Open the Workload tab to also count the shared RFI queue on the two workload boards.`,
@@ -4359,9 +4414,26 @@ function icfSafeView(p) {
     coDate: p.evDates.dCOd,
     nextActionDate: p.nextActionDate,
     ecd: p.ecd,
-    /* Derived from the shared board's own status column only. */
-    need: ICF_ACTIONS[p.icfStatus] ? ICF_ACTIONS[p.icfStatus].need : "",
-    withHbs: !!(ICF_ACTIONS[p.icfStatus] && ICF_ACTIONS[p.icfStatus].role === "hbs"),
+    /* Who holds an RFI is decided by the TU tracker, not by the shared board.
+
+       The shared board's status lags: of the 21 projects HBS has answered an
+       RFI on, 12 still read "RFI Respond by HBS" there. Taking that at face
+       value told the reviewer we owed them a response on work we had already
+       returned — the exact opposite of the truth, on the one status where
+       being wrong costs a week. The TU tracker is the board an engineer
+       actually updates when they answer, so it wins.
+
+       One fact crosses over, never the note or anything else on that board. */
+    ...(() => {
+      const rfi = p.tuStatus === "TRC/ICF RFI Responded"
+          ? { need: "HBS has answered the RFI — awaiting your re-review", hbs: false }
+        : p.tuStatus === "TRC/ICF RFI Received"
+          ? { need: "RFI with HBS — response owed to you", hbs: true }
+        : null;
+      const r = ICF_ACTIONS[p.icfStatus];
+      return rfi ? { need: rfi.need, withHbs: rfi.hbs }
+                 : { need: r ? r.need : "", withHbs: !!(r && r.role === "hbs") };
+    })(),
   };
 }
 
@@ -5226,11 +5298,14 @@ function fillFilters() {
 async function loadMonday(refresh) {
   state.storedAt = null;
   try {
-    const [icfItems, tuItems] = await Promise.all([
+    const [icfItems, tuItems, bptuItems] = await Promise.all([
       fetchBoard(BOARD_ICF, ICF_COLS, null, refresh),
       fetchBoard(BOARD_TU, TU_COLS, null, refresh),
+      /* One tracker failing must not empty the board, so BPTU is optional. */
+      fetchBoard(BOARD_BPTU, BPTU_COLS, null, refresh).catch(() => []),
     ]);
-    state.projects = buildProjects(icfItems, tuItems);
+    state.projects = buildProjects(icfItems, [...tuItems, ...bptuItems.map(bptuAsTu)]);
+    state.bptuCount = bptuItems.length;
     canonMap = null;                 // rebuilt from whatever the boards now hold
     state.errors.monday = null;
     sourceState.monday = "ok";

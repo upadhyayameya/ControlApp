@@ -648,7 +648,21 @@ function icfDigestBody(name, mine) {
   const rows = mine.map(p => ({
     name: p.name, projectId: p.projectId, utility: p.utility, type: p.type,
     phase: p.phase, status: p.icfStatus, d: p.icfDates,
-    rule: ICF_ACTIONS[p.icfStatus] || null,
+    /* Who holds an RFI is decided by the TU tracker, not by the shared board.
+
+       The shared board's status lags: of the 21 projects HBS has answered an
+       RFI on, 12 still read "RFI Respond by HBS" there. Taking that at face
+       value told the reviewer we owed them a response on work we had already
+       returned -- the exact opposite of the truth, on the one status where
+       being wrong costs a week. The TU tracker is the board an engineer
+       actually updates when they answer, so it wins.
+
+       One fact crosses over, never the note or anything else on that board. */
+    rule: (p.tuStatus === 'TRC/ICF RFI Responded'
+            ? { need: 'HBS has answered the RFI \u2014 awaiting your re-review', role: 'icf' }
+          : p.tuStatus === 'TRC/ICF RFI Received'
+            ? { need: 'RFI with HBS \u2014 response owed to you', role: 'hbs' }
+          : ICF_ACTIONS[p.icfStatus] || null),
   }));
   const onIcf = rows.filter(r => r.rule && r.rule.role !== 'hbs');
   const onHbs = rows.filter(r => r.rule && r.rule.role === 'hbs');
