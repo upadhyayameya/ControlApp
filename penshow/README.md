@@ -4,6 +4,20 @@ Inventory, pricing, point of sale and P&L for a five-show US pen show season —
 SF, Orlando, Dallas, Denver and Ohio — carrying **Submarine**, **Swiss Brand**,
 **Lamborghini** and **NASA**.
 
+### Photos: JPEG or PNG, not HEIC
+
+Chrome has no HEIC decoder, and HEIC is what an iPhone shoots by default, so a
+photo straight off the phone will be refused with an explanation rather than
+attached.
+
+- **Converting a batch you already have:** select them in Finder → right-click →
+  Quick Actions → Convert Image → JPEG. This handles hundreds at once.
+- **Stopping it at the source:** iPhone → Settings → Camera → Formats → Most
+  Compatible. New photos are then JPEG.
+- Using the app on the phone instead sidesteps it — iOS hands over a JPEG.
+
+Anything the browser cannot decode now says so. It never fails silently.
+
 ## SKU nomenclature
 
 SKUs are generated for you. The shape is:

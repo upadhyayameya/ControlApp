@@ -477,10 +477,12 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const pct = n => (n * 100).toFixed(1) + "%";
 
-function toast(msg) {
+/* `ms` is for the rare message that explains something rather than confirming
+   it — an error you have to read is useless if it leaves in under two seconds. */
+function toast(msg, ms) {
   const t = $("#toast"); t.textContent = msg; t.onclick = null; t.classList.remove("act");
   t.classList.add("on");
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 1900);
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), ms || 1900);
 }
 
 /* A toast you can tap to take the action back — used where a confirm dialog
@@ -1450,7 +1452,7 @@ function editItem(id, seed) {
           <button class="btn sm grow" id="btnCam">📷 Camera</button>
           <button class="btn sm grow" id="btnLib">Choose file</button>
         </div>
-        <div class="tiny muted" id="photoHint">Or drag an image here, or paste one with ⌘V.</div>
+        <div class="tiny muted" id="photoHint">Or drag an image here, or paste one with ⌘V. JPEG or PNG — Chrome cannot read HEIC.</div>
         ${photos.get(it.id) ? `<button class="btn sm ghost" id="photoRm">Remove photo</button>` : ""}
       </div>
     </div>
@@ -1691,15 +1693,43 @@ function editItem(id, seed) {
    a large catalogue that is the action you repeat hundreds of times. */
 /* `target` may be an id, or the pen object itself — a pen being created is not
    in state.items yet, and looking it up there would silently drop the flag. */
+/* Some files arrive with no MIME type at all — dragging out of Preview or the
+   Photos app does this — so fall back to the extension rather than rejecting a
+   perfectly good picture in silence. */
+const IMG_EXT = /\.(jpe?g|png|gif|webp|bmp|avif|heic|heif|tiff?)$/i;
+const looksLikeImage = f =>
+  (f.type && f.type.startsWith("image/")) || IMG_EXT.test(f.name || "");
+/* The iPhone's default format. Safari decodes it; Chrome has no decoder at all,
+   so on a Mac these have to be named as the specific problem they are. */
+const isHeic = f => /hei[cf]/i.test(f.type || "") || /\.hei[cf]$/i.test(f.name || "");
+
 async function attachPhoto(target, file, done) {
-  if (!file || !file.type.startsWith("image/")) return;
+  if (!file) return;                                   // picker cancelled
   const it = typeof target === "string" ? itemById(target) : target;
   const id = typeof target === "string" ? target : (target || {}).id;
   if (!id) return;
+  if (!looksLikeImage(file)) { toast("That file is not an image", 3200); return; }
+
   const dataUrl = await shrinkImage(file, 720, 0.72);
+  /* A picture the browser cannot decode used to leave this await pending for
+     ever, which on screen was indistinguishable from nothing happening. */
+  if (!dataUrl) {
+    toast(isHeic(file)
+      ? "Chrome can't open HEIC. In Finder select the photos → right-click → Quick Actions → Convert Image → JPEG. To stop it happening: iPhone Settings → Camera → Formats → Most Compatible."
+      : "Could not read that image — try a JPEG or PNG", 9000);
+    return;
+  }
+
   photos.set(id, dataUrl);
   if (it) it.hasPhoto = true;
-  await DB.set("photos", id, dataUrl);
+  try {
+    await DB.set("photos", id, dataUrl);
+  } catch (e) {                                        // the disk is full
+    photos.delete(id);
+    if (it) it.hasPhoto = false;
+    toast("No room left to store that photo — remove a few and try again", 5000);
+    return;
+  }
   if (itemById(id)) save(true);
   toast("Photo added");
   if (done) done(dataUrl);
@@ -1722,17 +1752,27 @@ function grabPhoto(itemId, done, camera) {
 
 /* Downscale to keep the photo store small — a 12MP phone shot is 4MB, this
    makes it ~60KB, which matters when the whole catalogue lives on one device. */
+/* Resolves null rather than throwing when the picture cannot be read. Every
+   branch below has to settle the promise — an unhandled decode failure leaves
+   the caller awaiting for ever, and a hang shows the user nothing whatsoever. */
 function shrinkImage(file, maxDim, quality) {
   return new Promise(res => {
+    const done = v => { clearTimeout(timer); res(v); };
+    const timer = setTimeout(() => done(null), 20000);   // a decoder that stalls
     const fr = new FileReader();
+    fr.onerror = () => done(null);                       // unreadable file
     fr.onload = () => {
       const im = new Image();
+      im.onerror = () => done(null);                     // no decoder (HEIC), or corrupt
       im.onload = () => {
-        const scale = Math.min(1, maxDim / Math.max(im.width, im.height));
-        const c = document.createElement("canvas");
-        c.width = Math.round(im.width * scale); c.height = Math.round(im.height * scale);
-        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
-        res(c.toDataURL("image/jpeg", quality));
+        try {
+          const scale = Math.min(1, maxDim / Math.max(im.width, im.height));
+          const c = document.createElement("canvas");
+          c.width  = Math.max(1, Math.round(im.width  * scale));
+          c.height = Math.max(1, Math.round(im.height * scale));
+          c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+          done(c.toDataURL("image/jpeg", quality));
+        } catch (e) { done(null); }                      // canvas too large
       };
       im.src = fr.result;
     };
