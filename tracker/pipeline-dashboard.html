@@ -1129,7 +1129,12 @@ function buildProjects(icfItems, tuItems) {
       : /\bTRC\b/i.test(utility) ? "TRC"
       : "In-house";
 
-    const icfRaw = (icf ? people(icf, C.icfEng) : []).map(alias);
+    /* The ICF dropdown is left exactly as the board spells it. Expanding
+       "Devashis" to his full name here split one reviewer into two people --
+       he appeared twice in every per-engineer list -- and it also breaks the
+       lookups keyed on the dropdown's own spelling: ICF_EMAILS and the group
+       expansions. The sending script has always read it raw; this now matches. */
+    const icfRaw = icf ? people(icf, C.icfEng) : [];
     const { names: icfEngs, unassigned: icfUnassigned } = expandReviewers(icfRaw);
     const hbsEngs = (icf ? people(icf, C.hbsEng) : []).map(alias);
     const auditor = tu ? people(tu, T.auditor) : [];
@@ -1534,7 +1539,9 @@ function renderPipeline(list) {
     /* an engineer is counted once per project, under the org they are assigned in */
     const pairs = [];
     if (state.org !== "hbs") for (const n of new Set(p.icfEngs)) pairs.push([n, "ICF"]);
-    if (state.org !== "icf") for (const n of new Set(p.hbsAll)) pairs.push([n, "HBS"]);
+    /* Devashis moved to ESAI, which reviews for ICF. He is one person and
+       belongs on the ICF side of this table, not on both. */
+    if (state.org !== "icf") for (const n of new Set(p.hbsAll)) if (!NOW_ICF_SIDE.has(n)) pairs.push([n, "HBS"]);
     for (const [n, org] of pairs) {
       const key = org + " " + n;
       if (!rows.has(key)) rows.set(key, { name: n, org, counts: {}, open: 0, attention: 0, roles: new Set() });
@@ -1546,7 +1553,15 @@ function renderPipeline(list) {
       if (p.sev === "critical" || p.sev === "serious") row.attention++;
     }
   }
-  const engRows = [...rows.values()].sort((a, b) => b.open - a.open || a.name.localeCompare(b.name));
+  /* Engineers and the auditor, plus every ICF reviewer. Deal owners, project
+     managers, operations, sales and deleted accounts hold projects without
+     doing the engineering on them, and listing them here padded the table
+     with a dozen names nobody was looking for. They are still counted
+     everywhere work is counted -- just not in a per-engineer breakdown. */
+  const shownHere = rw => rw.org === "ICF" || isEngineer(rw.name) || isAuditor(rw.name);
+  const engAll = [...rows.values()].sort((a, b) => b.open - a.open || a.name.localeCompare(b.name));
+  const engRows = engAll.filter(shownHere);
+  const engHidden = engAll.filter(rw => !shownHere(rw));
   const maxCell = Math.max(1, ...engRows.flatMap(rw => STAGES.map(s => rw.counts[s.key] || 0)));
 
   const matrix = engRows.length ? `<div class="panel scroller"><table class="matrix">
@@ -1562,7 +1577,12 @@ function renderPipeline(list) {
       ${STAGES.map(s => { const v = rw.counts[s.key] || 0; return `<td class="n"><span class="cell num ${magClass(v, maxCell)}">${v || "·"}</span></td>`; }).join("")}
       <td class="n num">${rw.open}</td>
       <td class="n num">${rw.attention ? `<span class="sev sev-serious">${rw.attention}</span>` : "·"}</td>
-    </tr>`).join("")}</tbody></table></div>`
+    </tr>`).join("")}</tbody></table></div>
+    ${engHidden.length ? `<p class="ev" style="margin-top:8px">Not listed: ${engHidden.length}
+      ${engHidden.length === 1 ? "person holding" : "people holding"} ${engHidden.reduce((a, r) => a + r.open, 0)}
+      project${engHidden.reduce((a, r) => a + r.open, 0) === 1 ? "" : "s"} without doing the engineering &mdash;
+      ${engHidden.slice(0, 6).map(r => `${esc(r.name)} (${r.open})`).join(", ")}${engHidden.length > 6 ? `, and ${engHidden.length - 6} more` : ""}.
+      Their work still counts everywhere work is counted.</p>` : ""}`
     : `<div class="panel empty">No engineers match these filters.</div>`;
 
   const swatches = ["--mag-1","--mag-2","--mag-3","--mag-4","--mag-5"]
@@ -3162,11 +3182,11 @@ function cleanDays(xs) {
      Closeout      implementation done     -> closeout submitted         HBS
      Payment       closeout submitted      -> closeout approved by ICF   ICF
 
-   "Implementation scheduled -> team on site" is deliberately missing. The TU
-   tracker carries a single Implementation Date, not a scheduled date and an
-   actual one, so that leg cannot be measured from the boards as they stand.
-   It is reported as unmeasurable rather than filled with the nearest pair of
-   dates that happen to exist.
+   "Implementation scheduled -> team on site" is not among them, and does not
+   need to be. Confirmed by Ameya: nobody needs to know how long the crew took
+   to get there. What matters is whether an implementation is booked and
+   whether it actually went through. That is two counts rather than a
+   duration, and the boards can answer both today -- see implStatus() below.
 --------------------------------------------------------------------------- */
 const LEGS = [
   { key: "audit", end: "dSubPA", label: "Audit \u2192 PA submitted", owner: "HBS",
@@ -3193,6 +3213,31 @@ const LEGS = [
    A negative span is a date typed wrongly, not a fast project, and a span past
    two years is a project that was reopened rather than one that ran that long;
    both are excluded and counted, never averaged in. */
+/* Booked, done, or booked and unaccounted for.
+
+   A project is scheduled once an Implementation Date is set. It went through
+   when that date has passed AND the project has moved on to something that
+   only happens afterwards -- a closeout status, a closeout date, a payment.
+   The date passing on its own proves nothing: a job can be booked for the 3rd
+   and not happen.
+
+   The third bucket is the useful one. A date in the past with nothing behind
+   it is either work that happened and was never written down, or work that
+   quietly did not happen. Both need a person to look, and neither shows up
+   anywhere else. */
+const IMPL_DONE_STATUS = new Set(["Implementation & MV Complete", "CD to Submit", "CO Submitted",
+  "CO Received", "CO Processed/Need Signed PA/RA", "Ready for Invoice", "Invoiced", "Complete/Paid"]);
+const IMPL_DONE_STAGE  = new Set(["coSched", "coDone", "payment"]);
+
+function implStatus(p, today) {
+  const d = dparse(p.evDates.dImpl);
+  if (!d) return "none";
+  if (d > today) return "booked";
+  const done = IMPL_DONE_STAGE.has(p.current) || IMPL_DONE_STATUS.has(p.tuStatus) ||
+    !!p.evDates.dSubCO || !!p.evDates.dCOd;
+  return done ? "done" : "unconfirmed";
+}
+
 const LEG_MAX_DAYS = 730;
 function legDays(p, leg) {
   const a = dparse(leg.from(p)), b = dparse(leg.to(p));
@@ -4037,14 +4082,41 @@ function renderGoals() {
             ? `<ul class="claim-ev">${[...s.warnings, ...s.caveats].map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : ""}</td>
       </tr>`;
     }).join("")}
-    <tr>
-      <td><b>Implementation scheduled &rarr; team on site</b></td>
-      <td><span class="chip chip-hbs">HBS</span></td>
-      <td class="n num" colspan="4"><span class="sev sev-warning">cannot be measured</span></td>
-      <td class="who">The TU tracker carries one Implementation Date, not a scheduled date and an actual one.
-        Add a second date column and this leg fills in by itself.</td>
-    </tr>
     </tbody></table></div>
+
+    ${(() => {
+      const t = new Date(); t.setHours(0, 0, 0, 0);
+      const tally = { booked: 0, done: 0, unconfirmed: 0 };
+      const unconfirmed = [];
+      for (const p of all) {
+        const st = implStatus(p, t);
+        if (st === "none") continue;
+        tally[st]++;
+        if (st === "unconfirmed" && lifecycle(p) === "active") unconfirmed.push(p);
+      }
+      unconfirmed.sort((a, b) => (dparse(a.evDates.dImpl) - dparse(b.evDates.dImpl)));
+      return `<div class="section-head"><h2>Implementations</h2>
+        <span class="hint">Not how long the crew took to arrive &mdash; whether the work is booked, and whether it went through.
+        A date that has passed only counts as done when the project has moved on to something that happens afterwards.</span></div>
+      <div class="stats" style="margin-bottom:12px">
+        ${stat(tally.booked, "Booked ahead", "")}
+        ${stat(tally.done, "Went through", "is-good")}
+        ${stat(tally.unconfirmed, "Date passed, nothing behind it", tally.unconfirmed ? "is-critical" : "")}
+      </div>
+      ${unconfirmed.length ? `<div class="panel scroller" style="margin-bottom:20px"><table><thead><tr>
+        <th>Project</th><th>Implementation date</th><th class="n">Days ago</th><th>Status</th><th>Who</th>
+      </tr></thead><tbody>
+        ${unconfirmed.slice(0, 40).map(p => `<tr>
+          <td>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</td>
+          <td>${esc(p.evDates.dImpl)}</td>
+          <td class="n num">${Math.round((t - dparse(p.evDates.dImpl)) / 86400000)}</td>
+          <td>${esc(p.tuStatus || p.icfStatus || "\u2014")}</td>
+          <td>${ownerCell(p)}</td>
+        </tr>`).join("")}
+      </tbody></table></div>
+      ${unconfirmed.length > 40 ? `<p class="ev" style="margin:-12px 0 20px">Showing the 40 longest overdue of ${unconfirmed.length}.</p>` : ""}`
+      : `<p class="ev" style="margin:0 0 20px">Every implementation whose date has passed has a closeout behind it.</p>`}`;
+    })()}
 
     <div class="section-head"><h2>Month by month</h2>
       <span class="hint">Where the funnel narrows. ${esc(partial ? partial.label : "")} is still running, so it is shown separately.</span></div>
@@ -5241,7 +5313,10 @@ function fillFilters() {
   const engs = new Map();
   for (const p of state.projects) {
     for (const n of p.icfEngs) engs.set(n + " ICF", { n, org: "ICF" });
-    for (const n of p.hbsAll) if (!NOW_ICF_SIDE.has(n)) engs.set(n + " HBS", { n, org: "HBS" });
+    /* The dropdown is for picking an engineer, so it offers engineers and the
+       auditor. Deal owners, operations, sales and deleted accounts padded it
+       with names nobody filters by. */
+    for (const n of p.hbsAll) if (!NOW_ICF_SIDE.has(n) && (isEngineer(n) || isAuditor(n))) engs.set(n + " HBS", { n, org: "HBS" });
   }
   const pool = [...engs.values()]
     .filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"))

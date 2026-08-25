@@ -79,13 +79,15 @@ const ICF_GROUPS = {
    emailed to a reviewer. */
 const ICF_UNASSIGNED = new Set(['TBD']);
 
-/* Named, with an address, but not on the board's dropdown — so no project maps
-   to them and no digest can be addressed to them. Held here, not used. Add them
-   to the ICF Engineer dropdown and assign work before enabling. */
-const UNMAPPED_REVIEWERS = {
-  'Justin': 'justin.lee@icf.com',
-  'Junior': 'junior.myrie@icf.com',
-};
+/* ICF leads who do not review projects themselves, so they are not on the
+   board's Engineer dropdown and no per-project digest can be addressed to
+   them. Confirmed by Ameya: they do not need to be on the dropdown -- they
+   get one portfolio summary from us instead. That summary is built from the
+   shared board only, exactly like a reviewer's digest. */
+const ICF_SUMMARY_TO = [
+  'justin.lee@icf.com',      // Justin
+  'junior.myrie@icf.com',    // Junior
+];
 
 /* Expand a project's ICF Engineer value into real people, and say whether it
    was left unassigned. Returns { names, unassigned }. */
@@ -882,6 +884,76 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
     work: work.length, rfis: rfis.length, pa: paWork.length, co: coWork.length } };
 }
 
+/* ---------------------------------------------------------------------------
+   The portfolio summary for ICF leadership.
+
+   Justin and Junior do not review projects, so no per-project digest can be
+   addressed to them. They get the position across the whole shared portfolio
+   instead: where the work sits, whose turn each part of it is, and the one
+   thing only they can fix -- the projects carrying no reviewer.
+
+   That last figure is the point of the email. A project with nobody named on
+   the ICF side reaches no reviewer, gets no reviewer digest from us, and ages
+   in silence. It is not something HBS can resolve, so it is raised rather
+   than absorbed, and every one is listed so it can be actioned.
+
+   Same isolation as a reviewer's digest: the shared ICF/HBS board only, plus
+   the one RFI fact the TU tracker is authoritative on. Nothing from the
+   internal trackers, the workload boards, the notes or the commercials.
+--------------------------------------------------------------------------- */
+function icfSummaryBody() {
+  const rows = projects.map(p => ({
+    name: p.name, projectId: p.projectId, phase: p.phase, status: p.icfStatus,
+    reviewers: p.icfEngs, unassigned: p.icfUnassigned, raw: p.icfRaw,
+    rule: (p.tuStatus === 'TRC/ICF RFI Responded'
+            ? { role: 'icf' }
+          : p.tuStatus === 'TRC/ICF RFI Received'
+            ? { role: 'hbs' }
+          : ICF_ACTIONS[p.icfStatus] || null),
+    rfi: p.tuStatus === 'TRC/ICF RFI Responded' ? 'icf'
+       : p.tuStatus === 'TRC/ICF RFI Received'  ? 'hbs' : '',
+  }));
+
+  const withIcf = rows.filter(r => r.rule && r.rule.role === 'icf');
+  const withHbs = rows.filter(r => r.rule && r.rule.role === 'hbs');
+  const noReviewer = rows.filter(r => r.unassigned);
+  const rfiHbs = rows.filter(r => r.rfi === 'hbs');
+  const rfiIcf = rows.filter(r => r.rfi === 'icf');
+
+  const L = [];
+  L.push(`ICF \u00d7 HBS portfolio \u2014 week of ${weekOf}`, '');
+  L.push(`HBS is running ${rows.length} active project${rows.length === 1 ? '' : 's'} on the shared tracker.`);
+  L.push(`${withIcf.length} are waiting on ICF, ${withHbs.length} on HBS.`);
+
+  const byPhase = new Map();
+  for (const r of rows) if (r.phase) byPhase.set(r.phase, (byPhase.get(r.phase) || 0) + 1);
+  if (byPhase.size) {
+    L.push('', 'WHERE THEY SIT');
+    for (const [ph, n] of [...byPhase].sort((a, b) => b[1] - a[1])) L.push(`  ${ph}: ${n}`);
+  }
+
+  L.push('', 'RFIs');
+  L.push(`  ${rfiHbs.length} awaiting a response from HBS.`);
+  L.push(`  ${rfiIcf.length} answered by HBS and back with ICF for re-review.`);
+
+  /* The reason for the email. */
+  if (noReviewer.length) {
+    const tbd = noReviewer.filter(r => r.raw.includes('TBD')).length;
+    L.push('', `NO ICF REVIEWER NAMED (${noReviewer.length})`);
+    L.push(`  ${tbd} marked TBD, ${noReviewer.length - tbd} left blank on the board.`);
+    L.push('  These reach no reviewer and get no weekly update from us. Assigning');
+    L.push('  someone on the shared tracker is all that is needed.');
+    L.push('');
+    for (const line of wrapNames(noReviewer.map(r => r.name).sort())) L.push(line);
+  } else {
+    L.push('', 'Every active project has a reviewer named. Nothing outstanding on that front.');
+  }
+
+  L.push('', 'Automated weekly from the shared ICF/HBS Project Tracker.');
+  L.push('Reply to Ameya Upadhyay (aupad@hbssolutionsinc.com) with anything that looks wrong.');
+  return L.join('\n');
+}
+
 const hbsNames = new Set(), icfNames = new Set(), offRoster = new Set();
 for (const p of projects) {
   for (const n of p.hbsAll) {
@@ -1059,6 +1131,7 @@ const envelope = {
   projectCount: projects.length,
   perEngineer: perEngineer.filter(e => e.to),
   rollup: { to: ROLLUP_TO, subject: `ICF x HBS pipeline roll-up - week of ${weekOf}`, body: rollupBody() },
+  icfSummary: { to: ICF_SUMMARY_TO, subject: `ICF x HBS portfolio summary - week of ${weekOf}`, body: icfSummaryBody() },
   unroutable,
   warnings,
 };
@@ -1077,6 +1150,8 @@ if ((process.env.DIGEST_MODE || '') === 'summary') {
   console.log(`\nwarnings: ${envelope.warnings.length ? envelope.warnings.join(' | ') : 'none'}`);
   console.log(`\n--- roll-up to ${envelope.rollup.to.join(', ')} ---`);
   console.log(envelope.rollup.body);
+  console.log(`\n--- ICF portfolio summary to ${envelope.icfSummary.to.join(', ')} ---`);
+  console.log(envelope.icfSummary.body);
   const sample = envelope.perEngineer.find(e => e.counts.work > 0 && e.counts.yours > 0)
     || envelope.perEngineer.find(e => e.counts.work > 0)
     || envelope.perEngineer.find(e => e.counts.yours > 0) || envelope.perEngineer[0];
