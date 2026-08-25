@@ -100,6 +100,45 @@ function expandReviewers(names) {
 
 
 
+/* ---------------------------------------------------------------------------
+   The HBS engineering roster, confirmed by Ameya on 2026-08-25.
+
+   The boards name far more people than the engineering team — deal owners,
+   subcontracted auditors, project managers — and none of them should receive
+   an engineer's weekly digest. Anyone not on this roster who still holds live
+   projects is reported to management in the roll-up instead of being emailed.
+--------------------------------------------------------------------------- */
+const HBS_ROSTER = {
+  'Soumya Agrawal':     {},
+  'Vaidehi Bhirud':     {},
+  'David Wilkinson':    {},
+  'Andrew White':       {},
+  'Patrick Lawson':     {},
+  'Alex Catterton':     {},
+  'Tremayne Sams':      {},
+  'Mili Nikitha':       {},
+  'Ameya Upadhyay':     {},
+  'Alejandro Espinoza': {},
+  'Sebastian Winther':  {},
+  'Kevin Guerra':       {},
+  'Devin Simons':       {},
+  'Steve Weaver':       { role: 'Project manager' },
+  /* Has left HBS. Never emailed; her remaining projects are reported to
+     management as needing a new owner rather than quietly disappearing. */
+  'Allee Williams':     { left: true },
+};
+const onRoster = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
+const hasLeft  = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
+
+/* Devashis moved from HBS to ESAI, which reviews for ICF. He is one person and
+   is emailed once, on the ICF side, at the ESAI address already in ICF_EMAILS.
+   His older HBS auditor and PA-lead rows must not also generate an HBS digest.
+
+   Devin is deliberately absent: Devin Rohan (MD Energy Advisors, reviewing for
+   ICF) and Devin Simons (HBS) are two different people who share a first name.
+   Confirmed by Ameya, 2026-08-25. */
+const NOW_ICF_SIDE = new Set(['Devashis Shrestha', 'Devashis']);
+
 /* Board labels that are placeholders, not people. Never addressed, never greeted. */
 /* Values that name nobody. The group labels are expanded upstream by
    expandReviewers, so they never reach here. */
@@ -354,6 +393,11 @@ const allProjects = icfItems.map(it => {
       nextAction: txt(it, C.dNextAct),
     },
     group: (it.group && it.group.title) || '', tuGroup: (tu && tu.group && tu.group.title) || '',
+    /* Someone can hold a project as its auditor, PA lead, CO lead or deal
+       owner without ever appearing in the ICF board's HBS Engineer column.
+       Digesting on that column alone left real work uncovered — Ameya and
+       Tremayne between them lead hundreds of projects and received nothing. */
+    hbsAll: [...new Set([...hbsEngs, ...auditor, ...paLead, ...coLead, ...owner])].filter(n => n && !NOT_A_PERSON.has(n)),
     icfEngs, icfRaw, icfUnassigned, hbsEngs, ev, current,
     need: rule ? rule.need : 'No status recorded — set a status on the board',
     ownerNames, sev, aging,
@@ -509,9 +553,12 @@ function digestBody(name, org, mine) {
   return { text: L.join('\n'), counts: { active: mine.length, yours: yours.length, ageing: ageing.length, moved: moved.length } };
 }
 
-const hbsNames = new Set(), icfNames = new Set();
+const hbsNames = new Set(), icfNames = new Set(), offRoster = new Set();
 for (const p of projects) {
-  for (const n of p.hbsEngs) if (!NOT_A_PERSON.has(n)) hbsNames.add(n);
+  for (const n of p.hbsAll) {
+    if (NOT_A_PERSON.has(n) || NOW_ICF_SIDE.has(n)) continue;
+    if (onRoster(n)) hbsNames.add(n); else offRoster.add(n);
+  }
   for (const n of p.icfEngs) if (!NOT_A_PERSON.has(n)) icfNames.add(n);
 }
 
@@ -523,7 +570,13 @@ const perEngineer = [], unroutable = [], warnings = [];
 const weekOf = wk.prevStart.toDateString();
 
 for (const name of [...hbsNames].sort()) {
-  const mine = projects.filter(p => p.hbsEngs.includes(name));
+  const mine = projects.filter(p => p.hbsAll.includes(name));
+  /* Someone who has left is never emailed. Their projects still need an owner,
+     so they go to management in the roll-up instead. */
+  if (hasLeft(name)) {
+    unroutable.push({ name, org: 'HBS', reason: 'has left HBS - projects need reassigning', active: mine.length });
+    continue;
+  }
   const to = byName.get(name.toLowerCase()) || null;
   const d = digestBody(name, 'HBS', mine);
   const rec = { to, name, org: 'HBS', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
@@ -589,11 +642,34 @@ function rollupBody() {
     if (dupes.length > 10) L.push(`  ... and ${dupes.length - 10} more`);
   }
 
+  /* People holding live projects who are not on the engineering roster. They
+     are not sent a digest, so this is the only place that work is visible. */
+  if (offRoster.size) {
+    const rows2 = [...offRoster].map(n => ({ n, active: projects.filter(p => p.hbsAll.includes(n)).length }))
+      .filter(r => r.active).sort((a, b) => b.active - a.active);
+    if (rows2.length) {
+      L.push('', `HOLDING WORK BUT NOT ON THE ENGINEERING ROSTER: ${rows2.length}`);
+      L.push('  Deal owners, subcontracted auditors and reviewers. No digest is sent to them.');
+      for (const r of rows2.slice(0, 12)) L.push(`  * ${r.n.padEnd(26)} ${r.active} active`);
+      if (rows2.length > 12) L.push(`  ... and ${rows2.length - 12} more`);
+    }
+  }
+
+  const departed = [...Object.keys(HBS_ROSTER)].filter(hasLeft)
+    .map(n => ({ n, mine: projects.filter(p => p.hbsAll.includes(n)) })).filter(r => r.mine.length);
+  if (departed.length) {
+    L.push('', 'STILL ASSIGNED TO SOMEONE WHO HAS LEFT');
+    for (const r of departed) {
+      L.push(`  ${r.n} - ${r.mine.length} project${r.mine.length === 1 ? '' : 's'} need a new owner:`);
+      for (const p of r.mine) L.push(`    * ${p.name} - ${p.phase}${p.icfStatus ? ' / ' + p.icfStatus : ''}`);
+    }
+  }
+
   L.push('', 'BY ENGINEER                     active  action owed  ageing');
   const rows = [];
   for (const [set, org] of [[hbsNames, 'HBS'], [icfNames, 'ICF']]) {
     for (const n of [...set].sort()) {
-      const mine = projects.filter(p => (org === 'HBS' ? p.hbsEngs : p.icfEngs).includes(n));
+      const mine = projects.filter(p => (org === 'HBS' ? p.hbsAll : p.icfEngs).includes(n));
       rows.push({ n, org, active: mine.length,
         owed: mine.filter(p => p.sev === 'critical').length,
         ageing: mine.filter(p => p.aging === 'Critical').length });

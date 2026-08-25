@@ -1012,9 +1012,9 @@ function buildProjects(icfItems, tuItems) {
       : /\bTRC\b/i.test(utility) ? "TRC"
       : "In-house";
 
-    const icfRaw = (icf ? people(icf, C.icfEng) : []);
+    const icfRaw = (icf ? people(icf, C.icfEng) : []).map(alias);
     const { names: icfEngs, unassigned: icfUnassigned } = expandReviewers(icfRaw);
-    const hbsEngs = (icf ? people(icf, C.hbsEng) : []);
+    const hbsEngs = (icf ? people(icf, C.hbsEng) : []).map(alias);
     const auditor = tu ? people(tu, T.auditor) : [];
     const paLead  = tu ? people(tu, T.paLead)  : [];
     const coLead  = tu ? people(tu, T.coLead)  : [];
@@ -1086,10 +1086,10 @@ function buildProjects(icfItems, tuItems) {
       }
     };
     addRole(hbsEngs, "HBS engineer");
-    addRole(auditor, "Auditor");
-    addRole(paLead, "PA lead");
-    addRole(coLead, "CO lead");
-    addRole(owner, "Deal owner");
+    addRole(auditor.map(alias), "Auditor");
+    addRole(paLead.map(alias), "PA lead");
+    addRole(coLead.map(alias), "CO lead");
+    addRole(owner.map(alias), "Deal owner");
     const hbsAll = [...roleMap.keys()];
     const hbsRoles = Object.fromEntries([...roleMap].map(([k, v]) => [k, v.join(", ")]));
 
@@ -2901,6 +2901,48 @@ function cleanDays(xs) {
    engineer named on the ICF board wins, and if that is still ambiguous the
    short name is left as it is rather than attributed to the wrong person.
 --------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------
+   Who counts as an engineer.
+
+   The boards name far more people than the engineering team: deal owners,
+   subcontracted auditors, project managers. The roster below is the team, as
+   confirmed by Ameya on 2026-08-25, and it decides who gets an engineer's
+   digest and who heads the workload lists.
+
+   Anyone not on it who still holds live projects is shown too, under a
+   separate heading — never dropped. Work with nobody named on it is exactly
+   what a tracker exists to surface, so hiding it would defeat the point.
+--------------------------------------------------------------------------- */
+const HBS_ROSTER = {
+  "Soumya Agrawal":     {},
+  "Vaidehi Bhirud":     {},
+  "David Wilkinson":    {},
+  "Andrew White":       {},
+  "Patrick Lawson":     {},
+  "Alex Catterton":     {},
+  "Tremayne Sams":      {},
+  "Mili Nikitha":       {},
+  "Ameya Upadhyay":     {},
+  "Alejandro Espinoza": {},
+  "Sebastian Winther":  {},
+  "Kevin Guerra":       {},
+  "Devin Simons":       {},
+  "Steve Weaver":       { role: "Project manager" },
+  /* Has left HBS. Kept here so her remaining projects are reported as needing
+     a new owner rather than quietly vanishing, but she is never emailed. */
+  "Allee Williams":     { left: true },
+};
+const onRoster = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
+const hasLeft  = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
+
+/* Devashis moved from HBS to ESAI, which reviews for ICF. One person, so one
+   entry: the full name is kept, and he sits on the ICF side where his work is
+   now. The auditor and PA-lead rows still carrying his short name on the TU
+   tracker are the same person. */
+const NAME_ALIASES = { "Devashis": "Devashis Shrestha", "Devashis Shrestha": "Devashis Shrestha" };
+const NOW_ICF_SIDE = new Set(["Devashis Shrestha"]);
+const alias = n => NAME_ALIASES[String(n || "").trim()] || String(n || "").trim();
+
 let canonMap = null;
 function buildCanonMap() {
   const full = new Set(), onIcfBoard = new Set();
@@ -2927,7 +2969,9 @@ function buildCanonMap() {
 }
 function canonName(n) {
   const name = String(n || "").trim();
-  if (!name || /\s/.test(name)) return name;      // already a full name
+  if (!name) return name;
+  if (NAME_ALIASES[name]) return NAME_ALIASES[name];
+  if (/\s/.test(name)) return name;               // already a full name
   if (!canonMap) canonMap = buildCanonMap();
   return canonMap.get(name.toLowerCase()) || name;
 }
@@ -3544,14 +3588,34 @@ function renderDigest(list) {
   const names = new Map();
   for (const p of list) {
     for (const n of p.icfEngs) names.set("ICF " + n, { name: n, org: "ICF" });
-    for (const n of p.hbsAll) names.set("HBS " + n, { name: n, org: "HBS" });
+    /* Someone who moved to the reviewing side gets one entry, not two: his old
+       HBS rows are the same person, and two cards would split his work. */
+    for (const n of p.hbsAll) if (!NOW_ICF_SIDE.has(n)) names.set("HBS " + n, { name: n, org: "HBS" });
   }
   const wanted = [...names.values()].filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"));
-  const digests = wanted.map(e => digestFor(e.name, e.org, list)).filter(Boolean)
-    .sort((a, b) => b.owed - a.owed || b.ageingCount - a.ageingCount || b.count - a.count);
+  const byBlocked = (a, b) => b.owed - a.owed || b.ageingCount - a.ageingCount || b.count - a.count;
+  const digests = wanted.map(e => digestFor(e.name, e.org, list)).filter(Boolean).sort(byBlocked);
   if (!digests.length) return `<div class="panel empty">No engineers match these filters.</div>`;
 
   const totalOwed = digests.reduce((n, d) => n + d.owed, 0);
+
+  /* Three groups rather than one list. The roster is the engineering team and
+     is what a weekly digest is for. Someone who has left still appears while
+     projects are named to them, because those need a new owner and silence
+     would hide that. Everyone else holding live work — deal owners,
+     subcontracted auditors, reviewers — is shown last: they are not sent an
+     engineer's digest, but their work is not invisible either. */
+  const groups = [
+    { key: "team", title: "Engineering team",
+      hint: "The roster. These are the digests that send on Monday.",
+      list: digests.filter(d => d.org === "HBS" && onRoster(d.name) && !hasLeft(d.name)) },
+    { key: "left", title: "No longer at HBS",
+      hint: "Still named on live projects. Nothing is emailed to them — these projects need a new owner.",
+      list: digests.filter(d => d.org === "HBS" && hasLeft(d.name)) },
+    { key: "other", title: "Also holding live projects",
+      hint: "Reviewers, deal owners and auditors who are not on the engineering roster.",
+      list: digests.filter(d => d.org !== "HBS" || !onRoster(d.name)) },
+  ].filter(g => g.list.length);
 
   /* Collapsed by default so the whole team fits on one screen: the summary row
      carries the numbers you would otherwise open a card to read, and only the
@@ -3566,14 +3630,21 @@ function renderDigest(list) {
     <button class="chip-btn" data-dg="close">Collapse all</button>
     <span class="ev">${owedCount} of ${digests.length} open by default &mdash; the ones with an action owed.</span>
   </div>
-  <div class="cards">${digests.map((d, i) => {
+  ${groups.map(g => `
+    <div class="section-head"><h2>${esc(g.title)} <span class="num" style="opacity:.65">${g.list.length}</span></h2>
+      <span class="hint">${esc(g.hint)}</span></div>
+    <div class="cards">${g.list.map((d) => {
+    const i = digests.indexOf(d);
     const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
     const pill = (v, l, cls) => v ? `<span class="dg-pill ${cls}"><b class="num">${v}</b> ${esc(l)}</span>` : "";
-    return `<details class="card dg-card"${d.owed ? " open" : ""}>
+    const meta = HBS_ROSTER[d.name] || {};
+    return `<details class="card dg-card"${d.owed && !hasLeft(d.name) ? " open" : ""}>
       <summary class="card-hd dg-sum">
         <span class="avatar">${esc(d.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
         <span class="nm">${esc(d.name)}</span>
         <span class="chip ${d.org === "ICF" ? "chip-icf" : "chip-hbs"}">${d.org}</span>
+        ${meta.role ? `<span class="chip">${esc(meta.role)}</span>` : ""}
+        ${meta.left ? `<span class="chip" style="border-color:var(--serious);color:var(--serious)">has left &mdash; needs reassigning</span>` : ""}
         <span class="dg-pills">
           ${pill(d.count, "active", "is-plain")}
           ${pill(d.owed, "owed", "is-critical")}
@@ -3605,7 +3676,7 @@ function renderDigest(list) {
           <div class="digest-actions"><button data-copy="dg-${i}">Copy</button></div></div></details>
       </div>
     </details>`;
-  }).join("")}</div>`;
+  }).join("")}</div>`).join("")}`;
 }
 function weekOfLabel() {
   const r = periodRange("week", new Date());
@@ -4041,7 +4112,7 @@ function fillFilters() {
   const engs = new Map();
   for (const p of state.projects) {
     for (const n of p.icfEngs) engs.set(n + " ICF", { n, org: "ICF" });
-    for (const n of p.hbsAll) engs.set(n + " HBS", { n, org: "HBS" });
+    for (const n of p.hbsAll) if (!NOW_ICF_SIDE.has(n)) engs.set(n + " HBS", { n, org: "HBS" });
   }
   const pool = [...engs.values()]
     .filter(e => state.org === "both" || (state.org === "icf" ? e.org === "ICF" : e.org === "HBS"))
