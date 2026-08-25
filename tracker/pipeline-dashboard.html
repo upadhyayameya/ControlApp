@@ -423,6 +423,36 @@ details.detail summary:hover { color: var(--ink-2); }
 .detail-body { padding: 7px 0 2px; font-size: 12.5px; color: var(--ink-2); display: grid; gap: 5px; }
 .detail-body .k { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
 
+/* Weekly digest: a collapsed row still has to answer "does this person need
+   me?", so the summary carries the counts and the marker sits on the left
+   where the eye already is. */
+.dg-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
+.dg-tools .ev { margin-left: auto; }
+.dg-card > summary.dg-sum {
+  cursor: pointer; list-style: none; padding: 11px 15px; align-items: center;
+  border-radius: 10px;
+}
+.dg-card > summary.dg-sum::-webkit-details-marker { display: none; }
+.dg-card > summary.dg-sum::before {
+  content: ""; width: 7px; height: 7px; flex: none;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(-45deg); transition: transform .12s ease; margin-right: 2px;
+}
+.dg-card[open] > summary.dg-sum::before { transform: rotate(45deg); }
+.dg-card > summary.dg-sum:hover { background: var(--panel-2); }
+.dg-card > summary.dg-sum:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dg-card[open] > summary.dg-sum { border-bottom: 1px solid var(--rule); border-radius: 10px 10px 0 0; }
+.dg-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.dg-pill {
+  font-size: 11.5px; padding: 1px 8px; border-radius: 10px;
+  border: 1px solid var(--rule-strong); color: var(--ink-3); white-space: nowrap;
+}
+.dg-pill b { color: var(--ink-2); font-weight: 600; }
+.dg-pill.is-critical { border-color: var(--critical); } .dg-pill.is-critical b { color: var(--critical); }
+.dg-pill.is-serious  { border-color: var(--serious); }  .dg-pill.is-serious b  { color: var(--serious); }
+.dg-pill.is-good     { border-color: var(--good); }     .dg-pill.is-good b     { color: var(--good); }
+@media (max-width: 720px) { .dg-card > summary.dg-sum .to { display: none; } }
+
 .panel.pad { padding: 14px 15px; }
 .ph { margin: 0 0 11px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
 
@@ -2852,6 +2882,56 @@ function cleanDays(xs) {
   return { ok, dropped: xs.filter(n => n != null).length - ok.length };
 }
 
+/* ---------------------------------------------------------------------------
+   One person, one name.
+
+   The same engineer is written two ways across the boards: the ICF/HBS tracker
+   and the TU tracker carry a full name ("Soumya Agrawal"), while the two
+   workload boards title their groups with a first name only ("Soumya"). Left
+   alone the same person appears twice in every list.
+
+   Group titles are resolved to the full name; the ICF Engineer dropdown is
+   deliberately left alone. Its first names are reviewers at other companies,
+   and a shared first name there is a different person — ICF's Devin is not
+   HBS's Devin Simons, so merging on the first name would file one company's
+   projects under another person's name.
+
+   Resolution is from the data, not a hardcoded list, so a new engineer needs
+   no change here. Where a first name matches more than one full name the
+   engineer named on the ICF board wins, and if that is still ambiguous the
+   short name is left as it is rather than attributed to the wrong person.
+--------------------------------------------------------------------------- */
+let canonMap = null;
+function buildCanonMap() {
+  const full = new Set(), onIcfBoard = new Set();
+  for (const p of state.projects) {
+    for (const n of p.hbsAll) if (/\s/.test(n)) full.add(n);
+    for (const n of p.hbsEngs) if (/\s/.test(n)) onIcfBoard.add(n);
+  }
+  const first = new Map();
+  for (const n of full) {
+    const k = n.split(/\s+/)[0].toLowerCase();
+    if (!first.has(k)) first.set(k, []);
+    first.get(k).push(n);
+  }
+  const m = new Map();
+  for (const [k, names] of first) {
+    let pick = names.length === 1 ? names[0] : null;
+    if (!pick) {
+      const preferred = names.filter(n => onIcfBoard.has(n));
+      if (preferred.length === 1) pick = preferred[0];
+    }
+    if (pick) m.set(k, pick);
+  }
+  return m;
+}
+function canonName(n) {
+  const name = String(n || "").trim();
+  if (!name || /\s/.test(name)) return name;      // already a full name
+  if (!canonMap) canonMap = buildCanonMap();
+  return canonMap.get(name.toLowerCase()) || name;
+}
+
 function renderWorkload() {
   if (state.workloadLoading) return `<div class="skel"><span class="spin"></span>Reading the Pre-approval and Closeout workload boards…</div>`;
   if (state.errors.workload) return errNote("Workload boards", state.errors.workload, MONDAY);
@@ -3473,18 +3553,35 @@ function renderDigest(list) {
 
   const totalOwed = digests.reduce((n, d) => n + d.owed, 0);
 
+  /* Collapsed by default so the whole team fits on one screen: the summary row
+     carries the numbers you would otherwise open a card to read, and only the
+     engineers with something owed start open. */
+  const owedCount = digests.filter(d => d.owed > 0).length;
+
   return `<div class="section-head"><h2>Weekly digest, per engineer</h2>
-    <span class="hint">One card per engineer, sorted by who is most blocked. Each card is exactly what the Monday-morning email says.</span>
+    <span class="hint">One row per engineer, sorted by who is most blocked. Open a row for exactly what the Monday-morning email says.</span>
     <span class="hint num" style="margin-left:auto">${digests.length} engineers &middot; ${totalOwed} action${totalOwed === 1 ? "" : "s"} owed</span></div>
+  <div class="dg-tools">
+    <button class="chip-btn" data-dg="open">Expand all</button>
+    <button class="chip-btn" data-dg="close">Collapse all</button>
+    <span class="ev">${owedCount} of ${digests.length} open by default &mdash; the ones with an action owed.</span>
+  </div>
   <div class="cards">${digests.map((d, i) => {
     const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
-    return `<div class="card">
-      <div class="card-hd">
+    const pill = (v, l, cls) => v ? `<span class="dg-pill ${cls}"><b class="num">${v}</b> ${esc(l)}</span>` : "";
+    return `<details class="card dg-card"${d.owed ? " open" : ""}>
+      <summary class="card-hd dg-sum">
         <span class="avatar">${esc(d.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
         <span class="nm">${esc(d.name)}</span>
         <span class="chip ${d.org === "ICF" ? "chip-icf" : "chip-hbs"}">${d.org}</span>
-        <span class="to">Subject: Your project update &mdash; week of ${esc(weekOfLabel())}</span>
-      </div>
+        <span class="dg-pills">
+          ${pill(d.count, "active", "is-plain")}
+          ${pill(d.owed, "owed", "is-critical")}
+          ${pill(d.ageingCount, "ageing", "is-serious")}
+          ${pill(d.movedCount, "moved", "is-good")}
+        </span>
+        <span class="to">week of ${esc(weekOfLabel())}</span>
+      </summary>
       <div class="card-bd">
         <div class="stats">
           ${stat(d.count, "Active", "")}
@@ -3507,7 +3604,7 @@ function renderDigest(list) {
           <div class="detail-body"><pre id="dg-${i}">${esc(d.text)}</pre>
           <div class="digest-actions"><button data-copy="dg-${i}">Copy</button></div></div></details>
       </div>
-    </div>`;
+    </details>`;
   }).join("")}</div>`;
 }
 function weekOfLabel() {
@@ -3909,6 +4006,14 @@ function render() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }));
 
+  /* Expand/collapse all. The open state lives on the elements rather than in
+     state, so re-rendering for an unrelated reason does not slam every card
+     shut while someone is reading one. */
+  main.querySelectorAll("[data-dg]").forEach(b => b.addEventListener("click", () => {
+    const open = b.getAttribute("data-dg") === "open";
+    main.querySelectorAll("details.dg-card").forEach(d => { d.open = open; });
+  }));
+
   main.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
     const pre = document.getElementById(b.getAttribute("data-copy"));
     if (!pre) return;
@@ -3982,6 +4087,7 @@ async function loadMonday(refresh) {
       fetchBoard(BOARD_TU, TU_COLS, null, refresh),
     ]);
     state.projects = buildProjects(icfItems, tuItems);
+    canonMap = null;                 // rebuilt from whatever the boards now hold
     state.errors.monday = null;
     sourceState.monday = "ok";
   } catch (e) {
@@ -4194,7 +4300,7 @@ async function loadWorkload() {
         }
         raw.push({
           ...base,
-          person: group === RFI_GROUP ? "" : group,
+          person: group === RFI_GROUP ? "" : canonName(group),
           rfiQueue: group === RFI_GROUP,
           due: dstr(col(it, W.dueDate)) || dstr(col(it, W.due2)) || dstr(col(it, W.due3)),
           hours: num(it, W.hours),
@@ -4342,7 +4448,7 @@ $("#f-type").addEventListener("change", e => { state.type = e.target.value; rend
 let qt = null;
 $("#f-q").addEventListener("input", e => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { state.q = v; render(); }, 160); });
 $("#refresh").addEventListener("click", () => {
-  state.workloadLoaded = false; state.todos = []; state.workHistory = [];
+  state.workloadLoaded = false; state.todos = []; state.workHistory = []; canonMap = null;
   state.kpisLoaded = false; state.kpis = [];
   boot(true).then(() => {
     if (state.view === "todos" || state.view === "mydesk" || state.view === "workload") loadWorkload();
