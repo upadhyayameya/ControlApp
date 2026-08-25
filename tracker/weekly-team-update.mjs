@@ -74,10 +74,16 @@ async function gql(query, variables) {
   return b.data;
 }
 
+/* Formula columns return an empty `text` over the raw API — their value is in
+   `display_value`, so both are requested and display_value wins. Without this
+   the aging and days-in-phase columns silently read as blank on every project. */
 const PAGE = `query($id: ID!, $cursor: String, $cols: [String!]) {
   boards(ids: [$id]) { items_page(limit: 250, cursor: $cursor) { cursor items {
     id name group { title }
-    column_values(ids: $cols) { id text ... on BoardRelationValue { linked_item_ids } } } } } }`;
+    column_values(ids: $cols) {
+      id text
+      ... on FormulaValue { display_value }
+      ... on BoardRelationValue { linked_item_ids } } } } } }`;
 
 async function fetchBoard(id, cols, maxPages = 40) {
   const items = []; let cursor = null;
@@ -94,7 +100,8 @@ async function fetchBoard(id, cols, maxPages = 40) {
 /* ------------------------------------------------------------------ helpers */
 const get = (it, id) => {
   const c = it.column_values.find(v => v.id === id);
-  const t = c && c.text ? String(c.text).trim() : '';
+  const raw = c ? (c.display_value != null && c.display_value !== '' ? c.display_value : c.text) : '';
+  const t = raw ? String(raw).trim() : '';
   return (!t || t === 'null' || t === 'Column value type is not supported') ? '' : t;
 };
 const listOf = (it, id) => { const s = get(it, id); return s ? s.split(',').map(x => x.trim()).filter(Boolean) : []; };

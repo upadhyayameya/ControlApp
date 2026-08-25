@@ -219,10 +219,16 @@ async function gql(query, variables) {
   return b.data;
 }
 
+/* Formula columns return an empty `text` over the raw API — their value is in
+   `display_value`, so both are requested and display_value wins. Without this
+   the aging and days-in-phase columns silently read as blank on every project. */
 const Q = `query($id: ID!, $cursor: String, $cols: [String!]) {
   boards(ids: [$id]) { items_page(limit: 250, cursor: $cursor) { cursor items {
     id name url group { title }
-    column_values(ids: $cols) { id text ... on BoardRelationValue { linked_item_ids } } } } } }`;
+    column_values(ids: $cols) {
+      id text
+      ... on FormulaValue { display_value }
+      ... on BoardRelationValue { linked_item_ids } } } } } }`;
 
 async function fetchBoard(id, cols) {
   const items = []; let cursor = null;
@@ -240,7 +246,8 @@ async function fetchBoard(id, cols) {
 const cv = (it, id) => { const c = it.column_values.find(v => v.id === id); return c ? c : null; };
 function txt(it, id) {
   const c = cv(it, id);
-  const t = c && c.text ? String(c.text).trim() : '';
+  const raw = c ? (c.display_value != null && c.display_value !== '' ? c.display_value : c.text) : '';
+  const t = raw ? String(raw).trim() : '';
   return (!t || t === 'null' || t === 'Column value type is not supported') ? '' : t;
 }
 const list = (it, id) => { const s = txt(it, id); return s ? s.split(',').map(x => x.trim()).filter(Boolean) : []; };
@@ -279,7 +286,7 @@ for (const t of tuItems) {
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const wk = weekRange(new Date());
 
-const projects = icfItems.map(it => {
+const allProjects = icfItems.map(it => {
   const tu = tuByIcf.get(String(it.id)) || null;
   const g = id => (tu ? txt(tu, id) : '');
   const gl = id => (tu ? list(tu, id) : []);
@@ -346,6 +353,7 @@ const projects = icfItems.map(it => {
       submittedCO: txt(it, C.dSubCO), coDate: txt(it, C.dCOd),
       nextAction: txt(it, C.dNextAct),
     },
+    group: (it.group && it.group.title) || '', tuGroup: (tu && tu.group && tu.group.title) || '',
     icfEngs, icfRaw, icfUnassigned, hbsEngs, ev, current,
     need: rule ? rule.need : 'No status recorded — set a status on the board',
     ownerNames, sev, aging,
@@ -354,6 +362,46 @@ const projects = icfItems.map(it => {
     aiSummary: g(T.aiSummary),
   };
 });
+
+/* ---------------------------------------------------------------------------
+   Cancelled and completed projects leave the digest.
+
+   Same rule as the dashboard (pipeline-dashboard.html): a project nobody can
+   act on is noise in someone's Monday inbox, and counting it inflates every
+   "active" figure in the roll-up. Both boards can retire a project — the TU
+   status, the ICF phase, or either board's group — so all of them are checked.
+--------------------------------------------------------------------------- */
+function lifecycle(p) {
+  if (p.tuStatus === 'Cancelled' || p.group === 'Cancelled Projects' || p.tuGroup === 'Cancelled Projects') return 'cancelled';
+  if (p.phase === 'Completed Project' || p.group === 'Completed Projects' ||
+      p.tuGroup === 'Completed Projects' || p.tuStatus === 'Complete/Paid') return 'completed';
+  return 'active';
+}
+const retired = { cancelled: 0, completed: 0 };
+for (const p of allProjects) { const l = lifecycle(p); if (l !== 'active') retired[l]++; }
+const projects = allProjects.filter(p => lifecycle(p) === 'active');
+
+/* ---------------------------------------------------------------------------
+   Duplicate board rows.
+
+   The ICF board carries genuine duplicates — typically an audit-phase row left
+   behind when a second row was created for the pre-approval submission. Which
+   row is canonical is a judgement for a person, not this script, so nothing is
+   dropped: rows are only folded together in the email when the project name AND
+   the next step are identical, and the fold is shown as "x2". Anything that
+   differs still gets its own line, and the roll-up lists every duplicate name so
+   the board can be tidied.
+--------------------------------------------------------------------------- */
+function fold(items, needOf) {
+  const seen = new Map();
+  for (const p of items) {
+    const k = p.name.trim().toLowerCase() + '\u0000' + (needOf ? needOf(p) : p.need);
+    if (seen.has(k)) seen.get(k).n++;
+    else seen.set(k, { p, n: 1 });
+  }
+  return [...seen.values()];
+}
+const times = n => (n > 1 ? ` [x${n} board rows]` : '');
 
 /* ------------------------------------------------------------------ digests */
 /* ---------------------------------------------------------------------------
@@ -383,15 +431,15 @@ function icfDigestBody(name, mine) {
   const line = r => `  * ${r.name}${r.projectId ? ` (${r.projectId})` : ''} - ${r.status || r.phase}`;
   if (onIcf.length) {
     L.push('', `WITH ICF (${onIcf.length})`);
-    for (const r of onIcf) { L.push(line(r)); L.push(`      ${r.rule.need}`); }
+    for (const { p: r, n } of fold(onIcf, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
   }
   if (onHbs.length) {
     L.push('', `WITH HBS - WE OWE YOU A RESPONSE (${onHbs.length})`);
-    for (const r of onHbs) { L.push(line(r)); L.push(`      ${r.rule.need}`); }
+    for (const { p: r, n } of fold(onHbs, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
   }
   if (quiet.length) {
     L.push('', `NO OPEN ACTION (${quiet.length})`);
-    for (const r of quiet) L.push(line(r));
+    for (const { p: r, n } of fold(quiet, () => '')) L.push(line(r) + times(n));
   }
   const dated = rows.filter(r => r.d.submittedPA || r.d.paDate || r.d.submittedCO || r.d.coDate);
   if (dated.length) {
@@ -439,22 +487,22 @@ function digestBody(name, org, mine) {
   }
   if (yours.length) {
     L.push('', `NEEDS YOUR ACTION (${yours.length})`);
-    for (const p of yours) {
-      L.push(`  * ${p.name}`, `      ${p.need}`);
+    for (const { p, n } of fold(yours)) {
+      L.push(`  * ${p.name}${times(n)}`, `      ${p.need}`);
       if (p.evidence) L.push(`      Latest: ${p.evidence.slice(0, 160)}`);
     }
   }
   if (waiting.length) {
     L.push('', `WAITING ON SOMEONE ELSE (${waiting.length})`);
-    for (const p of waiting) L.push(`  * ${p.name} - ${p.need} (with ${p.ownerNames.join(', ')})`);
+    for (const { p, n } of fold(waiting)) L.push(`  * ${p.name}${times(n)} - ${p.need} (with ${p.ownerNames.join(', ')})`);
   }
   if (ageing.length) {
     L.push('', `AGEING PAST 60 DAYS (${ageing.length})`);
-    for (const p of ageing) L.push(`  * ${p.name} - ${p.daysInPhase == null ? '?' : p.daysInPhase} days in ${p.phase} - ${p.need}`);
+    for (const { p, n } of fold(ageing)) L.push(`  * ${p.name}${times(n)} - ${p.daysInPhase == null ? '?' : p.daysInPhase} days in ${p.phase} - ${p.need}`);
   }
   if (rest.length) {
     L.push('', `EVERYTHING ELSE (${rest.length})`);
-    for (const p of rest) L.push(`  * ${p.name} - ${p.need}`);
+    for (const { p, n } of fold(rest)) L.push(`  * ${p.name}${times(n)} - ${p.need}`);
   }
   L.push('', 'This is an automated weekly update built from the monday.com trackers.');
   L.push('Reply to Ameya if anything here looks wrong.');
@@ -499,7 +547,8 @@ function rollupBody() {
     if (p.current) stageOpen.set(p.current, (stageOpen.get(p.current) || 0) + 1);
     for (const s of STAGES) if (inRange(p.ev[s.key], wk.prevStart, wk.end)) stageWeek.set(s.key, (stageWeek.get(s.key) || 0) + 1);
   }
-  L.push(`${projects.length} active projects.`, '');
+  L.push(`${projects.length} active projects.`);
+  L.push(`(${retired.completed} completed and ${retired.cancelled} cancelled projects are excluded.)`, '');
   L.push('FUNNEL                          reached this week / open now');
   for (const s of STAGES) L.push(`  ${s.label.padEnd(28)} ${String(stageWeek.get(s.key) || 0).padStart(4)} / ${String(stageOpen.get(s.key) || 0).padStart(4)}`);
 
@@ -519,6 +568,25 @@ function rollupBody() {
       L.push(`  * ${p.name} - ${p.phase}${p.icfStatus ? ' / ' + p.icfStatus : ''}`);
     }
     if (noReviewer.length > 10) L.push(`  ... and ${noReviewer.length - 10} more`);
+  }
+
+  /* Named here rather than merged: picking a winner is a person's call. */
+  const byName2 = new Map();
+  for (const p of projects) {
+    const k = p.name.trim().toLowerCase();
+    if (!byName2.has(k)) byName2.set(k, []);
+    byName2.get(k).push(p);
+  }
+  const dupes = [...byName2.values()].filter(v => v.length > 1);
+  if (dupes.length) {
+    L.push('', `DUPLICATE ROWS ON THE ICF BOARD: ${dupes.length} project names on ${dupes.reduce((a, v) => a + v.length, 0)} rows`);
+    L.push('  Usually an audit-phase row left behind when a new row was opened for the');
+    L.push('  pre-approval. They inflate every count above until one row is retired.');
+    for (const v of dupes.slice(0, 10)) {
+      L.push(`  * ${v[0].name}`);
+      L.push(`      ${v.map(p => p.phase + (p.projectId ? ' / ' + p.projectId : ' / no project number')).join('  |  ')}`);
+    }
+    if (dupes.length > 10) L.push(`  ... and ${dupes.length - 10} more`);
   }
 
   L.push('', 'BY ENGINEER                     active  action owed  ageing');
