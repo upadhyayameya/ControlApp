@@ -435,6 +435,7 @@ const allProjects = icfItems.map(it => {
       nextAction: txt(it, C.dNextAct),
     },
     group: (it.group && it.group.title) || '', tuGroup: (tu && tu.group && tu.group.title) || '',
+    tuId: tu ? String(tu.id) : '',
     /* Someone can hold a project as its auditor, PA lead, CO lead or deal
        owner without ever appearing in the ICF board's HBS Engineer column.
        Digesting on that column alone left real work uncovered — Ameya and
@@ -494,8 +495,15 @@ function buildCanonMap() {
   }
   const m = new Map();
   for (const [k, names] of byFirst) {
+    /* Narrowest true answer wins. "David" is David Wilkinson and David
+       Rodriguez, but only one of them does the work these boards track, so
+       preferring the people who do it resolves the name instead of giving up
+       on it. Still ambiguous after that: left alone rather than guessed. */
     let pick = names.length === 1 ? names[0] : null;
-    if (!pick) { const rostered = names.filter(onRoster); if (rostered.length === 1) pick = rostered[0]; }
+    for (const pool of [names.filter(n => isEngineer(n) || isAuditor(n)), names.filter(onRoster)]) {
+      if (pick) break;
+      if (pool.length === 1) pick = pool[0];
+    }
     if (pick) m.set(k, pick);
   }
   return m;
@@ -568,6 +576,11 @@ const workStatus = t => {
   return '';
 };
 const workFor = name => workTasks.filter(t => t.rfi ? t.owners.includes(name) : t.person === name);
+
+/* A workload row names a building; its phase comes from the project it links
+   to on the TU tracker, looked up across the whole book. */
+const phaseByTu = new Map();
+for (const p of allProjects) if (p.tuId && p.phase) phaseByTu.set(p.tuId, p.phase);
 
 /* ---------------------------------------------------------------------------
    Duplicate board rows.
@@ -645,85 +658,144 @@ function icfDigestBody(name, mine) {
   return { text: L.join('\n'), counts: { active: rows.length, yours: onIcf.length, ageing: 0, moved: 0 } };
 }
 
-function digestBody(name, org, mine, work = []) {
+/* ---------------------------------------------------------------------------
+   One engineer's weekly email.
+
+   Kept deliberately in step with hbsDigestBody() in pipeline-dashboard.html:
+   the dashboard's Weekly digest tab is a preview of exactly this, and the two
+   drifting apart would make the preview a lie.
+
+   The first version printed every project on its own line with its next step
+   and its latest note beneath it. For someone holding a hundred and twenty
+   projects that ran to two hundred lines, most of it work that needed nothing
+   from them, and the few things actually on fire were somewhere in the middle.
+   Length is not thoroughness; it is where thoroughness goes to hide.
+
+   The shape follows what the reader has to do:
+
+     what is queued on your desk   the workload boards, oldest first
+     what needs you                grouped by the action, not one line each
+     what has stopped              ageing, with how long
+     what is on someone else       named, so it can be chased
+     everything else               counted by phase, never listed
+
+   Every project line carries its phase, because "which phase" is the first
+   question asked of any of these names.
+--------------------------------------------------------------------------- */
+function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
   if (org === 'ICF') return icfDigestBody(name, mine);
+
   const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
-  const moved = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], wk.prevStart, wk.end)));
-  const yours = mine.filter(p => (p.sev === 'critical' || p.sev === 'serious') && owns(p));
+  const moved   = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], wk.prevStart, wk.end)));
+  const yours   = mine.filter(p => (p.sev === 'critical' || p.sev === 'serious') && owns(p));
   const waiting = mine.filter(p => p.sev === 'critical' && !owns(p));
-  const ageing = mine.filter(p => p.aging === 'Critical' && !yours.includes(p));
-  const rest = mine.filter(p => !yours.includes(p) && !waiting.includes(p) && !ageing.includes(p));
+  const ageing  = mine.filter(p => p.aging === 'Critical' && !yours.includes(p) && !waiting.includes(p));
+  const rest    = mine.filter(p => !yours.includes(p) && !waiting.includes(p) && !ageing.includes(p));
 
   const L = [];
   const first = /\s/.test(name) ? name.split(' ')[0] : name;
-  L.push(`Hi ${first},`, '');
-  L.push(`Here is where your ${org} tune-up projects stand as of ${new Date().toDateString()}.`, '');
+  const phaseOf = p => p.phase || 'no phase set';
+  const workPhase = t => (t.tuIds || []).map(id => phaseByTu.get(id)).find(Boolean) || '';
 
-  /* Two different questions, so two different counts: what you hold, and what
-     is queued on your desk right now. */
-  const rfis = work.filter(t => t.rfi);
+  const rfis   = work.filter(t => t.rfi);
   const paWork = work.filter(t => !t.rfi && t.kind === 'Pre-approval');
   const coWork = work.filter(t => !t.rfi && t.kind === 'Closeout');
-  L.push(`You have ${mine.length} active project${mine.length === 1 ? '' : 's'}` +
-    (work.length ? `, and ${work.length} open item${work.length === 1 ? '' : 's'} on the pre-approval and closeout boards.` : '.'));
 
-  /* An RFI has a clock on it that nothing else here does, so it goes first. */
-  if (rfis.length) {
-    L.push('', `RFIs TO ANSWER (${rfis.length})`);
-    for (const t of rfis.sort((a, b) => (b.waiting || 0) - (a.waiting || 0))) {
-      const st = workStatus(t);
-      L.push(`  * ${t.name}${t.waiting != null ? ` - waiting ${t.waiting} day${t.waiting === 1 ? '' : 's'}` : ''}` +
-        `${t.due ? `, due ${t.due}` : ''}${st ? ` [${st}]` : ''}`);
-    }
+  L.push(`Hi ${first},`, '');
+  L.push(`Where your projects stand \u2014 ${new Date().toDateString()}`);
+  L.push([`${mine.length} active`,
+          yours.length ? `${yours.length} need you` : null,
+          ageing.length ? `${ageing.length} ageing past 60 days` : null].filter(Boolean).join(' \u00b7 '));
+  if (work.length) {
+    L.push('On your desk: ' + [paWork.length ? `${paWork.length} pre-approval${paWork.length === 1 ? '' : 's'}` : null,
+                               coWork.length ? `${coWork.length} closeout${coWork.length === 1 ? '' : 's'}` : null,
+                               rfis.length ? `${rfis.length} RFI${rfis.length === 1 ? '' : 's'} to answer` : null]
+      .filter(Boolean).join(' \u00b7 '));
   }
-
-  const deskSection = (rows, title) => {
-    if (!rows.length) return;
-    L.push('', `${title} (${rows.length})`);
-    for (const t of rows.sort((a, b) => (b.waiting || 0) - (a.waiting || 0))) {
-      const st = workStatus(t);
-      const bits = [];
-      if (t.status) bits.push(t.status);
-      if (t.waiting != null) bits.push(`on your desk ${t.waiting} day${t.waiting === 1 ? '' : 's'}`);
-      if (t.due) bits.push(`due ${t.due}`);
-      L.push(`  * ${t.name}${bits.length ? ` - ${bits.join(', ')}` : ''}${st ? ` [${st}]` : ''}`);
-    }
-  };
-  deskSection(paWork, 'PRE-APPROVALS ON YOUR DESK');
-  deskSection(coWork, 'CLOSEOUTS ON YOUR DESK');
 
   const byStage = new Map();
   for (const p of mine) if (p.current) byStage.set(p.current, (byStage.get(p.current) || 0) + 1);
-  if (byStage.size) {
-    L.push('', 'WHERE THEY SIT');
-    for (const s of STAGES) if (byStage.get(s.key)) L.push(`  ${s.label}: ${byStage.get(s.key)}`);
+  const anyStage = STAGES.filter(s => byStage.get(s.key));
+  if (anyStage.length) L.push('', anyStage.map(s => `${s.label} ${byStage.get(s.key)}`).join(' \u00b7 '));
+
+  /* ---- the desk: what is queued on you right now ---- */
+  const age = t => (t.waiting == null ? '' : `[${t.waiting}d] `);
+  /* Phase first. Where a row links to a project that never got an ICF board
+     row there is no phase to give, so the tracker status stands in rather
+     than leaving the line looking truncated. */
+  const deskLine = t => `  \u2022 ${age(t)}${t.name}` +
+    [workPhase(t) || workStatus(t), t.status, t.due ? `due ${t.due}` : '']
+      .filter(Boolean).map(x => ` \u00b7 ${x}`).join('');
+  const byAge = (a, b) => (b.waiting || 0) - (a.waiting || 0);
+
+  if (rfis.length) {
+    L.push('', `RFIs TO ANSWER (${rfis.length})`);
+    for (const t of [...rfis].sort(byAge)) L.push(deskLine(t));
   }
-  if (moved.length) {
-    L.push('', `MOVED IN THE LAST WEEK (${moved.length})`);
-    for (const p of moved) {
-      const hit = STAGES.filter(s => inRange(p.ev[s.key], wk.prevStart, wk.end)).map(s => s.label).join(', ');
-      L.push(`  * ${p.name} - ${hit}`);
-    }
+  if (paWork.length) {
+    L.push('', `PRE-APPROVALS ON YOUR DESK (${paWork.length})`);
+    for (const t of [...paWork].sort(byAge)) L.push(deskLine(t));
   }
+  if (coWork.length) {
+    L.push('', `CLOSEOUTS ON YOUR DESK (${coWork.length})`);
+    for (const t of [...coWork].sort(byAge)) L.push(deskLine(t));
+  }
+
+  /* ---- what needs you, gathered by the action rather than listed flat ---- */
   if (yours.length) {
     L.push('', `NEEDS YOUR ACTION (${yours.length})`);
-    for (const { p, n } of fold(yours)) {
-      L.push(`  * ${p.name}${times(n)}`, `      ${p.need}`);
-      if (p.evidence) L.push(`      Latest: ${p.evidence.slice(0, 160)}`);
+    const groups = new Map();
+    for (const p of yours) {
+      if (!groups.has(p.need)) groups.set(p.need, []);
+      groups.get(p.need).push(p);
+    }
+    const SHOW = 10, NOTES = 3;
+    for (const [need, ps] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
+      L.push('', `  ${need} (${ps.length})`);
+      const ranked = ps.sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0));
+      ranked.slice(0, SHOW).forEach((p, i) => {
+        L.push(`    \u2022 ${p.name} \u00b7 ${phaseOf(p)}${p.daysInPhase >= 60 ? ` \u00b7 ${p.daysInPhase}d` : ''}`);
+        /* The note earns its line on the few that have stalled longest. Past
+           that it repeats what the next step already said, on every row. */
+        if (i < NOTES && p.evidence && p.daysInPhase >= 60) L.push(`        ${p.evidence.slice(0, 120)}`);
+      });
+      if (ranked.length > SHOW) L.push(`    \u2026 and ${ranked.length - SHOW} more with the same next step`);
     }
   }
-  if (waiting.length) {
-    L.push('', `WAITING ON SOMEONE ELSE (${waiting.length})`);
-    for (const { p, n } of fold(waiting)) L.push(`  * ${p.name}${times(n)} - ${p.need} (with ${p.ownerNames.join(', ')})`);
-  }
+
   if (ageing.length) {
-    L.push('', `AGEING PAST 60 DAYS (${ageing.length})`);
-    for (const { p, n } of fold(ageing)) L.push(`  * ${p.name}${times(n)} - ${p.daysInPhase == null ? '?' : p.daysInPhase} days in ${p.phase} - ${p.need}`);
+    L.push('', `STOPPED \u2014 PAST 60 DAYS (${ageing.length})`);
+    for (const p of [...ageing].sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0)))
+      L.push(`  \u2022 [${p.daysInPhase == null ? '?' : p.daysInPhase}d] ${p.name} \u00b7 ${phaseOf(p)} \u00b7 ${p.need}`);
   }
+
+  if (waiting.length) {
+    L.push('', `WITH SOMEONE ELSE (${waiting.length})`);
+    for (const p of waiting) L.push(`  \u2022 ${p.name} \u00b7 ${phaseOf(p)} \u00b7 ${p.need} \u2014 with ${p.ownerNames.join(', ')}`);
+  }
+
+  if (moved.length) {
+    L.push('', `MOVED THIS WEEK (${moved.length})`);
+    for (const p of moved) {
+      const hit = STAGES.filter(s => inRange(p.ev[s.key], wk.prevStart, wk.end)).map(s => s.label).join(', ');
+      L.push(`  \u2022 ${p.name} \u00b7 ${hit}`);
+    }
+  }
+
+  /* ---- the tail: counted, not listed ---- */
   if (rest.length) {
-    L.push('', `EVERYTHING ELSE (${rest.length})`);
-    for (const { p, n } of fold(rest)) L.push(`  * ${p.name}${times(n)} - ${p.need}`);
+    const byPhase = new Map(), byNeed = new Map();
+    for (const p of rest) {
+      byPhase.set(phaseOf(p), (byPhase.get(phaseOf(p)) || 0) + 1);
+      byNeed.set(p.need, (byNeed.get(p.need) || 0) + 1);
+    }
+    const top = (m, n) => [...m].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k} ${v}`).join(' \u00b7 ');
+    L.push('', `NOTHING OWED BY YOU (${rest.length})`);
+    L.push(`  By phase: ${top(byPhase, 6)}`);
+    L.push(`  Waiting on: ${top(byNeed, 4)}`);
+    L.push('  Not listed here \u2014 open the tracker and filter by phase to see them.');
   }
+
   L.push('', 'This is an automated weekly update built from the monday.com trackers.');
   L.push('Reply to Ameya if anything here looks wrong.');
   return { text: L.join('\n'), counts: {
@@ -766,7 +838,7 @@ for (const name of [...hbsNames].sort()) {
     continue;
   }
   const to = byName.get(name.toLowerCase()) || null;
-  const d = digestBody(name, 'HBS', mine, work);
+  const d = digestBody(name, 'HBS', mine, work, phaseByTu);
   const rec = { to, name, org: 'HBS', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
   if (to) perEngineer.push(rec); else { unroutable.push({ name, org: 'HBS', reason: 'no monday user record with an email' }); }
 }
