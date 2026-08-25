@@ -4472,6 +4472,9 @@ const NOT_A_PERSON = new Set(["TBD", "N/A", "NONE", "None", "---"]);
    from the TU tracker, no free text, no chatter, no money. It is a whitelist,
    so a column added to the TU board later cannot leak by default.
 --------------------------------------------------------------------------- */
+/* The shared board's statuses that are still "about the RFI". Anything else
+   there is later news than the TU tracker's RFI flag. */
+const ICF_RFI_STATES = new Set(["", "RFI Sent to HBS", "RFI Respond by HBS", "Flawed", "Flawed ARC"]);
 function icfSafeView(p) {
   return {
     name: p.name,
@@ -4497,10 +4500,17 @@ function icfSafeView(p) {
 
        One fact crosses over, never the note or anything else on that board. */
     ...(() => {
-      const rfi = p.tuStatus === "TRC/ICF RFI Responded"
-          ? { need: "HBS has answered the RFI — awaiting your re-review", hbs: false }
-        : p.tuStatus === "TRC/ICF RFI Received"
-          ? { need: "RFI with HBS — response owed to you", hbs: true }
+      /* Only while both boards are still talking about the RFI. Where the
+         shared board has moved PAST it — post-technical review, invoice sent,
+         payment processing — that is later news, not staler news, and it wins
+         instead. Without this an invoiced project closed out in July read
+         "awaiting your re-review", which is worse than saying nothing. */
+      const rfi = ICF_RFI_STATES.has(p.icfStatus || "")
+        ? (p.tuStatus === "TRC/ICF RFI Responded"
+            ? { need: "HBS has answered the RFI — awaiting your re-review", hbs: false }
+          : p.tuStatus === "TRC/ICF RFI Received"
+            ? { need: "RFI with HBS — response owed to you", hbs: true }
+          : null)
         : null;
       const r = ICF_ACTIONS[p.icfStatus];
       return rfi ? { need: rfi.need, withHbs: rfi.hbs }

@@ -646,6 +646,31 @@ const times = n => (n > 1 ? ` [x${n} board rows]` : '');
    ICF-bound digest is built from the shared board ONLY — a whitelist, so a
    column added to the TU board later cannot leak by default.
 --------------------------------------------------------------------------- */
+/* Who holds an RFI, when the two boards disagree.
+
+   The shared board's status lags the TU tracker: of the projects HBS has
+   answered an RFI on, most still read "RFI Respond by HBS" over there. Taking
+   that at face value told the reviewer we owed them a response on work we had
+   already returned -- backwards, on the one status where being wrong costs a
+   week. So on an RFI, the TU tracker wins.
+
+   But only while both boards are still talking about the RFI. Where the
+   shared board has moved PAST it -- post-technical review, invoice sent,
+   payment processing -- that is later news, not staler news, and it wins
+   instead. Without this an invoiced project that was closed out in July read
+   "awaiting your re-review", which is worse than saying nothing.
+
+   One fact crosses over, never the note or anything else on that board. */
+const ICF_RFI_STATES = new Set(['', 'RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC']);
+function rfiRule(p) {
+  if (!ICF_RFI_STATES.has(p.icfStatus || '')) return null;
+  if (p.tuStatus === 'TRC/ICF RFI Responded')
+    return { need: 'HBS has answered the RFI \u2014 awaiting your re-review', role: 'icf' };
+  if (p.tuStatus === 'TRC/ICF RFI Received')
+    return { need: 'RFI with HBS \u2014 response owed to you', role: 'hbs' };
+  return null;
+}
+
 function icfDigestBody(name, mine) {
   const rows = mine.map(p => ({
     name: p.name, projectId: p.projectId, utility: p.utility, type: p.type,
@@ -660,11 +685,7 @@ function icfDigestBody(name, mine) {
        actually updates when they answer, so it wins.
 
        One fact crosses over, never the note or anything else on that board. */
-    rule: (p.tuStatus === 'TRC/ICF RFI Responded'
-            ? { need: 'HBS has answered the RFI \u2014 awaiting your re-review', role: 'icf' }
-          : p.tuStatus === 'TRC/ICF RFI Received'
-            ? { need: 'RFI with HBS \u2014 response owed to you', role: 'hbs' }
-          : ICF_ACTIONS[p.icfStatus] || null),
+    rule: rfiRule(p) || ICF_ACTIONS[p.icfStatus] || null,
   }));
   const onIcf = rows.filter(r => r.rule && r.rule.role !== 'hbs');
   const onHbs = rows.filter(r => r.rule && r.rule.role === 'hbs');
