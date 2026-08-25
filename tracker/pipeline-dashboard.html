@@ -1270,6 +1270,9 @@ const state = {
   calendar: [],
   todos: [],
   workHistory: [],        // finished workload rows — the turnaround record
+  /* "What happened this week" is the question asked far more often than
+     "what is sitting in this phase", so that is the default. */
+  phaseScope: "period",
   goals: { paRcv: null },  // null means "use the best month achieved" 
   tasks: [],
   tasksLoaded: false,
@@ -3698,6 +3701,11 @@ const PA_STATUSES = ["Audit Phase Complete", "PA Submitted", "PA Received", "Sen
   "Review sent back for corrections", "Signed PA/RA Needed", "Signed SOW Received"];
 const CO_STATUSES = ["Implementation & MV Complete", "CD to Submit", "CO Submitted", "CO Received",
   "CO Processed/Need Signed PA/RA"];
+const IMPL_STATUSES = ["Implementation Ready to Schedule", "Implementation & MV Complete",
+  "Implemented. Pre-approval needed", "EC Motors Needed", "Pre/Post Inspecting Pending",
+  "Pre/Post Inspecting Scheduled", "Pre/Post Inspection Completed"];
+const SOW_STATUSES = ["Need SOW Completed", "SOW Ready for review", "Sent to Rahl's", "Approved by Rahl's",
+  "Revision Needed", "Sent to Client / CGS", "SOW Call Scheduled", "SOW Call Complete", "Signed SOW received"];
 
 const PHASE_VIEWS = {
   audits: {
@@ -3708,6 +3716,7 @@ const PHASE_VIEWS = {
     dateLabel: "Audit date",
     dateOf: p => p.evDates.dAudit,
     doneLabel: "Audited",
+    donePhrase: "audited",
     doneOf: p => (p.evDates.dAudit && dparse(p.evDates.dAudit) <= new Date() ? p.evDates.dAudit : ""),
     leadLabel: "Auditor",
     leadOf: p => p.auditor,
@@ -3730,6 +3739,7 @@ const PHASE_VIEWS = {
     dateLabel: "Submitted for PA",
     dateOf: p => p.evDates.dSubPA,
     doneLabel: "Pre-approved",
+    donePhrase: "pre-approved",
     doneOf: p => p.evDates.dPAd,
     leadLabel: "PA lead",
     leadOf: p => p.paLead,
@@ -3744,6 +3754,50 @@ const PHASE_VIEWS = {
       return g;
     },
   },
+  implementations: {
+    label: "Implementations",
+    hint: "Projects with an implementation date on the board — scheduled, under way, or done.",
+    test: p => p.phase === "Implementation Phase" || !!p.evDates.dImpl ||
+      IMPL_STATUSES.includes(p.tuStatus) || p.icfStatus === "Install",
+    dateLabel: "Implementation date",
+    dateOf: p => p.evDates.dImpl,
+    doneLabel: "Closeout submitted",
+    donePhrase: "sent to closeout",
+    doneOf: p => p.evDates.dSubCO,
+    leadLabel: "CO lead",
+    leadOf: p => (p.coLead.length ? p.coLead : p.hbsEngs),
+    inPeriodLabel: "Scheduled this period",
+    gaps: p => {
+      const g = [];
+      if (!p.evDates.dImpl) g.push("no implementation date");
+      if (!p.evDates.dPAd) g.push("no pre-approval on record");
+      if (!p.coLead.length && !p.hbsEngs.length) g.push("no CO lead");
+      if (!p.hasTu) g.push("not linked to TU tracker");
+      return g;
+    },
+  },
+  sows: {
+    label: "SOWs",
+    hint: "Statements of work going out to the client and coming back signed.",
+    test: p => !!p.evDates.dSowSent || !!p.evDates.dSowSigned ||
+      SOW_STATUSES.includes(p.sowStatus) || p.current === "sowSent" || p.current === "sowSigned",
+    dateLabel: "SOW sent",
+    dateOf: p => p.evDates.dSowSent,
+    doneLabel: "Signed SOW back",
+    donePhrase: "signed back",
+    doneOf: p => p.evDates.dSowSigned,
+    leadLabel: "Deal owner",
+    leadOf: p => (p.owner.length ? p.owner : p.paLead),
+    inPeriodLabel: "SOWs sent this period",
+    gaps: p => {
+      const g = [];
+      if (!p.evDates.dSowSent) g.push("no SOW sent date");
+      if (p.evDates.dSowSent && !p.evDates.dSowSigned) g.push("not signed back yet");
+      if (!p.evDates.dSubPA) g.push("no pre-approval submission to base it on");
+      if (!p.hasTu) g.push("not linked to TU tracker");
+      return g;
+    },
+  },
   closeouts: {
     label: "Closeouts",
     hint: "Implementation done or nearly done, and the closeout package in flight.",
@@ -3752,6 +3806,7 @@ const PHASE_VIEWS = {
     dateLabel: "Submitted for CO",
     dateOf: p => p.evDates.dSubCO,
     doneLabel: "Closed out",
+    donePhrase: "closed out",
     doneOf: p => p.evDates.dCOd,
     leadLabel: "CO lead",
     leadOf: p => p.coLead,
@@ -3774,45 +3829,84 @@ function renderPhases(list) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const r = periodRange(state.period, new Date());
 
-  const rows = list.filter(V.test).map(p => {
-    const when = V.dateOf(p);
-    const done = V.doneOf(p);
+  /* Two different questions, and they were being answered by one number.
+     "Which projects are sitting in the audit phase" is a snapshot of the
+     board; "which projects were audited this week" is a count of things that
+     happened. The scope switch picks which one, and the count on each phase
+     button is the count of the table below it, so the two always agree. */
+  const scope = state.phaseScope === "flight" ? "flight" : "period";
+
+  const rowFor = (p, view) => {
+    const when = view.dateOf(p);
+    const done = view.doneOf(p);
     const d = when ? dparse(when) : null;
+    const dDone = done ? dparse(done) : null;
+    const startedHere = inRange(d, r.start, r.end);
+    const finishedHere = inRange(dDone, r.start, r.end);
     return {
       p, when, done,
       upcoming: !!(d && d >= today),
-      inPeriod: inRange(d, r.start, r.end) || inRange(done ? dparse(done) : null, r.start, r.end),
-      gaps: V.gaps(p),
+      startedHere, finishedHere,
+      inPeriod: startedHere || finishedHere,
+      gaps: view.gaps(p),
     };
-  }).sort((a, b) => b.p.priority - a.p.priority || String(a.when || "9999").localeCompare(String(b.when || "9999")));
+  };
+  const rowsFor = view => {
+    const all = list.filter(view.test).map(p => rowFor(p, view));
+    return scope === "period" ? all.filter(x => x.inPeriod) : all;
+  };
+
+  const rows = rowsFor(V)
+    .sort((a, b) => b.p.priority - a.p.priority || String(a.when || "9999").localeCompare(String(b.when || "9999")));
 
   const stat = (v, l, cls) => `<div class="stat ${v ? cls : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
 
-  const subtabs = `<div class="segmented" role="group" aria-label="Phase" style="margin-bottom:14px">
+  const subtabs = `<div class="segmented" role="group" aria-label="Phase" style="margin-bottom:10px">
     ${Object.entries(PHASE_VIEWS).map(([k, v]) =>
-      `<button data-phasetab="${k}" aria-pressed="${k === key}">${esc(v.label)} <span class="num" style="opacity:.7">${list.filter(v.test).length}</span></button>`).join("")}
+      `<button data-phasetab="${k}" aria-pressed="${k === key}">${esc(v.label)} <span class="num" style="opacity:.7">${rowsFor(v).length}</span></button>`).join("")}
   </div>`;
 
-  return `<div class="section-head"><h2>${esc(V.label)} in flight</h2><span class="hint">${esc(V.hint)}</span></div>
+  const periodName = { day: "today", week: "this week", month: "this month", quarter: "this quarter", year: "this year" }[state.period] || "this period";
+
+  const scopeSwitch = `<div class="segmented" role="group" aria-label="Scope" style="margin-bottom:14px">
+    <button data-phasescope="period" aria-pressed="${scope === "period"}">Happened ${esc(periodName)}</button>
+    <button data-phasescope="flight" aria-pressed="${scope === "flight"}">All in this phase</button>
+  </div>`;
+
+  const live = rows.filter(x => lifecycle(x.p) === "active").length;
+  const retired = rows.length - live;
+
+  return `<div class="section-head"><h2>${esc(V.label)} ${scope === "period" ? esc(periodName) : "in flight"}</h2>
+      <span class="hint">${esc(V.hint)}</span></div>
     ${subtabs}
+    ${scopeSwitch}
+    <p class="ev" style="margin:-6px 0 12px">${scope === "period"
+      ? `Only projects where the <b>${esc(V.dateLabel.toLowerCase())}</b>, or the date it was <b>${esc(V.donePhrase || V.doneLabel.toLowerCase())}</b>, falls ${esc(periodName)}. Change the period above the tabs.`
+      : `Every project currently sitting in this phase, whatever the date. This is a snapshot of the board, not a count of work done.`}
+      ${!rows.length ? ""
+        : retired ? ` Of these, <b>${live}</b> ${live === 1 ? "is" : "are"} still active and ${retired} ${retired === 1 ? "is" : "are"} completed or cancelled.`
+                  : ` All ${rows.length} ${rows.length === 1 ? "is" : "are"} active.`}</p>
     <div class="stats" style="margin-bottom:16px">
-      ${stat(rows.length, "In flight", "")}
-      ${stat(rows.filter(x => x.inPeriod).length, V.inPeriodLabel, "is-good")}
+      ${stat(rows.length, scope === "period" ? V.inPeriodLabel : "In flight", "")}
+      ${stat(rows.filter(x => x.startedHere).length, `${V.dateLabel} ${periodName}`, "is-good")}
+      ${stat(rows.filter(x => x.finishedHere).length, `${V.doneLabel} ${periodName}`, "is-good")}
       ${stat(rows.filter(x => x.upcoming).length, "Dated ahead", "")}
       ${stat(rows.filter(x => !x.when).length, "No date set", "is-critical")}
       ${stat(rows.filter(x => x.gaps.length).length, "Missing info", "is-serious")}
     </div>
+    ${!rows.length ? `<div class="panel empty">Nothing in ${esc(V.label.toLowerCase())} ${esc(periodName)}.
+      Widen the period above, or switch to &ldquo;All in this phase&rdquo; to see everything sitting here.</div>` : ""}
     <div class="panel scroller tall"><table><thead><tr>
       <th>Project</th><th class="n">Pri</th><th>${esc(V.dateLabel)}</th><th>${esc(V.doneLabel)}</th>
       <th>Status</th><th>Next step</th><th>${esc(V.leadLabel)}</th><th>Is the info here?</th>
-    </tr></thead><tbody>${rows.map(({ p, when, done, upcoming, inPeriod, gaps }) => `<tr>
+    </tr></thead><tbody>${rows.map(({ p, when, done, upcoming, startedHere, finishedHere, gaps }) => `<tr>
       <td><div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
           <div class="ev">${esc([p.utility ? utilityLabel(p.utility) : "", p.type].filter(Boolean).join(" · "))}</div></td>
       <td class="n"><span class="cell num ${p.band === "critical" ? "m5" : p.band === "serious" ? "m4" : p.band === "warning" ? "m2" : "m0"}" title="${esc(p.priorityWhy.join("; "))}">${p.priority}</span></td>
       <td class="num">${when
-        ? `${esc(when)}${upcoming ? ` <span class="sev sev-good">ahead</span>` : ""}${inPeriod ? ` <span class="chip">this period</span>` : ""}`
+        ? `${esc(when)}${upcoming ? ` <span class="sev sev-good">ahead</span>` : ""}${startedHere ? ` <span class="chip">${esc(periodName)}</span>` : ""}`
         : `<span class="sev sev-critical">${sevIcon("critical")}not set</span>`}</td>
-      <td class="num">${done ? esc(done) : `<span class="ev">—</span>`}</td>
+      <td class="num">${done ? `${esc(done)}${finishedHere ? ` <span class="chip">${esc(periodName)}</span>` : ""}` : `<span class="ev">—</span>`}</td>
       <td>${esc(p.tuStatus || p.icfStatus || "—")}</td>
       <td><div class="need">${esc(p.need)}</div>${p.evidence ? `<div class="ev"><b>Latest:</b> ${esc(p.evidence.slice(0, 130))}</div>` : ""}</td>
       <td>${V.leadOf(p).length ? `<span class="who">${esc(V.leadOf(p).join(", "))}</span>` : ownerCell(p)}</td>
@@ -4460,6 +4554,10 @@ function render() {
     });
   });
 
+  main.querySelectorAll("[data-phasescope]").forEach(b => b.addEventListener("click", () => {
+    state.phaseScope = b.getAttribute("data-phasescope");
+    render();
+  }));
   main.querySelectorAll("[data-phasetab]").forEach(b => b.addEventListener("click", () => {
     state.phaseTab = b.getAttribute("data-phasetab");
     render();
