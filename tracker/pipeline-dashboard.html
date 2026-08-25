@@ -221,6 +221,7 @@ td.n, th.n { text-align: right; }
 .sev { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
 .sev svg { flex: none; }
 .sev-good { color: var(--good); } .sev-warning { color: var(--warning); }
+.unsound { text-decoration: line-through; text-decoration-thickness: 1px; opacity: .55; }
 .sev-serious { color: var(--serious); } .sev-critical { color: var(--critical); }
 .sev-none { color: var(--ink-3); }
 
@@ -2962,22 +2963,22 @@ function cleanDays(xs) {
    dates that happen to exist.
 --------------------------------------------------------------------------- */
 const LEGS = [
-  { key: "audit", label: "Audit \u2192 PA submitted", owner: "HBS",
+  { key: "audit", end: "dSubPA", label: "Audit \u2192 PA submitted", owner: "HBS",
     from: p => p.evDates.dAudit, to: p => p.evDates.dSubPA,
     blurb: "An engineer turning a finished audit into a submitted application." },
-  { key: "pa", label: "PA submitted \u2192 PA received", owner: "ICF",
+  { key: "pa", end: "dPAd", label: "PA submitted \u2192 PA received", owner: "ICF",
     from: p => p.evDates.dSubPA, to: p => p.evDates.dPAd,
     blurb: "The reviewer's turnaround. Nothing HBS does moves this." },
-  { key: "sowOut", label: "PA submitted \u2192 SOW sent", owner: "HBS",
+  { key: "sowOut", end: "dSowSent", label: "PA submitted \u2192 SOW sent", owner: "HBS",
     from: p => p.evDates.dSubPA, to: p => p.evDates.dSowSent,
     blurb: "The SOW can be written as soon as the pre-approval goes in." },
-  { key: "sowSigned", label: "SOW sent \u2192 SOW signed", owner: "Client",
+  { key: "sowSigned", end: "dSowSigned", label: "SOW sent \u2192 SOW signed", owner: "Client",
     from: p => p.evDates.dSowSent, to: p => p.evDates.dSowSigned,
     blurb: "Waiting on the customer to sign. Chasing helps; engineering does not." },
-  { key: "closeout", label: "Implementation \u2192 closeout submitted", owner: "HBS",
+  { key: "closeout", end: "dSubCO", label: "Implementation \u2192 closeout submitted", owner: "HBS",
     from: p => p.evDates.dImpl, to: p => p.evDates.dSubCO,
     blurb: "An engineer assembling the closeout package after the work is done." },
-  { key: "payment", label: "Closeout submitted \u2192 approved", owner: "ICF",
+  { key: "payment", end: "dCOd", label: "Closeout submitted \u2192 approved", owner: "ICF",
     from: p => p.evDates.dSubCO, to: p => p.evDates.dCOd,
     blurb: "The reviewer approving the closeout, which is when the project completes." },
 ];
@@ -2993,19 +2994,73 @@ function legDays(p, leg) {
   const d = Math.round((b - a) / 86400000);
   return (d < 0 || d > LEG_MAX_DAYS) ? NaN : d;   // NaN = recorded but unusable
 }
+/* A median is only worth printing if the sample behind it is real. Three
+   things make it not real, and every one of them is present on these boards:
+
+     too few      a handful of projects is an anecdote, not a turnaround time
+     one batch    fifteen buildings in one portfolio, sent on one day and
+                  signed the next, is ONE event. Counting it as fifteen
+                  observations turns a single client's overnight signature
+                  into "the SOW leg takes a day".
+     not recorded when most projects that reached the end of a leg never got a
+                  start date, the ones that did are whatever subset somebody
+                  happened to fill in — usually the recent, tidy ones.
+
+   So legStats measures the sample as well as the durations, and the table
+   refuses to state a figure it cannot stand behind. */
+/* Milestones in the order a project passes them. A project carrying ANY date
+   from a later milestone demonstrably passed the earlier ones, whether or not
+   anyone typed that date in — which is how a leg's true population is found.
+   634 signed SOWs prove at least 634 were sent; only 30 sent dates exist. */
+const LEG_MILESTONES = ["dAudit", "dSubPA", "dPAd", "dSowSent", "dSowSigned", "dImpl", "dSubCO", "dCOd"];
+
+/* Two tiers, because the faults are different in kind. A sample that is tiny
+   or is really one batch is not a measurement at all, and the figure must not
+   be stated. A sample that is sound but covers only a fifth of the projects
+   is a real measurement that may not represent the rest — it gets stated with
+   its coverage attached, and the reader decides. */
+const LEG_MIN_N        = 10;    // fatal: fewer than this is an anecdote
+const LEG_MAX_BATCH    = 0.5;   // fatal: one day's entries are half the sample
+const LEG_COVERAGE_BAD = 0.10;  // fatal: the sample is a rounding error
+const LEG_COVERAGE_LOW = 0.25;  // caveat: sound, but possibly unrepresentative
+
 function legStats(list, leg) {
-  const ok = [], bad = [];
+  const ok = [], bad = [], starts = new Map();
+  const downstream = LEG_MILESTONES.slice(LEG_MILESTONES.indexOf(leg.end));
+  let reached = 0;
   for (const p of list) {
+    if (downstream.some(k => p.evDates[k])) reached++;
     const d = legDays(p, leg);
     if (d === null) continue;
-    if (Number.isNaN(d)) bad.push(p); else ok.push(d);
+    if (Number.isNaN(d)) { bad.push(p); continue; }
+    ok.push(d);
+    const s = leg.from(p);
+    starts.set(s, (starts.get(s) || 0) + 1);
   }
   ok.sort((x, y) => x - y);
+  const n = ok.length;
+
+  let batchDay = "", batchN = 0;
+  for (const [day, c] of starts) if (c > batchN) { batchN = c; batchDay = day; }
+  const batchShare = n ? batchN / n : 0;
+  const coverage   = reached ? n / reached : 1;
+
+  /* Each warning names the number that triggered it, so the reason a leg is
+     not stated is auditable rather than a shrug. */
+  const missing = `${reached - n} of the ${reached} projects that got past this point are missing one of its two dates`;
+  const warnings = [], caveats = [];
+  if (n && n < LEG_MIN_N) warnings.push(`only ${n} project${n === 1 ? "" : "s"} have both dates recorded`);
+  if (n && batchShare >= LEG_MAX_BATCH)
+    warnings.push(`${batchN} of the ${n} start on the same day (${batchDay}) \u2014 that is one batch, not ${batchN} independent projects`);
+  if (reached && coverage < LEG_COVERAGE_BAD) warnings.push(missing);
+  else if (reached && coverage < LEG_COVERAGE_LOW) caveats.push(missing + `, so this ${Math.round(coverage * 100)}% may not speak for the rest`);
+
   return {
-    leg, n: ok.length, bad: bad.length,
-    median: ok.length ? ok[ok.length >> 1] : null,
-    mean: ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : null,
-    p90: ok.length ? ok[Math.min(ok.length - 1, Math.floor(ok.length * 0.9))] : null,
+    leg, n, bad: bad.length, reached, batchDay, batchN, batchShare, coverage,
+    warnings, caveats, reliable: warnings.length === 0,
+    median: n ? ok[n >> 1] : null,
+    mean: n ? ok.reduce((a, b) => a + b, 0) / n : null,
+    p90: n ? ok[Math.min(n - 1, Math.floor(n * 0.9))] : null,
     values: ok,
   };
 }
@@ -3422,7 +3477,8 @@ function renderGoals() {
           : `That is ${ratio.toFixed(2)} audits for every submission.`,
         `${auditedNotSubmitted.length} live project${auditedNotSubmitted.length === 1 ? " has" : "s have"} an audit date and no submission date.`,
         legStat.audit.n
-          ? `Half of them reach submission within ${legStat.audit.median} days, but the slowest tenth take ${legStat.audit.p90} — ${legStat.audit.n} measured.`
+          ? `Half of them reach submission within ${legStat.audit.median} days, but the slowest tenth take ${legStat.audit.p90} — ${legStat.audit.n} measured.` +
+            ((legStat.audit.warnings[0] || legStat.audit.caveats[0]) ? ` Treat that with care: ${legStat.audit.warnings[0] || legStat.audit.caveats[0]}.` : "")
           : "No project has both an audit date and a submission date, so the leg cannot be timed.",
       ],
     });
@@ -3433,7 +3489,7 @@ function renderGoals() {
     const s = legStat.audit, c = legStat.closeout;
     const tail = s.median ? s.p90 / s.median : null;
     const coFell = pctChange(coRecent, coPrior);
-    const verdict = (tail == null || thin(s.n)) ? V.unknown
+    const verdict = (tail == null || !s.reliable) ? V.unknown
       : (tail >= 3 || (coFell != null && !thinFlow && coFell <= -25)) ? V.yes : V.no;
     claims.push({
       claim: "No time to work on pre-approvals and closeouts",
@@ -3552,21 +3608,27 @@ function renderGoals() {
       </div>`).join("")}</div>
 
     <div class="section-head"><h2>Where the time goes</h2>
-      <span class="hint">Each leg as you defined it, and whose clock it is. A leg only counts when both dates are recorded.</span></div>
+      <span class="hint">Each leg as you defined it, and whose clock it is. A leg only counts when both dates are recorded, and a figure is struck through when the sample behind it will not carry it &mdash; fewer than ${LEG_MIN_N} projects, half of them entered on one day, or barely any of the projects that got that far. A sound but partial sample keeps its figure and states its coverage.</span></div>
     <div class="panel scroller"><table><thead><tr>
       <th>Leg</th><th>Whose clock</th><th class="n">Median</th><th class="n">Mean</th>
       <th class="n">Slowest 10%</th><th class="n">Measured</th><th>What it is</th>
     </tr></thead><tbody>
     ${LEGS.map(l => {
       const s = legStat[l.key];
+      /* An unreliable leg still shows its figures — they are the only ones
+         there are — but struck through and captioned, so nobody quotes them. */
+      const cell = v => s.n === 0 ? `<span class="ev">—</span>`
+        : s.reliable ? v : `<span class="unsound">${v}</span>`;
       return `<tr>
-        <td><b>${esc(l.label)}</b></td>
+        <td><b>${esc(l.label)}</b>${s.reliable ? "" : ` <span class="sev sev-warning">not reliable</span>`}</td>
         <td><span class="chip ${l.owner === "ICF" ? "chip-icf" : l.owner === "HBS" ? "chip-hbs" : ""}">${esc(l.owner)}</span></td>
-        <td class="n num">${s.median == null ? `<span class="ev">—</span>` : s.median + "d"}</td>
-        <td class="n num">${s.mean == null ? `<span class="ev">—</span>` : Math.round(s.mean) + "d"}</td>
-        <td class="n num">${s.p90 == null ? `<span class="ev">—</span>` : s.p90 + "d"}</td>
+        <td class="n num">${cell(s.median + "d")}</td>
+        <td class="n num">${cell(Math.round(s.mean) + "d")}</td>
+        <td class="n num">${cell(s.p90 + "d")}</td>
         <td class="n num">${s.n}${s.bad ? ` <span class="ev">(+${s.bad} unusable)</span>` : ""}</td>
-        <td class="who">${esc(l.blurb)}</td>
+        <td class="who">${esc(l.blurb)}
+          ${s.warnings.length || s.caveats.length
+            ? `<ul class="claim-ev">${[...s.warnings, ...s.caveats].map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : ""}</td>
       </tr>`;
     }).join("")}
     <tr>
