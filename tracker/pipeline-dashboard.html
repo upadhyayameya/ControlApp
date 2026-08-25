@@ -4475,6 +4475,17 @@ const NOT_A_PERSON = new Set(["TBD", "N/A", "NONE", "None", "---"]);
 /* The shared board's statuses that are still "about the RFI". Anything else
    there is later news than the TU tracker's RFI flag. */
 const ICF_RFI_STATES = new Set(["", "RFI Sent to HBS", "RFI Respond by HBS", "Flawed", "Flawed ARC"]);
+
+/* "With HBS" was covering two different things. Of the 28 on one reviewer's
+   list, 22 were installations under way, invoices out and payments
+   processing — work moving through HBS that ICF is not waiting on and cannot
+   act on. Filing those under "we owe you a response" overstated our debt to a
+   reviewer by a factor of four and buried the ones that were real.
+
+   Owed means the project is stopped until HBS does something the reviewer is
+   waiting for. Everything else is simply in progress. */
+const ICF_OWED_STATES = new Set(["RFI Sent to HBS", "RFI Respond by HBS", "Flawed", "Flawed ARC",
+  "Site Inspection Pending", "Internal Update Required"]);
 function icfSafeView(p) {
   return {
     name: p.name,
@@ -4489,6 +4500,7 @@ function icfSafeView(p) {
     coDate: p.evDates.dCOd,
     nextActionDate: p.nextActionDate,
     ecd: p.ecd,
+    owed: ICF_OWED_STATES.has(p.icfStatus || "") || p.tuStatus === "TRC/ICF RFI Received",
     /* Who holds an RFI is decided by the TU tracker, not by the shared board.
 
        The shared board's status lags: of the 21 projects HBS has answered an
@@ -4521,9 +4533,10 @@ function icfSafeView(p) {
 
 function icfDigestBody(name, mine) {
   const rows = mine.map(icfSafeView);
-  const onIcf = rows.filter(r => r.need && !r.withHbs);
-  const onHbs = rows.filter(r => r.withHbs);
-  const quiet = rows.filter(r => !r.need);
+  const onIcf   = rows.filter(r => r.need && !r.withHbs);
+  const onHbs   = rows.filter(r => r.withHbs && r.owed);
+  const running = rows.filter(r => r.withHbs && !r.owed);
+  const quiet   = rows.filter(r => !r.need);
 
   const L = [];
   L.push(`Hi ${/\s/.test(name) ? name.split(" ")[0] : name},`, "");
@@ -4537,6 +4550,10 @@ function icfDigestBody(name, mine) {
   if (onHbs.length) {
     L.push("", `WITH HBS — WE OWE YOU A RESPONSE (${onHbs.length})`);
     for (const r of onHbs) { L.push(line(r)); L.push(`      ${r.need}`); }
+  }
+  if (running.length) {
+    L.push("", `MOVING AT HBS — NOTHING NEEDED FROM YOU (${running.length})`);
+    for (const r of running) L.push(line(r) + ` — ${r.need}`);
   }
   if (quiet.length) {
     L.push("", `NO OPEN ACTION (${quiet.length})`);

@@ -662,6 +662,18 @@ const times = n => (n > 1 ? ` [x${n} board rows]` : '');
 
    One fact crosses over, never the note or anything else on that board. */
 const ICF_RFI_STATES = new Set(['', 'RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC']);
+
+/* "With HBS" was covering two different things. Of the 28 on Devashis's list,
+   22 were installations under way, invoices out and payments processing --
+   work moving through HBS that ICF is not waiting on and cannot act on.
+   Filing those under "we owe you a response" overstated our debt to a
+   reviewer by a factor of four and buried the six that were real.
+
+   Owed means the project is stopped until HBS does something the reviewer is
+   waiting for. Everything else is simply in progress. */
+const ICF_OWED_STATES = new Set(['RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC',
+  'Site Inspection Pending', 'Internal Update Required']);
+const owedToIcf = p => ICF_OWED_STATES.has(p.icfStatus || '') || p.tuStatus === 'TRC/ICF RFI Received';
 function rfiRule(p) {
   if (!ICF_RFI_STATES.has(p.icfStatus || '')) return null;
   if (p.tuStatus === 'TRC/ICF RFI Responded')
@@ -686,10 +698,12 @@ function icfDigestBody(name, mine) {
 
        One fact crosses over, never the note or anything else on that board. */
     rule: rfiRule(p) || ICF_ACTIONS[p.icfStatus] || null,
+    owed: owedToIcf(p),
   }));
-  const onIcf = rows.filter(r => r.rule && r.rule.role !== 'hbs');
-  const onHbs = rows.filter(r => r.rule && r.rule.role === 'hbs');
-  const quiet = rows.filter(r => !r.rule);
+  const onIcf   = rows.filter(r => r.rule && r.rule.role !== 'hbs');
+  const onHbs   = rows.filter(r => r.rule && r.rule.role === 'hbs' && r.owed);
+  const running = rows.filter(r => r.rule && r.rule.role === 'hbs' && !r.owed);
+  const quiet   = rows.filter(r => !r.rule);
 
   const L = [];
   const first = /\s/.test(name) ? name.split(' ')[0] : name;
@@ -704,6 +718,10 @@ function icfDigestBody(name, mine) {
   if (onHbs.length) {
     L.push('', `WITH HBS - WE OWE YOU A RESPONSE (${onHbs.length})`);
     for (const { p: r, n } of fold(onHbs, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
+  }
+  if (running.length) {
+    L.push('', `MOVING AT HBS - NOTHING NEEDED FROM YOU (${running.length})`);
+    for (const { p: r, n } of fold(running, r => r.rule.need)) L.push(line(r) + times(n) + ` - ${r.rule.need}`);
   }
   if (quiet.length) {
     L.push('', `NO OPEN ACTION (${quiet.length})`);
