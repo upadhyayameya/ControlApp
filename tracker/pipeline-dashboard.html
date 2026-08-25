@@ -222,6 +222,9 @@ td.n, th.n { text-align: right; }
 .sev svg { flex: none; }
 .sev-good { color: var(--good); } .sev-warning { color: var(--warning); }
 .unsound { text-decoration: line-through; text-decoration-thickness: 1px; opacity: .55; }
+.grouprow td { background: var(--panel-2); border-top: 1px solid var(--rule-strong);
+  position: sticky; top: 0; z-index: 1; padding: 7px 10px; }
+.grouprow td b { letter-spacing: .01em; }
 .claim-split { grid-column: 1 / -1; margin: 10px 0 2px; padding-top: 12px;
   border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); }
 .sev-serious { color: var(--serious); } .sev-critical { color: var(--critical); }
@@ -548,6 +551,7 @@ tr.partial .flowbar::before { opacity: .07; }
     </div>
     <div class="ctl" data-filter="utility"><label for="f-util">Utility</label><select id="f-util"><option value="">All</option></select></div>
     <div class="ctl" data-filter="type"><label for="f-type">Type</label><select id="f-type"><option value="">All</option></select></div>
+    <div class="ctl" data-filter="phase"><label for="f-phase">Phase</label><select id="f-phase"><option value="">All phases</option></select></div>
     <div class="ctl" data-filter="q"><input type="search" id="f-q" placeholder="Search project, status, next step…" aria-label="Search projects"></div>
     <div class="ctl" data-filter="done">
       <label><input type="checkbox" id="f-done"> Show completed</label>
@@ -1257,6 +1261,7 @@ const state = {
   engineer: "",
   utility: "",
   reviewer: "",
+  phase: "",
   showDone: false,
   num: { source: "", utility: "", phase: "", engineer: "", pipelineOnly: false, target: null },
   type: "",
@@ -1320,6 +1325,10 @@ function filtered(opts) {
     if (state.utility && p.utility !== state.utility) return false;
     if (state.reviewer && p.reviewer !== state.reviewer) return false;
     if (state.type && p.type !== state.type) return false;
+    /* NO_PHASE is a real answer to "which phase", not the absence of one:
+       161 projects carry no phase because they exist only on the TU tracker,
+       and they are the hardest ones to find any other way. */
+    if (state.phase === NO_PHASE ? !!p.phase : (state.phase && p.phase !== state.phase)) return false;
     if (state.org === "icf" && !p.icfEngs.length) return false;
     if (state.org === "hbs" && !p.hbsAll.length) return false;
     if (state.engineer && !engineersOf(p).includes(state.engineer)) return false;
@@ -1335,16 +1344,17 @@ function filtered(opts) {
    Numbers reads the KPI board, to-dos and meetings read their own sources, and
    My desk is already scoped to one person — narrowing those by engineer or
    team would be a control that quietly does nothing. */
+const NO_PHASE = "\u0000none";
 const VIEW_FILTERS = {
-  pipeline: ["period", "team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
+  pipeline: ["period", "team", "engineer", "reviewer", "utility", "type", "phase", "q", "done", "count"],
   numbers:  ["period"],
-  mydesk:   ["utility", "type", "q"],
-  asap:     ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
+  mydesk:   ["utility", "type", "phase", "q"],
+  asap:     ["team", "engineer", "reviewer", "utility", "type", "phase", "q", "count"],
   todos:    [],
   workload: [],
   goals:    [],
-  phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
-  projects: ["team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
+  phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "phase", "q", "done", "count"],
+  projects: ["team", "engineer", "reviewer", "utility", "type", "phase", "q", "done", "count"],
   digest:   ["team", "engineer", "reviewer", "utility", "type", "q"],
   intel:    [],
   notes:    [],
@@ -2846,19 +2856,46 @@ function renderStrategy() {
 }
 
 /* ---- projects view ---- */
+const PHASE_ORDER = ["Audit Phase", ...POST_AUDIT_PHASES];
+const phaseRank = ph => { const i = PHASE_ORDER.indexOf(ph); return i < 0 ? PHASE_ORDER.length : i; };
+
 function renderProjects(list) {
-  const sorted = [...list].sort((a, b) => {
-    const rank = { critical: 0, serious: 1, warning: 2, none: 3, good: 4 };
-    return (rank[a.sev] - rank[b.sev]) || (b.daysInPhase || 0) - (a.daysInPhase || 0) || a.name.localeCompare(b.name);
-  });
+  const rank = { critical: 0, serious: 1, warning: 2, none: 3, good: 4 };
+  /* Grouped by phase, because six hundred rows in one run are a list you
+     scroll past rather than one you find anything in. Within a phase the
+     order is still worst-first — the phase says where to look, severity says
+     where to start. */
+  const sorted = [...list].sort((a, b) =>
+    phaseRank(a.phase) - phaseRank(b.phase) ||
+    (a.phase || "").localeCompare(b.phase || "") ||
+    (rank[a.sev] - rank[b.sev]) || (b.daysInPhase || 0) - (a.daysInPhase || 0) || a.name.localeCompare(b.name));
   if (!sorted.length) return `<div class="panel empty">No projects match these filters.</div>`;
+
+  const counts = new Map();
+  for (const p of sorted) counts.set(p.phase || "No phase set", (counts.get(p.phase || "No phase set") || 0) + 1);
+  let lastPhase = null;
+
   return `<div class="section-head"><h2>Every project, and what it needs next</h2>
-    <span class="hint">Next step is derived from the live board status; the note beneath it is the most recent real entry on that project.</span></div>
+    <span class="hint">Grouped by phase, worst first inside each. Use the Phase control above to narrow to one.
+    Next step is derived from the live board status; the note beneath it is the most recent real entry on that project.</span></div>
   <div class="panel scroller tall"><table>
     <thead><tr>
       <th>Project</th><th>Stage</th><th>Status</th><th>What needs to happen</th><th>Who</th><th class="n">Days</th><th>Flag</th>
     </tr></thead>
     <tbody>${sorted.map(p => {
+      const ph = p.phase || "No phase set";
+      let head = "";
+      if (ph !== lastPhase) {
+        lastPhase = ph;
+        const owed = sorted.filter(x => (x.phase || "No phase set") === ph && x.sev === "critical").length;
+        head = `<tr class="grouprow"><td colspan="7">
+          <b>${esc(ph)}</b> <span class="ev">${counts.get(ph)} project${counts.get(ph) === 1 ? "" : "s"}${owed ? ` &middot; ${owed} with an action owed` : ""}</span>
+        </td></tr>`;
+      }
+      return head + rowFor(p);
+    }).join("")}</tbody></table></div>`;
+
+  function rowFor(p) {
       const stage = p.current ? STAGES[STAGE_INDEX[p.current]].label : "Not started";
       const chatter = [...p.teams.slice(0, 2), ...p.meetings.slice(0, 2)];
       return `<tr>
@@ -2879,7 +2916,7 @@ function renderProjects(list) {
         <td class="n num">${p.daysInPhase == null ? "·" : p.daysInPhase}</td>
         <td>${sevTag(p.sev)}</td>
       </tr>`;
-    }).join("")}</tbody></table></div>`;
+  }
 }
 
 /* ---- shared row renderers ---- */
@@ -4973,6 +5010,22 @@ function fillFilters() {
   if (revCur && !revCounts.has(revCur)) { state.reviewer = ""; revSel.value = ""; }
 
   fill("#f-type", state.projects.map(p => p.type));
+
+  /* Phases in the order a project passes through them, each with how many
+     live projects are sitting in it — the count is the reason to pick one. */
+  const keepPhase = state.phase;
+  state.phase = "";                       // count against every OTHER filter
+  const phaseCounts = new Map();
+  for (const p of filtered()) phaseCounts.set(p.phase || NO_PHASE, (phaseCounts.get(p.phase || NO_PHASE) || 0) + 1);
+  state.phase = keepPhase;
+  const orderedPhases = [...phaseCounts.keys()]
+    .sort((a, b) => (a === NO_PHASE ? 1 : b === NO_PHASE ? -1 : 0) || phaseRank(a) - phaseRank(b) || a.localeCompare(b));
+  const phSel = $("#f-phase");
+  phSel.innerHTML = `<option value="">All phases</option>` + orderedPhases
+    .map(ph => `<option value="${esc(ph)}"${ph === state.phase ? " selected" : ""}>${esc(ph === NO_PHASE ? "No phase set" : ph)} (${phaseCounts.get(ph)})</option>`).join("");
+  /* A phase that nothing currently matches is dropped rather than left
+     selected and showing an empty table. */
+  if (state.phase && !phaseCounts.has(state.phase)) { state.phase = ""; phSel.value = ""; }
 }
 
 /* ========================= loading ======================================= */
@@ -5342,6 +5395,7 @@ $("#f-util").addEventListener("change", e => { state.utility = e.target.value; r
 $("#f-rev").addEventListener("change", e => { state.reviewer = e.target.value; render(); });
 $("#f-done").addEventListener("change", e => { state.showDone = e.target.checked; render(); });
 $("#f-type").addEventListener("change", e => { state.type = e.target.value; render(); });
+$("#f-phase").addEventListener("change", e => { state.phase = e.target.value; render(); });
 let qt = null;
 $("#f-q").addEventListener("input", e => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { state.q = v; render(); }, 160); });
 $("#refresh").addEventListener("click", () => {
