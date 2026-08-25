@@ -511,13 +511,13 @@ tr.partial .flowbar::before { opacity: .07; }
   <div class="masthead-in" style="padding-top:0">
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true"  data-view="pipeline">Pipeline</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="workload">Workload</button>
       <button class="tab" role="tab" aria-selected="false" data-view="numbers">Numbers</button>
       <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
       <button class="tab" role="tab" aria-selected="false" data-view="notes">Ask &amp; tasks</button>
       <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
       <button class="tab" role="tab" aria-selected="false" data-view="strategy">Strategy</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="workload">Workload</button>
       <button class="tab" role="tab" aria-selected="false" data-view="goals">Missing the goal</button>
       <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
       <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
@@ -725,6 +725,20 @@ const POST_AUDIT        = new Set(["Audit Phase Complete","PA Submitted","PA Rec
   "CD to Submit","CO Submitted","CO Received","CO Processed/Need Signed PA/RA","Ready for Invoice","Invoiced","Complete/Paid",
   "TRC/ICF RFI Received","TRC/ICF RFI Responded"]);
 const POST_AUDIT_PHASES = ["Pre-Approval Phase","Implementation Phase","Closeout Phase","Payment Processing","Completed Project"];
+
+/* Only the ICF board carries a Phase column, so the 161 projects that live
+   only on the TU tracker had no phase at all and collected in a bucket nobody
+   could search. The stage a project has actually reached says which phase it
+   is in just as well, so where the column is empty the phase is derived from
+   it and marked as derived — every project sits in a phase, and none of them
+   claims a phase the board did not state. */
+const PHASE_FOR_STAGE = {
+  scheduled: "Audit Phase",        audited:   "Audit Phase",
+  preapp:    "Pre-Approval Phase", sowSent:   "Pre-Approval Phase", sowSigned: "Pre-Approval Phase",
+  impl:      "Implementation Phase",
+  coSched:   "Closeout Phase",     coDone:    "Closeout Phase",
+  payment:   "Payment Processing",
+};
 
 /* --- the nine funnel stages, in programme order -------------------------- */
 const STAGES = [
@@ -1171,6 +1185,13 @@ function buildProjects(icfItems, tuItems) {
     const evidence = latestNoteLine(adminNotes) || latestNoteLine(notes) || "";
     const evidenceFrom = latestNoteLine(adminNotes) ? "TU admin notes" : (latestNoteLine(notes) ? "ICF board notes" : "");
 
+    /* A project that has reached no milestone at all has not left the audit
+       phase — the 47 in that position carry statuses like "Audit Ready to
+       Schedule" and "Not Started", which is the front of the pipeline, not an
+       absence of one. So every project lands in a phase, and any phase not
+       stated by the board is marked as derived. */
+    const phaseResolved = phase || PHASE_FOR_STAGE[current] || "Audit Phase";
+
     return {
       id: String(it.id),
       name: it.name || "(untitled)",
@@ -1178,7 +1199,10 @@ function buildProjects(icfItems, tuItems) {
       tuUrl: tu ? (tu.url || "") : "",
       group: (it.group && it.group.title) || "",
       projectId: ci(C.projectId) || g(T.projectId),
-      phase, icfStatus, tuStatus, sowStatus,
+      phase: phaseResolved,
+      phaseOnBoard: phase,
+      phaseDerived: !phase && !!phaseResolved,
+      icfStatus, tuStatus, sowStatus,
       utility, type, reviewer,
       icfEngs, icfRaw, icfUnassigned, hbsEngs, hbsAll, hbsRoles, auditor, paLead, coLead, owner, revEng,
       ev, current,
@@ -2912,8 +2936,9 @@ function renderProjects(list) {
       if (ph !== lastPhase) {
         lastPhase = ph;
         const owed = sorted.filter(x => (x.phase || "No phase set") === ph && x.sev === "critical").length;
+        const derived = sorted.filter(x => (x.phase || "No phase set") === ph && x.phaseDerived).length;
         head = `<tr class="grouprow"><td colspan="7">
-          <b>${esc(ph)}</b> <span class="ev">${counts.get(ph)} project${counts.get(ph) === 1 ? "" : "s"}${owed ? ` &middot; ${owed} with an action owed` : ""}</span>
+          <b>${esc(ph)}</b> <span class="ev">${counts.get(ph)} project${counts.get(ph) === 1 ? "" : "s"}${owed ? ` &middot; ${owed} with an action owed` : ""}${derived ? ` &middot; ${derived} placed here from their stage &mdash; the board sets no Phase on them` : ""}</span>
         </td></tr>`;
       }
       return head + rowFor(p);
@@ -2927,7 +2952,7 @@ function renderProjects(list) {
           <div class="proj-name">${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>` : esc(p.name)}</div>
           <div class="ev">${esc([p.utility && utilityLabel(p.utility), p.type, p.projectId].filter(Boolean).join(" · "))}</div>
         </td>
-        <td>${esc(stage)}<div class="ev">${esc(p.phase)}</div></td>
+        <td>${esc(stage)}<div class="ev">${esc(p.phase || "no phase")}${p.phaseDerived ? ` <span title="The board sets no Phase on this project; placed from the stage it has reached">(derived)</span>` : ""}</div></td>
         <td>${esc(p.tuStatus || p.icfStatus || "—")}${p.sowStatus ? `<div class="ev">SOW: ${esc(p.sowStatus)}</div>` : ""}</td>
         <td>
           <div class="need">${esc(p.need)}</div>
@@ -4397,6 +4422,20 @@ function icfDigestBody(name, mine) {
    Every project line carries its phase, because "which phase" is the first
    question asked of any of these names.
 --------------------------------------------------------------------------- */
+/* Run a list of names together across as few lines as will hold them. A name
+   is never split across two lines. */
+function wrapNames(names, width = 96, indent = "    ") {
+  const out = [];
+  let line = "";
+  for (const n of names) {
+    if (!line) { line = n; continue; }
+    if ((line + "; " + n).length > width) { out.push(indent + line); line = n; }
+    else line += "; " + n;
+  }
+  if (line) out.push(indent + line);
+  return out;
+}
+
 function hbsDigestBody(name, d) {
   const { mine, moved, movedStages, yours, waiting, ageing, rest, byStage, work } = d;
   const L = [];
@@ -4413,19 +4452,16 @@ function hbsDigestBody(name, d) {
   const coWork = work.filter(t => !t.rfiQueue && t.kind === "Closeout");
 
   L.push(`Hi ${first},`, "");
-  L.push(`Where your projects stand — ${new Date().toLocaleDateString(undefined, { dateStyle: "medium" })}`);
-  L.push([`${mine.length} active`,
-          yours.length ? `${yours.length} need you` : null,
-          ageing.length ? `${ageing.length} ageing past 60 days` : null].filter(Boolean).join(" · "));
-  if (work.length) {
-    L.push(`On your desk: ` + [paWork.length ? `${paWork.length} pre-approval${paWork.length === 1 ? "" : "s"}` : null,
-                               coWork.length ? `${coWork.length} closeout${coWork.length === 1 ? "" : "s"}` : null,
-                               rfis.length ? `${rfis.length} RFI${rfis.length === 1 ? "" : "s"} to answer` : null]
-      .filter(Boolean).join(" · "));
-  }
-
-  const anyStage = STAGES.filter(s => byStage[s.key]);
-  if (anyStage.length) L.push("", anyStage.map(s => `${s.label} ${byStage[s.key]}`).join(" · "));
+  /* The pre-approval and closeout boards are what an engineer works from, so
+     they open the email. The pipeline summary follows them rather than
+     standing in front of them. */
+  L.push(`YOUR BOARDS — ${new Date().toLocaleDateString(undefined, { dateStyle: "medium" })}`);
+  L.push(work.length
+    ? [paWork.length ? `${paWork.length} pre-approval${paWork.length === 1 ? "" : "s"}` : null,
+       coWork.length ? `${coWork.length} closeout${coWork.length === 1 ? "" : "s"}` : null,
+       rfis.length ? `${rfis.length} RFI${rfis.length === 1 ? "" : "s"} to answer` : null]
+      .filter(Boolean).join(" · ")
+    : "Nothing queued on the pre-approval or closeout boards.");
 
   /* ---- the desk: what is queued on you right now ---- */
   const age = t => (t.waiting == null ? "" : `[${t.waiting}d] `);
@@ -4458,6 +4494,14 @@ function hbsDigestBody(name, d) {
     L.push("", `CLOSEOUTS ON YOUR DESK (${coWork.length})`);
     for (const t of [...coWork].sort(byAge)) L.push(deskLine(t));
   }
+
+  /* ---- then the project book behind those boards ---- */
+  L.push("", "\u2014".repeat(28));
+  L.push(`YOUR PROJECTS — ` + [`${mine.length} active`,
+          yours.length ? `${yours.length} need you` : null,
+          ageing.length ? `${ageing.length} ageing past 60 days` : null].filter(Boolean).join(" · "));
+  const anyStage = STAGES.filter(s => byStage[s.key]);
+  if (anyStage.length) L.push(anyStage.map(s => `${s.label} ${byStage[s.key]}`).join(" · "));
 
   /* ---- what needs you, gathered by the action rather than listed flat ---- */
   if (yours.length) {
@@ -4499,16 +4543,24 @@ function hbsDigestBody(name, d) {
 
   /* ---- the tail: counted, not listed ---- */
   if (rest.length) {
-    const byPhase = new Map(), byNeed = new Map();
+    const byPhase = new Map(), byNeed = new Map(), phaseNames = new Map();
     for (const p of rest) {
       byPhase.set(phaseOf(p), (byPhase.get(phaseOf(p)) || 0) + 1);
       byNeed.set(p.need, (byNeed.get(p.need) || 0) + 1);
+      if (!phaseNames.has(phaseOf(p))) phaseNames.set(phaseOf(p), []);
+      phaseNames.get(phaseOf(p)).push(p.name);
     }
     const top = (m, n) => [...m].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k} ${v}`).join(" · ");
     L.push("", `NOTHING OWED BY YOU (${rest.length})`);
-    L.push(`  By phase: ${top(byPhase, 6)}`);
-    L.push(`  Waiting on: ${top(byNeed, 4)}`);
-    L.push(`  Not listed here — open the tracker and filter by phase to see them.`);
+    L.push(`  Still yours, nothing owed by you this week. Waiting on: ${top(byNeed, 4)}.`);
+    /* Named, not just counted — you cannot check a project is in hand against a
+       number. Run together under each phase rather than one line each: the
+       names are what you scan for, and eighty of them one to a line is the
+       wall this email was rewritten to get rid of. */
+    for (const [ph, names] of [...phaseNames].sort((a, b) => b[1].length - a[1].length)) {
+      L.push("", `  ${ph} (${names.length})`);
+      for (const line of wrapNames(names.sort())) L.push(line);
+    }
   }
 
   L.push("", "— Sent automatically from the ICF × HBS pipeline tracker.");

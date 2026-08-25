@@ -712,6 +712,20 @@ function icfDigestBody(name, mine) {
    Every project line carries its phase, because "which phase" is the first
    question asked of any of these names.
 --------------------------------------------------------------------------- */
+/* Run a list of names together across as few lines as will hold them. A name
+   is never split across two lines. */
+function wrapNames(names, width = 96, indent = '    ') {
+  const out = [];
+  let line = '';
+  for (const n of names) {
+    if (!line) { line = n; continue; }
+    if ((line + '; ' + n).length > width) { out.push(indent + line); line = n; }
+    else line += '; ' + n;
+  }
+  if (line) out.push(indent + line);
+  return out;
+}
+
 function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
   if (org === 'ICF') return icfDigestBody(name, mine);
 
@@ -732,21 +746,16 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
   const coWork = work.filter(t => !t.rfi && t.kind === 'Closeout');
 
   L.push(`Hi ${first},`, '');
-  L.push(`Where your projects stand \u2014 ${new Date().toDateString()}`);
-  L.push([`${mine.length} active`,
-          yours.length ? `${yours.length} need you` : null,
-          ageing.length ? `${ageing.length} ageing past 60 days` : null].filter(Boolean).join(' \u00b7 '));
-  if (work.length) {
-    L.push('On your desk: ' + [paWork.length ? `${paWork.length} pre-approval${paWork.length === 1 ? '' : 's'}` : null,
-                               coWork.length ? `${coWork.length} closeout${coWork.length === 1 ? '' : 's'}` : null,
-                               rfis.length ? `${rfis.length} RFI${rfis.length === 1 ? '' : 's'} to answer` : null]
-      .filter(Boolean).join(' \u00b7 '));
-  }
-
-  const byStage = new Map();
-  for (const p of mine) if (p.current) byStage.set(p.current, (byStage.get(p.current) || 0) + 1);
-  const anyStage = STAGES.filter(s => byStage.get(s.key));
-  if (anyStage.length) L.push('', anyStage.map(s => `${s.label} ${byStage.get(s.key)}`).join(' \u00b7 '));
+  /* The pre-approval and closeout boards are what an engineer works from, so
+     they open the email. The pipeline summary follows them rather than
+     standing in front of them. */
+  L.push(`YOUR BOARDS \u2014 ${new Date().toDateString()}`);
+  L.push(work.length
+    ? [paWork.length ? `${paWork.length} pre-approval${paWork.length === 1 ? '' : 's'}` : null,
+       coWork.length ? `${coWork.length} closeout${coWork.length === 1 ? '' : 's'}` : null,
+       rfis.length ? `${rfis.length} RFI${rfis.length === 1 ? '' : 's'} to answer` : null]
+      .filter(Boolean).join(' \u00b7 ')
+    : 'Nothing queued on the pre-approval or closeout boards.');
 
   /* ---- the desk: what is queued on you right now ---- */
   const age = t => (t.waiting == null ? '' : `[${t.waiting}d] `);
@@ -778,6 +787,16 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
     L.push('', `CLOSEOUTS ON YOUR DESK (${coWork.length})`);
     for (const t of [...coWork].sort(byAge)) L.push(deskLine(t));
   }
+
+  /* ---- then the project book behind those boards ---- */
+  L.push('', '\u2014'.repeat(28));
+  L.push('YOUR PROJECTS \u2014 ' + [`${mine.length} active`,
+          yours.length ? `${yours.length} need you` : null,
+          ageing.length ? `${ageing.length} ageing past 60 days` : null].filter(Boolean).join(' \u00b7 '));
+  const byStage = new Map();
+  for (const p of mine) if (p.current) byStage.set(p.current, (byStage.get(p.current) || 0) + 1);
+  const anyStage = STAGES.filter(s => byStage.get(s.key));
+  if (anyStage.length) L.push(anyStage.map(s => `${s.label} ${byStage.get(s.key)}`).join(' \u00b7 '));
 
   /* ---- what needs you, gathered by the action rather than listed flat ---- */
   if (yours.length) {
@@ -822,16 +841,24 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
 
   /* ---- the tail: counted, not listed ---- */
   if (rest.length) {
-    const byPhase = new Map(), byNeed = new Map();
+    const byPhase = new Map(), byNeed = new Map(), phaseNames = new Map();
     for (const p of rest) {
       byPhase.set(phaseOf(p), (byPhase.get(phaseOf(p)) || 0) + 1);
       byNeed.set(p.need, (byNeed.get(p.need) || 0) + 1);
+      if (!phaseNames.has(phaseOf(p))) phaseNames.set(phaseOf(p), []);
+      phaseNames.get(phaseOf(p)).push(p.name);
     }
     const top = (m, n) => [...m].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k} ${v}`).join(' \u00b7 ');
     L.push('', `NOTHING OWED BY YOU (${rest.length})`);
-    L.push(`  By phase: ${top(byPhase, 6)}`);
-    L.push(`  Waiting on: ${top(byNeed, 4)}`);
-    L.push('  Not listed here \u2014 open the tracker and filter by phase to see them.');
+    L.push(`  Still yours, nothing owed by you this week. Waiting on: ${top(byNeed, 4)}.`);
+    /* Named, not just counted -- you cannot check a project is in hand against
+       a number. Run together under each phase rather than one line each: the
+       names are what you scan for, and eighty of them one to a line is the
+       wall this email was rewritten to get rid of. */
+    for (const [ph, names] of [...phaseNames].sort((a, b) => b[1].length - a[1].length)) {
+      L.push('', `  ${ph} (${names.length})`);
+      for (const line of wrapNames(names.sort())) L.push(line);
+    }
   }
 
   L.push('', 'This is an automated weekly update built from the monday.com trackers.');
