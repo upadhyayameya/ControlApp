@@ -222,6 +222,8 @@ td.n, th.n { text-align: right; }
 .sev svg { flex: none; }
 .sev-good { color: var(--good); } .sev-warning { color: var(--warning); }
 .unsound { text-decoration: line-through; text-decoration-thickness: 1px; opacity: .55; }
+.claim-split { grid-column: 1 / -1; margin: 10px 0 2px; padding-top: 12px;
+  border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); }
 .sev-serious { color: var(--serious); } .sev-critical { color: var(--critical); }
 .sev-none { color: var(--ink-3); }
 
@@ -3368,9 +3370,15 @@ function renderWorkload() {
    enough audits coming in, and the goal being unreachable in the first place.
    They cannot all be true, and some of them are usually false.
 
-   Each one is tested here against a number the boards can produce, and each
-   card states the rule it was judged by so the verdict can be argued with.
-   Where the boards cannot answer, the card says so rather than guessing — a
+   Those five are the starting point, not the list. Five more follow that the
+   boards raise on their own and nobody thinks to argue about: how few people
+   the work rests on, whose queue it is really sitting in, how much of it has
+   no owner at all, which single phase is holding everything, and how much of
+   the question cannot be answered because the dates were never recorded.
+
+   Each one is tested against a number the boards can produce, and each card
+   states the rule it was judged by so the verdict can be argued with. Where
+   the boards cannot answer, the card says so rather than guessing — a
    confident wrong diagnosis costs more than an honest gap.
 --------------------------------------------------------------------------- */
 const MONTH_KEY = s => (s && s.length >= 7 ? s.slice(0, 7) : "");
@@ -3447,7 +3455,7 @@ function renderGoals() {
   const subsRecent = avgField(recent, "paSub");
   const coRecent = avgField(recent, "coSub"), coPrior = avgField(prior, "coSub");
 
-  /* ---- the five claims ---- */
+  /* ---- the five that get offered in the room ---- */
   const pctChange = (a, b) => (b ? Math.round(((a - b) / b) * 100) : null);
   const V = { yes: "Supported", no: "Not supported", unknown: "Not enough data" };
 
@@ -3550,21 +3558,162 @@ function renderGoals() {
   {
     const everHit = flow.filter(r => r.paRcv >= goal).length;
     const median = [...flow.map(r => r.paRcv)].sort((a, b) => a - b)[flow.length >> 1] || 0;
-    const verdict = (!flow.length || bestPaRcv < MIN_MONTHLY) ? V.unknown : everHit === 0 ? V.yes : V.no;
+    const hitShare = flow.length ? everHit / flow.length : 0;
+    const ownGoal = !!(state.goals && state.goals.paRcv != null);
+    /* "Never hit" cannot be the test while the default benchmark IS the best
+       month on record: that guarantees exactly one hit and a verdict of no,
+       whatever the data says. What matters is whether the target is a month
+       the team reaches routinely or one it reached once. */
+    const verdict = (!flow.length || bestPaRcv < MIN_MONTHLY) ? V.unknown : hitShare <= 0.25 ? V.yes : V.no;
     claims.push({
       claim: "The goal is too far fetched",
       verdict,
       headline: everHit ? `hit in ${everHit} of the last ${flow.length} months` : `never hit in ${flow.length} months`,
-      rule: "Supported when the goal has not been reached in any complete month on record.",
+      rule: "Supported when the goal has been reached in a quarter or fewer of the complete months on record. A number met once in a year is an ambition, not a plan.",
       evidence: [
-        `The goal in use is ${goal} pre-approvals received a month.`,
+        `The goal in use is ${goal} pre-approvals received a month${ownGoal ? "" : ", which is the best complete month on record rather than a target anyone set"}.`,
         `Best complete month on record: ${bestPaRcv}. Typical month: ${median}.`,
         everHit
-          ? `It has been reached ${everHit} time${everHit === 1 ? "" : "s"} in ${flow.length} months, so it is reachable — the question is what changed.`
+          ? `Reached in ${everHit} of ${flow.length} complete months — ${Math.round(hitShare * 100)}% of them.` +
+            (ownGoal ? "" : ` A best month is reached once by definition; the question this answers is whether it was repeatable, and it was not.`)
           : `No complete month has reached it, so either the goal or the way the work runs has to change.`,
+        median && goal ? `It asks for ${(goal / Math.max(1, median)).toFixed(1)}× a typical month.` : "",
         legStat.pa.n
           ? `Reaching it also depends on ICF: a submission takes a median ${legStat.pa.median} days to come back, and the slowest tenth take ${legStat.pa.p90}. Submissions made this month largely land next month.`
           : ``,
+      ].filter(Boolean),
+    });
+  }
+
+  /* ---------------------------------------------------------------------
+     Causes the boards raise that nobody thought to ask about.
+
+     The five above are the explanations that get offered in the room. These
+     are the ones the data volunteers: where the work has piled up, who is
+     carrying it, whose queue it is actually sitting in, and what cannot be
+     answered at all because it was never recorded. Same standard as the rest
+     — a stated rule, a number that meets it or does not, and no verdict on
+     thin data.
+     --------------------------------------------------------------------- */
+
+  /* 6. the work is carried by too few people */
+  {
+    const perPerson = new Map();
+    for (const p of live) for (const n of p.hbsAll) if (onRoster(n) && !hasLeft(n))
+      perPerson.set(n, (perPerson.get(n) || 0) + 1);
+    const ranked = [...perPerson].sort((a, b) => b[1] - a[1]);
+    /* Projects are counted once per person who holds them, so the total is a
+       workload total and not a project count — the share is of that total. */
+    const held = ranked.reduce((a, r) => a + r[1], 0);
+    const top3 = ranked.slice(0, 3);
+    const share = held ? top3.reduce((a, r) => a + r[1], 0) / held : 0;
+    const verdict = (ranked.length < 4 || held < MIN_MEASURED) ? V.unknown : share >= 0.5 ? V.yes : V.no;
+    claims.push({
+      claim: "The work sits on too few people", found: true,
+      verdict,
+      headline: ranked.length ? `top three carry ${Math.round(share * 100)}% of it` : "nobody is named",
+      rule: "Supported when the three busiest engineers between them hold half or more of the assigned live work.",
+      evidence: [
+        `${ranked.length} engineer${ranked.length === 1 ? " holds" : "s hold"} live projects, ${held} assignments between them.`,
+        top3.length ? `Busiest: ${top3.map(([n, c]) => `${n} ${c}`).join(", ")}.` : "",
+        ranked.length > 3 ? `Quietest: ${ranked.slice(-3).reverse().map(([n, c]) => `${n} ${c}`).join(", ")}.` : "",
+        `A month's output is capped by whoever is holding the most, not by the average.`,
+      ].filter(Boolean),
+    });
+  }
+
+  /* 7. the queue is with ICF, not with HBS */
+  {
+    const withIcf = live.filter(p => p.ownerOrg === "ICF");
+    const withHbs = live.filter(p => p.ownerOrg === "HBS");
+    const decided = withIcf.length + withHbs.length;
+    const share = decided ? withIcf.length / decided : 0;
+    const verdict = decided < MIN_MEASURED ? V.unknown : share >= 0.4 ? V.yes : V.no;
+    claims.push({
+      claim: "It is waiting on ICF, not on us", found: true,
+      verdict,
+      headline: decided ? `${Math.round(share * 100)}% of the next steps are ICF's` : "no next steps recorded",
+      rule: "Supported when two in five of the live projects with a named next step are waiting on ICF rather than on HBS.",
+      evidence: [
+        `${withIcf.length} live project${withIcf.length === 1 ? "'s next step is" : "s' next steps are"} ICF's; ${withHbs.length} ${withHbs.length === 1 ? "is" : "are"} ours.`,
+        `${submittedNotBack.length} submission${submittedNotBack.length === 1 ? " is" : "s are"} out and not yet back.`,
+        legStat.pa.n
+          ? `ICF's own turnaround: median ${legStat.pa.median} days, slowest tenth ${legStat.pa.p90}, across ${legStat.pa.n} projects.`
+          : "",
+        `Nothing HBS does moves these. If most of the month is here, the shortfall is a scheduling problem, not an effort one.`,
+      ].filter(Boolean),
+    });
+  }
+
+  /* 8. nobody owns the next step */
+  {
+    const orphan = live.filter(p => !p.ownerNames.length && p.sev !== "good");
+    const share = live.length ? orphan.length / live.length : 0;
+    const verdict = live.length < MIN_MEASURED ? V.unknown : share >= 0.1 ? V.yes : V.no;
+    const noReviewer = live.filter(p => p.icfUnassigned);
+    claims.push({
+      claim: "Nobody owns the next step", found: true,
+      verdict,
+      headline: `${orphan.length} of ${live.length} live projects (${Math.round(share * 100)}%)`,
+      rule: "Supported when more than one live project in ten has a next step with no name against it.",
+      evidence: [
+        `${orphan.length} live project${orphan.length === 1 ? " has" : "s have"} a next step and nobody assigned to it.`,
+        noReviewer.length ? `${noReviewer.length} ${noReviewer.length === 1 ? "has" : "have"} no ICF reviewer named, so no reviewer digest reaches them either.` : "",
+        `These do not appear in anyone's weekly email, so they move only when somebody goes looking.`,
+      ].filter(Boolean),
+    });
+  }
+
+  /* 9. one phase is holding everything */
+  {
+    const byPhase = new Map();
+    for (const p of live) if (p.phase) byPhase.set(p.phase, (byPhase.get(p.phase) || 0) + 1);
+    const ranked = [...byPhase].sort((a, b) => b[1] - a[1]);
+    const [topPhase, topN] = ranked[0] || ["", 0];
+    const share = live.length ? topN / live.length : 0;
+    const stuckThere = live.filter(p => p.phase === topPhase && p.aging === "Critical");
+    /* A third of the book in one phase is a pile. So is a smaller phase where
+       most of what is in it has stopped moving — that is the same failure with
+       fewer projects, and the share test alone walks straight past it. */
+    const stuckShare = topN ? stuckThere.length / topN : 0;
+    const verdict = live.length < MIN_MEASURED ? V.unknown
+      : (share >= 0.33 || stuckShare >= 0.5) ? V.yes : V.no;
+    claims.push({
+      claim: "It is all piled up in one phase", found: true,
+      verdict,
+      headline: topPhase ? `${topN} in ${topPhase} (${Math.round(share * 100)}%)` : "no phases recorded",
+      rule: "Supported when a single phase holds a third or more of the live projects, or when over half of what sits in the biggest phase has been there past 60 days.",
+      evidence: [
+        ranked.slice(0, 4).map(([ph, n]) => `${ph} ${n}`).join(", ") + ".",
+        stuckThere.length ? `${stuckThere.length} of the ${topN} in ${topPhase} have been there past 60 days — ${Math.round(stuckShare * 100)}% of the phase.` : "",
+        `A pile in one phase is where the month is actually being lost, whatever the headline count says.`,
+      ].filter(Boolean),
+    });
+  }
+
+  /* 10. the shortfall cannot be measured */
+  {
+    const brokenLegs = LEGS.filter(l => !legStat[l.key].reliable);
+    const undated = state.workloadLoaded ? state.todos.filter(t => t.waiting == null) : [];
+    const undatedShare = state.todos.length ? undated.length / state.todos.length : 0;
+    const verdict = brokenLegs.length || undatedShare >= 0.25 ? V.yes : V.no;
+    claims.push({
+      claim: "We cannot actually tell", found: true,
+      verdict,
+      headline: brokenLegs.length
+        ? `${brokenLegs.length} of the ${LEGS.length} legs cannot be timed`
+        : undated.length ? `${undated.length} queued items have no start date` : "everything needed is recorded",
+      rule: "Supported when any leg fails its sample test, or when a quarter of the queued work carries no date to age it from.",
+      evidence: [
+        brokenLegs.length
+          ? `Not timeable: ${brokenLegs.map(l => l.label).join("; ")}. ${brokenLegs[0].key === "sowSigned" || brokenLegs.some(l => l.key === "sowSigned") ? "The SOW dates are the worst of it — the sent date is filled in on a fraction of the projects that were plainly sent one." : ""}`
+          : `All ${LEGS.length} legs have a sample that carries its figure.`,
+        state.workloadLoaded
+          ? (undated.length
+              ? `${undated.length} of the ${state.todos.length} open workload items have no Date Added, so how long they have sat on a desk is unknown.`
+              : `Every open workload item carries a Date Added.`)
+          : `Open the Workload tab to also check the queued work for missing start dates.`,
+        `Every missing date here is a cause that cannot be ruled in or out. Filling them is cheaper than arguing about the ones above.`,
       ].filter(Boolean),
     });
   }
@@ -3580,7 +3729,8 @@ function renderGoals() {
   };
 
   return `<div class="section-head"><h2>Why the goal is being missed</h2>
-      <span class="hint">Each explanation tested against the boards. The rule behind every verdict is stated, so it can be argued with.</span></div>
+      <span class="hint">The five explanations that get offered, and five more the boards raise themselves.
+      Each tested against a number, with the rule behind every verdict stated so it can be argued with.</span></div>
 
     <div class="stats" style="margin-bottom:8px">
       ${stat(goal, "Monthly goal (PAs received)")}
@@ -3594,7 +3744,10 @@ function renderGoals() {
     <label style="margin-left:8px">Use a different monthly goal:
       <input type="number" id="g-goal" min="0" step="1" value="${goal}" style="width:6.5em"></label></p>
 
-    <div class="claims">${claims.map(c => `
+    <div class="claims">${claims.map((c, i) => `
+      ${c.found && !claims[i - 1].found ? `<div class="claim-split">
+        <b>And five the boards raise on their own.</b> Nobody offers these in the room, which is
+        most of why they persist.</div>` : ""}
       <div class="claim claim-${tone(c.verdict)}">
         <div class="claim-hd">
           <span class="claim-q">&ldquo;${esc(c.claim)}&rdquo;</span>
