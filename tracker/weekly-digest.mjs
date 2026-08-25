@@ -17,6 +17,10 @@
 const API = 'https://api.monday.com/v2';
 const BOARD_ICF = '18424932045';   // ICF/HBS Project Tracker
 const BOARD_TU  = '1069746645';    // Master TU Tracker
+/* The two boards where the work actually sits on someone's desk. Grouped by
+   person, so the group title is the assignment. */
+const BOARD_PA_WORK = '9889346356';   // Preapproval Workload
+const BOARD_CO_WORK = '10030690180';  // Closeout Workload
 
 /* ------------------------------------------------------------------ config */
 
@@ -139,6 +143,11 @@ const hasLeft  = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
    Confirmed by Ameya, 2026-08-25. */
 const NOW_ICF_SIDE = new Set(['Devashis Shrestha', 'Devashis']);
 
+/* Names the boards spell short. Kept identical to the dashboard's map so the
+   two never disagree about who a person is. */
+const NAME_ALIASES = { 'Devashis': 'Devashis Shrestha' };
+const alias = n => NAME_ALIASES[String(n || '').trim()] || String(n || '').trim();
+
 /* Board labels that are placeholders, not people. Never addressed, never greeted. */
 /* Values that name nobody. The group labels are expanded upstream by
    expandReviewers, so they never reach here. */
@@ -157,6 +166,17 @@ const T = {
   auditor: 'person', paLead: 'people', coLead: 'people__1', dealOwner: 'multiple_person_mkwfm19x',
   reviewEng: 'dropdown_mm4bc2hd', adminNotes: 'long_text', aiSummary: 'text_mm4jb8gz', rel: 'board_relation_mm5xccpb',
 };
+
+/* Both workload boards carry the same columns under different ids, so both
+   are requested and whichever answers is used. */
+const W = {
+  dueDate: 'date4', due2: 'date_mkv5afd3', due3: 'date_mkv59n4q', done: 'date_mkv5c7c0',
+  status: 'color_mkve3fp3', hours: 'numeric_mkwc48vb', rel: 'board_relation_mkv5tqg7',
+};
+const W_ADDED_PA = 'date_mm5w9q0r', W_ADDED_CO = 'date_mm5wyvbx';
+const W_WAIT_PA  = 'formula_mm6jpnrw', W_WAIT_CO = 'formula_mm6jpkjk';
+const WORK_DONE_GROUPS = new Set(['Completed', 'Cancelled']);
+const RFI_GROUP = "RFI's to Answer";
 
 const STAGES = [
   { key: 'scheduled', label: 'Scheduled' },
@@ -312,8 +332,13 @@ function weekRange(now) {
 const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 
 /* ------------------------------------------------------------------ build */
-const icfItems = await fetchBoard(BOARD_ICF, Object.values(C));
-const tuItems  = await fetchBoard(BOARD_TU, Object.values(T));
+const wCols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO];
+const [icfItems, tuItems, paWorkItems, coWorkItems] = await Promise.all([
+  fetchBoard(BOARD_ICF, Object.values(C)),
+  fetchBoard(BOARD_TU, Object.values(T)),
+  fetchBoard(BOARD_PA_WORK, wCols),
+  fetchBoard(BOARD_CO_WORK, wCols),
+]);
 
 const tuByIcf = new Map();
 for (const t of tuItems) {
@@ -426,6 +451,108 @@ for (const p of allProjects) { const l = lifecycle(p); if (l !== 'active') retir
 const projects = allProjects.filter(p => lifecycle(p) === 'active');
 
 /* ---------------------------------------------------------------------------
+   The workload boards: what is actually on someone's desk this week.
+
+   The pipeline boards say where a project has got to. They do not say who is
+   sitting with the work right now — that lives on the Preapproval and Closeout
+   Workload boards, where the group title IS the assignment. A digest built
+   from the pipeline alone tells an engineer about projects while staying
+   silent on the queue they are judged by, so both go in.
+
+   Group titles there are first names ("Soumya"), while the pipeline boards
+   carry full names ("Soumya Agrawal"). Resolving one to the other is what
+   stops the same person being emailed as two people. A first name is only
+   resolved when it lands on exactly one full name, preferring the roster —
+   an ambiguous first name is left as it is rather than guessed at.
+--------------------------------------------------------------------------- */
+let canonMap = null;
+function buildCanonMap() {
+  const full = new Set();
+  for (const p of allProjects) for (const n of p.hbsAll) if (/\s/.test(n)) full.add(n);
+  const byFirst = new Map();
+  for (const n of full) {
+    const k = n.split(/\s+/)[0].toLowerCase();
+    if (!byFirst.has(k)) byFirst.set(k, []);
+    byFirst.get(k).push(n);
+  }
+  const m = new Map();
+  for (const [k, names] of byFirst) {
+    let pick = names.length === 1 ? names[0] : null;
+    if (!pick) { const rostered = names.filter(onRoster); if (rostered.length === 1) pick = rostered[0]; }
+    if (pick) m.set(k, pick);
+  }
+  return m;
+}
+function canonName(raw) {
+  const name = alias(String(raw || '').trim());
+  if (!name || /\s/.test(name)) return name;
+  if (!canonMap) canonMap = buildCanonMap();
+  return canonMap.get(name.toLowerCase()) || name;
+}
+
+const tuById = new Map(tuItems.map(t => [String(t.id), t]));
+const numStr = v => {
+  const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, ''));
+  return Number.isFinite(n) ? n : null;
+};
+
+const workTasks = [];
+for (const [items, kind] of [[paWorkItems, 'Pre-approval'], [coWorkItems, 'Closeout']]) {
+  for (const it of items) {
+    const group = (it.group && it.group.title) || '';
+    const st = txt(it, W.status);
+    /* Finished and cancelled rows are not somebody's week. */
+    if (WORK_DONE_GROUPS.has(group) || txt(it, W.done) || st === 'Done' || st === 'Cancelled') continue;
+
+    const rel = cv(it, W.rel);
+    const tuIds = rel && Array.isArray(rel.linked_item_ids) ? rel.linked_item_ids.map(String) : [];
+    const wait = numStr(txt(it, W_WAIT_PA) || txt(it, W_WAIT_CO));
+
+    workTasks.push({
+      kind, group, name: it.name || '(untitled)', url: it.url || '',
+      rfi: group === RFI_GROUP,
+      person: group === RFI_GROUP ? '' : canonName(group),
+      status: st,
+      due: (txt(it, W.dueDate) || txt(it, W.due2) || txt(it, W.due3)).slice(0, 10),
+      added: (txt(it, W_ADDED_PA) || txt(it, W_ADDED_CO)).slice(0, 10),
+      /* Whole days: the board's formula carries a fraction-of-day tail. */
+      waiting: wait == null ? null : Math.floor(wait),
+      tuIds,
+      /* Filled in below for RFIs, which sit in a shared group with no owner. */
+      owners: [],
+    });
+  }
+}
+
+/* An RFI in the shared queue belongs to whoever holds the project it is about.
+   Following the board link to the TU tracker is the only thing that says who
+   that is; an RFI whose link is missing reaches nobody and is reported to
+   management rather than quietly dropped. */
+for (const t of workTasks) {
+  if (!t.rfi) continue;
+  const owners = new Set();
+  for (const id of t.tuIds) {
+    const tu = tuById.get(id);
+    if (!tu) continue;
+    for (const role of [T.paLead, T.coLead, T.auditor, T.dealOwner]) {
+      for (const raw of list(tu, role)) {
+        const n = alias(raw);
+        if (n && !NOT_A_PERSON.has(n)) owners.add(n);
+      }
+    }
+  }
+  t.owners = [...owners];
+}
+const orphanRfis = workTasks.filter(t => t.rfi && !t.owners.length);
+
+/* A row's TU status is the context the workload board itself only mirrors. */
+const workStatus = t => {
+  for (const id of t.tuIds) { const tu = tuById.get(id); if (tu) { const st = txt(tu, T.status); if (st) return st; } }
+  return '';
+};
+const workFor = name => workTasks.filter(t => t.rfi ? t.owners.includes(name) : t.person === name);
+
+/* ---------------------------------------------------------------------------
    Duplicate board rows.
 
    The ICF board carries genuine duplicates — typically an audit-phase row left
@@ -501,7 +628,7 @@ function icfDigestBody(name, mine) {
   return { text: L.join('\n'), counts: { active: rows.length, yours: onIcf.length, ageing: 0, moved: 0 } };
 }
 
-function digestBody(name, org, mine) {
+function digestBody(name, org, mine, work = []) {
   if (org === 'ICF') return icfDigestBody(name, mine);
   const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
   const moved = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], wk.prevStart, wk.end)));
@@ -514,7 +641,39 @@ function digestBody(name, org, mine) {
   const first = /\s/.test(name) ? name.split(' ')[0] : name;
   L.push(`Hi ${first},`, '');
   L.push(`Here is where your ${org} tune-up projects stand as of ${new Date().toDateString()}.`, '');
-  L.push(`You have ${mine.length} active project${mine.length === 1 ? '' : 's'}.`);
+
+  /* Two different questions, so two different counts: what you hold, and what
+     is queued on your desk right now. */
+  const rfis = work.filter(t => t.rfi);
+  const paWork = work.filter(t => !t.rfi && t.kind === 'Pre-approval');
+  const coWork = work.filter(t => !t.rfi && t.kind === 'Closeout');
+  L.push(`You have ${mine.length} active project${mine.length === 1 ? '' : 's'}` +
+    (work.length ? `, and ${work.length} open item${work.length === 1 ? '' : 's'} on the pre-approval and closeout boards.` : '.'));
+
+  /* An RFI has a clock on it that nothing else here does, so it goes first. */
+  if (rfis.length) {
+    L.push('', `RFIs TO ANSWER (${rfis.length})`);
+    for (const t of rfis.sort((a, b) => (b.waiting || 0) - (a.waiting || 0))) {
+      const st = workStatus(t);
+      L.push(`  * ${t.name}${t.waiting != null ? ` - waiting ${t.waiting} day${t.waiting === 1 ? '' : 's'}` : ''}` +
+        `${t.due ? `, due ${t.due}` : ''}${st ? ` [${st}]` : ''}`);
+    }
+  }
+
+  const deskSection = (rows, title) => {
+    if (!rows.length) return;
+    L.push('', `${title} (${rows.length})`);
+    for (const t of rows.sort((a, b) => (b.waiting || 0) - (a.waiting || 0))) {
+      const st = workStatus(t);
+      const bits = [];
+      if (t.status) bits.push(t.status);
+      if (t.waiting != null) bits.push(`on your desk ${t.waiting} day${t.waiting === 1 ? '' : 's'}`);
+      if (t.due) bits.push(`due ${t.due}`);
+      L.push(`  * ${t.name}${bits.length ? ` - ${bits.join(', ')}` : ''}${st ? ` [${st}]` : ''}`);
+    }
+  };
+  deskSection(paWork, 'PRE-APPROVALS ON YOUR DESK');
+  deskSection(coWork, 'CLOSEOUTS ON YOUR DESK');
 
   const byStage = new Map();
   for (const p of mine) if (p.current) byStage.set(p.current, (byStage.get(p.current) || 0) + 1);
@@ -550,7 +709,9 @@ function digestBody(name, org, mine) {
   }
   L.push('', 'This is an automated weekly update built from the monday.com trackers.');
   L.push('Reply to Ameya if anything here looks wrong.');
-  return { text: L.join('\n'), counts: { active: mine.length, yours: yours.length, ageing: ageing.length, moved: moved.length } };
+  return { text: L.join('\n'), counts: {
+    active: mine.length, yours: yours.length, ageing: ageing.length, moved: moved.length,
+    work: work.length, rfis: rfis.length, pa: paWork.length, co: coWork.length } };
 }
 
 const hbsNames = new Set(), icfNames = new Set(), offRoster = new Set();
@@ -560,6 +721,15 @@ for (const p of projects) {
     if (onRoster(n)) hbsNames.add(n); else offRoster.add(n);
   }
   for (const n of p.icfEngs) if (!NOT_A_PERSON.has(n)) icfNames.add(n);
+}
+/* Somebody can hold a full pre-approval or closeout queue without their name
+   appearing on a single ICF board row. Routing on the pipeline alone would
+   send them nothing at all. */
+for (const t of workTasks) {
+  for (const n of t.rfi ? t.owners : [t.person]) {
+    if (!n || NOT_A_PERSON.has(n) || NOW_ICF_SIDE.has(n)) continue;
+    if (onRoster(n)) hbsNames.add(n); else offRoster.add(n);
+  }
 }
 
 /* HBS engineers are stored as real monday people, so their address is authoritative. */
@@ -571,14 +741,15 @@ const weekOf = wk.prevStart.toDateString();
 
 for (const name of [...hbsNames].sort()) {
   const mine = projects.filter(p => p.hbsAll.includes(name));
+  const work = workFor(name);
   /* Someone who has left is never emailed. Their projects still need an owner,
      so they go to management in the roll-up instead. */
   if (hasLeft(name)) {
-    unroutable.push({ name, org: 'HBS', reason: 'has left HBS - projects need reassigning', active: mine.length });
+    unroutable.push({ name, org: 'HBS', reason: 'has left HBS - projects need reassigning', active: mine.length, work: work.length });
     continue;
   }
   const to = byName.get(name.toLowerCase()) || null;
-  const d = digestBody(name, 'HBS', mine);
+  const d = digestBody(name, 'HBS', mine, work);
   const rec = { to, name, org: 'HBS', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
   if (to) perEngineer.push(rec); else { unroutable.push({ name, org: 'HBS', reason: 'no monday user record with an email' }); }
 }
@@ -665,18 +836,35 @@ function rollupBody() {
     }
   }
 
-  L.push('', 'BY ENGINEER                     active  action owed  ageing');
+  L.push('', 'BY ENGINEER                     active  action owed  ageing   on desk   RFIs');
   const rows = [];
   for (const [set, org] of [[hbsNames, 'HBS'], [icfNames, 'ICF']]) {
     for (const n of [...set].sort()) {
       const mine = projects.filter(p => (org === 'HBS' ? p.hbsAll : p.icfEngs).includes(n));
+      const work = org === 'HBS' ? workFor(n) : [];
       rows.push({ n, org, active: mine.length,
         owed: mine.filter(p => p.sev === 'critical').length,
-        ageing: mine.filter(p => p.aging === 'Critical').length });
+        ageing: mine.filter(p => p.aging === 'Critical').length,
+        desk: work.filter(t => !t.rfi).length, rfis: work.filter(t => t.rfi).length });
     }
   }
   rows.sort((a, b) => b.owed - a.owed || b.active - a.active);
-  for (const r of rows) L.push(`  ${(r.n + ' (' + r.org + ')').padEnd(30)} ${String(r.active).padStart(5)} ${String(r.owed).padStart(11)} ${String(r.ageing).padStart(7)}`);
+  for (const r of rows) L.push(`  ${(r.n + ' (' + r.org + ')').padEnd(30)} ${String(r.active).padStart(5)} ${String(r.owed).padStart(11)} ${String(r.ageing).padStart(7)} ${String(r.desk).padStart(9)} ${String(r.rfis).padStart(6)}`);
+
+  /* The workload boards in one line, and the rows on them that reach nobody. */
+  const openWork = workTasks.length, openRfis = workTasks.filter(t => t.rfi).length;
+  L.push('', 'WORKLOAD BOARDS');
+  L.push(`  ${openWork} open item${openWork === 1 ? '' : 's'} across the pre-approval and closeout boards, ${openRfis} of them RFIs.`);
+  const deskNoOwner = workTasks.filter(t => !t.rfi && !t.person);
+  if (deskNoOwner.length) L.push(`  ${deskNoOwner.length} sit in a group that names no engineer, so nobody is emailed about them.`);
+  /* Without a Date Added the board cannot say how long something has been
+     queued, which is the one number these boards exist to produce. */
+  const noAge = workTasks.filter(t => t.waiting == null);
+  if (noAge.length) L.push(`  ${noAge.length} have no Date Added, so how long they have sat on a desk is unknown.`);
+  if (orphanRfis.length) {
+    L.push(`  ${orphanRfis.length} RFI${orphanRfis.length === 1 ? ' has' : 's have'} no board link to a project, so ${orphanRfis.length === 1 ? 'it reaches' : 'they reach'} nobody:`);
+    for (const t of orphanRfis) L.push(`    * ${t.name}${t.waiting != null ? ` - waiting ${t.waiting} days` : ''}`);
+  }
 
   if (critical.length) {
     L.push('', 'EVERY PROJECT WITH AN ACTION OWED');
@@ -713,14 +901,17 @@ if ((process.env.DIGEST_MODE || '') === 'summary') {
   console.log(`projects=${envelope.projectCount}  week of ${envelope.weekOf}`);
   console.log(`would email ${envelope.perEngineer.length} engineers:`);
   for (const e of envelope.perEngineer) {
-    console.log(`  ${e.org}  ${e.name.padEnd(20)} -> ${String(e.to).padEnd(34)} active=${e.counts.active} owed=${e.counts.yours} ageing=${e.counts.ageing} moved=${e.counts.moved} bodyChars=${e.body.length}`);
+    const w = e.counts.work == null ? '' : ` desk=${e.counts.pa}pa/${e.counts.co}co rfi=${e.counts.rfis}`;
+    console.log(`  ${e.org}  ${e.name.padEnd(20)} -> ${String(e.to).padEnd(34)} active=${e.counts.active} owed=${e.counts.yours} ageing=${e.counts.ageing} moved=${e.counts.moved}${w} bodyChars=${e.body.length}`);
   }
   console.log(`\nnot routable (${envelope.unroutable.length}):`);
   for (const u of envelope.unroutable) console.log(`  ${u.org} ${u.name} - ${u.reason}${u.active ? ' (' + u.active + ' active)' : ''}`);
   console.log(`\nwarnings: ${envelope.warnings.length ? envelope.warnings.join(' | ') : 'none'}`);
   console.log(`\n--- roll-up to ${envelope.rollup.to.join(', ')} ---`);
   console.log(envelope.rollup.body);
-  const sample = envelope.perEngineer.find(e => e.counts.yours > 0) || envelope.perEngineer[0];
+  const sample = envelope.perEngineer.find(e => e.counts.work > 0 && e.counts.yours > 0)
+    || envelope.perEngineer.find(e => e.counts.work > 0)
+    || envelope.perEngineer.find(e => e.counts.yours > 0) || envelope.perEngineer[0];
   if (sample) {
     console.log(`\n--- sample individual digest: ${sample.name} (${sample.org}) -> ${sample.to} ---`);
     console.log(sample.body.slice(0, 2600));
