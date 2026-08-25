@@ -182,6 +182,8 @@ const T = {
   dSowClient: 'date_mm5rd9h7', dSowRahls: 'date_mm5r3pk9', dSowSigned: 'date73', dSignedPA: 'date1',
   auditor: 'person', paLead: 'people', coLead: 'people__1', dealOwner: 'multiple_person_mkwfm19x',
   reviewEng: 'dropdown_mm4bc2hd', adminNotes: 'long_text', aiSummary: 'text_mm4jb8gz', rel: 'board_relation_mm5xccpb',
+  /* The workload boards carry these only as mirrors; this is where they live. */
+  source: 'dropdown', company: 'text_mkxpkdex', utility: 'text', type: 'type',
 };
 
 /* Both workload boards carry the same columns under different ids, so both
@@ -192,6 +194,24 @@ const W = {
 };
 const W_ADDED_PA = 'date_mm5w9q0r', W_ADDED_CO = 'date_mm5wyvbx';
 const W_WAIT_PA  = 'formula_mm6jpnrw', W_WAIT_CO = 'formula_mm6jpkjk';
+
+/* The columns the engineer actually reads on these boards -- Company, Utility,
+   Type, Status, Source -- are mirrors of the project tracker behind each row.
+   Over the raw API a mirror resolves through display_value, so they are read
+   here directly rather than joined.
+
+   That matters because the workload boards span three project trackers, not
+   one: 33 of the open rows link to the BGE BPTU Tracker or Potomac Edison BTU
+   rather than the Master TU Tracker, and a join to the TU tracker alone leaves
+   exactly those rows blank. */
+const M = {
+  source:    'lookup_mkv5mm0j',
+  companyPA: 'lookup_mkxpx9ek', companyCO: 'lookup_mm4j28m1',
+  utility:   'lookup_mkv5hrrr',
+  type:      'lookup_mkv5czwd',
+  status:    'lookup_mkveq0p9',
+  leadPA:    'lookup_mkve9p6e', leadCO: 'lookup_mkw54ks1',
+};
 const WORK_DONE_GROUPS = new Set(['Completed', 'Cancelled']);
 const RFI_GROUP = "RFI's to Answer";
 
@@ -304,6 +324,7 @@ const Q = `query($id: ID!, $cursor: String, $cols: [String!]) {
     column_values(ids: $cols) {
       id text
       ... on FormulaValue { display_value }
+      ... on MirrorValue { display_value }
       ... on BoardRelationValue { linked_item_ids } } } } } }`;
 
 async function fetchBoard(id, cols) {
@@ -349,7 +370,7 @@ function weekRange(now) {
 const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 
 /* ------------------------------------------------------------------ build */
-const wCols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO];
+const wCols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO, ...Object.values(M)];
 const [icfItems, tuItems, paWorkItems, coWorkItems] = await Promise.all([
   fetchBoard(BOARD_ICF, Object.values(C)),
   fetchBoard(BOARD_TU, Object.values(T)),
@@ -545,6 +566,12 @@ for (const [items, kind] of [[paWorkItems, 'Pre-approval'], [coWorkItems, 'Close
       tuIds,
       /* Filled in below for RFIs, which sit in a shared group with no owner. */
       owners: [],
+      company:  txt(it, M.companyPA) || txt(it, M.companyCO),
+      utility:  txt(it, M.utility),
+      projType: txt(it, M.type),
+      source:   txt(it, M.source),
+      /* The tracker status, whichever tracker the row belongs to. */
+      trackerStatus: txt(it, M.status),
     });
   }
 }
@@ -570,8 +597,11 @@ for (const t of workTasks) {
 }
 const orphanRfis = workTasks.filter(t => t.rfi && !t.owners.length);
 
-/* A row's TU status is the context the workload board itself only mirrors. */
+/* The status of the project behind a row. The mirror answers for every row,
+   whichever tracker it came from; the TU join is kept only as a fallback for
+   a row whose mirror has not resolved. */
 const workStatus = t => {
+  if (t.trackerStatus) return t.trackerStatus;
   for (const id of t.tuIds) { const tu = tuById.get(id); if (tu) { const st = txt(tu, T.status); if (st) return st; } }
   return '';
 };
@@ -720,12 +750,20 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
 
   /* ---- the desk: what is queued on you right now ---- */
   const age = t => (t.waiting == null ? '' : `[${t.waiting}d] `);
-  /* Phase first. Where a row links to a project that never got an ICF board
-     row there is no phase to give, so the tracker status stands in rather
-     than leaving the line looking truncated. */
+  /* The columns the engineer sees on the workload board itself: who the
+     client is, which programme and measure type it is, what state it is in
+     and which phase it has reached. The boards hold most of these as mirrors,
+     so they are read from the TU tracker they mirror. "via CGS" only appears
+     when the work did not originate with HBS, and the board's own status
+     marker only when it says something the tracker status does not. */
   const deskLine = t => `  \u2022 ${age(t)}${t.name}` +
-    [workPhase(t) || workStatus(t), t.status, t.due ? `due ${t.due}` : '']
-      .filter(Boolean).map(x => ` \u00b7 ${x}`).join('');
+    [t.company + (t.source && t.source !== 'HBS' ? ` (via ${t.source})` : ''),
+     [t.utility, t.projType].filter(Boolean).join(' '),
+     workStatus(t),
+     workPhase(t),
+     t.due ? `due ${t.due}` : '',
+     t.status && t.status.toLowerCase() !== (workStatus(t) || '').toLowerCase() ? `board: ${t.status}` : '',
+    ].filter(Boolean).map(x => ` \u00b7 ${x}`).join('');
   const byAge = (a, b) => (b.waiting || 0) - (a.waiting || 0);
 
   if (rfis.length) {

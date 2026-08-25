@@ -625,6 +625,29 @@ const W_WAIT_CO  = "formula_mm6jpkjk";
 /* Pre-approval board only: DAYS(Completion Date, Audit Date) — how long a
    project took from audit to submitted pre-approval. */
 const W_SUBMIT   = "formula_mkvwn8vs";
+/* The workload boards are not fed by one project tracker but three. 33 of the
+   open rows link to the BGE BPTU Tracker or Potomac Edison BTU rather than the
+   Master TU Tracker, and joining only to the TU tracker leaves exactly those
+   rows with no client, utility, type or status against them.
+
+   The boards do carry all of that, as mirror columns — but a mirror reads as
+   "Column value type is not supported" through the connector this page uses,
+   so each tracker is read directly instead. Column ids differ per board; an
+   empty string means that board has no equivalent. */
+const WORK_TRACKERS = {
+  "1069746645": {   // Master TU Tracker
+    status: "status", company: "text_mkxpkdex", utility: "text", type: "type", source: "dropdown",
+    priority: "status_1", notes: "long_text", dAudit: "date_mkrvfahg", dImpl: "date_mm4b5x2",
+    paLead: "people", coLead: "people__1", ai: "text_mm4jb8gz" },
+  "6530139050": {   // BGE BPTU Tracker
+    status: "status", company: "text__1", utility: "text_mkpea39n", type: "type", source: "dropdown",
+    priority: "status_1", notes: "long_text", dAudit: "date_mkrv8cn5", dImpl: "date_mm0whh86",
+    paLead: "people", coLead: "people__1", ai: "" },
+  "8012831702": {   // Potomac Edison BTU (HBS)
+    status: "label__1", company: "text_mkzhfpv7", utility: "text_mkm0pzbm", type: "", source: "dropdown",
+    priority: "", notes: "long_text_mkp1e274", dAudit: "date_mkvxceh7", dImpl: "",
+    paLead: "", coLead: "people__1", ai: "" },
+};
 const WORK_DONE_GROUPS = new Set(["Completed", "Cancelled"]);
 const RFI_GROUP = "RFI's to Answer";
 
@@ -683,6 +706,7 @@ const T = {
   adminNotes: "long_text",
   aiSummary:  "text_mm4jb8gz",
   projectId:  "text8",
+  source:     "dropdown",     // HBS or CGS — who originated the project
   utility:    "text",
   type:       "type",
   company:    "text_mkxpkdex",
@@ -4405,12 +4429,21 @@ function hbsDigestBody(name, d) {
 
   /* ---- the desk: what is queued on you right now ---- */
   const age = t => (t.waiting == null ? "" : `[${t.waiting}d] `);
-  /* Phase first. Where a row links to a project that never got an ICF board
-     row there is no phase to give, so the tracker status stands in rather
-     than leaving the line looking truncated. */
+  /* The columns the engineer sees on the workload board itself: who the
+     client is, which programme and measure type it is, what state it is in
+     and which phase it has reached. The boards hold most of these as mirrors
+     the connector cannot read, so they are joined from the TU tracker.
+     "via CGS" only appears when the work did not originate with HBS, and the
+     board's own status marker only when it says something the tracker status
+     does not. */
   const deskLine = t => `  • ${age(t)}${t.name}` +
-    [workPhase(t) || t.tuStatus, t.status, t.due ? `due ${t.due}` : ""]
-      .filter(Boolean).map(x => ` · ${x}`).join("");
+    [t.company + (t.source && t.source !== "HBS" ? ` (via ${t.source})` : ""),
+     [t.utility && utilityLabel(t.utility), t.projType].filter(Boolean).join(" "),
+     t.tuStatus,
+     workPhase(t),
+     t.due ? `due ${t.due}` : "",
+     t.status && t.status.toLowerCase() !== (t.tuStatus || "").toLowerCase() ? `board: ${t.status}` : "",
+    ].filter(Boolean).map(x => ` · ${x}`).join("");
   const byAge = (a, b) => (b.waiting || 0) - (a.waiting || 0);
 
   if (rfis.length) {
@@ -5349,6 +5382,10 @@ async function loadWorkload() {
           added: dstr(col(it, W_ADDED_PA)) || dstr(col(it, W_ADDED_CO)),
           status: st,
           tuIds: relIds(it, W.rel, BOARD_TU),
+          /* Every link, whichever tracker it lands on. */
+          links: (it.column_values && Array.isArray(it.column_values[W.rel]) ? it.column_values[W.rel] : [])
+            .filter(r => r && r.board && WORK_TRACKERS[String(r.board.id)])
+            .map(r => ({ id: String(r.id), board: String(r.board.id) })),
         };
         const finished = WORK_DONE_GROUPS.has(group) || !!done || st === "Done" || st === "Cancelled";
         if (finished) {
@@ -5370,40 +5407,64 @@ async function loadWorkload() {
     }
     state.workHistory = history;
 
-    /* Enrich from the TU tracker, which holds the real (non-mirror) values. */
-    const need = [...new Set(raw.flatMap(t => t.tuIds))].map(Number).filter(Boolean);
-    const tuById = new Map();
-    for (let i = 0; i < need.length; i += 100) {
-      const chunk = need.slice(i, i + 100);
-      try {
-        const res = await call(MONDAY, "get_board_items_page", {
-          boardId: BOARD_TU, itemIds: chunk, limit: 100, includeColumns: true, includeGroup: true,
-          columnIds: [T.status, T.priority, T.adminNotes, T.dAudit, T.dImpl, T.auditor, T.paLead, T.coLead, T.dealOwner, T.aiSummary],
-        });
-        for (const it of ((res.payload && res.payload.items) || [])) tuById.set(String(it.id), it);
-      } catch { /* a failed chunk just means less detail on those rows */ }
+    /* Enrich from whichever tracker each row links to, since the workload
+       boards feed from three of them and hold the values only as mirrors. */
+    const byBoard = new Map();
+    for (const t of raw) for (const l of t.links) {
+      if (!byBoard.has(l.board)) byBoard.set(l.board, new Set());
+      byBoard.get(l.board).add(l.id);
     }
+    const linkedById = new Map();   // itemId -> { item, cols }
+    for (const [boardId, idSet] of byBoard) {
+      const cols = WORK_TRACKERS[boardId];
+      const wanted = [...new Set(Object.values(cols).filter(Boolean))];
+      const ids = [...idSet].map(Number).filter(Boolean);
+      for (let i = 0; i < ids.length; i += 100) {
+        try {
+          const res = await call(MONDAY, "get_board_items_page", {
+            boardId: Number(boardId), itemIds: ids.slice(i, i + 100), limit: 100,
+            includeColumns: true, includeGroup: true, columnIds: wanted,
+          });
+          for (const it of ((res.payload && res.payload.items) || [])) linkedById.set(String(it.id), { item: it, cols });
+        } catch { /* a failed chunk just means less detail on those rows */ }
+      }
+    }
+    /* The first link that resolved, and the column map for its board. */
+    const linkOf = t => { for (const l of t.links) { const hit = linkedById.get(l.id); if (hit) return hit; } return null; };
 
     const today = new Date(); today.setHours(0, 0, 0, 0);
     state.todos = raw.map(t => {
-      const tu = t.tuIds.map(id => tuById.get(id)).find(Boolean) || null;
-      const tuStatus = tu ? col(tu, T.status) : "";
+      const hit = linkOf(t);
+      const src = hit ? hit.item : null;
+      const K = hit ? hit.cols : null;
+      /* Read a column only where that tracker has one. */
+      const g = key => (src && K && K[key]) ? col(src, K[key]) : "";
+      const ppl = key => (src && K && K[key]) ? people(src, K[key]) : [];
+
+      const tuStatus = g("status");
       const rule = TU_ACTIONS[tuStatus] || null;
-      const leads = tu ? [...people(tu, T.paLead), ...people(tu, T.coLead)] : [];
+      const leads = [...ppl("paLead"), ...ppl("coLead")];
       const overdue = t.due ? (dparse(t.due) < today) : false;
       return {
         ...t, tuStatus,
-        priorityLabel: tu ? col(tu, T.priority) : "",
+        priorityLabel: g("priority"),
         need: rule ? rule.need : (t.rfiQueue ? "Answer the outstanding RFI" : "Progress this item"),
         sev: rule && rule.sev ? rule.sev : (overdue ? "serious" : "none"),
         overdue,
         lead: t.person || leads[0] || "",
-        /* An RFI belongs to whoever holds the project it is about. */
-        owners: tu ? [...new Set([...people(tu, T.paLead), ...people(tu, T.coLead),
-                                  ...people(tu, T.auditor), ...people(tu, T.dealOwner)].map(alias))].filter(Boolean) : [],
-        notes: tu ? latestNoteLine(col(tu, T.adminNotes)) : "",
-        auditDate: tu ? dstr(col(tu, T.dAudit)) : "",
-        implDate: tu ? dstr(col(tu, T.dImpl)) : "",
+        /* An RFI belongs to whoever holds the project it is about. Only the TU
+           tracker names an auditor and a deal owner; the others do not. */
+        owners: src ? [...new Set([...ppl("paLead"), ...ppl("coLead"),
+                                   ...(K === WORK_TRACKERS[String(BOARD_TU)] ? [...people(src, T.auditor), ...people(src, T.dealOwner)] : []),
+                                  ].map(alias))].filter(Boolean) : [],
+        notes: latestNoteLine(g("notes")),
+        auditDate: dstr(g("dAudit")),
+        implDate: dstr(g("dImpl")),
+        /* What the board shows as mirrors, read from the tracker behind it. */
+        company: g("company"),
+        utility: normUtility(g("utility")),
+        projType: g("type"),
+        source: g("source"),
       };
     });
     state.errors.workload = null;
