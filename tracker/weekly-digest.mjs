@@ -515,7 +515,7 @@ function rollupBody() {
     const tbd = noReviewer.filter(p => p.icfRaw.includes('TBD')).length;
     L.push('', `NO ICF REVIEWER NAMED: ${noReviewer.length}  (${tbd} marked TBD, ${noReviewer.length - tbd} left blank)`);
     L.push('  These get no reviewer digest until someone is assigned on the board.');
-    for (const p of noReviewer.sort((a, b) => b.priority - a.priority).slice(0, 10)) {
+    for (const p of noReviewer.sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0)).slice(0, 10)) {
       L.push(`  * ${p.name} - ${p.phase}${p.icfStatus ? ' / ' + p.icfStatus : ''}`);
     }
     if (noReviewer.length > 10) L.push(`  ... and ${noReviewer.length - 10} more`);
