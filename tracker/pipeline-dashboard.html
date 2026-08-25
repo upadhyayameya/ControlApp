@@ -2612,12 +2612,52 @@ function strategyStats() {
     }
   }
   const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
-  const rows = [...per.values()].filter(e => e.inFlight >= 2 || e.submitted >= 2).map(e => ({
+  const measured = [...per.values()].filter(e => e.inFlight >= 2 || e.submitted >= 2).map(e => ({
     ...e,
     reworkRate: e.inFlight ? e.rework / e.inFlight : 0,
     approvalRate: e.submitted ? e.approved / e.submitted : null,
     turnaround: mean(e.days),
   })).sort((a, b) => b.inFlight - a.inFlight);
+
+  /* Only engineers belong in an engineering comparison. Everyone else holds
+     projects for reasons that say nothing about engineering, so they come out
+     of the table — and are counted at the bottom of it, because work that
+     disappears from a view is work nobody chases. */
+  const rows = measured.filter(e => isEngineer(e.name));
+  const setAside = measured.filter(e => !isEngineer(e.name) && !isAuditor(e.name))
+    .map(e => ({ name: e.name, inFlight: e.inFlight, why: jobTitle(e.name) || (onRoster(e.name) ? "not engineering" : "not on the engineering roster") }))
+    .sort((a, b) => b.inFlight - a.inFlight);
+
+  /* ---- auditors ----
+     A different job, so a different set of numbers. An auditor is measured on
+     the audits themselves: what is booked, what is done, and how often the
+     work comes back needing doing again. Approval rate belongs to whoever
+     submits the pre-approval, which is not them. */
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const cutoff90 = new Date(today); cutoff90.setDate(cutoff90.getDate() - 90);
+  const aud = new Map();
+  const touchA = n => {
+    if (!aud.has(n)) aud.set(n, { name: n, book: 0, unbooked: 0, booked: 0, done: 0, last90: 0, reaudit: 0, notSubmitted: 0 });
+    return aud.get(n);
+  };
+  for (const p of all) {
+    for (const n of new Set(p.auditor || [])) {
+      if (!isAuditor(n)) continue;
+      const e = touchA(n);
+      const d = dparse((p.evDates || {}).dAudit);
+      const isLive = lifecycle(p) === "active";
+      if (isLive) {
+        e.book++;
+        if (!d) e.unbooked++;
+        else if (d > today) e.booked++;
+        if (p.tuStatus === "Re-Audit Needed") e.reaudit++;
+        if (d && d <= today && !(p.evDates || {}).dSubPA) e.notSubmitted++;
+      }
+      if (d && d <= today) { e.done++; if (d >= cutoff90) e.last90++; }
+    }
+  }
+  const auditors = [...aud.values()].map(e => ({ ...e, reauditRate: e.book ? e.reaudit / e.book : 0 }))
+    .sort((a, b) => b.book - a.book);
 
   /* Team-level: does carrying more actually correlate with more rework? */
   const withBoth = rows.filter(r => r.inFlight >= 3);
@@ -2632,12 +2672,12 @@ function strategyStats() {
     slope = sxx ? sxy / sxx : 0;
     corr = (sxx && syy) ? sxy / Math.sqrt(sxx * syy) : 0;
   }
-  return { rows, slope, corr, n, live };
+  return { rows, auditors, setAside, slope, corr, n, live };
 }
 
 function renderStrategy() {
   if (!state.projects.length) return `<div class="panel empty">No projects loaded yet.</div>`;
-  const { rows, slope, corr, n, live } = strategyStats();
+  const { rows, auditors, setAside, slope, corr, n, live } = strategyStats();
   const teamRework = live.length
     ? live.filter(p => REWORK_STATUSES.includes(p.tuStatus) || REWORK_ICF.includes(p.icfStatus)).length / live.length : 0;
 
@@ -2707,6 +2747,43 @@ function renderStrategy() {
       <td class="n num">${r.turnaround == null ? "—" : Math.round(r.turnaround) + "d"}</td>
     </tr>`).join("")}
   </tbody></table></div>`;
+
+  /* Named, not hidden. These people hold real projects; they are simply not
+     doing engineering on them, so their numbers say nothing here. */
+  if (setAside.length) {
+    const held = setAside.reduce((a, r) => a + r.inFlight, 0);
+    out += `<p class="ev" style="margin:-12px 0 20px">Not shown above: ${setAside.length} ${setAside.length === 1 ? "person who holds" : "people who hold"}
+      ${held} live project${held === 1 ? "" : "s"} without doing the engineering on ${held === 1 ? "it" : "them"} &mdash;
+      ${setAside.slice(0, 8).map(r => `${esc(r.name)} (${esc(r.why)}, ${r.inFlight})`).join(", ")}${setAside.length > 8 ? `, and ${setAside.length - 8} more` : ""}.
+      They own the lead or see it through; a rework rate against their name would not be a statement about engineering.</p>`;
+  }
+
+  /* ---- auditors: the same people-comparison, on the numbers that apply ---- */
+  if (auditors.length) {
+    out += `<div class="section-head"><h2>Auditors</h2>
+      <span class="hint">A different job, so different numbers. An auditor is measured on the audits &mdash;
+      what is waiting, what is done, and how much comes back needing doing again. The approval rate above belongs to
+      whoever submits the pre-approval, which is not them.</span></div>
+    <div class="panel scroller" style="margin-bottom:20px"><table><thead><tr>
+      <th>Auditor</th><th class="n">Live book</th><th class="n">Not yet booked</th><th class="n">Booked ahead</th>
+      <th class="n">Audits done</th><th class="n">Last 90 days</th><th class="n">Re-audits needed</th>
+      <th class="n">Re-audit rate</th><th class="n">Audited, not submitted</th>
+    </tr></thead><tbody>
+      ${auditors.map(r => `<tr>
+        <td><button class="linkish" data-engineer="${esc(r.name)}">${esc(r.name)}</button></td>
+        <td class="n num">${r.book}</td>
+        <td class="n num">${r.unbooked || "—"}</td>
+        <td class="n num">${r.booked || "—"}</td>
+        <td class="n num">${r.done || "—"}</td>
+        <td class="n num">${r.last90 || "—"}</td>
+        <td class="n num">${r.reaudit || "—"}</td>
+        <td class="n num">${r.book ? pct(r.reauditRate) : "—"}</td>
+        <td class="n num">${r.notSubmitted || "—"}</td>
+      </tr>`).join("")}
+    </tbody></table></div>
+    <p class="ev" style="margin:-12px 0 20px">Counted from the Auditor column on the TU tracker, not from who happens to hold the project.
+    &ldquo;Audited, not submitted&rdquo; is the pile handed on and not yet turned into an application &mdash; it is the next person's clock, shown here because it is what the audit turns into.</p>`;
+  }
 
   /* The best-response calculation: what a change actually buys. */
   const avgApproval = rows.filter(r => r.approvalRate != null);
@@ -3079,27 +3156,56 @@ function legStats(list, leg) {
    separate heading — never dropped. Work with nobody named on it is exactly
    what a tracker exists to surface, so hiding it would defeat the point.
 --------------------------------------------------------------------------- */
+/* Everyone here holds projects. Only some of them do engineering.
+
+   A deal owner appears on a project because they started it or will chase the
+   lead; a project manager and an operations director appear because somebody
+   has to. None of that makes their rework rate or approval turnaround a
+   statement about engineering, and mixing them into an engineering comparison
+   makes the comparison mean nothing. So the job is recorded, and each view
+   asks for the job it is actually about.
+
+   Auditors are engineering, but a different question: an auditor is measured
+   on audits done, the queue waiting on them and how often work comes back for
+   a re-audit — never on a pre-approval approval rate they do not submit.
+
+   Jobs confirmed by Ameya, 2026-08-25. */
 const HBS_ROSTER = {
-  "Soumya Agrawal":     {},
-  "Vaidehi Bhirud":     {},
-  "David Wilkinson":    {},
-  "Andrew White":       {},
-  "Patrick Lawson":     {},
-  "Alex Catterton":     {},
-  "Tremayne Sams":      {},
-  "Mili Nikitha":       {},
-  "Ameya Upadhyay":     {},
-  "Alejandro Espinoza": {},
-  "Sebastian Winther":  {},
-  "Kevin Guerra":       {},
-  "Devin Simons":       {},
-  "Steve Weaver":       { role: "Project manager" },
+  "Soumya Agrawal":     { job: "engineer" },
+  "Vaidehi Bhirud":     { job: "engineer" },
+  "David Wilkinson":    { job: "engineer" },
+  "Andrew White":       { job: "engineer" },
+  "Patrick Lawson":     { job: "engineer" },
+  "Alex Catterton":     { job: "engineer" },
+  "Mili Nikitha":       { job: "engineer" },
+  "Ameya Upadhyay":     { job: "engineer" },
+  "Alejandro Espinoza": { job: "engineer" },
+  "Sebastian Winther":  { job: "engineer" },
+  "Kevin Guerra":       { job: "engineer" },
+  "Devin Simons":       { job: "engineer" },
+
+  "Tremayne Sams":      { job: "auditor", title: "Auditor" },
+
+  /* Not engineering. They hold projects as owners and are counted everywhere
+     that counts work, but never in an engineering comparison. */
+  "Steve Weaver":       { job: "other", title: "Project manager", digest: true },
+  "Michael Costa":      { job: "other", title: "Operations director" },
+  "David Rodriguez":    { job: "other", title: "Operations manager" },
+  "John Rizzotti":      { job: "other", title: "Sales" },
+
   /* Has left HBS. Kept here so her remaining projects are reported as needing
      a new owner rather than quietly vanishing, but she is never emailed. */
-  "Allee Williams":     { left: true },
+  "Allee Williams":     { job: "engineer", left: true },
 };
-const onRoster = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
-const hasLeft  = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
+const onRoster   = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
+const hasLeft    = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
+const jobOf      = n => (HBS_ROSTER[n] && HBS_ROSTER[n].job) || "";
+const jobTitle   = n => (HBS_ROSTER[n] && HBS_ROSTER[n].title) || "";
+const isEngineer = n => jobOf(n) === "engineer" && !hasLeft(n);
+const isAuditor  = n => jobOf(n) === "auditor" && !hasLeft(n);
+/* Who a weekly project list is actually for. Gating on the roster alone would
+   mean that recording somebody's job title started emailing them. */
+const getsDigest = n => isEngineer(n) || isAuditor(n) || !!(HBS_ROSTER[n] && HBS_ROSTER[n].digest);
 
 /* Devashis moved from HBS to ESAI, which reviews for ICF. One person, so one
    entry: the full name is kept, and he sits on the ICF side where his work is
@@ -3599,7 +3705,7 @@ function renderGoals() {
   /* 6. the work is carried by too few people */
   {
     const perPerson = new Map();
-    for (const p of live) for (const n of p.hbsAll) if (onRoster(n) && !hasLeft(n))
+    for (const p of live) for (const n of p.hbsAll) if (isEngineer(n) || isAuditor(n))
       perPerson.set(n, (perPerson.get(n) || 0) + 1);
     const ranked = [...perPerson].sort((a, b) => b[1] - a[1]);
     /* Projects are counted once per person who holds them, so the total is a
@@ -4314,13 +4420,13 @@ function renderDigest(list) {
   const groups = [
     { key: "team", title: "Engineering team",
       hint: "The roster. These are the digests that send on Monday.",
-      list: digests.filter(d => d.org === "HBS" && onRoster(d.name) && !hasLeft(d.name)) },
+      list: digests.filter(d => d.org === "HBS" && getsDigest(d.name)) },
     { key: "left", title: "No longer at HBS",
       hint: "Still named on live projects. Nothing is emailed to them — these projects need a new owner.",
       list: digests.filter(d => d.org === "HBS" && hasLeft(d.name)) },
     { key: "other", title: "Also holding live projects",
       hint: "Reviewers, deal owners and auditors who are not on the engineering roster.",
-      list: digests.filter(d => d.org !== "HBS" || !onRoster(d.name)) },
+      list: digests.filter(d => d.org !== "HBS" || !getsDigest(d.name)) },
   ].filter(g => g.list.length);
 
   /* Collapsed by default so the whole team fits on one screen: the summary row

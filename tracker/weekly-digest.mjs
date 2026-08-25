@@ -113,26 +113,43 @@ function expandReviewers(names) {
    projects is reported to management in the roll-up instead of being emailed.
 --------------------------------------------------------------------------- */
 const HBS_ROSTER = {
-  'Soumya Agrawal':     {},
-  'Vaidehi Bhirud':     {},
-  'David Wilkinson':    {},
-  'Andrew White':       {},
-  'Patrick Lawson':     {},
-  'Alex Catterton':     {},
-  'Tremayne Sams':      {},
-  'Mili Nikitha':       {},
-  'Ameya Upadhyay':     {},
-  'Alejandro Espinoza': {},
-  'Sebastian Winther':  {},
-  'Kevin Guerra':       {},
-  'Devin Simons':       {},
-  'Steve Weaver':       { role: 'Project manager' },
+  'Soumya Agrawal':     { job: 'engineer' },
+  'Vaidehi Bhirud':     { job: 'engineer' },
+  'David Wilkinson':    { job: 'engineer' },
+  'Andrew White':       { job: 'engineer' },
+  'Patrick Lawson':     { job: 'engineer' },
+  'Alex Catterton':     { job: 'engineer' },
+  'Mili Nikitha':       { job: 'engineer' },
+  'Ameya Upadhyay':     { job: 'engineer' },
+  'Alejandro Espinoza': { job: 'engineer' },
+  'Sebastian Winther':  { job: 'engineer' },
+  'Kevin Guerra':       { job: 'engineer' },
+  'Devin Simons':       { job: 'engineer' },
+
+  'Tremayne Sams':      { job: 'auditor', title: 'Auditor' },
+
+  /* Not engineering. They hold projects as owners, so their work is counted
+     and reported, but only Steve is sent a weekly project list -- he manages
+     the projects. Operations and sales have never received one and do not
+     start receiving one by being named here. */
+  'Steve Weaver':       { job: 'other', title: 'Project manager', digest: true },
+  'Michael Costa':      { job: 'other', title: 'Operations director' },
+  'David Rodriguez':    { job: 'other', title: 'Operations manager' },
+  'John Rizzotti':      { job: 'other', title: 'Sales' },
+
   /* Has left HBS. Never emailed; her remaining projects are reported to
      management as needing a new owner rather than quietly disappearing. */
-  'Allee Williams':     { left: true },
+  'Allee Williams':     { job: 'engineer', left: true },
 };
-const onRoster = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
-const hasLeft  = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
+const onRoster   = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
+const hasLeft    = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
+const jobOf      = n => (HBS_ROSTER[n] && HBS_ROSTER[n].job) || '';
+const jobTitle   = n => (HBS_ROSTER[n] && HBS_ROSTER[n].title) || '';
+const isEngineer = n => jobOf(n) === 'engineer' && !hasLeft(n);
+const isAuditor  = n => jobOf(n) === 'auditor' && !hasLeft(n);
+/* Who a weekly project list is actually for. Gating on the roster alone would
+   mean that recording somebody's job title started emailing them. */
+const getsDigest = n => isEngineer(n) || isAuditor(n) || !!(HBS_ROSTER[n] && HBS_ROSTER[n].digest);
 
 /* Devashis moved from HBS to ESAI, which reviews for ICF. He is one person and
    is emailed once, on the ICF side, at the ESAI address already in ICF_EMAILS.
@@ -718,7 +735,7 @@ const hbsNames = new Set(), icfNames = new Set(), offRoster = new Set();
 for (const p of projects) {
   for (const n of p.hbsAll) {
     if (NOT_A_PERSON.has(n) || NOW_ICF_SIDE.has(n)) continue;
-    if (onRoster(n)) hbsNames.add(n); else offRoster.add(n);
+    if (getsDigest(n) || hasLeft(n)) hbsNames.add(n); else offRoster.add(n);
   }
   for (const n of p.icfEngs) if (!NOT_A_PERSON.has(n)) icfNames.add(n);
 }
@@ -728,7 +745,7 @@ for (const p of projects) {
 for (const t of workTasks) {
   for (const n of t.rfi ? t.owners : [t.person]) {
     if (!n || NOT_A_PERSON.has(n) || NOW_ICF_SIDE.has(n)) continue;
-    if (onRoster(n)) hbsNames.add(n); else offRoster.add(n);
+    if (getsDigest(n) || hasLeft(n)) hbsNames.add(n); else offRoster.add(n);
   }
 }
 
@@ -819,9 +836,9 @@ function rollupBody() {
     const rows2 = [...offRoster].map(n => ({ n, active: projects.filter(p => p.hbsAll.includes(n)).length }))
       .filter(r => r.active).sort((a, b) => b.active - a.active);
     if (rows2.length) {
-      L.push('', `HOLDING WORK BUT NOT ON THE ENGINEERING ROSTER: ${rows2.length}`);
-      L.push('  Deal owners, subcontracted auditors and reviewers. No digest is sent to them.');
-      for (const r of rows2.slice(0, 12)) L.push(`  * ${r.n.padEnd(26)} ${r.active} active`);
+      L.push('', `HOLDING WORK BUT NOT SENT A DIGEST: ${rows2.length}`);
+      L.push('  Deal owners, operations, sales, subcontracted auditors and reviewers.');
+      for (const r of rows2.slice(0, 12)) L.push(`  * ${r.n.padEnd(26)} ${String(r.active).padStart(4)} active${jobTitle(r.n) ? '   ' + jobTitle(r.n) : ''}`);
       if (rows2.length > 12) L.push(`  ... and ${rows2.length - 12} more`);
     }
   }
