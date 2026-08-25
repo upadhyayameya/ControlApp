@@ -453,6 +453,37 @@ details.detail summary:hover { color: var(--ink-2); }
 .dg-pill.is-good     { border-color: var(--good); }     .dg-pill.is-good b     { color: var(--good); }
 @media (max-width: 720px) { .dg-card > summary.dg-sum .to { display: none; } }
 
+/* Diagnosis cards. The verdict is carried by a word and a left rail, not by a
+   wash of colour behind the text, so the evidence stays as readable as it
+   would be on paper. */
+.claims { display: grid; gap: 12px; }
+.claim {
+  background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--rule-strong);
+  border-radius: 8px; padding: 13px 16px;
+}
+.claim-critical { border-left-color: var(--critical); }
+.claim-good     { border-left-color: var(--good); }
+.claim-none     { border-left-color: var(--rule-strong); }
+.claim-hd { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.claim-q { font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; }
+.claim-n { margin-left: auto; font-size: 12.5px; color: var(--ink-2); }
+.claim-ev { margin: 0; padding-left: 17px; display: grid; gap: 5px; font-size: 13px; color: var(--ink-2); }
+.claim-rule {
+  margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--rule);
+  font-size: 11.5px; color: var(--ink-3);
+}
+@media (max-width: 620px) { .claim-n { margin-left: 0; width: 100%; } }
+
+/* A count with its own magnitude behind it, so a column reads as a shape
+   without a separate chart. */
+.flowbar { position: relative; display: inline-block; min-width: 2.6em; padding: 1px 4px; z-index: 0; }
+.flowbar::before {
+  content: ""; position: absolute; right: 0; top: 1px; bottom: 1px; width: var(--w);
+  background: var(--accent); opacity: .16; border-radius: 2px; z-index: -1;
+}
+tr.partial td { color: var(--ink-3); }
+tr.partial .flowbar::before { opacity: .07; }
+
 .panel.pad { padding: 14px 15px; }
 .ph { margin: 0 0 11px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
 
@@ -481,6 +512,7 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="false" data-view="strategy">Strategy</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
       <button class="tab" role="tab" aria-selected="false" data-view="workload">Workload</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="goals">Missing the goal</button>
       <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
       <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
       <button class="tab" role="tab" aria-selected="false" data-view="digest">Weekly digest</button>
@@ -1123,6 +1155,8 @@ function buildProjects(icfItems, tuItems) {
         dSubPA: dstr(ci(C.dSubPA)), dPAd: dstr(ci(C.dPAd)),
         dSubCO: dstr(ci(C.dSubCO)), dCOd: dstr(ci(C.dCOd)),
         dAudit: dstr(g(T.dAudit)), dImpl: dstr(g(T.dImpl)),
+        dSowSent: dstr(g(T.dSowClient)) || dstr(g(T.dSowRahls)),
+        dSowSigned: dstr(g(T.dSowSigned)),
       },
       need: rule ? rule.need : "No status recorded — set a status on the board",
       ownerNames, ownerOrg,
@@ -1236,6 +1270,7 @@ const state = {
   calendar: [],
   todos: [],
   workHistory: [],        // finished workload rows — the turnaround record
+  goals: { paRcv: null },  // null means "use the best month achieved" 
   tasks: [],
   tasksLoaded: false,
   tasksLoading: false,
@@ -1301,6 +1336,7 @@ const VIEW_FILTERS = {
   asap:     ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
   todos:    [],
   workload: [],
+  goals:    [],
   phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
   projects: ["team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
   digest:   ["team", "engineer", "reviewer", "utility", "type", "q"],
@@ -2902,6 +2938,76 @@ function cleanDays(xs) {
    short name is left as it is rather than attributed to the wrong person.
 --------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------
+   Cycle time, leg by leg.
+
+   These definitions are Ameya's, 2026-08-25, and the distinction matters:
+   "how long a pre-approval takes" means one thing to the engineer writing it
+   and another to the reviewer approving it. Averaged together, whichever side
+   is actually slow disappears. Each leg therefore records whose clock it is.
+
+     Audit         audit carried out       -> pre-approval submitted     HBS
+     Pre-approval  pre-approval submitted  -> pre-approval received      ICF
+     SOW out       pre-approval submitted  -> SOW sent to the client     HBS
+     SOW signed    SOW sent                -> signed SOW received        client
+     Closeout      implementation done     -> closeout submitted         HBS
+     Payment       closeout submitted      -> closeout approved by ICF   ICF
+
+   "Implementation scheduled -> team on site" is deliberately missing. The TU
+   tracker carries a single Implementation Date, not a scheduled date and an
+   actual one, so that leg cannot be measured from the boards as they stand.
+   It is reported as unmeasurable rather than filled with the nearest pair of
+   dates that happen to exist.
+--------------------------------------------------------------------------- */
+const LEGS = [
+  { key: "audit", label: "Audit \u2192 PA submitted", owner: "HBS",
+    from: p => p.evDates.dAudit, to: p => p.evDates.dSubPA,
+    blurb: "An engineer turning a finished audit into a submitted application." },
+  { key: "pa", label: "PA submitted \u2192 PA received", owner: "ICF",
+    from: p => p.evDates.dSubPA, to: p => p.evDates.dPAd,
+    blurb: "The reviewer's turnaround. Nothing HBS does moves this." },
+  { key: "sowOut", label: "PA submitted \u2192 SOW sent", owner: "HBS",
+    from: p => p.evDates.dSubPA, to: p => p.evDates.dSowSent,
+    blurb: "The SOW can be written as soon as the pre-approval goes in." },
+  { key: "sowSigned", label: "SOW sent \u2192 SOW signed", owner: "Client",
+    from: p => p.evDates.dSowSent, to: p => p.evDates.dSowSigned,
+    blurb: "Waiting on the customer to sign. Chasing helps; engineering does not." },
+  { key: "closeout", label: "Implementation \u2192 closeout submitted", owner: "HBS",
+    from: p => p.evDates.dImpl, to: p => p.evDates.dSubCO,
+    blurb: "An engineer assembling the closeout package after the work is done." },
+  { key: "payment", label: "Closeout submitted \u2192 approved", owner: "ICF",
+    from: p => p.evDates.dSubCO, to: p => p.evDates.dCOd,
+    blurb: "The reviewer approving the closeout, which is when the project completes." },
+];
+
+/* A leg only counts when both ends are recorded and land the right way round.
+   A negative span is a date typed wrongly, not a fast project, and a span past
+   two years is a project that was reopened rather than one that ran that long;
+   both are excluded and counted, never averaged in. */
+const LEG_MAX_DAYS = 730;
+function legDays(p, leg) {
+  const a = dparse(leg.from(p)), b = dparse(leg.to(p));
+  if (!a || !b) return null;
+  const d = Math.round((b - a) / 86400000);
+  return (d < 0 || d > LEG_MAX_DAYS) ? NaN : d;   // NaN = recorded but unusable
+}
+function legStats(list, leg) {
+  const ok = [], bad = [];
+  for (const p of list) {
+    const d = legDays(p, leg);
+    if (d === null) continue;
+    if (Number.isNaN(d)) bad.push(p); else ok.push(d);
+  }
+  ok.sort((x, y) => x - y);
+  return {
+    leg, n: ok.length, bad: bad.length,
+    median: ok.length ? ok[ok.length >> 1] : null,
+    mean: ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : null,
+    p90: ok.length ? ok[Math.min(ok.length - 1, Math.floor(ok.length * 0.9))] : null,
+    values: ok,
+  };
+}
+
+/* ---------------------------------------------------------------------------
    Who counts as an engineer.
 
    The boards name far more people than the engineering team: deal owners,
@@ -3194,6 +3300,297 @@ function renderWorkload() {
     ${queueSection}
     ${turnSection}
     ${listSection}`;
+}
+
+/* ---------------------------------------------------------------------------
+   Why the goal is being missed.
+
+   Five explanations get offered whenever a month comes up short: too many
+   audits, no time left for pre-approvals and closeouts, too many RFIs, not
+   enough audits coming in, and the goal being unreachable in the first place.
+   They cannot all be true, and some of them are usually false.
+
+   Each one is tested here against a number the boards can produce, and each
+   card states the rule it was judged by so the verdict can be argued with.
+   Where the boards cannot answer, the card says so rather than guessing — a
+   confident wrong diagnosis costs more than an honest gap.
+--------------------------------------------------------------------------- */
+const MONTH_KEY = s => (s && s.length >= 7 ? s.slice(0, 7) : "");
+const monthLabel = k => {
+  const [y, m] = k.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+};
+
+/* One row per calendar month, counting the milestones the pipeline actually
+   recorded. Built from the project dates rather than the KPI board so that it
+   agrees with the cycle-time legs above — the KPI board also carries partner
+   firms' work, which would inflate every count here. */
+function monthlyFlow(projects, months) {
+  const keys = new Set();
+  const bump = (map, k, f) => { if (!k) return; keys.add(k); map[k] = map[k] || {}; map[k][f] = (map[k][f] || 0) + 1; };
+  const m = {};
+  for (const p of projects) {
+    bump(m, MONTH_KEY(p.evDates.dAudit), "audit");
+    bump(m, MONTH_KEY(p.evDates.dSubPA), "paSub");
+    bump(m, MONTH_KEY(p.evDates.dPAd), "paRcv");
+    bump(m, MONTH_KEY(p.evDates.dImpl), "impl");
+    bump(m, MONTH_KEY(p.evDates.dSubCO), "coSub");
+    bump(m, MONTH_KEY(p.evDates.dCOd), "coRcv");
+  }
+  const now = new Date();
+  const out = [];
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    out.push({ k, label: monthLabel(k), ...{ audit: 0, paSub: 0, paRcv: 0, impl: 0, coSub: 0, coRcv: 0 }, ...(m[k] || {}) });
+  }
+  return out;
+}
+
+const sumField = (rows, f) => rows.reduce((a, r) => a + (r[f] || 0), 0);
+const avgField = (rows, f) => (rows.length ? sumField(rows, f) / rows.length : 0);
+
+function renderGoals() {
+  const all = state.projects;
+  if (!all.length) return `<div class="panel empty">No projects have loaded yet.</div>`;
+  const live = all.filter(p => lifecycle(p) === "active");
+
+  /* Complete months only. The month in progress is always short simply because
+     it has not finished, and comparing it with finished months would
+     manufacture a shortfall that is really just the calendar. */
+  const flowAll = monthlyFlow(all, 14);
+  const flow = flowAll.slice(0, -1);
+  const recent = flow.slice(-3);
+  const prior = flow.slice(-6, -3);
+  const partial = flowAll[flowAll.length - 1];
+
+  /* ---- the benchmark ----
+     monday holds no goal column anywhere, so there is no target to read. The
+     benchmark used here is the best complete month the team has actually
+     delivered: it is beyond argument that it is achievable, because it has
+     been achieved. Type a real goal in and every verdict below re-judges. */
+  const bestPaRcv = Math.max(0, ...flow.map(r => r.paRcv));
+  const goal = state.goals && state.goals.paRcv != null ? state.goals.paRcv : bestPaRcv;
+  const lastFull = flow[flow.length - 1] || { paRcv: 0, label: "—" };
+  const gap = goal - lastFull.paRcv;
+
+  /* ---- the evidence each verdict draws on ---- */
+  const legStat = Object.fromEntries(LEGS.map(l => [l.key, legStats(all, l)]));
+
+  const auditedNotSubmitted = live.filter(p => p.evDates.dAudit && !p.evDates.dSubPA);
+  const submittedNotBack    = live.filter(p => p.evDates.dSubPA && !p.evDates.dPAd);
+  const implNotClosedOut    = live.filter(p => p.evDates.dImpl && !p.evDates.dSubCO);
+
+  const RFI_RE = /RFI|Flawed/i;
+  const rfiNow = live.filter(p => RFI_RE.test(p.tuStatus || "") || RFI_RE.test(p.icfStatus || ""));
+  const rfiQueue = state.workloadLoaded ? state.todos.filter(t => t.rfiQueue) : [];
+
+  const auditsRecent = avgField(recent, "audit"), auditsPrior = avgField(prior, "audit");
+  const subsRecent = avgField(recent, "paSub");
+  const coRecent = avgField(recent, "coSub"), coPrior = avgField(prior, "coSub");
+
+  /* ---- the five claims ---- */
+  const pctChange = (a, b) => (b ? Math.round(((a - b) / b) * 100) : null);
+  const V = { yes: "Supported", no: "Not supported", unknown: "Not enough data" };
+
+  /* A percentage swing off one or two projects is noise wearing a trend's
+     clothes: one audit becoming none is a hundred per cent drop and means
+     nothing. No verdict is declared unless there is a real month's work
+     underneath it, and no leg is judged on fewer than ten measured projects. */
+  const MIN_MONTHLY = 3, MIN_MEASURED = 10;
+  const thinFlow = auditsRecent < MIN_MONTHLY && auditsPrior < MIN_MONTHLY;
+  const thin = n => n < MIN_MEASURED;
+
+  const claims = [];
+
+  /* 1. too many audits */
+  {
+    const ratio = subsRecent ? auditsRecent / subsRecent : null;
+    const verdict = (ratio == null || thinFlow) ? V.unknown
+      : (ratio > 1.1 && auditedNotSubmitted.length > auditsRecent) ? V.yes : V.no;
+    claims.push({
+      claim: "Way too many audits",
+      verdict,
+      headline: `${auditedNotSubmitted.length} audited, not yet submitted`,
+      rule: "Supported when audits are running more than 10% ahead of pre-approval submissions and the audited-but-unsubmitted pile is bigger than a month of audits.",
+      evidence: [
+        `Last three complete months: ${auditsRecent.toFixed(0)} audits a month against ${subsRecent.toFixed(0)} pre-approvals submitted.`,
+        ratio == null ? "No submissions recorded, so the ratio cannot be formed."
+          : `That is ${ratio.toFixed(2)} audits for every submission.`,
+        `${auditedNotSubmitted.length} live project${auditedNotSubmitted.length === 1 ? " has" : "s have"} an audit date and no submission date.`,
+        legStat.audit.n
+          ? `Half of them reach submission within ${legStat.audit.median} days, but the slowest tenth take ${legStat.audit.p90} — ${legStat.audit.n} measured.`
+          : "No project has both an audit date and a submission date, so the leg cannot be timed.",
+      ],
+    });
+  }
+
+  /* 2. no time for PA / closeout work */
+  {
+    const s = legStat.audit, c = legStat.closeout;
+    const tail = s.median ? s.p90 / s.median : null;
+    const coFell = pctChange(coRecent, coPrior);
+    const verdict = (tail == null || thin(s.n)) ? V.unknown
+      : (tail >= 3 || (coFell != null && !thinFlow && coFell <= -25)) ? V.yes : V.no;
+    claims.push({
+      claim: "No time to work on pre-approvals and closeouts",
+      verdict,
+      headline: tail == null ? "not measurable" : `slowest tenth take ${Math.round(tail)}× the median`,
+      rule: "Supported when the slow tail on an HBS leg is three times its median — work started and then left — or when closeout submissions have dropped by a quarter.",
+      evidence: [
+        s.n ? `Audit to submission: median ${s.median} days, slowest tenth ${s.p90} days, across ${s.n} projects.`
+            : "Audit to submission cannot be timed on the current data.",
+        c.n ? `Implementation to closeout submitted: median ${c.median} days, slowest tenth ${c.p90} days, across ${c.n} projects.`
+            : "Implementation to closeout cannot be timed on the current data.",
+        coFell == null ? "No closeout submissions in the earlier three months to compare against."
+          : `Closeout submissions ${coFell < 0 ? "fell" : "rose"} ${Math.abs(coFell)}% over the last three months (${coPrior.toFixed(0)} to ${coRecent.toFixed(0)} a month) while audits ${auditsPrior ? (auditsRecent >= auditsPrior ? "rose" : "fell") : "ran"} ${auditsPrior ? Math.abs(pctChange(auditsRecent, auditsPrior)) + "%" : ""}.`,
+        `${implNotClosedOut.length} implemented project${implNotClosedOut.length === 1 ? "" : "s"} ${implNotClosedOut.length === 1 ? "is" : "are"} waiting for a closeout package.`,
+      ],
+    });
+  }
+
+  /* 3. RFI load */
+  {
+    const share = live.length ? rfiNow.length / live.length : 0;
+    const verdict = live.length < MIN_MEASURED ? V.unknown : share >= 0.1 ? V.yes : V.no;
+    claims.push({
+      claim: "A lot of RFIs",
+      verdict,
+      headline: `${rfiNow.length} of ${live.length} live projects (${Math.round(share * 100)}%)`,
+      rule: "Supported when more than one live project in ten is sitting in an RFI or flawed state.",
+      evidence: [
+        `${rfiNow.length} live project${rfiNow.length === 1 ? " is" : "s are"} in an RFI or flawed status right now.`,
+        state.workloadLoaded
+          ? `${rfiQueue.length} row${rfiQueue.length === 1 ? "" : "s"} sit in the shared "RFI's to Answer" queue across the two workload boards${rfiQueue.length ? `, the oldest waiting ${Math.max(...rfiQueue.map(t => t.waiting || 0))} days` : ""}.`
+          : `Open the Workload tab to also count the shared RFI queue on the two workload boards.`,
+        `An RFI does not stop the clock: these projects keep ageing inside whichever leg they were in.`,
+      ],
+    });
+  }
+
+  /* 4. audit supply */
+  {
+    const ch = pctChange(auditsRecent, auditsPrior);
+    const verdict = (ch == null || thinFlow) ? V.unknown : ch <= -15 ? V.yes : V.no;
+    claims.push({
+      claim: "Not many audits coming in",
+      verdict,
+      headline: ch == null ? "no earlier months to compare" : `${ch > 0 ? "+" : ""}${ch}% over three months`,
+      rule: "Supported when audits performed have fallen by 15% or more against the previous three months.",
+      evidence: [
+        `Last three complete months averaged ${auditsRecent.toFixed(0)} audits a month; the three before them averaged ${auditsPrior.toFixed(0)}.`,
+        ch != null && ch > 0
+          ? `Audits are rising, not falling, so a shortfall this month is not explained by the work coming in.`
+          : ch != null ? `That is the drop this claim needs.` : ``,
+        `${live.filter(p => !p.evDates.dAudit).length} live project${live.filter(p => !p.evDates.dAudit).length === 1 ? " has" : "s have"} no audit date yet — the pool an audit month is drawn from.`,
+      ].filter(Boolean),
+    });
+  }
+
+  /* 5. the goal itself */
+  {
+    const everHit = flow.filter(r => r.paRcv >= goal).length;
+    const median = [...flow.map(r => r.paRcv)].sort((a, b) => a - b)[flow.length >> 1] || 0;
+    const verdict = (!flow.length || bestPaRcv < MIN_MONTHLY) ? V.unknown : everHit === 0 ? V.yes : V.no;
+    claims.push({
+      claim: "The goal is too far fetched",
+      verdict,
+      headline: everHit ? `hit in ${everHit} of the last ${flow.length} months` : `never hit in ${flow.length} months`,
+      rule: "Supported when the goal has not been reached in any complete month on record.",
+      evidence: [
+        `The goal in use is ${goal} pre-approvals received a month.`,
+        `Best complete month on record: ${bestPaRcv}. Typical month: ${median}.`,
+        everHit
+          ? `It has been reached ${everHit} time${everHit === 1 ? "" : "s"} in ${flow.length} months, so it is reachable — the question is what changed.`
+          : `No complete month has reached it, so either the goal or the way the work runs has to change.`,
+        legStat.pa.n
+          ? `Reaching it also depends on ICF: a submission takes a median ${legStat.pa.median} days to come back, and the slowest tenth take ${legStat.pa.p90}. Submissions made this month largely land next month.`
+          : ``,
+      ].filter(Boolean),
+    });
+  }
+
+  /* ---- render ---- */
+  const tone = v => v === V.yes ? "critical" : v === V.no ? "good" : "none";
+  const stat = (v, l, cls) => `<div class="stat ${v ? (cls || "") : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+
+  const maxFlow = Math.max(1, ...flow.flatMap(r => [r.audit, r.paSub, r.paRcv, r.coSub, r.coRcv]));
+  const flowCell = (n) => {
+    const pct = Math.round((n / maxFlow) * 100);
+    return `<td class="n num"><span class="flowbar" style="--w:${pct}%">${n || "·"}</span></td>`;
+  };
+
+  return `<div class="section-head"><h2>Why the goal is being missed</h2>
+      <span class="hint">Each explanation tested against the boards. The rule behind every verdict is stated, so it can be argued with.</span></div>
+
+    <div class="stats" style="margin-bottom:8px">
+      ${stat(goal, "Monthly goal (PAs received)")}
+      ${stat(lastFull.paRcv, `Last complete month (${lastFull.label})`, gap > 0 ? "is-critical" : "is-good")}
+      ${stat(gap > 0 ? "-" + gap : "+" + Math.abs(gap), "Gap", gap > 0 ? "is-critical" : "is-good")}
+      ${stat(partial ? partial.paRcv : 0, `${partial ? partial.label : ""} so far`)}
+      ${stat(claims.filter(c => c.verdict === V.yes).length, "Explanations that hold", "is-critical")}
+    </div>
+    <p class="ev" style="margin:0 0 18px">monday holds no goal column on any board, so there is nothing to read a target from.
+    The benchmark above is the best complete month the pipeline has actually delivered &mdash; achievable by definition, because it happened.
+    <label style="margin-left:8px">Use a different monthly goal:
+      <input type="number" id="g-goal" min="0" step="1" value="${goal}" style="width:6.5em"></label></p>
+
+    <div class="claims">${claims.map(c => `
+      <div class="claim claim-${tone(c.verdict)}">
+        <div class="claim-hd">
+          <span class="claim-q">&ldquo;${esc(c.claim)}&rdquo;</span>
+          <span class="sev sev-${tone(c.verdict) === "none" ? "none" : tone(c.verdict)}">${esc(c.verdict)}</span>
+          <span class="claim-n num">${esc(c.headline)}</span>
+        </div>
+        <ul class="claim-ev">${c.evidence.map(e => `<li>${esc(e)}</li>`).join("")}
+          ${c.verdict === V.unknown ? `<li><b>Not judged:</b> there is too little recorded here for a percentage to mean anything &mdash;
+            a verdict needs at least ${MIN_MONTHLY} a month, or ${MIN_MEASURED} measured projects on a leg.</li>` : ""}</ul>
+        <div class="claim-rule">${esc(c.rule)}</div>
+      </div>`).join("")}</div>
+
+    <div class="section-head"><h2>Where the time goes</h2>
+      <span class="hint">Each leg as you defined it, and whose clock it is. A leg only counts when both dates are recorded.</span></div>
+    <div class="panel scroller"><table><thead><tr>
+      <th>Leg</th><th>Whose clock</th><th class="n">Median</th><th class="n">Mean</th>
+      <th class="n">Slowest 10%</th><th class="n">Measured</th><th>What it is</th>
+    </tr></thead><tbody>
+    ${LEGS.map(l => {
+      const s = legStat[l.key];
+      return `<tr>
+        <td><b>${esc(l.label)}</b></td>
+        <td><span class="chip ${l.owner === "ICF" ? "chip-icf" : l.owner === "HBS" ? "chip-hbs" : ""}">${esc(l.owner)}</span></td>
+        <td class="n num">${s.median == null ? `<span class="ev">—</span>` : s.median + "d"}</td>
+        <td class="n num">${s.mean == null ? `<span class="ev">—</span>` : Math.round(s.mean) + "d"}</td>
+        <td class="n num">${s.p90 == null ? `<span class="ev">—</span>` : s.p90 + "d"}</td>
+        <td class="n num">${s.n}${s.bad ? ` <span class="ev">(+${s.bad} unusable)</span>` : ""}</td>
+        <td class="who">${esc(l.blurb)}</td>
+      </tr>`;
+    }).join("")}
+    <tr>
+      <td><b>Implementation scheduled &rarr; team on site</b></td>
+      <td><span class="chip chip-hbs">HBS</span></td>
+      <td class="n num" colspan="4"><span class="sev sev-warning">cannot be measured</span></td>
+      <td class="who">The TU tracker carries one Implementation Date, not a scheduled date and an actual one.
+        Add a second date column and this leg fills in by itself.</td>
+    </tr>
+    </tbody></table></div>
+
+    <div class="section-head"><h2>Month by month</h2>
+      <span class="hint">Where the funnel narrows. ${esc(partial ? partial.label : "")} is still running, so it is shown separately.</span></div>
+    <div class="panel scroller"><table><thead><tr>
+      <th>Month</th><th class="n">Audits</th><th class="n">PA submitted</th><th class="n">PA received</th>
+      <th class="n">Implemented</th><th class="n">CO submitted</th><th class="n">CO received</th>
+    </tr></thead><tbody>
+    ${flow.map(r => `<tr>
+      <td>${esc(r.label)}</td>${flowCell(r.audit)}${flowCell(r.paSub)}${flowCell(r.paRcv)}${flowCell(r.impl)}${flowCell(r.coSub)}${flowCell(r.coRcv)}
+    </tr>`).join("")}
+    ${partial ? `<tr class="partial">
+      <td>${esc(partial.label)} <span class="ev">so far</span></td>
+      ${flowCell(partial.audit)}${flowCell(partial.paSub)}${flowCell(partial.paRcv)}${flowCell(partial.impl)}${flowCell(partial.coSub)}${flowCell(partial.coRcv)}
+    </tr>` : ""}
+    </tbody></table></div>
+    <p class="ev" style="margin-top:8px">Counted from the dates on the projects themselves, not the Monthly KPIs board.
+    That board also carries partner firms' milestones, which would inflate every figure here.</p>`;
 }
 
 /* ---- team to-dos: one card per HBS person ---- */
@@ -3964,6 +4361,7 @@ function render() {
   else if (state.view === "asap") body = renderAsap(list);
   else if (state.view === "todos") body = renderTodos();
   else if (state.view === "workload") body = renderWorkload();
+  else if (state.view === "goals") body = renderGoals();
   else if (state.view === "phases") body = renderPhases(list);
   else if (state.view === "projects") body = renderProjects(list);
   else if (state.view === "digest") body = renderDigest(list);
@@ -4076,6 +4474,15 @@ function render() {
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }));
+
+  const goalIn = main.querySelector("#g-goal");
+  if (goalIn) goalIn.addEventListener("change", e => {
+    const n = parseInt(e.target.value, 10);
+    /* Blank or nonsense puts the benchmark back to the best month achieved,
+       rather than pinning every verdict to a goal of zero. */
+    state.goals.paRcv = Number.isFinite(n) && n >= 0 ? n : null;
+    render();
+  });
 
   /* Expand/collapse all. The open state lives on the elements rather than in
      state, so re-rendering for an unrelated reason does not slam every card
@@ -4507,7 +4914,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
   state.view = t.dataset.view;
   render();
-  if ((state.view === "todos" || state.view === "mydesk" || state.view === "workload") && mcp) loadWorkload();
+  if ((state.view === "todos" || state.view === "mydesk" || state.view === "workload" || state.view === "goals") && mcp) loadWorkload();
   if (state.view === "numbers" && mcp) loadKpis();
   if (state.view === "notes" && mcp) { loadTasks(false); loadWorkload(); }
 }));
