@@ -423,6 +423,9 @@ details.detail summary:hover { color: var(--ink-2); }
 .detail-body { padding: 7px 0 2px; font-size: 12.5px; color: var(--ink-2); display: grid; gap: 5px; }
 .detail-body .k { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
 
+.panel.pad { padding: 14px 15px; }
+.ph { margin: 0 0 11px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
+
 .skel { color: var(--ink-3); font-size: 13px; padding: 20px 0; }
 .spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--rule-strong); border-top-color: var(--accent); border-radius: 50%; animation: sp .7s linear infinite; vertical-align: -1px; margin-right: 6px; }
 @keyframes sp { to { transform: rotate(360deg); } }
@@ -447,6 +450,7 @@ details.detail summary:hover { color: var(--ink-2); }
       <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
       <button class="tab" role="tab" aria-selected="false" data-view="strategy">Strategy</button>
       <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="workload">Workload</button>
       <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
       <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
       <button class="tab" role="tab" aria-selected="false" data-view="digest">Weekly digest</button>
@@ -545,6 +549,13 @@ const W = {
 };
 const W_ADDED_PA = "date_mm5w9q0r";
 const W_ADDED_CO = "date_mm5wyvbx";
+/* "Days to Respond" = DAYS(TODAY(), Date Added). The two boards give the same
+   formula different ids, so both are requested and whichever answers is used. */
+const W_WAIT_PA  = "formula_mm6jpnrw";
+const W_WAIT_CO  = "formula_mm6jpkjk";
+/* Pre-approval board only: DAYS(Completion Date, Audit Date) — how long a
+   project took from audit to submitted pre-approval. */
+const W_SUBMIT   = "formula_mkvwn8vs";
 const WORK_DONE_GROUPS = new Set(["Completed", "Cancelled"]);
 const RFI_GROUP = "RFI's to Answer";
 
@@ -731,6 +742,13 @@ function people(item, id) {
 }
 function num(item, id) {
   const n = parseFloat(String(col(item, id)).replace(/[^0-9.\-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+/* Formula columns arrive as already-formatted strings. Null when unparseable
+   so an empty formula reads as "no value" rather than zero. */
+function numStr(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
   return Number.isFinite(n) ? n : null;
 }
 function relIds(item, id, boardId) {
@@ -1091,6 +1109,7 @@ function buildProjects(icfItems, tuItems) {
       aiSummary: g(T.aiSummary),
       notes, adminNotes, evidence, evidenceFrom,
       hasTu: !!tu,
+      tuId: tu ? String(tu.id) : "",   // lets the workload boards join without re-fetching
       priority: 0, priorityWhy: [], band: "none",
       teams: [],
       meetings: [],
@@ -1186,6 +1205,7 @@ const state = {
   meetings: [],
   calendar: [],
   todos: [],
+  workHistory: [],        // finished workload rows — the turnaround record
   tasks: [],
   tasksLoaded: false,
   tasksLoading: false,
@@ -1250,6 +1270,7 @@ const VIEW_FILTERS = {
   mydesk:   ["utility", "type", "q"],
   asap:     ["team", "engineer", "reviewer", "utility", "type", "q", "count"],
   todos:    [],
+  workload: [],
   phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
   projects: ["team", "engineer", "reviewer", "utility", "type", "q", "done", "count"],
   digest:   ["team", "engineer", "reviewer", "utility", "type", "q"],
@@ -2800,6 +2821,257 @@ function todoTable(rows) {
     </tr>`).join("")}</tbody></table></div>`;
 }
 
+/* ---------------------------------------------------------------------------
+   Workload — the Pre-approval and Closeout boards.
+
+   These two boards are the queue: every project waiting for an application to
+   be written sits in a group named after the engineer who owns it, and the
+   shared "RFI's to Answer" group holds the ones a reviewer has come back on.
+
+   Their PA Lead / Utility / Status columns are mirrors, which the connector
+   cannot read, so those values are joined back from the Master TU Tracker
+   through the relation column instead. Nothing here is a mirror read.
+
+   Finished rows are kept (loadWorkload puts them in state.workHistory) because
+   they are the only record of how long this work takes.
+--------------------------------------------------------------------------- */
+function medianOf(xs) {
+  if (!xs.length) return null;
+  const a = [...xs].sort((x, y) => x - y);
+  const m = a.length >> 1;
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+
+/* The board's audit-to-submitted formula goes negative when a completion date
+   precedes the audit date, and runs to nearly two years at the top end. Both
+   are data faults, not turnaround, so they are excluded and counted rather
+   than quietly averaged in. */
+const SUBMIT_MAX_DAYS = 365;
+function cleanDays(xs) {
+  const ok = xs.filter(n => n != null && n >= 0 && n <= SUBMIT_MAX_DAYS);
+  return { ok, dropped: xs.filter(n => n != null).length - ok.length };
+}
+
+function renderWorkload() {
+  if (state.workloadLoading) return `<div class="skel"><span class="spin"></span>Reading the Pre-approval and Closeout workload boards…</div>`;
+  if (state.errors.workload) return errNote("Workload boards", state.errors.workload, MONDAY);
+  if (!state.todos.length && !state.workHistory.length) return `<div class="panel empty">Neither workload board returned any rows.</div>`;
+
+  const open = state.todos;
+  const pa = open.filter(t => t.kind === "Pre-approval");
+  const co = open.filter(t => t.kind === "Closeout");
+  const rfis = open.filter(t => t.rfiQueue);
+  const assigned = open.filter(t => !t.rfiQueue);
+  const overdue = open.filter(t => t.overdue);
+  const waits = open.map(t => t.waiting).filter(n => n != null);
+  const longest = waits.length ? Math.max(...waits) : null;
+
+  const stat = (v, l, cls) => `<div class="stat ${v ? (cls || "") : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
+
+  /* ---- projects already loaded, indexed by their TU id, so the history rows
+     can be attributed to an engineer without a second round of fetches. ---- */
+  const byTu = new Map();
+  for (const p of state.projects) if (p.tuId) byTu.set(p.tuId, p);
+  const projOf = row => row.tuIds.map(id => byTu.get(id)).find(Boolean) || null;
+
+  /* ================= 1. RFIs ================= */
+  const rfiRows = [...rfis].sort((a, b) => (b.waiting ?? -1) - (a.waiting ?? -1));
+  const rfiSection = `
+    <div class="section-head"><h2>RFIs to answer</h2>
+      <span class="hint">A reviewer has come back with a question on these. They sit in the shared queue on both boards until someone picks them up — nobody's group owns them.</span></div>
+    ${!rfiRows.length ? `<div class="panel empty">No outstanding RFIs on either board.</div>` : `
+    <div class="panel scroller"><table><thead><tr>
+      <th>Project</th><th>Board</th><th class="n">Waiting</th><th>Utility</th>
+      <th>Lead on the project</th><th>Where it sits</th><th class="n">Due</th>
+    </tr></thead><tbody>
+    ${rfiRows.map(t => {
+      const p = projOf(t);
+      const late = t.waiting != null && t.waiting >= 14;
+      return `<tr>
+        <td><div class="proj-name">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>` : esc(t.name)}</div>
+            ${t.notes ? `<div class="ev">${esc(t.notes.slice(0, 130))}</div>` : ""}</td>
+        <td><span class="chip">${esc(t.kind)}</span></td>
+        <td class="n num">${t.waiting == null ? `<span class="ev">—</span>`
+          : `<span class="${late ? "sev sev-critical" : ""}">${t.waiting}d</span>`}</td>
+        <td class="who">${esc(p && p.utility ? utilityLabel(p.utility) : "—")}</td>
+        <td class="who">${esc(t.lead || (p && p.ownerNames && p.ownerNames[0]) || "")
+          || `<span class="unassigned">nobody named</span>`}</td>
+        <td><div class="need">${esc(t.tuStatus || t.status || "—")}</div></td>
+        <td class="n num">${t.due ? `${esc(t.due)}${t.overdue ? ` <span class="sev sev-critical">overdue</span>` : ""}` : `<span class="ev">—</span>`}</td>
+      </tr>`;
+    }).join("")}
+    </tbody></table></div>`}`;
+
+  /* ================= 2. queue by engineer ================= */
+  const byEng = new Map();
+  for (const t of assigned) {
+    if (!byEng.has(t.person)) byEng.set(t.person, []);
+    byEng.get(t.person).push(t);
+  }
+  const engRows = [...byEng.entries()].map(([name, items]) => {
+    const w = items.map(t => t.waiting).filter(n => n != null);
+    return {
+      name, items,
+      pa: items.filter(t => t.kind === "Pre-approval").length,
+      co: items.filter(t => t.kind === "Closeout").length,
+      overdue: items.filter(t => t.overdue).length,
+      longest: w.length ? Math.max(...w) : null,
+      median: medianOf(w),
+    };
+  }).sort((a, b) => b.items.length - a.items.length || b.overdue - a.overdue);
+
+  const queueSection = `
+    <div class="section-head"><h2>Queue by engineer</h2>
+      <span class="hint">Each board puts an item in a group named after its owner — this is that grouping, with the two boards side by side.</span></div>
+    <div class="grid-2">
+      <div class="panel pad">
+        ${barChart(engRows.map(r => ({
+          k: r.name, v: r.items.length,
+          label: `${r.items.length}  (${r.pa} PA · ${r.co} CO)`,
+          tone: r.overdue ? "critical" : null,
+          title: `${r.name}: ${r.pa} pre-approval, ${r.co} closeout${r.overdue ? `, ${r.overdue} overdue` : ""}`,
+        })))}
+        <div class="chart-legend"><span><i style="background:var(--accent)"></i>on time</span><span><i style="background:var(--critical)"></i>has something overdue</span></div>
+      </div>
+      <div class="panel scroller"><table><thead><tr>
+        <th>Engineer</th><th class="n">Pre-app</th><th class="n">Closeout</th><th class="n">Total</th>
+        <th class="n">Overdue</th><th class="n">Longest wait</th><th class="n">Typical wait</th>
+      </tr></thead><tbody>
+      ${engRows.map(r => `<tr>
+        <td>${esc(r.name)}</td>
+        <td class="n num">${r.pa || `<span class="ev">·</span>`}</td>
+        <td class="n num">${r.co || `<span class="ev">·</span>`}</td>
+        <td class="n num"><b>${r.items.length}</b></td>
+        <td class="n num">${r.overdue ? `<span class="sev sev-critical">${r.overdue}</span>` : `<span class="ev">·</span>`}</td>
+        <td class="n num">${r.longest == null ? `<span class="ev">—</span>` : r.longest + "d"}</td>
+        <td class="n num">${r.median == null ? `<span class="ev">—</span>` : Math.round(r.median) + "d"}</td>
+      </tr>`).join("")}
+      <tr><td><b>All</b></td>
+        <td class="n num"><b>${pa.filter(t => !t.rfiQueue).length}</b></td>
+        <td class="n num"><b>${co.filter(t => !t.rfiQueue).length}</b></td>
+        <td class="n num"><b>${assigned.length}</b></td>
+        <td class="n num"><b>${assigned.filter(t => t.overdue).length}</b></td>
+        <td class="n num">${longest == null ? "—" : longest + "d"}</td>
+        <td class="n num">${medianOf(waits) == null ? "—" : Math.round(medianOf(waits)) + "d"}</td>
+      </tr>
+      </tbody></table></div>
+    </div>`;
+
+  /* ================= 3. how long this takes ================= */
+  const hist = state.workHistory;
+  const paHist = hist.filter(h => h.kind === "Pre-approval");
+  const submit = cleanDays(paHist.map(h => h.daysToSubmit));
+
+  /* Closeout has no equivalent formula on the board, so it is measured from the
+     implementation date on the project to the date the closeout row was
+     completed. Rows without both dates are simply not counted. */
+  const coDays = [];
+  for (const h of hist.filter(h => h.kind === "Closeout")) {
+    const p = projOf(h);
+    const from = p && p.evDates && p.evDates.dImpl ? dparse(p.evDates.dImpl) : null;
+    const to = h.done ? dparse(h.done) : null;
+    if (from && to) coDays.push(Math.round((to - from) / 86400000));
+  }
+  const coClean = cleanDays(coDays);
+
+  const buckets = [
+    { k: "14 days or less", test: n => n <= 14 },
+    { k: "15 – 30 days",    test: n => n > 14 && n <= 30 },
+    { k: "31 – 60 days",    test: n => n > 30 && n <= 60 },
+    { k: "61 – 90 days",    test: n => n > 60 && n <= 90 },
+    { k: "over 90 days",    test: n => n > 90 },
+  ];
+
+  /* Per-engineer turnaround, attributed through the project's PA lead. */
+  const engDays = new Map();
+  for (const h of paHist) {
+    if (h.daysToSubmit == null || h.daysToSubmit < 0 || h.daysToSubmit > SUBMIT_MAX_DAYS) continue;
+    const p = projOf(h);
+    const leads = p && p.paLead && p.paLead.length ? p.paLead : [];
+    for (const n of leads) {
+      if (!engDays.has(n)) engDays.set(n, []);
+      engDays.get(n).push(h.daysToSubmit);
+    }
+  }
+  const engDayRows = [...engDays.entries()]
+    .filter(([, v]) => v.length >= 5)          // fewer than five is not a rate
+    .map(([k, v]) => ({ k, n: v.length, med: medianOf(v) }))
+    .sort((a, b) => a.med - b.med);
+
+  const turnSection = `
+    <div class="section-head"><h2>How long this actually takes</h2>
+      <span class="hint">Measured from the finished rows on both boards, not from a target.</span></div>
+    <div class="stats" style="margin-bottom:16px">
+      ${stat(submit.ok.length ? Math.round(medianOf(submit.ok)) + "d" : "—", "Audit → pre-approval submitted (median)")}
+      ${stat(submit.ok.length ? Math.round(submit.ok.reduce((a, b) => a + b, 0) / submit.ok.length) + "d" : "—", "Same, mean")}
+      ${stat(submit.ok.length, "Pre-approvals measured")}
+      ${stat(coClean.ok.length ? Math.round(medianOf(coClean.ok)) + "d" : "—", "Implementation → closeout done (median)")}
+      ${stat(coClean.ok.length, "Closeouts measured")}
+    </div>
+    ${submit.dropped || coClean.dropped ? `<p class="ev" style="margin:-6px 0 14px">
+      ${submit.dropped + coClean.dropped} finished row${submit.dropped + coClean.dropped === 1 ? " was" : "s were"} left out:
+      the completion date falls before the audit or implementation date, or more than a year after it. Those are dates entered
+      wrongly rather than long projects, and averaging them in would move the figures above by more than the real spread does.</p>` : ""}
+    <div class="grid-2">
+      <div class="panel pad">
+        <h3 class="ph">Audit to pre-approval submitted</h3>
+        ${submit.ok.length ? barChart(buckets.map(b => {
+          const n = submit.ok.filter(b.test).length;
+          return { k: b.k, v: n, label: `${n}  (${Math.round(n / submit.ok.length * 100)}%)` };
+        })) : `<div class="empty">No finished pre-approval rows carry both dates.</div>`}
+      </div>
+      <div class="panel pad">
+        <h3 class="ph">Median days per engineer</h3>
+        ${engDayRows.length
+          ? barChart(engDayRows.map(r => ({ k: r.k, v: r.med, label: `${Math.round(r.med)}d over ${r.n}`, tone: r.med > (medianOf(submit.ok) || 0) ? "warning" : "good" })))
+            + `<p class="ev" style="margin-top:12px">Engineers with fewer than five finished pre-approvals are not shown — too few to be a rate. Attributed through the PA Lead on the project, so a project with two leads counts for both.</p>`
+          : `<div class="empty">Not enough finished pre-approvals are attributed to a named PA lead to give a per-engineer figure.</div>`}
+      </div>
+    </div>`;
+
+  /* ================= 4. the queue itself ================= */
+  const qRows = [...assigned].sort((a, b) =>
+    Number(b.overdue) - Number(a.overdue) || (b.waiting ?? -1) - (a.waiting ?? -1));
+  const listSection = `
+    <div class="section-head"><h2>Everything in the queue</h2>
+      <span class="hint">${assigned.length} item${assigned.length === 1 ? "" : "s"} sitting in someone's group, longest-waiting and overdue first.</span></div>
+    <div class="panel scroller tall"><table><thead><tr>
+      <th>Project</th><th>Board</th><th>Owner</th><th class="n">Waiting</th>
+      <th>Where it sits</th><th>Next step</th><th class="n">Due</th>
+    </tr></thead><tbody>
+    ${qRows.map(t => {
+      const p = projOf(t);
+      return `<tr>
+        <td><div class="proj-name">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>` : esc(t.name)}</div>
+            ${p && p.utility ? `<div class="ev">${esc(utilityLabel(p.utility))}</div>` : ""}</td>
+        <td><span class="chip">${esc(t.kind)}</span></td>
+        <td class="who">${esc(t.person)}</td>
+        <td class="n num">${t.waiting == null ? `<span class="ev">—</span>` : t.waiting + "d"}</td>
+        <td>${esc(t.tuStatus || t.status || "—")}</td>
+        <td><div class="need">${esc(t.need)}</div></td>
+        <td class="n num">${t.due ? `${esc(t.due)}${t.overdue ? ` <span class="sev sev-critical">overdue</span>` : ""}` : `<span class="ev">no due date</span>`}</td>
+      </tr>`;
+    }).join("")}
+    </tbody></table></div>`;
+
+  return `<div class="section-head"><h2>Workload</h2>
+      <span class="hint">The Pre-approval and Closeout boards on monday.com — who is holding what, and how long it has been sitting there.</span></div>
+    <div class="stats" style="margin-bottom:6px">
+      ${stat(open.length, "Open items")}
+      ${stat(pa.length, "Pre-approval")}
+      ${stat(co.length, "Closeout")}
+      ${stat(rfis.length, "RFIs to answer", "is-critical")}
+      ${stat(overdue.length, "Overdue", "is-critical")}
+      ${stat(longest == null ? "—" : longest + "d", "Longest wait", "is-serious")}
+    </div>
+    <p class="ev" style="margin:0 0 4px">${state.workHistory.length} finished rows are also read, and are what the turnaround figures below are measured from.
+    The boards' PA Lead, Utility and Status columns are mirrors, which cannot be read through the connector — those values come from the Master TU Tracker through the relation column instead.</p>
+    ${rfiSection}
+    ${queueSection}
+    ${turnSection}
+    ${listSection}`;
+}
+
 /* ---- team to-dos: one card per HBS person ---- */
 function renderTodos() {
   if (state.workloadLoading) return `<div class="skel"><span class="spin"></span>Reading the Preapproval and Closeout workload boards…</div>`;
@@ -3523,6 +3795,7 @@ function render() {
   else if (state.view === "strategy") body = renderStrategy();
   else if (state.view === "asap") body = renderAsap(list);
   else if (state.view === "todos") body = renderTodos();
+  else if (state.view === "workload") body = renderWorkload();
   else if (state.view === "phases") body = renderPhases(list);
   else if (state.view === "projects") body = renderProjects(list);
   else if (state.view === "digest") body = renderDigest(list);
@@ -3890,33 +4163,47 @@ async function loadWorkload() {
   if (state.workloadLoaded || state.workloadLoading) return;
   state.workloadLoading = true;
   try {
-    const cols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO];
+    const cols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO, W_SUBMIT];
     const [pa, co] = await Promise.all([
       fetchBoard(BOARD_PA_WORK, cols, null, false),
       fetchBoard(BOARD_CO_WORK, cols, null, false),
     ]);
 
-    const raw = [];
+    /* Finished rows are not to-dos, but they are the only record of how long
+       this work actually takes — so they are kept separately rather than
+       dropped, and drive the turnaround figures on the Workload tab. */
+    const raw = [], history = [];
     for (const [items, kind] of [[pa, "Pre-approval"], [co, "Closeout"]]) {
       for (const it of items) {
         const group = (it.group && it.group.title) || "";
-        if (WORK_DONE_GROUPS.has(group)) continue;              // finished work is not a to-do
-        if (col(it, W.done)) continue;                          // completed on the board
         const st = col(it, W.status);
-        if (st === "Done" || st === "Cancelled") continue;
-        raw.push({
+        const done = dstr(col(it, W.done));
+        const base = {
           id: String(it.id), name: it.name || "(untitled)", url: it.url || "",
           kind, group,
+          added: dstr(col(it, W_ADDED_PA)) || dstr(col(it, W_ADDED_CO)),
+          status: st,
+          tuIds: relIds(it, W.rel, BOARD_TU),
+        };
+        const finished = WORK_DONE_GROUPS.has(group) || !!done || st === "Done" || st === "Cancelled";
+        if (finished) {
+          if (group !== "Cancelled" && st !== "Cancelled") {
+            history.push({ ...base, done, daysToSubmit: numStr(col(it, W_SUBMIT)) });
+          }
+          continue;
+        }
+        raw.push({
+          ...base,
           person: group === RFI_GROUP ? "" : group,
           rfiQueue: group === RFI_GROUP,
           due: dstr(col(it, W.dueDate)) || dstr(col(it, W.due2)) || dstr(col(it, W.due3)),
-          added: dstr(col(it, W_ADDED_PA)) || dstr(col(it, W_ADDED_CO)),
           hours: num(it, W.hours),
-          status: st,
-          tuIds: relIds(it, W.rel, BOARD_TU),
+          /* Whole days: the board's formula carries a fraction-of-day tail. */
+          waiting: (() => { const n = numStr(col(it, W_WAIT_PA)) ?? numStr(col(it, W_WAIT_CO)); return n == null ? null : Math.floor(n); })(),
         });
       }
     }
+    state.workHistory = history;
 
     /* Enrich from the TU tracker, which holds the real (non-mirror) values. */
     const need = [...new Set(raw.flatMap(t => t.tuIds))].map(Number).filter(Boolean);
@@ -4043,7 +4330,7 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
   state.view = t.dataset.view;
   render();
-  if ((state.view === "todos" || state.view === "mydesk") && mcp) loadWorkload();
+  if ((state.view === "todos" || state.view === "mydesk" || state.view === "workload") && mcp) loadWorkload();
   if (state.view === "numbers" && mcp) loadKpis();
   if (state.view === "notes" && mcp) { loadTasks(false); loadWorkload(); }
 }));
@@ -4055,10 +4342,10 @@ $("#f-type").addEventListener("change", e => { state.type = e.target.value; rend
 let qt = null;
 $("#f-q").addEventListener("input", e => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { state.q = v; render(); }, 160); });
 $("#refresh").addEventListener("click", () => {
-  state.workloadLoaded = false; state.todos = [];
+  state.workloadLoaded = false; state.todos = []; state.workHistory = [];
   state.kpisLoaded = false; state.kpis = [];
   boot(true).then(() => {
-    if (state.view === "todos" || state.view === "mydesk") loadWorkload();
+    if (state.view === "todos" || state.view === "mydesk" || state.view === "workload") loadWorkload();
     if (state.view === "numbers") loadKpis();
   });
 });
