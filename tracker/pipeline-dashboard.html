@@ -1505,8 +1505,17 @@ function renderPipeline(list) {
   const r = periodRange(state.period, now);
   const counts = {}, prev = {}, open = {};
   for (const s of STAGES) { counts[s.key] = 0; prev[s.key] = 0; open[s.key] = 0; }
-  /* Throughput counts finished work; "open now" counts only what is still live. */
-  for (const p of filtered({ includeDone: true })) {
+  /* Throughput counts finished work; "open now" counts only what is still live.
+
+     Both the tiles and the comparison table beside them must count the same
+     projects, or the two disagree on the same screen. They did: the tiles
+     counted completed projects and the table did not, so last month lost
+     every project that has completed since and this month looked better than
+     it was. Closeout completed read "7, -12 vs prior" beside a table saying
+     7 against 7. A milestone reached last month happened whether or not the
+     project has finished since, so completed projects count in both. */
+  const throughput = filtered({ includeDone: true });
+  for (const p of throughput) {
     for (const s of STAGES) {
       const d = p.ev[s.key];
       if (inRange(d, r.start, r.end)) counts[s.key]++;
@@ -1589,7 +1598,7 @@ function renderPipeline(list) {
     .map(v => `<span class="sw" style="background:var(${v})"></span>`).join("");
 
   return `
-  ${renderCompare(list)}
+  ${renderCompare(throughput)}
   <div class="section-head">
     <h2>Funnel</h2>
     <span class="hint">Big number: milestones reached ${esc(PERIOD_LABEL[state.period])}. Bar and “open now”: where projects sit right now.</span>
@@ -4376,6 +4385,15 @@ function renderPhases(list) {
      button is the count of the table below it, so the two always agree. */
   const scope = state.phaseScope === "flight" ? "flight" : "period";
 
+  /* And the two questions need two populations, not one.
+
+     "What happened this month" has to include projects that have completed
+     since, or the month shrinks every time one finishes: 35 projects were
+     pre-approved this month, but counting only the live ones showed 15, and
+     the Pipeline funnel next door said 35. "What is sitting in this phase
+     now" is the opposite -- a completed project is not sitting anywhere. */
+  const pool = scope === "period" ? filtered({ includeDone: true }) : list;
+
   const rowFor = (p, view) => {
     const when = view.dateOf(p);
     const done = view.doneOf(p);
@@ -4392,7 +4410,13 @@ function renderPhases(list) {
     };
   };
   const rowsFor = view => {
-    const all = list.filter(view.test).map(p => rowFor(p, view));
+    /* In period scope the dates decide, not the phase a project happens to be
+       sitting in today. A project pre-approved on the 4th and moved into
+       implementation on the 11th was still pre-approved this month; gating on
+       "is it in the pre-approval phase" dropped it, which is why this tab
+       said 15 pre-approvals while the Pipeline funnel said 35 for the same
+       month. In flight scope the phase is the whole question, so it stays. */
+    const all = (scope === "period" ? pool : pool.filter(view.test)).map(p => rowFor(p, view));
     return scope === "period" ? all.filter(x => x.inPeriod) : all;
   };
 
