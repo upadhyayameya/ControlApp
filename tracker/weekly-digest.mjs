@@ -674,6 +674,31 @@ const ICF_RFI_STATES = new Set(['', 'RFI Sent to HBS', 'RFI Respond by HBS', 'Fl
 const ICF_OWED_STATES = new Set(['RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC',
   'Site Inspection Pending', 'Internal Update Required']);
 const owedToIcf = p => ICF_OWED_STATES.has(p.icfStatus || '') || p.tuStatus === 'TRC/ICF RFI Received';
+
+/* Counting RFIs for the portfolio summary.
+
+   The summary is built from the shared board only, so it cannot count RFIs
+   the way a reviewer digest does -- off the TU tracker's status. Read on its
+   own, tuStatus is empty for every row, and the summary printed "0 awaiting a
+   response from HBS" in the same run whose roll-up listed eighteen, some of
+   them seventy-five days old. Understating what we owe a client, to that
+   client's leadership, is the worst direction for this email to be wrong in.
+
+   So count from the board this email is allowed to read, with the TU fact as
+   a second signal rather than the only one. "Responed" is the board's own
+   spelling; both are accepted so that correcting the typo upstream does not
+   silently zero the figure again. */
+const ICF_RFI_OWED = new Set(['RFI Sent to HBS', 'RFI Respond by HBS']);
+const ICF_RFI_BACK = new Set(['RFI Responed by HBS', 'RFI Responded by HBS']);
+/* Answered beats outstanding: where the board says HBS has replied, the ball
+   is with ICF whatever the older status said. */
+const rfiSide = p => {
+  const s = p.icfStatus || '';
+  if (ICF_RFI_BACK.has(s)) return 'icf';
+  if (ICF_RFI_STATES.has(s) && p.tuStatus === 'TRC/ICF RFI Responded') return 'icf';
+  if (ICF_RFI_OWED.has(s) || p.tuStatus === 'TRC/ICF RFI Received') return 'hbs';
+  return '';
+};
 function rfiRule(p) {
   if (!ICF_RFI_STATES.has(p.icfStatus || '')) return null;
   if (p.tuStatus === 'TRC/ICF RFI Responded')
@@ -949,8 +974,7 @@ function icfSummaryBody() {
           : p.tuStatus === 'TRC/ICF RFI Received'
             ? { role: 'hbs' }
           : ICF_ACTIONS[p.icfStatus] || null),
-    rfi: p.tuStatus === 'TRC/ICF RFI Responded' ? 'icf'
-       : p.tuStatus === 'TRC/ICF RFI Received'  ? 'hbs' : '',
+    rfi: rfiSide(p),
   }));
 
   const withIcf = rows.filter(r => r.rule && r.rule.role === 'icf');
@@ -1163,6 +1187,19 @@ function rollupBody() {
 
 if (!projects.length) warnings.push('No projects were read from monday - do not send anything.');
 if (perEngineer.some(e => !e.to)) warnings.push('A per-engineer record has no address; skip it.');
+
+/* The portfolio summary once told ICF leadership nothing was owed to them in
+   the same run whose roll-up listed eighteen RFIs. It read the count off a
+   column its own whitelist does not carry, so it printed zero every week and
+   nothing objected. Cross-check the two rather than trust either: if the
+   pipeline says HBS owes ICF an RFI response and the summary says none,
+   the summary is wrong again and must not go out. */
+const rfiOwedPipeline = projects.filter(p => ICF_RFI_OWED.has(p.icfStatus || '')
+  || p.tuStatus === 'TRC/ICF RFI Received').length;
+const rfiOwedSummary = projects.filter(p => rfiSide(p) === 'hbs').length;
+if (rfiOwedPipeline && !rfiOwedSummary)
+  warnings.push(`The portfolio summary counts 0 RFIs owed to ICF but the pipeline finds ${rfiOwedPipeline}. `
+    + 'The summary is miscounting - do not send it to ICF.');
 
 const envelope = {
   generatedAt: new Date().toISOString(),
