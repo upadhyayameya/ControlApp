@@ -48,6 +48,17 @@ const GOALS = {
 };
 
 const BOARD_ICF = '18424932045';   // ICF/HBS Project Tracker
+/* TRC is a second reviewer, doing for their utilities what ICF does for
+   theirs. They are a different company with different people, and Ameya's
+   rule is absolute: no TRC project may appear in anything sent to ICF, and no
+   ICF project in anything sent to TRC. Each side is built from its own board
+   and nothing else -- the same whitelist that already keeps HBS-internal
+   material away from both.
+
+   The two boards are structurally identical, down to the column ids, so one
+   column map serves both and the API simply omits the handful of columns the
+   TRC board does not carry. */
+const BOARD_TRC = '18428455111';   // TRC/HBS Project Tracker
 const BOARD_TU  = '1069746645';    // Master TU Tracker
 /* The two boards where the work actually sits on someone's desk. Grouped by
    person, so the group title is the assignment. */
@@ -97,6 +108,24 @@ const ICF_EMAILS = {
   'Daniel':    'dyoo@mdenergyadvisors.com',
   'Devin':     'drohan@mdenergyadvisors.com',
   'Priscille': 'petoughe@mdenergyadvisors.com',
+};
+
+/* TRC reviewers, from their board's Engineer dropdown: Arya, Max, Brian,
+   Elonna, Peter and Carson.
+
+   NOT ONE ADDRESS IS KNOWN. Guessing one from a first name is exactly the
+   mistake that would send a company's project list to a stranger, so this
+   stays empty until Ameya supplies them. Their digests are still built and
+   counted -- they come back as unroutable with the reason, so the gap is
+   visible every week instead of being silently absent. */
+const TRC_EMAILS = {
+};
+
+/* Reviewer sides. Each names the board it may read and the addresses it may
+   reach, and nothing crosses between them. */
+const REVIEW_SIDES = {
+  ICF: { board: BOARD_ICF, emails: () => ICF_EMAILS, departed: () => ICF_DEPARTED, summaryTo: () => ICF_SUMMARY_TO },
+  TRC: { board: BOARD_TRC, emails: () => TRC_EMAILS, departed: () => ({}), summaryTo: () => [] },
 };
 
 /* Some dropdown values name a group rather than a person. Expand them to the
@@ -152,6 +181,16 @@ const HBS_SUMMARY_TO = [
 
 /* Expand a project's ICF Engineer value into real people, and say whether it
    was left unassigned. Returns { names, unassigned }. */
+/* Rewrite an action written for ICF so it names the reviewer that project
+   actually has. "the ICF/TRC RFI" becomes "the TRC RFI" on a TRC project and
+   "the ICF RFI" on an ICF one, and a bare "ICF" becomes the right company. */
+function sideWording(text, side) {
+  return String(text)
+    .replace(/\bICF\s*\/\s*TRC\b/g, side)
+    .replace(/\bTRC\s*\/\s*ICF\b/g, side)
+    .replace(/\bICF\b/g, side);
+}
+
 function expandReviewers(names) {
   const out = [];
   let unassigned = false;
@@ -439,13 +478,21 @@ const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 
 /* ------------------------------------------------------------------ build */
 const wCols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO, ...Object.values(M)];
-const [icfItems, tuItems, paWorkItems, coWorkItems, kpiItems] = await Promise.all([
+const [icfItems, trcItems, tuItems, paWorkItems, coWorkItems, kpiItems] = await Promise.all([
   fetchBoard(BOARD_ICF, Object.values(C)),
+  fetchBoard(BOARD_TRC, Object.values(C)),
   fetchBoard(BOARD_TU, Object.values(T)),
   fetchBoard(BOARD_PA_WORK, wCols),
   fetchBoard(BOARD_CO_WORK, wCols),
   fetchBoard(BOARD_KPI, Object.values(K)),
 ]);
+/* Which board a project came off IS its reviewer side, and it is the only
+   thing that decides who may be told about it. Carried on every project from
+   here on, and checked again before anything is addressed to a reviewer. */
+const reviewItems = [
+  ...icfItems.map(it => ({ it, side: 'ICF' })),
+  ...trcItems.map(it => ({ it, side: 'TRC' })),
+];
 
 const tuByIcf = new Map();
 for (const t of tuItems) {
@@ -457,7 +504,7 @@ for (const t of tuItems) {
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const wk = weekRange(new Date());
 
-const allProjects = icfItems.map(it => {
+const allProjects = reviewItems.map(({ it, side }) => {
   const tu = tuByIcf.get(String(it.id)) || null;
   const g = id => (tu ? txt(tu, id) : '');
   const gl = id => (tu ? list(tu, id) : []);
@@ -517,7 +564,7 @@ const allProjects = icfItems.map(it => {
   if (!sev) sev = aging === 'Critical' ? 'serious' : aging === 'Watch' ? 'warning' : 'none';
 
   return {
-    name: it.name, url: it.url, phase, icfStatus, tuStatus,
+    name: it.name, url: it.url, phase, icfStatus, tuStatus, side,
     projectId: txt(it, C.projectId), utility: txt(it, C.utility), type: txt(it, C.type),
     icfDates: {
       submittedPA: txt(it, C.dSubPA), paDate: txt(it, C.dPAd),
@@ -532,7 +579,13 @@ const allProjects = icfItems.map(it => {
        Tremayne between them lead hundreds of projects and received nothing. */
     hbsAll: [...new Set([...hbsEngs, ...auditor, ...paLead, ...coLead, ...owner])].filter(n => n && !NOT_A_PERSON.has(n)),
     icfEngs, icfRaw, icfUnassigned, hbsEngs, ev, current,
-    need: rule ? rule.need : 'No status recorded — set a status on the board',
+    /* The action rules were written when ICF was the only reviewer, so they
+       name ICF outright. On a TRC project that is simply wrong: it sends an
+       engineer to chase the wrong company. The reviewer's name is substituted
+       from the board the project came off, and the "ICF/TRC RFI" wording -- a
+       label both companies use on the shared statuses -- collapses to whoever
+       actually has it. */
+    need: rule ? sideWording(rule.need, side) : 'No status recorded — set a status on the board',
     ownerNames, sev, aging,
     daysInPhase: Number.isFinite(dip) ? dip : null,
     evidence: latestNote(g(T.adminNotes)) || latestNote(txt(it, C.notes)) || '',
@@ -1011,7 +1064,7 @@ function rfiRule(p) {
   return null;
 }
 
-function icfDigestBody(name, mine, departed) {
+function reviewDigestBody(name, side, mine, departed) {
   const rows = mine.map(p => ({
     name: p.name, projectId: p.projectId, utility: p.utility, type: p.type,
     phase: p.phase, status: p.icfStatus, d: p.icfDates,
@@ -1040,7 +1093,7 @@ function icfDigestBody(name, mine, departed) {
      greets a person who no longer works there. */
   if (departed) {
     L.push('Hello,', '');
-    L.push(`${name} is no longer at ICF, but these HBS projects are still assigned to ${name}`);
+    L.push(`${name} is no longer at ${side}, but these HBS projects are still assigned to ${name}`);
     L.push('on the shared tracker, so they currently reach no reviewer. Below is where each');
     L.push(`one stands as of ${new Date().toDateString()}, so they can be reassigned.`, '');
     L.push(`${rows.length} project${rows.length === 1 ? '' : 's'} to reassign.`);
@@ -1052,7 +1105,7 @@ function icfDigestBody(name, mine, departed) {
   }
   const line = r => `  * ${r.name}${r.projectId ? ` (${r.projectId})` : ''} - ${r.status || r.phase}`;
   if (onIcf.length) {
-    L.push('', `WITH ICF (${onIcf.length})`);
+    L.push('', `WITH ${side} (${onIcf.length})`);
     for (const { p: r, n } of fold(onIcf, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
   }
   if (onHbs.length) {
@@ -1079,7 +1132,7 @@ function icfDigestBody(name, mine, departed) {
       L.push(`  * ${r.name} - ${bits.join(', ')}`);
     }
   }
-  L.push('', 'Automated from the shared ICF/HBS Project Tracker.');
+  L.push('', `Automated from the shared ${side}/HBS Project Tracker.`);
   return { text: L.join('\n'), counts: { active: rows.length, yours: onIcf.length, ageing: 0, moved: 0 } };
 }
 
@@ -1122,7 +1175,11 @@ function wrapNames(names, width = 96, indent = '    ') {
 }
 
 function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed = null) {
-  if (org === 'ICF') return icfDigestBody(name, mine, departed);
+  /* Both reviewer sides get the reviewer body. Falling through to the HBS one
+     because the org happened not to be the string 'ICF' would put internal
+     workload boards, admin notes and the team scoreboard in front of an
+     outside company. */
+  if (org === 'ICF' || org === 'TRC') return reviewDigestBody(name, org, mine, departed);
 
   /* Implementation is the crew's job, not the engineer's. Ameya asked for it
      out of this email entirely, so it is dropped before anything is counted --
@@ -1368,9 +1425,24 @@ function hbsSummaryBody() {
   const idle  = projects.filter(p => !roleOf(p));
 
   const L = [];
-  L.push(`HBS \u00d7 ICF portfolio \u2014 week of ${weekOf}`, '');
-  L.push(`${projects.length} active projects across the Master TU, BPTU and shared ICF trackers.`);
-  L.push(`Whose turn: ${onHbs.length} ours \u00b7 ${onIcf.length} with ICF\u0020\u00b7 ${idle.length} with no status to act on.`);
+  const icfSide = projects.filter(p => p.side === 'ICF');
+  const trcSide = projects.filter(p => p.side === 'TRC');
+  L.push(`HBS portfolio \u2014 week of ${weekOf}`, '');
+  L.push(`${projects.length} active projects across the Master TU, BPTU and both reviewer trackers.`);
+  L.push(`Reviewed by: ${icfSide.length} ICF \u00b7 ${trcSide.length} TRC.`);
+  L.push(`Whose turn: ${onHbs.length} ours \u00b7 ${onIcf.length} with a reviewer\u0020\u00b7 ${idle.length} with no status to act on.`);
+  /* This is the internal summary, so it may hold both sides at once -- it is
+     the only thing here that may. Nothing addressed to either reviewer does.
+     The TRC reviewers cannot be emailed at all yet, which is a gap management
+     is the one to close, so it is raised here rather than left in the
+     unroutable list nobody reads. */
+  const trcOwed = trcSide.filter(p => HBS_ROLES.has(roleOf(p))).length;
+  if (trcSide.length) {
+    L.push('', `TRC SIDE (${trcSide.length} projects, ${trcOwed} on us)`);
+    L.push('  Nobody at TRC can be emailed: we hold no address for Arya, Max, Brian,');
+    L.push('  Elonna, Peter or Carson, so none of them gets a weekly update from us.');
+    L.push('  Send the addresses and they start receiving one, isolated from ICF.');
+  }
 
   const byPhase = new Map();
   for (const p of projects) if (p.phase) byPhase.set(p.phase, (byPhase.get(p.phase) || 0) + 1);
@@ -1456,10 +1528,13 @@ function hbsSummaryBody() {
 
    Same isolation as a reviewer's digest: the shared ICF/HBS board only, plus
    the one RFI fact the TU tracker is authoritative on. Nothing from the
-   internal trackers, the workload boards, the notes or the commercials.
+   internal trackers, the workload boards, the notes or the commercials -- and
+   nothing off the TRC board, which is a different company's work and the one
+   thing that must never appear in an envelope addressed to ICF.
 --------------------------------------------------------------------------- */
 function icfSummaryBody() {
-  const rows = projects.map(p => ({
+  const icfOnly = projects.filter(p => p.side === 'ICF');
+  const rows = icfOnly.map(p => ({
     name: p.name, projectId: p.projectId, phase: p.phase, status: p.icfStatus,
     reviewers: p.icfEngs, unassigned: p.icfUnassigned, raw: p.icfRaw,
     rule: (p.tuStatus === 'TRC/ICF RFI Responded'
@@ -1510,14 +1585,19 @@ function icfSummaryBody() {
   return L.join('\n');
 }
 
-const hbsNames = new Set(), icfNames = new Set(), offRoster = new Set();
+const hbsNames = new Set(), offRoster = new Set();
+/* Reviewer names are collected per side and never merged. Two companies can
+   easily use the same first name, and a single set would route one of them to
+   the other's inbox. */
+const reviewNames = { ICF: new Set(), TRC: new Set() };
 for (const p of projects) {
   for (const n of p.hbsAll) {
     if (NOT_A_PERSON.has(n) || NOW_ICF_SIDE.has(n)) continue;
     if (getsDigest(n) || hasLeft(n)) hbsNames.add(n); else offRoster.add(n);
   }
-  for (const n of p.icfEngs) if (!NOT_A_PERSON.has(n)) icfNames.add(n);
+  for (const n of p.icfEngs) if (!NOT_A_PERSON.has(n)) reviewNames[p.side].add(n);
 }
+const icfNames = reviewNames.ICF;
 /* Somebody can hold a full pre-approval or closeout queue without their name
    appearing on a single ICF board row. Routing on the pipeline alone would
    send them nothing at all. */
@@ -1550,20 +1630,40 @@ for (const name of [...hbsNames].sort()) {
     body: d.html, bodyType: 'html', plain: d.text, counts: d.counts };
   if (to) perEngineer.push(rec); else { unroutable.push({ name, org: 'HBS', reason: 'no monday user record with an email' }); }
 }
-for (const name of [...icfNames].sort()) {
-  const mine = projects.filter(p => p.icfEngs.includes(name));
-  /* A reviewer who has left is never mailed at their old address. Their queue
-     is handed to the ICF leads, who are the only people who can reassign it. */
-  const gone = ICF_DEPARTED[name] || null;
-  const to = gone ? gone.to : (ICF_EMAILS[name] || null);
-  const d = digestBody(name, 'ICF', mine, [], new Map(), gone);
-  const rec = gone
-    ? { to, name, org: 'ICF', forwardedFor: name,
-        subject: `${name} has left ICF - ${mine.length} project${mine.length === 1 ? '' : 's'} to reassign`,
-        body: d.text, counts: d.counts }
-    : { to, name, org: 'ICF', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
-  if (to) perEngineer.push(rec);
-  else unroutable.push({ name, org: 'ICF', reason: 'no address in ICF_EMAILS - included in the roll-up only', active: mine.length });
+for (const side of ['ICF', 'TRC']) {
+  const cfg = REVIEW_SIDES[side];
+  for (const name of [...reviewNames[side]].sort()) {
+    /* Filtered on the side FIRST, so a reviewer's list can only ever contain
+       projects off their own company's board. */
+    const mine = projects.filter(p => p.side === side && p.icfEngs.includes(name));
+    /* And checked again, because the filter above is one line and the cost of
+       it being wrong is a competitor's project list in the wrong inbox. A
+       digest that fails this is not sent at all. */
+    const strays = mine.filter(p => p.side !== side);
+    if (strays.length) {
+      warnings.push(`BLOCKED: ${side} digest for ${name} contained ${strays.length} project(s) `
+        + `from the other reviewer's board. Not sent. This is a bug - do not send anything to `
+        + `${side} until it is fixed.`);
+      continue;
+    }
+    /* A reviewer who has left is never mailed at their old address. Their
+       queue is handed to that side's leads, who are the only people who can
+       reassign it. */
+    const gone = cfg.departed()[name] || null;
+    const to = gone ? gone.to : (cfg.emails()[name] || null);
+    const d = digestBody(name, side, mine, [], new Map(), gone);
+    const rec = gone
+      ? { to, name, org: side, forwardedFor: name,
+          subject: `${name} has left ${side} - ${mine.length} project${mine.length === 1 ? '' : 's'} to reassign`,
+          body: d.text, counts: d.counts }
+      : { to, name, org: side, subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
+    if (to) perEngineer.push(rec);
+    else unroutable.push({ name, org: side,
+      reason: side === 'TRC'
+        ? 'no TRC address on file - nobody at TRC can be emailed until Ameya supplies one'
+        : 'no address in ICF_EMAILS - included in the roll-up only',
+      active: mine.length });
+  }
 }
 
 /* ------------------------------------------------------------------ roll-up */
@@ -1695,12 +1795,47 @@ if (perEngineer.some(e => !e.to)) warnings.push('A per-engineer record has no ad
    nothing objected. Cross-check the two rather than trust either: if the
    pipeline says HBS owes ICF an RFI response and the summary says none,
    the summary is wrong again and must not go out. */
-const rfiOwedPipeline = projects.filter(p => ICF_RFI_OWED.has(p.icfStatus || '')
-  || p.tuStatus === 'TRC/ICF RFI Received').length;
-const rfiOwedSummary = projects.filter(p => rfiSide(p) === 'hbs').length;
+const rfiOwedPipeline = projects.filter(p => p.side === 'ICF'
+  && (ICF_RFI_OWED.has(p.icfStatus || '') || p.tuStatus === 'TRC/ICF RFI Received')).length;
+const rfiOwedSummary = projects.filter(p => p.side === 'ICF' && rfiSide(p) === 'hbs').length;
 if (rfiOwedPipeline && !rfiOwedSummary)
   warnings.push(`The portfolio summary counts 0 RFIs owed to ICF but the pipeline finds ${rfiOwedPipeline}. `
     + 'The summary is miscounting - do not send it to ICF.');
+
+/* ---------------------------------------------------------------------------
+   The cross-side leak check.
+
+   ICF and TRC are competitors doing the same job for different utilities, and
+   Ameya's rule is that neither may see the other's work. The routing already
+   filters on which board a project came off, and checks it a second time, but
+   both of those reason about objects. This one reads the finished text.
+
+   Every project name from one side is searched for in every body addressed to
+   the other. It is the only check that would still catch a leak arriving
+   through a path nobody thought about -- a summary, a roll-up quoted into the
+   wrong envelope, a future section -- because by then the only thing that
+   matters is what the words say.
+
+   A hit is blocking. Nothing goes to that side until it is gone.
+--------------------------------------------------------------------------- */
+{
+  const namesOf = side => [...new Set(projects.filter(p => p.side === side)
+    .map(p => (p.name || '').trim()).filter(n => n.length > 8))];
+  const outgoing = [
+    ...perEngineer.filter(e => e.org === 'ICF' || e.org === 'TRC')
+      .map(e => ({ side: e.org, what: `${e.org} digest for ${e.name}`, body: e.body })),
+    { side: 'ICF', what: 'ICF portfolio summary', body: icfSummaryBody() },
+  ];
+  for (const o of outgoing) {
+    const other = o.side === 'ICF' ? 'TRC' : 'ICF';
+    const hits = namesOf(other).filter(n => o.body.includes(n));
+    if (hits.length) {
+      warnings.push(`BLOCKED: ${o.what} names ${hits.length} project(s) from the ${other} board `
+        + `(e.g. "${hits[0]}"). ${o.side} and ${other} must never see each other's work. `
+        + `Do not send anything to ${o.side} until this is fixed.`);
+    }
+  }
+}
 
 const envelope = {
   generatedAt: new Date().toISOString(),
