@@ -15,6 +15,33 @@
  */
 
 const API = 'https://api.monday.com/v2';
+/* Monthly KPIs -- one row per milestone reached, carrying the engineer who
+   reached it, the date, and the incentive on it. This is the only board that
+   attaches money to a person, so it is the only possible source for "how am I
+   doing" and for any comparison between engineers. */
+const BOARD_KPI = '1069742731';
+const K = { engineer: 'person', status: 'status', date: 'date4', incentive: 'numbers_2' };
+/* The board's own status labels. A row's status IS the milestone. */
+const KPI_AUDIT  = 'Audit Phase Complete';
+const KPI_PA_SUB = 'PA Submitted';
+const KPI_PA_RCV = 'PA Received';
+const KPI_CO_SUB = 'CO Submitted';
+const KPI_CO_RCV = 'CO Received';
+/* Implementations Scheduled is deliberately absent: scheduling the crew is not
+   the engineer's work, and Ameya asked for it out of their email entirely. */
+
+/* Monthly target per engineer. There is no goal column on any monday board --
+   nothing to read a target from -- so these are the numbers Ameya set, and
+   changing them is a one-line edit here rather than a code change anywhere
+   else. A null target means "no target set": the email shows the figure and
+   the team comparison, and simply does not draw a progress bar for it. */
+const TARGETS = {
+  audits: null,
+  paSubmitted: null,
+  coSubmitted: null,
+  money: null,
+};
+
 const BOARD_ICF = '18424932045';   // ICF/HBS Project Tracker
 const BOARD_TU  = '1069746645';    // Master TU Tracker
 /* The two boards where the work actually sits on someone's desk. Grouped by
@@ -402,11 +429,12 @@ const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 
 /* ------------------------------------------------------------------ build */
 const wCols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO, ...Object.values(M)];
-const [icfItems, tuItems, paWorkItems, coWorkItems] = await Promise.all([
+const [icfItems, tuItems, paWorkItems, coWorkItems, kpiItems] = await Promise.all([
   fetchBoard(BOARD_ICF, Object.values(C)),
   fetchBoard(BOARD_TU, Object.values(T)),
   fetchBoard(BOARD_PA_WORK, wCols),
   fetchBoard(BOARD_CO_WORK, wCols),
+  fetchBoard(BOARD_KPI, Object.values(K)),
 ]);
 
 const tuByIcf = new Map();
@@ -572,6 +600,132 @@ const numStr = v => {
   const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, ''));
   return Number.isFinite(n) ? n : null;
 };
+
+/* ---------------------------------------------------------------------------
+   The scoreboard.
+
+   One KPI row is one milestone reached by one person on one date, with the
+   incentive on it. Everything an engineer is measured on -- audits, pre-
+   approvals, closeouts, money -- is a count or a sum over these rows, sliced
+   by person and by period. Nothing here comes from the pipeline: a project
+   sitting in a phase is not an achievement, and counting it as one is what
+   made the old email a wall of numbers nobody read.
+
+   A row can name more than one person. It is credited to each of them rather
+   than split, because the question being answered is "did you do this", not
+   "how do we divide the money".
+--------------------------------------------------------------------------- */
+/* wk.end is exclusive -- tomorrow -- so the month has to be taken from today,
+   or on the last day of a month MONTH_START jumps to the next month and every
+   month-to-date number collapses to zero. */
+const TODAY = new Date(wk.end); TODAY.setDate(TODAY.getDate() - 1);
+const MONTH_START = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+const PREV_MONTH_START = new Date(MONTH_START.getFullYear(), MONTH_START.getMonth() - 1, 1);
+/* Days of the month already gone, and the whole month, so a month-to-date
+   figure can be judged against a pro-rated target rather than a full-month one
+   -- 3 audits on the 2nd is not "12% of target", it is ahead of pace. */
+const MONTH_ELAPSED = TODAY.getDate();
+const MONTH_LENGTH = new Date(TODAY.getFullYear(), TODAY.getMonth() + 1, 0).getDate();
+/* The same slice of last month, so a month-to-date figure is compared pace
+   against pace. All of last month against two days of this one tells an
+   engineer nothing. */
+const PREV_MONTH_CUT = new Date(PREV_MONTH_START.getFullYear(), PREV_MONTH_START.getMonth(),
+  Math.min(MONTH_ELAPSED, new Date(PREV_MONTH_START.getFullYear(), PREV_MONTH_START.getMonth() + 1, 0).getDate()) + 1);
+/* ...but in the first days of a month even that is noise: on the 1st it is one
+   day against one day, and everybody reads zero against zero. Until the month
+   has a week in it the longer view is a rolling 30 days instead, measured
+   against the 30 before it. The heading always says which window is in use --
+   an unlabelled window is how a scoreboard stops being believed. */
+const MONTH_IS_YOUNG = MONTH_ELAPSED < 7;
+const ROLLING_START = new Date(wk.end); ROLLING_START.setDate(ROLLING_START.getDate() - 30);
+const ROLLING_PREV_START = new Date(wk.end); ROLLING_PREV_START.setDate(ROLLING_PREV_START.getDate() - 60);
+
+const kpiRows = kpiItems.map(it => ({
+  name: it.name || '(untitled)',
+  people: list(it, K.engineer).map(canonName).filter(Boolean),
+  milestone: txt(it, K.status),
+  date: dparse(txt(it, K.date)),
+  money: (() => { const n = Number(String(txt(it, K.incentive)).replace(/[^0-9.-]/g, '')); return Number.isFinite(n) ? n : 0; })(),
+})).filter(r => r.date && r.milestone);
+
+const inWeek  = r => inRange(r.date, wk.prevStart, wk.end);
+const inMonth = r => inRange(r.date, MONTH_START, wk.end);
+const inPrevMonth = r => inRange(r.date, PREV_MONTH_START, PREV_MONTH_CUT);
+
+/* The longer view, and the window before it to judge it against. Both the
+   personal block and the team board use these, so an engineer is never
+   comparing their month against the team's 30 days. */
+const inLong = MONTH_IS_YOUNG ? (r => inRange(r.date, ROLLING_START, wk.end)) : inMonth;
+const inLongPrev = MONTH_IS_YOUNG ? (r => inRange(r.date, ROLLING_PREV_START, ROLLING_START)) : inPrevMonth;
+const LONG_LABEL = MONTH_IS_YOUNG ? 'YOUR LAST 30 DAYS' : `YOUR MONTH — ${MONTH_ELAPSED} of ${MONTH_LENGTH} days gone`;
+const LONG_SHORT = MONTH_IS_YOUNG ? 'last 30 days' : 'this month';
+const LONG_PREV_LABEL = MONTH_IS_YOUNG ? 'the 30 days before that'
+  : MONTH_ELAPSED === 1 ? 'day 1 of last month'
+  : `the first ${MONTH_ELAPSED} days of last month`;
+/* Share of a monthly target that should be done by now. A rolling 30 days is a
+   month's worth of days, so it is judged against the whole target. */
+const LONG_PACE = MONTH_IS_YOUNG ? 1 : MONTH_ELAPSED / MONTH_LENGTH;
+
+/* Count and value one person's milestones over one period. Passing null for
+   the person totals the whole team, which is what the comparison rows use. */
+function score(person, within) {
+  const mine = kpiRows.filter(r => within(r) && (person === null || r.people.includes(person)));
+  const of = m => mine.filter(r => r.milestone === m);
+  return {
+    audits: of(KPI_AUDIT).length,
+    paSubmitted: of(KPI_PA_SUB).length,
+    paReceived: of(KPI_PA_RCV).length,
+    coSubmitted: of(KPI_CO_SUB).length,
+    coReceived: of(KPI_CO_RCV).length,
+    money: mine.reduce((a, r) => a + r.money, 0),
+    /* Named, so the email can say WHICH ones -- a count alone tells an
+       engineer nothing they can act on or feel good about. */
+    paReceivedNames: of(KPI_PA_RCV).map(r => r.name),
+    coReceivedNames: of(KPI_CO_RCV).map(r => r.name),
+  };
+}
+
+/* Everyone who reached anything this month, so an engineer can see where they
+   sit without us hard-coding a roster into the comparison. */
+/* getsDigest, not isEngineer: the auditors are on this board too, they are the
+   ones the audit rows belong to, and a board that leaves them out is one they
+   cannot find themselves in. */
+const kpiPeople = [...new Set(kpiRows.filter(inLong).flatMap(r => r.people))].filter(n => getsDigest(n));
+
+/* Team totals count only what is credited to somebody still here. A third of
+   this board's rows carry no assignee or a deleted one, and counting those in
+   the total makes every engineer look like a rounding error against it. */
+function teamScore(within) {
+  const set = new Set(kpiPeople);
+  const rows = kpiRows.filter(r => within(r) && r.people.some(n => set.has(n)));
+  const of = m => rows.filter(r => r.milestone === m);
+  return {
+    audits: of(KPI_AUDIT).length,
+    paSubmitted: of(KPI_PA_SUB).length,
+    coSubmitted: of(KPI_CO_SUB).length,
+    money: rows.reduce((a, r) => a + r.money, 0),
+  };
+}
+
+const money = n => n >= 1000000 ? `$${(n / 1000000).toFixed(1)}m`
+  : n >= 1000 ? `$${Math.round(n / 1000)}k` : `$${Math.round(n)}`;
+
+/* Email clients strip CSS, so a real chart is out. A bar drawn in block
+   characters inside a <pre> renders identically in Outlook, Gmail and on a
+   phone, which a styled div does not. */
+/* The bars only line up in a monospace font, and Outlook renders a plain-text
+   mail in whatever proportional font the reader has set -- which turns every
+   chart into ragged noise. So an engineer's mail goes as HTML wrapped in a
+   single <pre>: the one tag that guarantees monospace and preserved spacing,
+   and one of the few the mail sanitiser allows through. */
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const asPre = text => `<pre style="font:13px/1.45 Consolas,Menlo,monospace">${esc(text)}</pre>`;
+
+function bar(value, max, width = 14) {
+  if (!(max > 0)) return '\u2591'.repeat(width);
+  const n = Math.max(0, Math.min(width, Math.round((value / max) * width)));
+  return '\u2588'.repeat(n) + '\u2591'.repeat(width - n);
+}
 
 const workTasks = [];
 for (const [items, kind] of [[paWorkItems, 'Pre-approval'], [coWorkItems, 'Closeout']]) {
@@ -850,12 +1004,15 @@ function wrapNames(names, width = 96, indent = '    ') {
 function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed = null) {
   if (org === 'ICF') return icfDigestBody(name, mine, departed);
 
+  /* Implementation is the crew's job, not the engineer's. Ameya asked for it
+     out of this email entirely, so it is dropped before anything is counted --
+     not hidden in a section further down where it still pads every total. */
+  const IMPL_PHASE = 'Implementation Phase';
+  const book = mine.filter(p => p.phase !== IMPL_PHASE);
+
   const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
-  const moved   = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], wk.prevStart, wk.end)));
-  const yours   = mine.filter(p => (p.sev === 'critical' || p.sev === 'serious') && owns(p));
-  const waiting = mine.filter(p => p.sev === 'critical' && !owns(p));
-  const ageing  = mine.filter(p => p.aging === 'Critical' && !yours.includes(p) && !waiting.includes(p));
-  const rest    = mine.filter(p => !yours.includes(p) && !waiting.includes(p) && !ageing.includes(p));
+  const yours   = book.filter(p => (p.sev === 'critical' || p.sev === 'serious') && owns(p));
+  const ageing  = book.filter(p => p.aging === 'Critical' && !yours.includes(p));
 
   const L = [];
   const first = /\s/.test(name) ? name.split(' ')[0] : name;
@@ -866,127 +1023,147 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   const paWork = work.filter(t => !t.rfi && t.kind === 'Pre-approval');
   const coWork = work.filter(t => !t.rfi && t.kind === 'Closeout');
 
-  L.push(`Hi ${first},`, '');
-  /* The pre-approval and closeout boards are what an engineer works from, so
-     they open the email. The pipeline summary follows them rather than
-     standing in front of them. */
-  L.push(`YOUR BOARDS \u2014 ${new Date().toDateString()}`);
-  L.push(work.length
-    ? [paWork.length ? `${paWork.length} pre-approval${paWork.length === 1 ? '' : 's'}` : null,
-       coWork.length ? `${coWork.length} closeout${coWork.length === 1 ? '' : 's'}` : null,
-       rfis.length ? `${rfis.length} RFI${rfis.length === 1 ? '' : 's'} to answer` : null]
-      .filter(Boolean).join(' \u00b7 ')
-    : 'Nothing queued on the pre-approval or closeout boards.');
+  const wkMe = score(name, inWeek), moMe = score(name, inLong);
+  const moPrev = score(name, inLongPrev);
+  const moTeam = teamScore(inLong);
+  const heads = Math.max(1, kpiPeople.length);
 
-  /* ---- the desk: what is queued on you right now ---- */
+  L.push(`Hi ${first},`, '');
+
+  /* ---- the snapshot, first, because it is the only part that answers "how am
+     I doing" -- everything below it is a task list, and a task list at the top
+     is what made this email something people scrolled past. ---- */
+  L.push('YOUR WEEK');
+  const wkRows = [
+    ['Audits',        wkMe.audits],
+    ['PAs submitted', wkMe.paSubmitted],
+    ['PAs approved',  wkMe.paReceived],
+    ['COs submitted', wkMe.coSubmitted],
+    ['COs paid',      wkMe.coReceived],
+  ];
+  const wkMax = Math.max(1, ...wkRows.map(r => r[1]));
+  for (const [label, v] of wkRows)
+    L.push(`  ${label.padEnd(14)}${String(v).padStart(3)}  ${bar(v, wkMax)}`);
+  L.push(`  ${'Incentive'.padEnd(14)}${money(wkMe.money).padStart(6)}`);
+
+  /* Month against the target, or against last month when no target is set.
+     A bar with no scale behind it is decoration; it is only drawn when there
+     is a real number to draw it against. */
+  L.push('', LONG_LABEL);
+  /* Against a target the month is judged on pace: the share of the target that
+     should be done by today, not the whole month's, which would tell everyone
+     they are failing on the 2nd. Without a target the yardstick is the same
+     span of last month, for the same reason. */
+  const moRows = [
+    ['Audits',        moMe.audits,      TARGETS.audits,      moPrev.audits],
+    ['PAs submitted', moMe.paSubmitted, TARGETS.paSubmitted, moPrev.paSubmitted],
+    ['COs submitted', moMe.coSubmitted, TARGETS.coSubmitted, moPrev.coSubmitted],
+  ];
+  for (const [label, v, target, prev] of moRows) {
+    if (target) {
+      const due = target * LONG_PACE;
+      const pct = Math.round((v / target) * 100);
+      const gap = target - v;
+      L.push(`  ${label.padEnd(14)}${String(v).padStart(3)}/${String(target).padEnd(3)} ${bar(v, target)} ${String(pct).padStart(3)}%` +
+             (v >= target ? '  target met'
+               : v >= due ? `  on pace, ${gap} to go`
+               : `  behind pace by ${Math.ceil(due - v)}, ${gap} to go`));
+    } else {
+      L.push(`  ${label.padEnd(14)}${String(v).padStart(6)}  ${bar(v, Math.max(1, prev, v))}   ${prev} in ${LONG_PREV_LABEL}`);
+    }
+  }
+  const mMoney = money(moMe.money);
+  if (TARGETS.money) {
+    const due = TARGETS.money * LONG_PACE;
+    const pct = Math.round((moMe.money / TARGETS.money) * 100);
+    L.push(`  ${'Incentive'.padEnd(14)}${mMoney.padStart(6)}/${money(TARGETS.money)} ${bar(moMe.money, TARGETS.money)} ${String(pct).padStart(3)}%` +
+           (moMe.money >= TARGETS.money ? '  target met'
+             : moMe.money >= due ? `  on pace, ${money(TARGETS.money - moMe.money)} to go`
+             : `  behind pace by ${money(due - moMe.money)}`));
+  } else {
+    L.push(`  ${'Incentive'.padEnd(14)}${mMoney.padStart(6)}  ${bar(moMe.money, Math.max(1, moPrev.money, moMe.money))}   ${money(moPrev.money)} in ${LONG_PREV_LABEL}`);
+  }
+
+  /* ---- where you sit. Ranked, because "who is doing better" was the ask, and
+     a rank you can see yourself in is the whole reason to read on. ---- */
+  if (kpiPeople.length > 1) {
+    const rank = kpiPeople
+      .map(n => ({ n, s: score(n, inLong) }))
+      .map(r => ({ ...r, done: r.s.audits + r.s.paSubmitted + r.s.coSubmitted }))
+      .sort((a, b) => b.done - a.done || b.s.money - a.s.money);
+    const top = Math.max(1, ...rank.map(r => r.done));
+    const mine_ = rank.findIndex(r => r.n === name);
+    L.push('', `TEAM — ${LONG_SHORT}, ranked on audits + PAs + COs submitted`
+      + `${mine_ >= 0 ? `: you are ${mine_ + 1} of ${rank.length}` : ''}`);
+    /* The three counts are shown beside the bar, not folded into it, because an
+       auditor's 13 audits and an engineer's 13 pre-approvals are not the same
+       work and a single ranked number would quietly claim they were. */
+    L.push(' '.repeat(31) + 'aud'.padStart(4) + ' ' + 'PA'.padStart(4) + ' ' + 'CO'.padStart(4));
+    for (const r of rank) {
+      const you = r.n === name;
+      const label = (you ? 'YOU' : r.n.split(' ')[0]).padEnd(12);
+      L.push(`  ${you ? '>' : ' '} ${label}${bar(r.done, top)} `
+        + `${String(r.s.audits).padStart(4)} ${String(r.s.paSubmitted).padStart(4)} ${String(r.s.coSubmitted).padStart(4)}`
+        + `   ${money(r.s.money)}`);
+    }
+    L.push(`  Team total, ${LONG_SHORT}: ${moTeam.audits} audits · ${moTeam.paSubmitted} PAs · ${moTeam.coSubmitted} COs · ${money(moTeam.money)}`);
+    L.push(`  Average per head: ${(moTeam.audits / heads).toFixed(1)} audits · ${(moTeam.paSubmitted / heads).toFixed(1)} PAs · ${(moTeam.coSubmitted / heads).toFixed(1)} COs · ${money(moTeam.money / heads)}`);
+  }
+
+  /* ---- the good news, named. A number in a scoreboard is abstract; the
+     address of the building you got approved is not. ---- */
+  const wins = [];
+  if (wkMe.paReceivedNames.length) wins.push([`PRE-APPROVED BY ICF THIS WEEK (${wkMe.paReceivedNames.length})`, wkMe.paReceivedNames]);
+  if (wkMe.coReceivedNames.length) wins.push([`CLOSED OUT — PAYMENT RECEIVED (${wkMe.coReceivedNames.length})`, wkMe.coReceivedNames]);
+  for (const [title, names] of wins) {
+    L.push('', title);
+    for (const n of names) L.push(`  ✓ ${n}`);
+  }
+
+  /* ---- now the work, shortest list first so the top of it is actionable ---- */
   const age = t => (t.waiting == null ? '' : `[${t.waiting}d] `);
-  /* The columns the engineer sees on the workload board itself: who the
-     client is, which programme and measure type it is, what state it is in
-     and which phase it has reached. The boards hold most of these as mirrors,
-     so they are read from the TU tracker they mirror. "via CGS" only appears
-     when the work did not originate with HBS, and the board's own status
-     marker only when it says something the tracker status does not. */
-  const deskLine = t => `  \u2022 ${age(t)}${t.name}` +
+  const deskLine = t => `  • ${age(t)}${t.name}` +
     [t.company + (t.source && t.source !== 'HBS' ? ` (via ${t.source})` : ''),
      [t.utility, t.projType].filter(Boolean).join(' '),
      workStatus(t),
      workPhase(t),
      t.due ? `due ${t.due}` : '',
-     t.status && t.status.toLowerCase() !== (workStatus(t) || '').toLowerCase() ? `board: ${t.status}` : '',
-    ].filter(Boolean).map(x => ` \u00b7 ${x}`).join('');
+    ].filter(Boolean).map(x => ` · ${x}`).join('');
   const byAge = (a, b) => (b.waiting || 0) - (a.waiting || 0);
 
   if (rfis.length) {
-    L.push('', `RFIs TO ANSWER (${rfis.length})`);
+    L.push('', `⚠ RFIs PENDING — ANSWER THESE FIRST (${rfis.length})`);
     for (const t of [...rfis].sort(byAge)) L.push(deskLine(t));
   }
   if (paWork.length) {
-    L.push('', `PRE-APPROVALS ON YOUR DESK (${paWork.length})`);
+    L.push('', `PRE-APPROVAL BOARD (${paWork.length})`);
     for (const t of [...paWork].sort(byAge)) L.push(deskLine(t));
   }
   if (coWork.length) {
-    L.push('', `CLOSEOUTS ON YOUR DESK (${coWork.length})`);
+    L.push('', `CLOSEOUT BOARD (${coWork.length})`);
     for (const t of [...coWork].sort(byAge)) L.push(deskLine(t));
   }
+  if (!work.length) L.push('', 'Nothing queued on the pre-approval or closeout boards.');
 
-  /* ---- then the project book behind those boards ---- */
-  L.push('', '\u2014'.repeat(28));
-  L.push('YOUR PROJECTS \u2014 ' + [`${mine.length} active`,
-          yours.length ? `${yours.length} need you` : null,
-          ageing.length ? `${ageing.length} ageing past 60 days` : null].filter(Boolean).join(' \u00b7 '));
-  const byStage = new Map();
-  for (const p of mine) if (p.current) byStage.set(p.current, (byStage.get(p.current) || 0) + 1);
-  const anyStage = STAGES.filter(s => byStage.get(s.key));
-  if (anyStage.length) L.push(anyStage.map(s => `${s.label} ${byStage.get(s.key)}`).join(' \u00b7 '));
-
-  /* ---- what needs you, gathered by the action rather than listed flat ---- */
-  if (yours.length) {
-    L.push('', `NEEDS YOUR ACTION (${yours.length})`);
-    const groups = new Map();
-    for (const p of yours) {
-      if (!groups.has(p.need)) groups.set(p.need, []);
-      groups.get(p.need).push(p);
-    }
-    const SHOW = 10, NOTES = 3;
-    for (const [need, ps] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
-      L.push('', `  ${need} (${ps.length})`);
-      const ranked = ps.sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0));
-      ranked.slice(0, SHOW).forEach((p, i) => {
-        L.push(`    \u2022 ${p.name} \u00b7 ${phaseOf(p)}${p.daysInPhase >= 60 ? ` \u00b7 ${p.daysInPhase}d` : ''}`);
-        /* The note earns its line on the few that have stalled longest. Past
-           that it repeats what the next step already said, on every row. */
-        if (i < NOTES && p.evidence && p.daysInPhase >= 60) L.push(`        ${p.evidence.slice(0, 120)}`);
-      });
-      if (ranked.length > SHOW) L.push(`    \u2026 and ${ranked.length - SHOW} more with the same next step`);
-    }
+  /* ---- anything else that is genuinely stuck. Capped: past about ten rows
+     this stops being a prompt and goes back to being a wall. ---- */
+  const stuck = [...new Set([...yours, ...ageing])]
+    .sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0));
+  if (stuck.length) {
+    L.push('', `ALSO NEEDS YOU (${stuck.length})`);
+    for (const p of stuck.slice(0, 10))
+      L.push(`  • ${p.name} · ${phaseOf(p)}${p.daysInPhase >= 60 ? ` · ${p.daysInPhase}d` : ''} — ${p.need}`);
+    if (stuck.length > 10) L.push(`  … and ${stuck.length - 10} more`);
   }
 
-  if (ageing.length) {
-    L.push('', `STOPPED \u2014 PAST 60 DAYS (${ageing.length})`);
-    for (const p of [...ageing].sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0)))
-      L.push(`  \u2022 [${p.daysInPhase == null ? '?' : p.daysInPhase}d] ${p.name} \u00b7 ${phaseOf(p)} \u00b7 ${p.need}`);
-  }
-
-  if (waiting.length) {
-    L.push('', `WITH SOMEONE ELSE (${waiting.length})`);
-    for (const p of waiting) L.push(`  \u2022 ${p.name} \u00b7 ${phaseOf(p)} \u00b7 ${p.need} \u2014 with ${p.ownerNames.join(', ')}`);
-  }
-
-  if (moved.length) {
-    L.push('', `MOVED THIS WEEK (${moved.length})`);
-    for (const p of moved) {
-      const hit = STAGES.filter(s => inRange(p.ev[s.key], wk.prevStart, wk.end)).map(s => s.label).join(', ');
-      L.push(`  \u2022 ${p.name} \u00b7 ${hit}`);
-    }
-  }
-
-  /* ---- the tail: counted, not listed ---- */
-  if (rest.length) {
-    const byPhase = new Map(), byNeed = new Map(), phaseNames = new Map();
-    for (const p of rest) {
-      byPhase.set(phaseOf(p), (byPhase.get(phaseOf(p)) || 0) + 1);
-      byNeed.set(p.need, (byNeed.get(p.need) || 0) + 1);
-      if (!phaseNames.has(phaseOf(p))) phaseNames.set(phaseOf(p), []);
-      phaseNames.get(phaseOf(p)).push(p.name);
-    }
-    const top = (m, n) => [...m].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k} ${v}`).join(' \u00b7 ');
-    L.push('', `NOTHING OWED BY YOU (${rest.length})`);
-    L.push(`  Still yours, nothing owed by you this week. Waiting on: ${top(byNeed, 4)}.`);
-    /* Named, not just counted -- you cannot check a project is in hand against
-       a number. Run together under each phase rather than one line each: the
-       names are what you scan for, and eighty of them one to a line is the
-       wall this email was rewritten to get rid of. */
-    for (const [ph, names] of [...phaseNames].sort((a, b) => b[1].length - a[1].length)) {
-      L.push('', `  ${ph} (${names.length})`);
-      for (const line of wrapNames(names.sort())) L.push(line);
-    }
-  }
+  L.push('', `You have ${book.length} project${book.length === 1 ? '' : 's'} in hand, implementation excluded.`);
 
   L.push('', 'This is an automated weekly update built from the monday.com trackers.');
   L.push('Reply to Ameya if anything here looks wrong.');
   return { text: L.join('\n'), counts: {
-    active: mine.length, yours: yours.length, ageing: ageing.length, moved: moved.length,
-    work: work.length, rfis: rfis.length, pa: paWork.length, co: coWork.length } };
+    active: book.length, yours: yours.length, ageing: ageing.length,
+    work: work.length, rfis: rfis.length, pa: paWork.length, co: coWork.length,
+    wkAudits: wkMe.audits, wkPa: wkMe.paSubmitted, wkCo: wkMe.coSubmitted, wkMoney: wkMe.money } };
 }
 
 /* ---------------------------------------------------------------------------
@@ -1075,7 +1252,7 @@ function hbsSummaryBody() {
   L.push(`  ${noReviewer.length} projects carry no ICF reviewer. They reach nobody at ICF until one is named,`);
   L.push('  and we raise it with Justin and Junior weekly.');
   for (const [n, c] of departed)
-    L.push(`  ${n} has left HBS and still holds ${c} project${c === 1 ? '' : 's'} that need a new owner.`);
+    L.push(`  ${n} has left HBS and still holds ${c} project${c === 1 ? ' that needs' : 's that need'} a new owner.`);
   for (const [n, d] of Object.entries(ICF_DEPARTED)) {
     const c = projects.filter(p => p.icfEngs.includes(n)).length;
     if (c) L.push(`  ${n} has left ICF and still holds ${c} project${c === 1 ? '' : 's'}; their queue goes to the ICF leads.`);
@@ -1191,7 +1368,8 @@ for (const name of [...hbsNames].sort()) {
   }
   const to = byName.get(name.toLowerCase()) || null;
   const d = digestBody(name, 'HBS', mine, work, phaseByTu);
-  const rec = { to, name, org: 'HBS', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
+  const rec = { to, name, org: 'HBS', subject: `Your week - ${weekOf}`,
+    body: asPre(d.text), bodyType: 'html', plain: d.text, counts: d.counts };
   if (to) perEngineer.push(rec); else { unroutable.push({ name, org: 'HBS', reason: 'no monday user record with an email' }); }
 }
 for (const name of [...icfNames].sort()) {
@@ -1279,7 +1457,7 @@ function rollupBody() {
   if (departed.length) {
     L.push('', 'STILL ASSIGNED TO SOMEONE WHO HAS LEFT');
     for (const r of departed) {
-      L.push(`  ${r.n} - ${r.mine.length} project${r.mine.length === 1 ? '' : 's'} need a new owner:`);
+      L.push(`  ${r.n} - ${r.mine.length} project${r.mine.length === 1 ? ' needs' : 's need'} a new owner:`);
       for (const p of r.mine) L.push(`    * ${p.name} - ${p.phase}${p.icfStatus ? ' / ' + p.icfStatus : ''}`);
     }
   }
