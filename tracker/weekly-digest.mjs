@@ -1586,77 +1586,177 @@ function hbsSummaryBody() {
   const onIcf = projects.filter(p => roleOf(p) === 'icf');
   const idle  = projects.filter(p => !roleOf(p));
 
-  const L = [];
+  /* Same builder the engineers' mail uses, for the same reason: management
+     asked for the charts they saw on that one. Every section is described
+     once and comes out twice -- as real tables for the HTML body, and as
+     padded monospace columns for the plain-text copy. */
+  const D = doc();
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   const icfSide = projects.filter(p => p.side === 'ICF');
   const trcSide = projects.filter(p => p.side === 'TRC');
-  L.push(`HBS portfolio \u2014 week of ${weekOf}`, '');
-  L.push(`${projects.length} active projects across the Master TU, BPTU and both reviewer trackers.`);
-  L.push(`Reviewed by: ${icfSide.length} ICF \u00b7 ${trcSide.length} TRC.`);
-  L.push(`Whose turn: ${onHbs.length} ours \u00b7 ${onIcf.length} with a reviewer\u0020\u00b7 ${idle.length} with no status to act on.`);
-  /* This is the internal summary, so it may hold both sides at once -- it is
-     the only thing here that may. Nothing addressed to either reviewer does.
-     The TRC reviewers cannot be emailed at all yet, which is a gap management
-     is the one to close, so it is raised here rather than left in the
-     unroutable list nobody reads. */
-  const trcOwed = trcSide.filter(p => HBS_ROLES.has(roleOf(p))).length;
-  if (trcSide.length) {
-    L.push('', `TRC SIDE (${trcSide.length} projects, ${trcOwed} on us)`);
-    L.push('  Nobody at TRC can be emailed: we hold no address for Arya, Max, Brian,');
-    L.push('  Elonna, Peter or Carson, so none of them gets a weekly update from us.');
-    L.push('  Send the addresses and they start receiving one, isolated from ICF.');
+
+  D.p(`${projects.length} active projects across the Master TU, BPTU and both reviewer trackers, `
+    + `week of ${weekOf}.`);
+
+  /* ---- whose turn it is, first: it is the one number that says whether the
+     portfolio is blocked on us or on somebody else. ---- */
+  const turnRows = [
+    ['Ours to move',            onHbs.length],
+    ['With a reviewer',         onIcf.length],
+    ['No status to act on',     idle.length],
+  ];
+  const turnTop = Math.max(1, ...turnRows.map(r => r[1]));
+  D.h('Whose turn it is');
+  D.table(
+    [{ h: 'Side', w: 22 }, { h: 'Projects', align: 'r' }, { h: 'Share' }, { h: '%', align: 'r' }],
+    turnRows.map(([l, n]) => [l, n, bar(n, turnTop),
+      `${Math.round((n / Math.max(1, projects.length)) * 100)}%`]));
+  D.note(`Reviewed by ${icfSide.length} ICF · ${trcSide.length} TRC. `
+    + 'The third row is board hygiene, not work — those projects carry no status anyone can act on.');
+
+  /* ---- the goals. Team milestones over a whole month, so the honest read is
+     against the share due by today, not against the full month on day one. ---- */
+  const moTeam = teamScore(inMonth), prevTeam = teamScore(inPrevMonth);
+  const goalRows = [
+    ['PAs submitted to ICF', GOALS.paSubmitted,     moTeam.$paSubmitted,     prevTeam.$paSubmitted],
+    ['PAs approved by ICF',  GOALS.paReceived,      moTeam.$paReceived,      prevTeam.$paReceived],
+    ['Implementations',      GOALS.implementations, moTeam.$implementations, prevTeam.$implementations],
+    ['Closeouts paid',       GOALS.coReceived,      moTeam.$coReceived,      prevTeam.$coReceived],
+  ].filter(r => r[1]);
+  if (goalRows.length) {
+    D.h(`Team goals — ${MONTH_NAME} (${MONTH_ELAPSED} of ${MONTH_LENGTH} days gone)`);
+    D.table(
+      [{ h: 'Milestone', w: 24 }, { h: 'So far', align: 'r' }, { h: 'Goal', align: 'r' },
+       { h: 'Progress' }, { h: 'Against pace', w: 24 }, { h: PREV_MONTH_NAME, align: 'r' }],
+      goalRows.map(([label, goal, team, prev]) => {
+        const due = goal * MONTH_PACE;
+        const pace = team >= goal ? 'goal met'
+          : team >= due ? `on pace, ${money(goal - team)} to go`
+          : `behind by ${money(due - team)}`;
+        return [label, money(team), money(goal), `${bar(team, goal)} ${Math.round((team / goal) * 100)}%`,
+          pace, money(prev)];
+      }));
+    D.note(`Each milestone is $1m for the whole team over the whole month — there are no per-engineer `
+      + `goals. "Against pace" compares what is in against the ${Math.round(MONTH_PACE * 100)}% of the `
+      + `month that has gone.`);
   }
 
-  /* The three spans, and who owns each. The implementation one is here and not
-     in an engineer's email because, as Ameya put it, it is not on the engineer
-     -- it is on the operations manager. Putting it in front of the wrong
-     person is how a number gets ignored by everybody. */
-  const legLine = (label, owner, t) => `  ${label.padEnd(34)} ${(t.days == null ? '—' : `${t.days}d`).padStart(5)}`
-    + `  over ${String(t.n).padStart(4)} projects   ${owner}`;
-  L.push('', 'AVERAGE DAYS PER LEG');
-  L.push(legLine('Audit finished → PA submitted', 'engineers', legAvg('pa', null)));
-  L.push(legLine('PA approved → implementation', 'operations (David R)', legAvg('impl', null)));
-  L.push(legLine('Implementation → CO submitted', 'engineers', legAvg('co', null)));
-  L.push('  Every project carrying both dates. The reviewer\'s own turnaround is separate:');
-  const paT = turnaround(PA_LEGS, null, inMonth), coT = turnaround(CO_LEGS, null, inMonth);
-  L.push(`  PA submitted → approved ${paT.days == null ? '—' : paT.days + 'd'} (${paT.n} back this month), `
-    + `CO submitted → paid ${coT.days == null ? '—' : coT.days + 'd'} (${coT.n} back).`);
+  /* ---- who is doing the work. The same board the engineers see, so nobody is
+     being measured on a number they were never shown. ---- */
+  if (kpiPeople.length > 1) {
+    const rank = kpiPeople
+      .map(n => ({ n, s: score(n, inMonth), prev: score(n, inPrevMonth) }))
+      .map(r => ({ ...r, done: r.s.audits + r.s.paSubmitted + r.s.coSubmitted }))
+      .sort((a, b) => b.done - a.done || b.s.money - a.s.money);
+    const top = Math.max(1, ...rank.map(r => r.done));
+    D.h(`Team board — ${MONTH_NAME}`);
+    D.table(
+      [{ h: 'Engineer', w: 18 }, { h: `${MONTH_NAME} — audits + PAs + COs` },
+       { h: 'Aud', align: 'r' }, { h: 'PA', align: 'r' }, { h: 'CO', align: 'r' }, { h: 'Incentive', align: 'r' },
+       { h: `${PREV_MONTH_NAME} aud`, align: 'r' }, { h: 'PA', align: 'r' }, { h: 'CO', align: 'r' },
+       { h: 'Incentive', align: 'r' }],
+      rank.map(r => [r.n.split(' ')[0], `${bar(r.done, top)} ${r.done}`,
+        r.s.audits, r.s.paSubmitted, r.s.coSubmitted, money(r.s.money),
+        r.prev.audits, r.prev.paSubmitted, r.prev.coSubmitted, money(r.prev.money)]));
+    const teamLine = (s, label) => `Team, ${label}: ${plural(s.audits, 'audit', 'audits')} · `
+      + `${plural(s.paSubmitted, 'PA', 'PAs')} · ${plural(s.implementations, 'implementation', 'implementations')} · `
+      + `${plural(s.coSubmitted, 'CO', 'COs')} · ${money(s.money)}`;
+    D.note(teamLine(moTeam, `${MONTH_NAME} so far`));
+    D.note(teamLine(prevTeam, PREV_MONTH_NAME));
+  }
 
+  /* ---- the three spans we own, and who owns each. The implementation leg is
+     here and not in an engineer's email because, as Ameya put it, it is not on
+     the engineer -- it is on the operations manager. Putting it in front of
+     the wrong person is how a number gets ignored by everybody. ---- */
+  const legs = [
+    ['Audit finished → PA submitted',  'Engineers',            legAvg('pa', null)],
+    ['PA approved → implementation',   'Operations (David R)', legAvg('impl', null)],
+    ['Implementation → CO submitted',  'Engineers',            legAvg('co', null)],
+  ];
+  const legTop = Math.max(1, ...legs.map(l => l[2].days || 0));
+  D.h('Average days per leg — ours');
+  D.table(
+    [{ h: 'Leg', w: 32 }, { h: 'Owner', w: 20 }, { h: 'Avg days', align: 'r' },
+     { h: 'Length' }, { h: 'Projects', align: 'r' }],
+    legs.map(([label, owner, t]) => [label, owner, t.days == null ? '—' : `${t.days}d`,
+      bar(t.days || 0, legTop), t.n]));
+  D.note('Every active project carrying both dates. A longer bar is a longer wait — '
+    + 'this is the part of the calendar that is ours.');
+
+  /* Kept in a separate table on purpose. One measures us and can be worked on;
+     the other measures the reviewer and cannot. */
+  const rt = t => (t.days == null || t.n < 3 ? (t.n ? `— (${t.n})` : '—') : `${t.days}d`);
+  const paT = turnaround(PA_LEGS, null, inMonth), coT = turnaround(CO_LEGS, null, inMonth);
+  const paTPrev = turnaround(PA_LEGS, null, inPrevMonth), coTPrev = turnaround(CO_LEGS, null, inPrevMonth);
+  const revTop = Math.max(1, paT.days || 0, coT.days || 0, paTPrev.days || 0, coTPrev.days || 0);
+  /* A bar beside a figure we have just refused to print would put the number
+     back on the page in picture form -- and a one-project median drawn full
+     width is the most confident-looking thing in the mail. Empty until the
+     sample is big enough to mean something. */
+  const rbar = t => (t.days == null || t.n < 3 ? bar(0, revTop) : bar(t.days, revTop));
+  D.h('Average days per leg — the reviewer');
+  D.table(
+    [{ h: 'Leg', w: 32 }, { h: MONTH_NAME, align: 'r' }, { h: 'Length' },
+     { h: 'Back', align: 'r' }, { h: PREV_MONTH_NAME, align: 'r' }, { h: 'Back', align: 'r' }],
+    [['PA submitted → approved', rt(paT), rbar(paT), paT.n, rt(paTPrev), paTPrev.n],
+     ['CO submitted → paid',     rt(coT), rbar(coT), coT.n, rt(coTPrev), coTPrev.n]]);
+  D.note('Median over what actually came back in the month, counted in the month it returned. '
+    + 'Under three projects the figure is not shown — that is one project, not a trend.');
+
+  /* ---- the shape of the book. ---- */
   const byPhase = new Map();
   for (const p of projects) if (p.phase) byPhase.set(p.phase, (byPhase.get(p.phase) || 0) + 1);
   if (byPhase.size) {
-    L.push('', 'WHERE THE WORK SITS');
-    for (const [ph, n] of [...byPhase].sort((a, b) => b[1] - a[1])) L.push(`  ${ph}: ${n}`);
+    const rows = [...byPhase].sort((a, b) => b[1] - a[1]);
+    const phTop = Math.max(1, ...rows.map(r => r[1]));
+    D.h('Where the work sits');
+    D.table(
+      [{ h: 'Phase', w: 30 }, { h: 'Projects', align: 'r' }, { h: 'Share' }, { h: '%', align: 'r' }],
+      rows.map(([ph, n]) => [ph, n, bar(n, phTop),
+        `${Math.round((n / Math.max(1, projects.length)) * 100)}%`]));
   }
 
-  /* What actually moved. The roll-up prints the full funnel; management only
-     needs the stages that saw movement, so an empty week reads as empty. */
+  /* What actually moved. Only the stages that saw movement, so an empty week
+     reads as empty rather than as a wall of zeros. */
   const moved = STAGES
     .map(st => [st.label, projects.filter(p => inRange(p.ev[st.key], wk.prevStart, wk.end)).length])
     .filter(([, n]) => n);
-  L.push('', 'MOVED LAST WEEK');
-  L.push(moved.length ? '  ' + moved.map(([l, n]) => `${l} ${n}`).join(' \u00b7 ') : '  Nothing reached a new stage.');
+  D.h('Moved last week');
+  if (moved.length) {
+    const mvTop = Math.max(1, ...moved.map(m => m[1]));
+    D.table(
+      [{ h: 'Stage', w: 30 }, { h: 'Projects', align: 'r' }, { h: 'Week' }],
+      moved.map(([l, n]) => [l, n, bar(n, mvTop)]));
+  } else {
+    D.p('Nothing reached a new stage.');
+  }
 
+  /* ---- what is stopped. ---- */
   const owed     = projects.filter(p => p.sev === 'critical');
   const ageing   = projects.filter(p => p.aging === 'Critical');
   const noOwner  = projects.filter(p => !p.ownerNames.length && p.sev !== 'good');
-  L.push('', 'WHAT IS STOPPED');
   const owedNoOwner = owed.filter(p => !p.ownerNames.length).length;
-  L.push(`  ${owed.length} need an action now${owedNoOwner ? `, ${owedNoOwner} of them with nobody named` : ''}.`);
-  L.push(`  ${ageing.length} have not moved in 60 days.`);
-  L.push(`  ${noOwner.length} carry no owner on the next step at all.`);
-  const oldest = [...owed].sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0)).slice(0, 5);
+  const stopTop = Math.max(1, owed.length, ageing.length, noOwner.length);
+  D.h('What is stopped');
+  D.table(
+    [{ h: 'Problem', w: 34 }, { h: 'Projects', align: 'r' }, { h: 'Size' }],
+    [['Need an action now', owed.length, bar(owed.length, stopTop)],
+     ['Nobody named on that action', owedNoOwner, bar(owedNoOwner, stopTop)],
+     ['Not moved in 60 days', ageing.length, bar(ageing.length, stopTop)],
+     ['No owner on the next step at all', noOwner.length, bar(noOwner.length, stopTop)]]);
+  const oldest = [...owed].sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0)).slice(0, 8);
   if (oldest.length) {
-    L.push('', '  Longest waiting:');
-    for (const p of oldest) {
-      const who = p.ownerNames.length ? p.ownerNames.join(', ') : 'NOBODY ASSIGNED';
-      L.push(`    * ${p.name} \u2014 ${p.need} \u2014 ${who}${p.daysInPhase ? ` (${p.daysInPhase}d)` : ''}`);
-    }
+    D.h('Longest waiting');
+    D.table(
+      [{ h: 'Project', w: 36 }, { h: 'Needs', w: 34 }, { h: 'Owner', w: 18 }, { h: 'Waiting', align: 'r' }],
+      oldest.map(p => [p.name, p.need, p.ownerNames.length ? p.ownerNames.join(', ') : 'NOBODY ASSIGNED',
+        p.daysInPhase ? `${p.daysInPhase}d` : '—']),
+      row => row[2] === 'NOBODY ASSIGNED');
   }
 
-  /* The two boards the engineers actually work from. */
+  /* ---- the two boards the engineers actually work from. ---- */
   const rfis = workTasks.filter(t => t.rfi);
-  L.push('', 'ON THE DESKS');
-  L.push(`  ${workTasks.length} open items on the pre-approval and closeout boards, ${rfis.length} of them RFIs.`);
   const byPerson = new Map();
   for (const t of workTasks) {
     for (const n of t.rfi ? t.owners : [t.person]) {
@@ -1664,30 +1764,60 @@ function hbsSummaryBody() {
       byPerson.set(n, (byPerson.get(n) || 0) + 1);
     }
   }
-  const busiest = [...byPerson].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  if (busiest.length) L.push('  Busiest: ' + busiest.map(([n, c]) => `${n} ${c}`).join(' \u00b7 '));
+  const busiest = [...byPerson].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  D.h('On the desks');
+  D.p(`${workTasks.length} open items on the pre-approval and closeout boards, ${rfis.length} of them RFIs.`);
+  if (busiest.length) {
+    const dTop = Math.max(1, ...busiest.map(b => b[1]));
+    D.table(
+      [{ h: 'Engineer', w: 20 }, { h: 'Open items', align: 'r' }, { h: 'Load' }],
+      busiest.map(([n, c]) => [n.split(' ')[0], c, bar(c, dTop)]));
+  }
 
-  L.push('', 'RFIs');
-  L.push(`  ${projects.filter(p => rfiSide(p) === 'hbs').length} waiting on an answer from us.`);
-  L.push(`  ${projects.filter(p => rfiSide(p) === 'icf').length} answered and back with ICF.`);
+  const rfiUs = projects.filter(p => rfiSide(p) === 'hbs').length;
+  const rfiThem = projects.filter(p => rfiSide(p) === 'icf').length;
+  const rfiTop = Math.max(1, rfiUs, rfiThem);
+  D.h('RFIs');
+  D.table(
+    [{ h: 'Held by', w: 38 }, { h: 'Projects', align: 'r' }, { h: 'Share' }],
+    [['Waiting on an answer from us', rfiUs, bar(rfiUs, rfiTop)],
+     ['Answered and back with the reviewer', rfiThem, bar(rfiThem, rfiTop)]]);
 
-  /* The two gaps only management can close. */
+  /* ---- the gaps only management can close. ---- */
   const noReviewer = projects.filter(p => p.icfUnassigned);
   const departed = [...Object.keys(HBS_ROSTER)].filter(hasLeft)
     .map(n => [n, projects.filter(p => p.hbsAll.includes(n)).length]).filter(([, c]) => c);
-  L.push('', 'NEEDS A DECISION FROM YOU');
-  L.push(`  ${noReviewer.length} projects carry no ICF reviewer. They reach nobody at ICF until one is named,`);
-  L.push('  and we raise it with Justin and Junior weekly.');
+  const decisions = [];
+  if (noReviewer.length)
+    decisions.push(`${noReviewer.length} projects carry no ICF reviewer. They reach nobody at ICF until `
+      + 'one is named, and we raise it with Justin and Junior weekly.');
   for (const [n, c] of departed)
-    L.push(`  ${n} has left HBS and still holds ${c} project${c === 1 ? ' that needs' : 's that need'} a new owner.`);
-  for (const [n, d] of Object.entries(ICF_DEPARTED)) {
+    decisions.push(`${n} has left HBS and still holds ${c} project${c === 1 ? ' that needs' : 's that need'} a new owner.`);
+  for (const [n] of Object.entries(ICF_DEPARTED)) {
     const c = projects.filter(p => p.icfEngs.includes(n)).length;
-    if (c) L.push(`  ${n} has left ICF and still holds ${c} project${c === 1 ? '' : 's'}; their queue goes to the ICF leads.`);
+    if (c) decisions.push(`${n} has left ICF and still holds ${c} project${c === 1 ? '' : 's'}; `
+      + 'their queue goes to the ICF leads.');
+  }
+  /* This is the internal summary, so it may hold both sides at once -- it is
+     the only thing here that may. Nothing addressed to either reviewer does.
+     The TRC reviewers cannot be emailed at all yet, which is a gap management
+     is the one to close, so it is raised here rather than left in the
+     unroutable list nobody reads. */
+  const trcOwed = trcSide.filter(p => HBS_ROLES.has(roleOf(p))).length;
+  if (trcSide.length)
+    decisions.push(`TRC side: ${trcSide.length} projects, ${trcOwed} of them on us — and nobody at TRC can `
+      + 'be emailed. We hold no address for Arya, Max, Brian, Elonna, Peter or Carson, so none of them '
+      + 'gets a weekly update. Send the addresses and they start receiving one, isolated from ICF.');
+  if (decisions.length) {
+    /* Not a bulleted checklist: doc()'s bullets render with a tick in the
+       text copy, and a tick beside an unresolved decision reads as done. */
+    D.h('Needs a decision from you');
+    for (const t of decisions) D.p(t);
   }
 
-  L.push('', 'The roll-up sent alongside this has the project-by-project detail.');
-  L.push('Automated from the monday.com trackers and workload boards.');
-  return L.join('\n');
+  D.note('The roll-up sent alongside this has the project-by-project detail. '
+    + 'Automated from the monday.com trackers and workload boards.');
+  return { text: D.text(), html: D.html() };
 }
 
 /* ---------------------------------------------------------------------------
@@ -2032,13 +2162,14 @@ const envelope = {
      covers both sides, so the subject would be telling management the wrong
      thing about what is inside.
 
-     Sent as HTML wrapped in a single <pre>, for the same reason an engineer's
-     is: the average-days block is column-aligned, and Outlook renders a plain
-     text mail in a proportional font, which turns aligned columns into
-     rubble. <pre> is the one tag the sanitiser keeps that guarantees both a
-     monospace font and preserved spacing. */
-  hbsSummary: { to: HBS_SUMMARY_TO, subject: `HBS portfolio summary - week of ${weekOf}`,
-    body: `<pre>${esc(hbsSummaryBody())}</pre>`, bodyType: 'html', plain: hbsSummaryBody() },
+     Built with the same doc() builder as an engineer's mail, so it goes as
+     real HTML tables rather than a <pre> block of aligned text: management
+     asked for the charts they saw on that one. The bars still line up inside
+     a table cell because every block glyph is the same width, in any font.
+     The plain-text rendering travels alongside for the transcript. */
+  hbsSummary: (() => { const s = hbsSummaryBody();
+    return { to: HBS_SUMMARY_TO, subject: `HBS portfolio summary - week of ${weekOf}`,
+      body: s.html, bodyType: 'html', plain: s.text }; })(),
   icfSummary: { to: ICF_SUMMARY_TO, subject: `ICF x HBS portfolio summary - week of ${weekOf}`, body: icfSummaryBody() },
   unroutable,
   warnings,
