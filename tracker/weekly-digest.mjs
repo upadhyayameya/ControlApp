@@ -121,11 +121,40 @@ const ICF_EMAILS = {
 const TRC_EMAILS = {
 };
 
+/* The TRC leads, who get the portfolio summary rather than a project queue --
+   the same arrangement as Justin and Junior on the ICF side. Named by Ameya;
+   still no addresses, so the summary is built and cannot be sent. */
+const TRC_SUMMARY_NAMES = ['Peter', 'Max'];
+
+/* Reviewers who have left, per side. Their name stays on the board long after
+   they go, so their projects do not become unassigned on their own -- they
+   simply stop reaching anybody, and mailing the departed address is worse
+   than useless because the queue looks covered while nobody reads it. The
+   queue goes to that side's leads instead, who are the only people who can
+   name a replacement.
+
+   Deliberately not deleted from the address book: leaving the name on record
+   is what stops it being re-added from a stale board export. */
+const TRC_DEPARTED_NAMES = ['Arya'];
+
 /* Reviewer sides. Each names the board it may read and the addresses it may
    reach, and nothing crosses between them. */
 const REVIEW_SIDES = {
-  ICF: { board: BOARD_ICF, emails: () => ICF_EMAILS, departed: () => ICF_DEPARTED, summaryTo: () => ICF_SUMMARY_TO },
-  TRC: { board: BOARD_TRC, emails: () => TRC_EMAILS, departed: () => ({}), summaryTo: () => [] },
+  ICF: {
+    board: BOARD_ICF,
+    emails: () => ICF_EMAILS,
+    departed: () => ICF_DEPARTED,
+    summaryTo: () => ICF_SUMMARY_TO,
+  },
+  TRC: {
+    board: BOARD_TRC,
+    emails: () => TRC_EMAILS,
+    /* Built from the lead list, so a departed TRC reviewer's queue follows the
+       same route as a departed ICF one the moment an address exists. */
+    departed: () => Object.fromEntries(TRC_DEPARTED_NAMES.map(n =>
+      [n, { left: '2026-09-01', to: TRC_SUMMARY_NAMES.map(x => TRC_EMAILS[x]).filter(Boolean) }])),
+    summaryTo: () => TRC_SUMMARY_NAMES.map(n => TRC_EMAILS[n]).filter(Boolean),
+  },
 };
 
 /* Some dropdown values name a group rather than a person. Expand them to the
@@ -166,6 +195,7 @@ const ICF_SUMMARY_TO = [
    Confirmed by Ameya, 2026-09-01. */
 const ICF_DEPARTED = {
   'Victoria': { left: '2026-09-01', to: ICF_SUMMARY_TO },
+  'Darren':   { left: '2026-09-01', to: ICF_SUMMARY_TO },
 };
 
 /* HBS management. They already receive the operational roll-up; this is the
@@ -1197,11 +1227,15 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   /* BPTU projects are carried as two rows, "(Phase 1)" and "(Phase 2)", on the
      BGE BPTU Tracker rather than the Master TU Tracker -- so the phase map,
      which is built from the TU tracker, has nothing for them and they used to
-     print with no phase at all. The phase is in the project's own name:
-     phase 1 is the audit and benchmarking, phase 2 is the implementation. */
+     print with no phase at all. The phase is in the project's own name.
+
+     Phase 1 is the audit AND the pre-approval documents -- our report and our
+     calculations -- which is why an RFI can land on a phase 1 row. Calling it
+     just "audit" would tell an engineer an RFI on it was somebody else's.
+     Phase 2 is the implementation. */
   const bptuPhase = nm => {
     const m = /\(Phase ([12])\)\s*$/.exec(nm || '');
-    return m ? (m[1] === '1' ? 'BPTU phase 1 — audit' : 'BPTU phase 2 — implementation') : '';
+    return m ? (m[1] === '1' ? 'BPTU phase 1 — audit + pre-approval' : 'BPTU phase 2 — implementation') : '';
   };
   const workPhase = t => (t.tuIds || []).map(id => phaseByTu.get(id)).find(Boolean) || bptuPhase(t.name);
 
@@ -1215,6 +1249,18 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   const heads = Math.max(1, kpiPeople.length);
 
   const MONTH_SO_FAR = `${MONTH_NAME} so far`;
+  /* Ameya: "Tre is only doing audits so no other data for him. Just his audits
+     and team screenshots. Also the RFIs for projects he audited."
+
+     An auditor never builds a pre-approval or a closeout, so every PA and CO
+     row on their email is a guaranteed zero and every board list below is
+     somebody else's queue. Showing them is not neutral -- it buries the one
+     number that is theirs under eight that never move. So an audit-only
+     digest is the audit line, the team picture, and the RFIs that came back
+     on projects they audited: the only desk work an audit is ever the cause
+     of, and already routed to them because the RFI owner list reads the TU
+     tracker's auditor column. */
+  const auditOnly = isAuditor(name) && !isEngineer(name);
   D.p(`Hi ${first},`);
 
   /* ---- the snapshot, first, because it is the only part that answers "how am
@@ -1227,10 +1273,9 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
      The sample size travels with the number so nobody reads a single slow
      application as a trend, and below three it is not shown at all. */
   const days = t => (t.days == null || t.n < 3 ? (t.n ? `— (${t.n})` : '—') : `${t.days}d (${t.n})`);
-  D.table(
-    [{ h: 'Metric', w: 26 }, { h: 'This week', align: 'r' },
-     { h: MONTH_SO_FAR, align: 'r' }, { h: PREV_MONTH_NAME, align: 'r' }],
-    [
+  const scoreRows = auditOnly
+    ? [['Audits', wkMe.audits, moMe.audits, moPrev.audits]]
+    : [
       ['Audits',                    wkMe.audits,          moMe.audits,          moPrev.audits],
       ['PAs submitted',             wkMe.paSubmitted,     moMe.paSubmitted,     moPrev.paSubmitted],
       ['PAs approved by ICF',       wkMe.paReceived,      moMe.paReceived,      moPrev.paReceived],
@@ -1242,11 +1287,17 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
          rarely holds enough of them to mean anything -- hence months only. */
       ['PA turnaround (median)',    '',                   days(paMe),           days(paMePrev)],
       ['CO turnaround (median)',    '',                   days(coMe),           days(coMePrev)],
-    ]);
+    ];
+  D.table(
+    [{ h: 'Metric', w: 26 }, { h: 'This week', align: 'r' },
+     { h: MONTH_SO_FAR, align: 'r' }, { h: PREV_MONTH_NAME, align: 'r' }],
+    scoreRows);
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-  const yourLine = (s, label) => `Your ${label}: ${plural(s.audits, 'audit', 'audits')} · `
-    + `${plural(s.paSubmitted, 'PA', 'PAs')} · ${plural(s.implementations, 'implementation', 'implementations')} · `
-    + `${plural(s.coSubmitted, 'CO', 'COs')} · ${money(s.money)}`;
+  const yourLine = (s, label) => auditOnly
+    ? `Your ${label}: ${plural(s.audits, 'audit', 'audits')}`
+    : `Your ${label}: ${plural(s.audits, 'audit', 'audits')} · `
+      + `${plural(s.paSubmitted, 'PA', 'PAs')} · ${plural(s.implementations, 'implementation', 'implementations')} · `
+      + `${plural(s.coSubmitted, 'CO', 'COs')} · ${money(s.money)}`;
   D.note(yourLine(moMe, MONTH_SO_FAR));
   D.note(yourLine(moPrev, PREV_MONTH_NAME));
 
@@ -1272,12 +1323,12 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
         return [label, money(team), money(goal), `${bar(team, goal)} ${Math.round((team / goal) * 100)}%`,
           pace, money(mineOf)];
       }));
-    const sizes = [...new Set(goalRows.map(r => r[1]))];
-    D.note(`The goals are for the whole team and the whole month.`
-      + (sizes.length === 1
-        ? ` Split evenly across the ${heads} people on the KPI board, each ${money(sizes[0])} goal is `
-          + `about ${money(sizes[0] / heads)} a head — a yardstick, not a quota.`
-        : ` Split evenly across the ${heads} people on the KPI board — a yardstick, not a quota.`));
+    /* Ameya: "$1m is a milestone for the entire team. I do not have per
+       engineer goals." So the goal is never divided by head. The "Yours"
+       column is what this person put into the team's number, which is a
+       contribution, not a target they are being measured against. */
+    D.note('These are milestones for the whole team over the whole month — there are no '
+      + 'per-engineer goals. "Yours" is what you have contributed to the team number so far.');
   }
 
   /* ---- where you sit. Ranked, because "who is doing better" was the ask, and
@@ -1354,23 +1405,26 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   const byAge = (a, b) => (b.waiting || 0) - (a.waiting || 0);
 
   if (rfis.length) {
-    D.h(`⚠ RFIs pending — answer these first (${rfis.length})`);
+    D.h(auditOnly
+      ? `⚠ RFIs on projects you audited — answer these first (${rfis.length})`
+      : `⚠ RFIs pending — answer these first (${rfis.length})`);
     D.table(deskCols, [...rfis].sort(byAge).map(deskRow));
   }
-  if (paWork.length) {
+  if (!auditOnly && paWork.length) {
     D.h(`Pre-approval board (${paWork.length})`);
     D.table(deskCols, [...paWork].sort(byAge).map(deskRow));
   }
-  if (coWork.length) {
+  if (!auditOnly && coWork.length) {
     D.h(`Closeout board (${coWork.length})`);
     D.table(deskCols, [...coWork].sort(byAge).map(deskRow));
   }
-  if (!work.length) D.p('Nothing queued on the pre-approval or closeout boards.');
+  if (!auditOnly && !work.length) D.p('Nothing queued on the pre-approval or closeout boards.');
+  if (auditOnly && !rfis.length) D.p('No RFIs open on anything you audited.');
   /* The due date is a real column on both workload boards, it is simply empty
      on most rows. Saying so turns a blank column from something that looks
      broken into something somebody can go and fill in. */
   const undated = work.filter(t => !t.due).length;
-  if (work.length && undated) {
+  if (!auditOnly && work.length && undated) {
     D.note(`${undated} of your ${work.length} board row${work.length === 1 ? '' : 's'} `
       + `${undated === 1 ? 'has' : 'have'} no due date set on monday. `
       + `A row with no date cannot be chased or prioritised — set one and it shows up here.`);
@@ -1379,7 +1433,7 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   /* ---- anything else that is genuinely stuck. Uncapped now that it is a
      table: the cap existed because a run of long lines became a wall, and
      eleven table rows do not. ---- */
-  const stuck = [...new Set([...yours, ...ageing])]
+  const stuck = auditOnly ? [] : [...new Set([...yours, ...ageing])]
     .sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0));
   if (stuck.length) {
     D.h(`Also needs you (${stuck.length})`);
@@ -1391,7 +1445,11 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
         p.name, phaseOf(p), p.need]));
   }
 
-  D.p(`You have ${book.length} project${book.length === 1 ? '' : 's'} in hand, implementation excluded.`);
+  /* "Projects in hand" counts a book an auditor does not carry -- they audit a
+     site and hand it on -- so it would be a number they cannot act on. */
+  if (!auditOnly) {
+    D.p(`You have ${book.length} project${book.length === 1 ? '' : 's'} in hand, implementation excluded.`);
+  }
   D.note('This is an automated weekly update built from the monday.com trackers. '
     + 'Reply to Ameya if anything here looks wrong.');
 
@@ -1650,7 +1708,11 @@ for (const side of ['ICF', 'TRC']) {
        queue is handed to that side's leads, who are the only people who can
        reassign it. */
     const gone = cfg.departed()[name] || null;
-    const to = gone ? gone.to : (cfg.emails()[name] || null);
+    /* An empty address list is not an address. A departed reviewer whose side
+       has no leads on file must fall through to unroutable, not be pushed as a
+       record addressed to nobody. */
+    const goneTo = gone && Array.isArray(gone.to) && gone.to.length ? gone.to : null;
+    const to = gone ? goneTo : (cfg.emails()[name] || null);
     const d = digestBody(name, side, mine, [], new Map(), gone);
     const rec = gone
       ? { to, name, org: side, forwardedFor: name,
@@ -1660,8 +1722,12 @@ for (const side of ['ICF', 'TRC']) {
     if (to) perEngineer.push(rec);
     else unroutable.push({ name, org: side,
       reason: side === 'TRC'
-        ? 'no TRC address on file - nobody at TRC can be emailed until Ameya supplies one'
-        : 'no address in ICF_EMAILS - included in the roll-up only',
+        ? (gone
+            ? `has left TRC - queue needs handing to the TRC leads, but no address is on file for ${TRC_SUMMARY_NAMES.join(' or ')}`
+            : 'no TRC address on file - nobody at TRC can be emailed until Ameya supplies one')
+        : (gone
+            ? 'has left ICF - queue goes to the ICF leads'
+            : 'no address in ICF_EMAILS - included in the roll-up only'),
       active: mine.length });
   }
 }
