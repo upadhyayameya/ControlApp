@@ -2028,7 +2028,17 @@ const envelope = {
   projectCount: projects.length,
   perEngineer: perEngineer.filter(e => e.to),
   rollup: { to: ROLLUP_TO, subject: `ICF x HBS pipeline roll-up - week of ${weekOf}`, body: rollupBody() },
-  hbsSummary: { to: HBS_SUMMARY_TO, subject: `HBS x ICF portfolio summary - week of ${weekOf}`, body: hbsSummaryBody() },
+  /* "HBS x ICF" was the subject when ICF was the only reviewer; the body now
+     covers both sides, so the subject would be telling management the wrong
+     thing about what is inside.
+
+     Sent as HTML wrapped in a single <pre>, for the same reason an engineer's
+     is: the average-days block is column-aligned, and Outlook renders a plain
+     text mail in a proportional font, which turns aligned columns into
+     rubble. <pre> is the one tag the sanitiser keeps that guarantees both a
+     monospace font and preserved spacing. */
+  hbsSummary: { to: HBS_SUMMARY_TO, subject: `HBS portfolio summary - week of ${weekOf}`,
+    body: `<pre>${esc(hbsSummaryBody())}</pre>`, bodyType: 'html', plain: hbsSummaryBody() },
   icfSummary: { to: ICF_SUMMARY_TO, subject: `ICF x HBS portfolio summary - week of ${weekOf}`, body: icfSummaryBody() },
   unroutable,
   warnings,
