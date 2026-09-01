@@ -809,11 +809,20 @@ function doc() {
     /* cols: [{h, align, w}] -- w caps the text rendering only, so one long
        project name cannot push every other column off the screen. */
     table(cols, rows, mark = () => false) {
-      H.push('<table border="1" cellpadding="4" cellspacing="0">');
-      H.push('<thead><tr>' + cols.map(c => `<th>${esc(c.h)}</th>`).join('') + '</tr></thead><tbody>');
+      /* The mail sanitiser keeps the table tags and drops every attribute on
+         them -- border, cellpadding and cellspacing all go -- so a table
+         arrives with no gridlines and its columns touching. Verified by
+         sending one and reading it back out of Sent Items.
+
+         Padding cannot be an attribute, so it is content: a non-breaking
+         space either side of every cell. It survives sanitising because it is
+         text, and it gives the columns the gutter the stylesheet cannot. */
+      const pad = html => `&nbsp;${html}&nbsp;`;
+      H.push('<table>');
+      H.push('<thead><tr>' + cols.map(c => `<th>${pad(`<b>${esc(c.h)}</b>`)}</th>`).join('') + '</tr></thead><tbody>');
       for (const r of rows) {
         const on = mark(r);
-        H.push('<tr>' + r.map(v => `<td>${on ? '<b>' : ''}${esc(cell(v))}${on ? '</b>' : ''}</td>`).join('') + '</tr>');
+        H.push('<tr>' + r.map(v => `<td>${pad(on ? `<b>${esc(cell(v))}</b>` : esc(cell(v)))}</td>`).join('') + '</tr>');
       }
       H.push('</tbody></table>');
 
