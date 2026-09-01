@@ -89,6 +89,35 @@ const ICF_SUMMARY_TO = [
   'junior.myrie@icf.com',    // Junior
 ];
 
+/* Reviewers who have left ICF.
+
+   Their name stays on the shared board long after they go, so the projects do
+   not become unassigned on their own -- they simply stop reaching anybody.
+   Mailing the departed address is worse than useless: the queue looks covered
+   while nobody is reading it.
+
+   So the queue goes to the ICF leads instead. They are the only people who can
+   name a replacement, and it is the same fact the summary already raises under
+   NO ICF REVIEWER NAMED, just arriving a week earlier and with the project
+   list attached. Deliberately NOT deleted from ICF_EMAILS: leaving the address
+   here on record is what stops it being re-added from a stale board export.
+
+   Confirmed by Ameya, 2026-09-01. */
+const ICF_DEPARTED = {
+  'Victoria': { left: '2026-09-01', to: ICF_SUMMARY_TO },
+};
+
+/* HBS management. They already receive the operational roll-up; this is the
+   position at a glance, in the shape the ICF leads get, but drawn from every
+   board rather than the shared one. Internal, so nothing is withheld.
+   Confirmed by Ameya, 2026-09-01. */
+const HBS_SUMMARY_TO = [
+  'mcosta@hbssolutionsinc.com',       // Michael Costa, operations director
+  'hhaywood@hbssolutionsinc.com',     // Harry Haywood
+  'dgoforth@hbssolutionsinc.com',     // Devon Goforth
+  'drodriguez@hbssolutionsinc.com',   // David Rodriguez, operations manager
+];
+
 /* Expand a project's ICF Engineer value into real people, and say whether it
    was left unassigned. Returns { names, unassigned }. */
 function expandReviewers(names) {
@@ -708,7 +737,7 @@ function rfiRule(p) {
   return null;
 }
 
-function icfDigestBody(name, mine) {
+function icfDigestBody(name, mine, departed) {
   const rows = mine.map(p => ({
     name: p.name, projectId: p.projectId, utility: p.utility, type: p.type,
     phase: p.phase, status: p.icfStatus, d: p.icfDates,
@@ -731,10 +760,22 @@ function icfDigestBody(name, mine) {
   const quiet   = rows.filter(r => !r.rule);
 
   const L = [];
-  const first = /\s/.test(name) ? name.split(' ')[0] : name;
-  L.push(`Hi ${first},`, '');
-  L.push(`Here is the current state of the HBS projects assigned to you, as of ${new Date().toDateString()}.`, '');
-  L.push(`${rows.length} project${rows.length === 1 ? '' : 's'}.`);
+  /* A departed reviewer's queue is not "your project update" -- it is a
+     handover, read by someone who has never seen these projects. Address it
+     to the leads and say up front why it has arrived, or the first line
+     greets a person who no longer works there. */
+  if (departed) {
+    L.push('Hello,', '');
+    L.push(`${name} is no longer at ICF, but these HBS projects are still assigned to ${name}`);
+    L.push('on the shared tracker, so they currently reach no reviewer. Below is where each');
+    L.push(`one stands as of ${new Date().toDateString()}, so they can be reassigned.`, '');
+    L.push(`${rows.length} project${rows.length === 1 ? '' : 's'} to reassign.`);
+  } else {
+    const first = /\s/.test(name) ? name.split(' ')[0] : name;
+    L.push(`Hi ${first},`, '');
+    L.push(`Here is the current state of the HBS projects assigned to you, as of ${new Date().toDateString()}.`, '');
+    L.push(`${rows.length} project${rows.length === 1 ? '' : 's'}.`);
+  }
   const line = r => `  * ${r.name}${r.projectId ? ` (${r.projectId})` : ''} - ${r.status || r.phase}`;
   if (onIcf.length) {
     L.push('', `WITH ICF (${onIcf.length})`);
@@ -806,8 +847,8 @@ function wrapNames(names, width = 96, indent = '    ') {
   return out;
 }
 
-function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
-  if (org === 'ICF') return icfDigestBody(name, mine);
+function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed = null) {
+  if (org === 'ICF') return icfDigestBody(name, mine, departed);
 
   const owns = p => !p.ownerNames.length || p.ownerNames.includes(name);
   const moved   = mine.filter(p => STAGES.some(s => inRange(p.ev[s.key], wk.prevStart, wk.end)));
@@ -949,6 +990,103 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map()) {
 }
 
 /* ---------------------------------------------------------------------------
+   The portfolio summary for HBS management.
+
+   Mike, Harry, Devon and David already get the roll-up, which is the
+   operational detail -- every project with an action owed, the per-engineer
+   table, the board hygiene. This is the other half: where the portfolio
+   actually stands, short enough to read on a phone.
+
+   Unlike the ICF summary this one is internal, so it is not restricted to the
+   shared board. It reads the Master TU and BPTU trackers and the two workload
+   boards as well, which is the only way to answer "whose turn is it" across
+   the whole book of work.
+--------------------------------------------------------------------------- */
+function hbsSummaryBody() {
+  const ruleOf = p => TU_ACTIONS[p.tuStatus] || ICF_ACTIONS[p.icfStatus]
+                   || PHASE_FALLBACK[p.phase] || null;
+  const roleOf = p => { const r = ruleOf(p); return r && r.role ? r.role : null; };
+  const HBS_ROLES = new Set(['hbs', 'auditor', 'paLead', 'coLead']);
+
+  const onHbs = projects.filter(p => HBS_ROLES.has(roleOf(p)));
+  const onIcf = projects.filter(p => roleOf(p) === 'icf');
+  const idle  = projects.filter(p => !roleOf(p));
+
+  const L = [];
+  L.push(`HBS \u00d7 ICF portfolio \u2014 week of ${weekOf}`, '');
+  L.push(`${projects.length} active projects across the Master TU, BPTU and shared ICF trackers.`);
+  L.push(`Whose turn: ${onHbs.length} ours \u00b7 ${onIcf.length} with ICF\u0020\u00b7 ${idle.length} with no status to act on.`);
+
+  const byPhase = new Map();
+  for (const p of projects) if (p.phase) byPhase.set(p.phase, (byPhase.get(p.phase) || 0) + 1);
+  if (byPhase.size) {
+    L.push('', 'WHERE THE WORK SITS');
+    for (const [ph, n] of [...byPhase].sort((a, b) => b[1] - a[1])) L.push(`  ${ph}: ${n}`);
+  }
+
+  /* What actually moved. The roll-up prints the full funnel; management only
+     needs the stages that saw movement, so an empty week reads as empty. */
+  const moved = STAGES
+    .map(st => [st.label, projects.filter(p => inRange(p.ev[st.key], wk.prevStart, wk.end)).length])
+    .filter(([, n]) => n);
+  L.push('', 'MOVED LAST WEEK');
+  L.push(moved.length ? '  ' + moved.map(([l, n]) => `${l} ${n}`).join(' \u00b7 ') : '  Nothing reached a new stage.');
+
+  const owed     = projects.filter(p => p.sev === 'critical');
+  const ageing   = projects.filter(p => p.aging === 'Critical');
+  const noOwner  = projects.filter(p => !p.ownerNames.length && p.sev !== 'good');
+  L.push('', 'WHAT IS STOPPED');
+  const owedNoOwner = owed.filter(p => !p.ownerNames.length).length;
+  L.push(`  ${owed.length} need an action now${owedNoOwner ? `, ${owedNoOwner} of them with nobody named` : ''}.`);
+  L.push(`  ${ageing.length} have not moved in 60 days.`);
+  L.push(`  ${noOwner.length} carry no owner on the next step at all.`);
+  const oldest = [...owed].sort((a, b) => (b.daysInPhase || 0) - (a.daysInPhase || 0)).slice(0, 5);
+  if (oldest.length) {
+    L.push('', '  Longest waiting:');
+    for (const p of oldest) {
+      const who = p.ownerNames.length ? p.ownerNames.join(', ') : 'NOBODY ASSIGNED';
+      L.push(`    * ${p.name} \u2014 ${p.need} \u2014 ${who}${p.daysInPhase ? ` (${p.daysInPhase}d)` : ''}`);
+    }
+  }
+
+  /* The two boards the engineers actually work from. */
+  const rfis = workTasks.filter(t => t.rfi);
+  L.push('', 'ON THE DESKS');
+  L.push(`  ${workTasks.length} open items on the pre-approval and closeout boards, ${rfis.length} of them RFIs.`);
+  const byPerson = new Map();
+  for (const t of workTasks) {
+    for (const n of t.rfi ? t.owners : [t.person]) {
+      if (!n) continue;
+      byPerson.set(n, (byPerson.get(n) || 0) + 1);
+    }
+  }
+  const busiest = [...byPerson].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  if (busiest.length) L.push('  Busiest: ' + busiest.map(([n, c]) => `${n} ${c}`).join(' \u00b7 '));
+
+  L.push('', 'RFIs');
+  L.push(`  ${projects.filter(p => rfiSide(p) === 'hbs').length} waiting on an answer from us.`);
+  L.push(`  ${projects.filter(p => rfiSide(p) === 'icf').length} answered and back with ICF.`);
+
+  /* The two gaps only management can close. */
+  const noReviewer = projects.filter(p => p.icfUnassigned);
+  const departed = [...Object.keys(HBS_ROSTER)].filter(hasLeft)
+    .map(n => [n, projects.filter(p => p.hbsAll.includes(n)).length]).filter(([, c]) => c);
+  L.push('', 'NEEDS A DECISION FROM YOU');
+  L.push(`  ${noReviewer.length} projects carry no ICF reviewer. They reach nobody at ICF until one is named,`);
+  L.push('  and we raise it with Justin and Junior weekly.');
+  for (const [n, c] of departed)
+    L.push(`  ${n} has left HBS and still holds ${c} project${c === 1 ? '' : 's'} that need a new owner.`);
+  for (const [n, d] of Object.entries(ICF_DEPARTED)) {
+    const c = projects.filter(p => p.icfEngs.includes(n)).length;
+    if (c) L.push(`  ${n} has left ICF and still holds ${c} project${c === 1 ? '' : 's'}; their queue goes to the ICF leads.`);
+  }
+
+  L.push('', 'The roll-up sent alongside this has the project-by-project detail.');
+  L.push('Automated from the monday.com trackers and workload boards.');
+  return L.join('\n');
+}
+
+/* ---------------------------------------------------------------------------
    The portfolio summary for ICF leadership.
 
    Justin and Junior do not review projects, so no per-project digest can be
@@ -1058,9 +1196,16 @@ for (const name of [...hbsNames].sort()) {
 }
 for (const name of [...icfNames].sort()) {
   const mine = projects.filter(p => p.icfEngs.includes(name));
-  const to = ICF_EMAILS[name] || null;
-  const d = digestBody(name, 'ICF', mine);
-  const rec = { to, name, org: 'ICF', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
+  /* A reviewer who has left is never mailed at their old address. Their queue
+     is handed to the ICF leads, who are the only people who can reassign it. */
+  const gone = ICF_DEPARTED[name] || null;
+  const to = gone ? gone.to : (ICF_EMAILS[name] || null);
+  const d = digestBody(name, 'ICF', mine, [], new Map(), gone);
+  const rec = gone
+    ? { to, name, org: 'ICF', forwardedFor: name,
+        subject: `${name} has left ICF - ${mine.length} project${mine.length === 1 ? '' : 's'} to reassign`,
+        body: d.text, counts: d.counts }
+    : { to, name, org: 'ICF', subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
   if (to) perEngineer.push(rec);
   else unroutable.push({ name, org: 'ICF', reason: 'no address in ICF_EMAILS - included in the roll-up only', active: mine.length });
 }
@@ -1207,6 +1352,7 @@ const envelope = {
   projectCount: projects.length,
   perEngineer: perEngineer.filter(e => e.to),
   rollup: { to: ROLLUP_TO, subject: `ICF x HBS pipeline roll-up - week of ${weekOf}`, body: rollupBody() },
+  hbsSummary: { to: HBS_SUMMARY_TO, subject: `HBS x ICF portfolio summary - week of ${weekOf}`, body: hbsSummaryBody() },
   icfSummary: { to: ICF_SUMMARY_TO, subject: `ICF x HBS portfolio summary - week of ${weekOf}`, body: icfSummaryBody() },
   unroutable,
   warnings,
