@@ -60,6 +60,33 @@ const BOARD_ICF = '18424932045';   // ICF/HBS Project Tracker
    TRC board does not carry. */
 const BOARD_TRC = '18428455111';   // TRC/HBS Project Tracker
 const BOARD_TU  = '1069746645';    // Master TU Tracker
+/* The second work tracker. A project's audit date, implementation date, PA and
+   CO leads and auditor live on whichever work tracker carries it, and 227 of
+   the reviewed projects are carried here rather than on the Master TU Tracker.
+   Reading only the master left every one of them with no leads, no dates and
+   no status -- which, among other things, dropped them out of the cycle-time
+   averages and pushed those averages well above what the dashboard shows for
+   the same engineers, because BPTU phase 1 is a short audit-and-pre-approval
+   and it was the part being left out. */
+const BOARD_BPTU = '6530139050';   // BGE BPTU Tracker
+
+/* The BPTU board holds the same facts under different column ids. Translating
+   them to the master's ids on the way in means everything downstream reads one
+   shape and neither knows nor cares which tracker a project came off. */
+const BPTU_TO_TU = {
+  'text__1': 'text_mkxpkdex',                     // Company
+  'text_mkpea39n': 'text',                        // Utility
+  'multiple_person_mkwfcjvn': 'multiple_person_mkwfm19x',  // Deal owner
+  'dropdown_mm4cy96d': 'dropdown_mm4bc2hd',       // Review engineer
+  'date_mkrv8cn5': 'date_mkrvfahg',               // Audit date
+  'date_mm0whh86': 'date_mm4b5x2',                // Implementation date
+  'color_mm4ff52g': 'color_mm47r8nd',             // SOW status
+  'date_mm5r4s7c': 'date_mm5r3pk9',               // Sent to Rahl's
+  'date_mm5rc5cc': 'date_mm5rd9h7',               // Sent to client / CGS
+  'board_relation_mm5xs2ff': 'board_relation_mm5xccpb',    // link to the review tracker
+  /* status, type, dropdown (Source), person (Auditor), people (PA lead),
+     people__1 (CO lead), date73, date1 and long_text share ids already. */
+};
 /* The two boards where the work actually sits on someone's desk. Grouped by
    person, so the group title is the assignment. */
 const BOARD_PA_WORK = '9889346356';   // Preapproval Workload
@@ -508,14 +535,26 @@ const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 
 /* ------------------------------------------------------------------ build */
 const wCols = [...Object.values(W), W_ADDED_PA, W_ADDED_CO, W_WAIT_PA, W_WAIT_CO, ...Object.values(M)];
-const [icfItems, trcItems, tuItems, paWorkItems, coWorkItems, kpiItems] = await Promise.all([
+const bptuCols = Object.values(T).map(id => {
+  const back = Object.entries(BPTU_TO_TU).find(([, tuId]) => tuId === id);
+  return back ? back[0] : id;
+});
+const [icfItems, trcItems, tuMaster, bptuRaw, paWorkItems, coWorkItems, kpiItems] = await Promise.all([
   fetchBoard(BOARD_ICF, Object.values(C)),
   fetchBoard(BOARD_TRC, Object.values(C)),
   fetchBoard(BOARD_TU, Object.values(T)),
+  fetchBoard(BOARD_BPTU, bptuCols),
   fetchBoard(BOARD_PA_WORK, wCols),
   fetchBoard(BOARD_CO_WORK, wCols),
   fetchBoard(BOARD_KPI, Object.values(K)),
 ]);
+/* Rewritten to the master's column ids, so a BPTU project is indistinguishable
+   from a TU one everywhere below this line. */
+const bptuItems = bptuRaw.map(it => ({
+  ...it,
+  column_values: it.column_values.map(c => (BPTU_TO_TU[c.id] ? { ...c, id: BPTU_TO_TU[c.id] } : c)),
+}));
+const tuItems = [...tuMaster, ...bptuItems];
 /* Which board a project came off IS its reviewer side, and it is the only
    thing that decides who may be told about it. Carried on every project from
    here on, and checked again before anything is addressed to a reviewer. */
@@ -564,6 +603,10 @@ const allProjects = reviewItems.map(({ it, side }) => {
     scheduled: dAudit, audited: auditedNow ? dAudit : null, preapp: dPAd,
     sowSent: dSowSent, sowSigned: dSowSign, impl: dImpl,
     coSched: dSubCO, coDone: dCOd, payment: paidNow ? dCOd : null,
+    /* The date the application went in. Not a funnel stage of its own -- the
+       funnel counts the moment ICF answered -- but it is one end of the leg
+       the engineer actually controls, so it has to be carried. */
+    subPA: dparse(txt(it, C.dSubPA)),
   };
 
   let current = null;
@@ -609,6 +652,7 @@ const allProjects = reviewItems.map(({ it, side }) => {
        Tremayne between them lead hundreds of projects and received nothing. */
     hbsAll: [...new Set([...hbsEngs, ...auditor, ...paLead, ...coLead, ...owner])].filter(n => n && !NOT_A_PERSON.has(n)),
     icfEngs, icfRaw, icfUnassigned, hbsEngs, ev, current,
+    paLeadNames: paLead, coLeadNames: coLead,
     /* The action rules were written when ICF was the only reviewer, so they
        name ICF outright. On a TRC project that is simply wrong: it sends an
        engineer to chase the wrong company. The reviewer's name is substituted
@@ -826,6 +870,52 @@ function legPairs(subGroup, rcvGroup) {
   }
   return out;
 }
+/* ---------------------------------------------------------------------------
+   The legs HBS controls.
+
+   The turnaround above measures the reviewer: submitted, then approved, with
+   nothing HBS does in between. These two are the opposite -- they measure us.
+
+     PA   audit finished        -> application submitted
+     CO   implementation done   -> closeout package submitted
+
+   Same definitions the dashboard uses, so the email and the dashboard cannot
+   disagree. Averaged, not medianed, because that is what the dashboard shows
+   and two different numbers under the same words is worse than either.
+
+   A negative gap is a data-entry order problem, not a fast engineer, and
+   anything past two years is a stale date rather than a project; both are
+   dropped rather than allowed to move an average nobody could explain.
+--------------------------------------------------------------------------- */
+const gapDays = (a, b) => (a && b) ? Math.round((b - a) / 86400000) : null;
+const sane = d => Number.isFinite(d) && d >= 0 && d <= 720;
+const mean = xs => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+
+/* Built once over every project, then sliced by person. Each leg is credited
+   to whoever held that end of it -- the PA lead for the application, the CO
+   lead for the closeout -- plus the named HBS engineers, matching the
+   dashboard's attribution exactly. */
+const HBS_LEGS = { pa: [], co: [], impl: [] };
+/* Active projects only, which is the set the dashboard measures. Pooling in
+   the completed ones as well doubles some engineers' figures, and an email
+   that disagrees with the dashboard the same person is looking at is worse
+   than either number on its own. */
+for (const p of projects) {
+  const paD = gapDays(p.ev.scheduled, p.ev.subPA);
+  const coD = gapDays(p.ev.impl, p.ev.coSched);
+  /* Approval in hand to crew on site. Ameya: this one is not the engineer's,
+     it is the operations manager's, so it is reported to management only. */
+  const implD = gapDays(p.ev.preapp, p.ev.impl);
+  if (sane(paD)) HBS_LEGS.pa.push({ days: paD, who: [...new Set([...p.paLeadNames, ...p.hbsEngs])] });
+  if (sane(coD)) HBS_LEGS.co.push({ days: coD, who: [...new Set([...p.coLeadNames, ...p.hbsEngs])] });
+  if (sane(implD)) HBS_LEGS.impl.push({ days: implD, who: [] });
+}
+/* person === null totals the team. */
+function legAvg(key, person) {
+  const hit = HBS_LEGS[key].filter(l => person === null || l.who.includes(person));
+  return { days: mean(hit.map(l => l.days)), n: hit.length };
+}
+
 const PA_LEGS = legPairs(G_PA_SUB, G_PA_RCV);
 const CO_LEGS = legPairs(G_CO_SUB, G_CO_RCV);
 
@@ -1362,17 +1452,31 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
     D.note(teamLine(moTeam, MONTH_SO_FAR));
     D.note(teamLine(prevTeam, PREV_MONTH_NAME));
 
+    /* Two different things, kept apart on purpose. One measures us and can be
+       worked on; the other measures the reviewer and cannot. Putting them in
+       one table under one heading was how "days" stopped meaning anything. */
+    const avg = t => (t.days == null ? '—' : `${t.days}d (${t.n})`);
+    D.h('Days you control');
+    D.table(
+      [{ h: 'Leg', w: 34 }, { h: 'You', align: 'r' }, { h: 'Team', align: 'r' }],
+      [['Audit finished → PA submitted',  avg(legAvg('pa', name)), avg(legAvg('pa', null))],
+       ['Implementation → CO submitted',  avg(legAvg('co', name)), avg(legAvg('co', null))]]);
+    D.note('Average days with the number of projects behind it in brackets, over every project '
+      + 'with both dates on the board. This is the part of the calendar that is ours: the time '
+      + 'between the work being finished and the paperwork going in.');
+
     const paT = turnaround(PA_LEGS, null, inMonth), coT = turnaround(CO_LEGS, null, inMonth);
     const paTPrev = turnaround(PA_LEGS, null, inPrevMonth), coTPrev = turnaround(CO_LEGS, null, inPrevMonth);
-    D.h('Turnaround — how long ICF sat on it');
+    D.h('Days the reviewer controls');
     D.table(
       [{ h: 'Leg', w: 30 }, { h: `You, ${MONTH_NAME}`, align: 'r' }, { h: `Team, ${MONTH_NAME}`, align: 'r' },
        { h: `You, ${PREV_MONTH_NAME}`, align: 'r' }, { h: `Team, ${PREV_MONTH_NAME}`, align: 'r' }],
       [['PA submitted → approved', days(paMe), days(paT), days(paMePrev), days(paTPrev)],
        ['CO submitted → paid',     days(coMe), days(coT), days(coMePrev), days(coTPrev)]]);
     D.note(`Median days with the number of projects behind it in brackets, counted on what came `
-      + `back in the month rather than what went out. Team-wide this month: `
-      + `${plural(paT.n, 'pre-approval', 'pre-approvals')} and ${plural(coT.n, 'closeout', 'closeouts')} back.`);
+      + `back in the month rather than what went out. Nothing we do moves these. Team-wide this `
+      + `month: ${plural(paT.n, 'pre-approval', 'pre-approvals')} and `
+      + `${plural(coT.n, 'closeout', 'closeouts')} back.`);
   }
 
   /* ---- the good news, named. A number in a scoreboard is abstract; the
@@ -1501,6 +1605,21 @@ function hbsSummaryBody() {
     L.push('  Elonna, Peter or Carson, so none of them gets a weekly update from us.');
     L.push('  Send the addresses and they start receiving one, isolated from ICF.');
   }
+
+  /* The three spans, and who owns each. The implementation one is here and not
+     in an engineer's email because, as Ameya put it, it is not on the engineer
+     -- it is on the operations manager. Putting it in front of the wrong
+     person is how a number gets ignored by everybody. */
+  const legLine = (label, owner, t) => `  ${label.padEnd(34)} ${(t.days == null ? '—' : `${t.days}d`).padStart(5)}`
+    + `  over ${String(t.n).padStart(4)} projects   ${owner}`;
+  L.push('', 'AVERAGE DAYS PER LEG');
+  L.push(legLine('Audit finished → PA submitted', 'engineers', legAvg('pa', null)));
+  L.push(legLine('PA approved → implementation', 'operations (David R)', legAvg('impl', null)));
+  L.push(legLine('Implementation → CO submitted', 'engineers', legAvg('co', null)));
+  L.push('  Every project carrying both dates. The reviewer\'s own turnaround is separate:');
+  const paT = turnaround(PA_LEGS, null, inMonth), coT = turnaround(CO_LEGS, null, inMonth);
+  L.push(`  PA submitted → approved ${paT.days == null ? '—' : paT.days + 'd'} (${paT.n} back this month), `
+    + `CO submitted → paid ${coT.days == null ? '—' : coT.days + 'd'} (${coT.n} back).`);
 
   const byPhase = new Map();
   for (const p of projects) if (p.phase) byPhase.set(p.phase, (byPhase.get(p.phase) || 0) + 1);
