@@ -15,7 +15,7 @@ const account = `<?xml version="1.0" encoding="UTF-8"?>
 <response>
   <account>
     <id>555001</id>
-    <username>Test_Account_HBS</username>
+    <username>hbs_test_account</username>
     <organization>HBS Solutions</organization>
     <contact>
       <firstName>HBS</firstName>

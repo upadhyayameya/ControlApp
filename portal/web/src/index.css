@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream-50 text-forest-900 antialiased;
+  }
+  /* Numbers a customer will compare down a column must line up. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-cream-200 bg-white shadow-sm;
+  }
+  .card-pad {
+    @apply p-4 sm:p-5;
+  }
+  .label {
+    @apply text-xs font-semibold uppercase tracking-wide text-forest-700/70;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium
+           transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-forest-500 text-white hover:bg-forest-600;
+  }
+  .btn-secondary {
+    @apply btn border border-cream-300 bg-white text-forest-800 hover:bg-cream-100;
+  }
+  .btn-copper {
+    @apply btn bg-copper-500 text-white hover:bg-copper-600;
+  }
+  .input {
+    @apply w-full rounded-md border border-cream-300 bg-white px-3 py-2 text-sm
+           outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/20;
+  }
+}
