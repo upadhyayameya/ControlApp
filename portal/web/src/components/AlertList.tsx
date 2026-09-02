@@ -2,30 +2,28 @@ import { useState } from 'react'
 import type { Alert } from '@hbs/shared'
 import { api } from '../api/client'
 import { dateLabel } from '../lib/format'
-import { EmptyState } from './primitives'
+import { Empty } from './primitives'
 
-const SEVERITY_STYLES: Record<Alert['severity'], string> = {
-  critical: 'border-l-red-600 bg-red-50/60',
-  warning: 'border-l-copper-400 bg-copper-100/40',
-  info: 'border-l-forest-300 bg-cream-50',
+/** Severity is encoded in the leading rule, so urgency reads before the words do. */
+const SEVERITY: Record<Alert['severity'], { rule: string; chip: string; label: string }> = {
+  critical: { rule: 'border-l-bad', chip: 'chip-bad', label: 'Critical' },
+  warning: { rule: 'border-l-warn', chip: 'chip-warn', label: 'Warning' },
+  info: { rule: 'border-l-line-strong', chip: 'chip-inert', label: 'Note' },
 }
 
 export function AlertList({ alerts }: { alerts: Alert[] }): JSX.Element {
-  // Acknowledged ids are tracked locally so a click feels immediate; the
-  // authoritative state comes back on the next load either way.
-  const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set())
+  // Tracked locally so a dismissal feels immediate; the authoritative state
+  // comes back on the next load either way.
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const open = alerts.filter((a) => a.acknowledgedAt === null && !dismissed.has(a.id))
 
-  const open = alerts.filter((a) => a.acknowledgedAt === null && !acknowledged.has(a.id))
+  if (open.length === 0) return <Empty title="Nothing needs your attention." />
 
-  if (open.length === 0) {
-    return <EmptyState title="Nothing needs your attention." />
-  }
-
-  async function acknowledge(id: string): Promise<void> {
-    setAcknowledged((prev) => new Set(prev).add(id))
+  async function dismiss(id: string): Promise<void> {
+    setDismissed((prev) => new Set(prev).add(id))
     await api.acknowledgeAlert(id).catch(() => {
-      // Put it back if the server refused, rather than showing it as handled.
-      setAcknowledged((prev) => {
+      // Put it back rather than showing it as handled when it is not.
+      setDismissed((prev) => {
         const next = new Set(prev)
         next.delete(id)
         return next
@@ -35,27 +33,30 @@ export function AlertList({ alerts }: { alerts: Alert[] }): JSX.Element {
 
   return (
     <ul className="space-y-2">
-      {open.map((alert) => (
-        <li
-          key={alert.id}
-          className={`rounded-md border border-cream-200 border-l-4 p-3 ${SEVERITY_STYLES[alert.severity]}`}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-forest-900">{alert.title}</p>
-              <p className="mt-0.5 text-sm text-forest-800/80">{alert.detail}</p>
-              <p className="mt-1 text-xs text-forest-800/50">{dateLabel(alert.createdAt)}</p>
+      {open.map((alert) => {
+        const tone = SEVERITY[alert.severity]
+        return (
+          <li key={alert.id} className={`panel border-l-2 ${tone.rule} p-3`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={tone.chip}>{tone.label}</span>
+                  <span className="font-mono text-micro text-ink-3">{dateLabel(alert.createdAt)}</span>
+                </div>
+                <p className="mt-1.5 text-base font-medium text-ink">{alert.title}</p>
+                <p className="mt-1 text-base text-ink-2">{alert.detail}</p>
+              </div>
+              <button
+                type="button"
+                className="btn-ghost btn-sm shrink-0"
+                onClick={() => void dismiss(alert.id)}
+              >
+                Dismiss
+              </button>
             </div>
-            <button
-              type="button"
-              className="shrink-0 text-xs text-forest-700 hover:underline"
-              onClick={() => void acknowledge(alert.id)}
-            >
-              Dismiss
-            </button>
-          </div>
-        </li>
-      ))}
+          </li>
+        )
+      })}
     </ul>
   )
 }

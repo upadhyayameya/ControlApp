@@ -6,22 +6,22 @@ import type { ReportRecord } from '@hbs/shared'
 import { api } from '../api/client'
 import { messageFor } from '../state/store'
 import { dateLabel } from '../lib/format'
-import { EmptyState, ErrorNote, SectionHeading, Spinner } from '../components/primitives'
+import { Empty, ErrorNote, PageHead, SectionHead, Spinner } from '../components/primitives'
 
 const KINDS: Array<{ id: ReportRecord['kind']; label: string; detail: string }> = [
   {
     id: 'annual-compliance',
-    label: 'Annual compliance report',
+    label: 'Annual compliance',
     detail: 'Every building against its BEPS standard, with exposure and deadlines.',
   },
   {
     id: 'portfolio-summary',
     label: 'Portfolio summary',
-    detail: 'One page across the whole portfolio for an owner or board.',
+    detail: 'One page across the whole portfolio, for an owner or a board.',
   },
   {
     id: 'benchmarking',
-    label: 'Benchmarking submission record',
+    label: 'Benchmarking record',
     detail: 'What was reported, for which year, from which meters.',
   },
   {
@@ -39,8 +39,7 @@ export function Reports(): JSX.Element {
 
   const load = useCallback(async () => {
     try {
-      const { reports: list } = await api.reports()
-      setReports(list)
+      setReports((await api.reports()).reports)
     } catch (err) {
       setError(messageFor(err))
     }
@@ -72,75 +71,70 @@ export function Reports(): JSX.Element {
     }
   }
 
-  if (!reports) return <Spinner label="Loading reports…" />
+  if (!reports) return <Spinner label="Loading reports" />
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-semibold text-forest-900">Reports</h1>
-      {error && <ErrorNote message={error} />}
+    <div>
+      <PageHead title="Reports" detail="Generated from the same numbers the portal shows." />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      {error && (
+        <div className="mb-5">
+          <ErrorNote message={error} />
+        </div>
+      )}
+
+      <div className="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {KINDS.map((kind) => (
-          <div key={kind.id} className="card card-pad flex flex-col">
-            <h2 className="font-semibold text-forest-900">{kind.label}</h2>
-            <p className="mt-1 flex-1 text-sm text-forest-800/70">{kind.detail}</p>
+          <article key={kind.id} className="panel panel-pad flex flex-col">
+            <h2 className="font-display text-h3 text-ink">{kind.label}</h2>
+            <p className="mt-1.5 flex-1 text-base text-ink-2">{kind.detail}</p>
             <button
               type="button"
-              className="btn-secondary mt-3 self-start"
+              className="btn-secondary mt-4 self-start"
               onClick={() => void generate(kind.id)}
               disabled={busy !== null}
             >
-              {busy === kind.id ? 'Generating…' : 'Generate'}
+              {busy === kind.id ? 'Generating' : 'Generate'}
             </button>
-          </div>
+          </article>
         ))}
       </div>
 
-      <div>
-        <SectionHeading title="Generated" />
-        {reports.length === 0 ? (
-          <EmptyState title="Nothing generated yet." />
-        ) : (
-          <div className="card divide-y divide-cream-200">
-            {reports.map((report) => (
-              <div key={report.id} className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-forest-900">
-                    {KINDS.find((k) => k.id === report.kind)?.label ?? report.kind}
-                  </p>
-                  <p className="text-xs text-forest-800/50">
-                    Performance year {report.periodLabel} · {dateLabel(report.generatedAt)}
-                  </p>
-                </div>
-                {report.status === 'ready' ? (
-                  <button type="button" className="btn-secondary" onClick={() => void open(report)}>
-                    {preview?.id === report.id ? 'Showing' : 'Open'}
-                  </button>
-                ) : (
-                  <span className="text-xs uppercase tracking-wide text-forest-800/50">
-                    {report.status}
-                  </span>
-                )}
+      <SectionHead title="Generated" />
+      {reports.length === 0 ? (
+        <Empty title="Nothing generated yet." />
+      ) : (
+        <div className="panel divide-y divide-line">
+          {reports.map((report) => (
+            <div key={report.id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div>
+                <p className="text-base font-medium text-ink">
+                  {KINDS.find((k) => k.id === report.kind)?.label ?? report.kind}
+                </p>
+                <p className="font-mono text-micro uppercase text-ink-3">
+                  performance year {report.periodLabel} · {dateLabel(report.generatedAt)}
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              {report.status === 'ready' ? (
+                <button type="button" className="btn-secondary btn-sm" onClick={() => void open(report)}>
+                  {preview?.id === report.id ? 'Showing' : 'Open'}
+                </button>
+              ) : (
+                <span className="chip-inert">{report.status}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {preview && (
-        <div className="card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-cream-200 bg-cream-100 px-4 py-2.5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-forest-700">
-              Report preview
-            </h2>
-            <button
-              type="button"
-              className="text-xs text-forest-700 hover:underline"
-              onClick={() => setPreview(null)}
-            >
+        <section className="panel mt-5 overflow-hidden">
+          <header className="flex items-center justify-between border-b border-line px-4 py-2.5">
+            <h2 className="font-display text-h3 text-ink">Preview</h2>
+            <button type="button" className="btn-ghost btn-sm" onClick={() => setPreview(null)}>
               Close
             </button>
-          </div>
+          </header>
           {/* Rendered in an iframe rather than offered as a download: a viewer
               embedding the portal may block downloads, and print-to-PDF from
               here works the same way. */}
@@ -150,7 +144,7 @@ export function Reports(): JSX.Element {
             className="h-[38rem] w-full border-0 bg-white"
             sandbox=""
           />
-        </div>
+        </section>
       )}
     </div>
   )

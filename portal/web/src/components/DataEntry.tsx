@@ -1,19 +1,32 @@
 // ---------------------------------------------------------------------------
-// Entering new data and pushing it back to Portfolio Manager.
+// Entering data, and pushing it back to Portfolio Manager.
 //
-// The design problem here is trust: the customer is typing a number that will
-// land in a regulated benchmarking record. So the UI never hides the round
-// trip — each row shows exactly where it is (only here / sent / rejected), a
-// rejection shows Portfolio Manager's own words, and a rejected row stays
-// editable so a correction is one retry rather than a support ticket.
+// The design problem is trust: the customer is typing a number that lands in a
+// regulated benchmarking record. So the round trip is never hidden — each row
+// states exactly where it is, a rejection carries Portfolio Manager's own
+// words, and a rejected row stays editable so a correction is one retry rather
+// than a support ticket.
 // ---------------------------------------------------------------------------
 
 import { useMemo, useState, type FormEvent } from 'react'
-import type { BuildingDetailResponse, ConsumptionEntry, SyncState } from '@hbs/shared'
+import type { BuildingDetailResponse, SyncState } from '@hbs/shared'
 import { api } from '../api/client'
 import { messageFor } from '../state/store'
 import { dateLabel, int, usd } from '../lib/format'
-import { EmptyState, ErrorNote, SectionHeading } from './primitives'
+import { Empty, ErrorNote, Notice, SectionHead } from './primitives'
+
+const SYNC: Record<SyncState, { label: string; className: string }> = {
+  remote: { label: 'From ESPM', className: 'chip-inert' },
+  synced: { label: 'Sent to ESPM', className: 'chip-good' },
+  local: { label: 'Only here', className: 'chip-warn' },
+  pending: { label: 'Sending', className: 'chip-warn' },
+  failed: { label: 'Rejected', className: 'chip-bad' },
+}
+
+function SyncChip({ state }: { state: SyncState }): JSX.Element {
+  const { label, className } = SYNC[state]
+  return <span className={className}>{label}</span>
+}
 
 export function DataEntry({
   detail,
@@ -33,15 +46,8 @@ export function DataEntry({
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
-  const selectedMeter = useMemo(
-    () => meters.find((m) => m.id === meterId) ?? null,
-    [meters, meterId],
-  )
-
-  const meterNames = useMemo(
-    () => new Map(meters.map((m) => [m.id, m.name])),
-    [meters],
-  )
+  const selectedMeter = useMemo(() => meters.find((m) => m.id === meterId) ?? null, [meters, meterId])
+  const meterNames = useMemo(() => new Map(meters.map((m) => [m.id, m.name])), [meters])
 
   const pending = recentEntries.filter(
     (e) => e.syncState === 'local' || e.syncState === 'failed' || e.syncState === 'pending',
@@ -92,7 +98,7 @@ export function DataEntry({
 
   if (meters.length === 0) {
     return (
-      <EmptyState
+      <Empty
         title="No meters on this building yet."
         detail="Meters appear once the property is synced from Portfolio Manager."
       />
@@ -100,31 +106,27 @@ export function DataEntry({
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,22rem)_1fr]">
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,20rem)_1fr]">
       <div className="space-y-4">
-        <form onSubmit={submit} className="card card-pad space-y-3">
-          <SectionHeading title="Add a meter reading" />
+        <form onSubmit={submit} className="panel panel-pad space-y-3.5">
+          <SectionHead title="Add a reading" />
           {error && <ErrorNote message={error} />}
-          {notice && (
-            <div className="rounded-md border border-forest-200 bg-forest-50 px-3 py-2 text-sm text-forest-700">
-              {notice}
-            </div>
-          )}
+          {notice && <Notice message={notice} />}
 
           <div>
-            <label className="label" htmlFor="meter">
+            <label className="field-label" htmlFor="meter">
               Meter
             </label>
             <select
               id="meter"
-              className="input mt-1"
+              className="field"
               value={meterId}
               onChange={(e) => setMeterId(e.target.value)}
               required
             >
               {meters.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name} ({m.type})
+                  {m.name}
                 </option>
               ))}
             </select>
@@ -132,26 +134,26 @@ export function DataEntry({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label" htmlFor="start">
+              <label className="field-label" htmlFor="start">
                 Period start
               </label>
               <input
                 id="start"
                 type="date"
-                className="input mt-1"
+                className="field measure"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="label" htmlFor="end">
+              <label className="field-label" htmlFor="end">
                 Period end
               </label>
               <input
                 id="end"
                 type="date"
-                className="input mt-1"
+                className="field measure"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 required
@@ -160,15 +162,15 @@ export function DataEntry({
           </div>
 
           <div>
-            <label className="label" htmlFor="quantity">
-              Usage {selectedMeter && <span className="normal-case">({selectedMeter.unit})</span>}
+            <label className="field-label" htmlFor="quantity">
+              Usage {selectedMeter && <span className="normal-case">· {selectedMeter.unit}</span>}
             </label>
             <input
               id="quantity"
               type="number"
               step="any"
               min="0"
-              className="input mt-1 tabular"
+              className="field measure"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
@@ -176,64 +178,62 @@ export function DataEntry({
           </div>
 
           <div>
-            <label className="label" htmlFor="cost">
-              Cost (optional)
+            <label className="field-label" htmlFor="cost">
+              Cost · optional
             </label>
             <input
               id="cost"
               type="number"
               step="any"
               min="0"
-              className="input mt-1 tabular"
+              className="field measure"
               value={cost}
               onChange={(e) => setCost(e.target.value)}
             />
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-forest-800">
+          <label className="flex items-center gap-2 text-base text-ink-2">
             <input
               type="checkbox"
               checked={estimated}
               onChange={(e) => setEstimated(e.target.checked)}
-              className="rounded border-cream-300"
+              className="rounded-sm border-line-strong"
             />
             This reading is estimated
           </label>
 
           <button type="submit" className="btn-primary w-full" disabled={busy}>
-            {busy ? 'Sending…' : 'Save and send to Portfolio Manager'}
+            {busy ? 'Sending' : 'Save and send to Portfolio Manager'}
           </button>
-          <p className="text-xs text-forest-800/60">
-            Saved here first, then pushed. If Portfolio Manager rejects it the reading stays in the
-            portal with the reason, so nothing is lost.
+          <p className="text-tiny text-ink-3">
+            Saved here first, then pushed. If Portfolio Manager rejects it, the reading stays in the
+            portal with the reason — nothing is lost.
           </p>
         </form>
 
         {pending.length > 0 && (
-          <div className="card card-pad">
-            <SectionHeading
-              title={`${pending.length} awaiting Portfolio Manager`}
+          <div className="panel panel-pad">
+            <SectionHead
+              title={`${pending.length} awaiting ESPM`}
               action={
-                <button type="button" className="btn-secondary" onClick={retryAll} disabled={busy}>
+                <button type="button" className="btn-secondary btn-sm" onClick={retryAll} disabled={busy}>
                   Retry all
                 </button>
               }
             />
-            <ul className="space-y-2 text-sm">
+            <ul className="divide-y divide-line border-t border-line">
               {pending.map((entry) => (
-                <li key={entry.id} className="border-b border-cream-100 pb-2 last:border-0">
+                <li key={entry.id} className="py-2.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="tabular">
+                    <span className="measure text-tiny text-ink">
                       {entry.startDate} → {entry.endDate}
                     </span>
-                    <SyncBadge state={entry.syncState} />
+                    <SyncChip state={entry.syncState} />
                   </div>
-                  <p className="text-xs text-forest-800/50">
+                  <p className="mt-0.5 text-tiny text-ink-3">
                     {meterNames.get(entry.meterId) ?? 'Unknown meter'}
                   </p>
-                  {entry.syncError && (
-                    <p className="mt-1 text-xs text-red-800">{entry.syncError}</p>
-                  )}
+                  {entry.syncError && <p className="mt-1 text-tiny text-bad">{entry.syncError}</p>}
                 </li>
               ))}
             </ul>
@@ -241,74 +241,53 @@ export function DataEntry({
         )}
       </div>
 
-      <div className="card overflow-hidden">
-        <div className="border-b border-cream-200 bg-cream-100 px-4 py-2.5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-forest-700">
-            Recent readings
-          </h2>
+      <div className="panel overflow-hidden">
+        <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+          <h2 className="font-display text-h3 text-ink">Readings</h2>
+          <span className="font-mono text-micro uppercase text-ink-3">
+            synced {dateLabel(building.lastSyncedAt)}
+          </span>
         </div>
-        <div className="max-h-[32rem] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-white text-left text-xs uppercase tracking-wide text-forest-700/70">
+        <div className="max-h-[34rem] overflow-y-auto">
+          <table className="grid-table">
+            <thead className="sticky top-0 bg-surface">
               <tr>
-                <th className="px-4 py-2 font-semibold">Period</th>
-                <th className="px-4 py-2 font-semibold">Meter</th>
-                <th className="px-4 py-2 text-right font-semibold">Usage</th>
-                <th className="px-4 py-2 text-right font-semibold">Cost</th>
-                <th className="px-4 py-2 font-semibold">State</th>
+                <th>Period</th>
+                <th>Meter</th>
+                <th className="text-right">Usage</th>
+                <th className="text-right">Cost</th>
+                <th>State</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cream-100">
+            <tbody>
               {recentEntries.map((entry) => (
                 <tr key={entry.id}>
-                  <td className="tabular px-4 py-2">
+                  <td className="measure whitespace-nowrap text-ink">
                     {entry.startDate} → {entry.endDate}
                     {entry.estimated && (
-                      <span className="ml-1.5 text-xs text-copper-600">estimated</span>
+                      <span className="ml-1.5 font-mono text-micro uppercase text-warn">est</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-forest-800/70">
-                    {meterNames.get(entry.meterId) ?? '—'}
+                  <td className="text-ink-2">{meterNames.get(entry.meterId) ?? '—'}</td>
+                  <td className="measure whitespace-nowrap text-right text-ink">
+                    {int(entry.quantity)}
+                    <span className="ml-1 text-micro text-ink-3">{entry.unit}</span>
                   </td>
-                  <td className="tabular px-4 py-2 text-right">
-                    {int(entry.quantity)}{' '}
-                    <span className="text-xs text-forest-800/50">{entry.unit}</span>
-                  </td>
-                  <td className="tabular px-4 py-2 text-right text-forest-800/70">
+                  <td className="measure text-right text-ink-2">
                     {entry.cost === null ? '—' : usd(entry.cost)}
                   </td>
-                  <td className="px-4 py-2">
-                    <SyncBadge state={entry.syncState} />
+                  <td>
+                    <SyncChip state={entry.syncState} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {recentEntries.length === 0 && (
-            <p className="p-6 text-center text-sm text-forest-800/60">No readings recorded yet.</p>
+            <p className="p-6 text-center text-base text-ink-3">No readings recorded yet.</p>
           )}
-        </div>
-        <div className="border-t border-cream-200 px-4 py-2 text-xs text-forest-800/50">
-          Last synced {dateLabel(building.lastSyncedAt)}
         </div>
       </div>
     </div>
-  )
-}
-
-/** The whole point of the two-way design is that this badge is never ambiguous. */
-function SyncBadge({ state }: { state: SyncState }): JSX.Element {
-  const config: Record<SyncState, { label: string; className: string }> = {
-    remote: { label: 'From ESPM', className: 'bg-cream-100 text-forest-800/70' },
-    synced: { label: 'Sent to ESPM', className: 'bg-forest-100 text-forest-700' },
-    local: { label: 'Only here', className: 'bg-copper-100 text-copper-600' },
-    pending: { label: 'Sending…', className: 'bg-copper-100 text-copper-600' },
-    failed: { label: 'Rejected', className: 'bg-red-50 text-red-800' },
-  }
-  const { label, className } = config[state]
-  return (
-    <span className={`inline-flex rounded px-1.5 py-0.5 text-xs font-medium ${className}`}>
-      {label}
-    </span>
   )
 }

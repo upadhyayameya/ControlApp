@@ -1,22 +1,28 @@
 // ---------------------------------------------------------------------------
-// One building, in four tabs: where it stands, how it got here, its data, and
-// what we can do about it.
+// One building, in four tabs.
 //
-// The tab order is the argument: standing → trend → data → services. A service
-// pitch only makes sense after the customer has seen the number that justifies
-// it, so it is last and it quotes that number back.
+// The order is the argument: where it stands → how it got here → its data →
+// what we can do about it. A service pitch only makes sense after the customer
+// has seen the number that justifies it, so it comes last and quotes it back.
 // ---------------------------------------------------------------------------
 
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { usePortal } from '../state/store'
-import { ComplianceGauge } from '../components/ComplianceGauge'
+import { ThresholdBand } from '../components/Threshold'
 import { TrendCharts } from '../components/TrendCharts'
 import { DataEntry } from '../components/DataEntry'
 import { Recommendations } from '../components/Recommendations'
 import { AlertList } from '../components/AlertList'
-import { EmptyState, ErrorNote, SectionHeading, Spinner } from '../components/primitives'
-import { int } from '../lib/format'
+import {
+  Empty,
+  ErrorNote,
+  PageHead,
+  ProvisionalNotice,
+  SectionHead,
+  Spinner,
+} from '../components/primitives'
+import { int, penaltyText } from '../lib/format'
 
 type Tab = 'standing' | 'history' | 'data' | 'services'
 
@@ -36,95 +42,122 @@ export function BuildingDetail(): JSX.Element {
     if (id) void loadBuilding(id)
   }, [id, loadBuilding])
 
-  if (loading && !building) return <Spinner label="Loading building…" />
+  if (loading && !building) return <Spinner label="Loading building" />
   if (error) return <ErrorNote message={error} />
-  if (!building) return <EmptyState title="Building not found." />
+  if (!building) return <Empty title="Building not found." />
 
   const { building: b, currentAssessment, assessments, metrics, alerts, recommendations } = building
 
   return (
-    <div className="space-y-5">
-      <div>
-        <Link to="/" className="text-xs text-forest-700 hover:underline">
-          ← Portfolio
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold text-forest-900">{b.name}</h1>
-        <p className="text-sm text-forest-800/70">
-          {b.propertyType} · {int(b.grossFloorAreaSqFt)} ft²
-          {b.yearBuilt ? ` · built ${b.yearBuilt}` : ''} ·{' '}
-          {[b.addressLine1, b.city, b.state].filter(Boolean).join(', ') || 'address not on file'}
-        </p>
-        <p className="mt-0.5 text-xs text-forest-800/50">
-          {b.espmPropertyId
-            ? `Portfolio Manager property ${b.espmPropertyId}`
-            : 'Not yet linked to Portfolio Manager'}
-          {b.lastSyncedAt && ` · last synced ${new Date(b.lastSyncedAt).toLocaleString()}`}
-        </p>
-      </div>
+    <div>
+      <Link to="/" className="font-mono text-micro uppercase text-ink-3 hover:text-ink">
+        ← Portfolio
+      </Link>
 
-      <nav className="flex gap-1 border-b border-cream-200">
+      <PageHead
+        title={b.name}
+        detail={
+          <>
+            {b.propertyType} · <span className="measure">{int(b.grossFloorAreaSqFt)}</span> ft²
+            {b.yearBuilt ? <> · built <span className="measure">{b.yearBuilt}</span></> : null}
+            {' · '}
+            {[b.addressLine1, b.city, b.state].filter(Boolean).join(', ') || 'address not on file'}
+          </>
+        }
+      />
+
+      <p className="-mt-4 mb-6 font-mono text-micro uppercase text-ink-3">
+        {b.espmPropertyId ? `ESPM property ${b.espmPropertyId}` : 'Not linked to Portfolio Manager'}
+      </p>
+
+      <nav className="mb-6 flex flex-wrap gap-0.5 border-b border-line">
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition ${
+            aria-current={tab === t.id ? 'page' : undefined}
+            className={`-mb-px border-b-2 px-3 py-2 text-base transition ${
               tab === t.id
-                ? 'border-forest-500 text-forest-800'
-                : 'border-transparent text-forest-800/60 hover:text-forest-800'
+                ? 'border-ink font-medium text-ink'
+                : 'border-transparent text-ink-3 hover:text-ink'
             }`}
           >
             {t.label}
             {t.id === 'services' && recommendations.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-copper-100 px-1.5 text-xs text-copper-600">
-                {recommendations.length}
-              </span>
+              <span className="ml-1.5 font-mono text-micro text-warn">{recommendations.length}</span>
             )}
           </button>
         ))}
       </nav>
 
       {tab === 'standing' && (
-        <div className="grid gap-5 lg:grid-cols-2">
-          <div className="space-y-4">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="space-y-5">
             {currentAssessment ? (
-              <ComplianceGauge assessment={currentAssessment} />
+              <>
+                <ThresholdBand assessment={currentAssessment} />
+                {currentAssessment.estimatedPenalty && (
+                  <section className="panel panel-pad">
+                    <p className="eyebrow">Estimated exposure</p>
+                    <p className="figure mt-1.5 text-bad">
+                      {penaltyText(currentAssessment.estimatedPenalty)}
+                    </p>
+                    <p className="mt-2 max-w-prose text-base text-ink-2">
+                      {currentAssessment.estimatedPenalty.basis}
+                    </p>
+                    <ProvisionalNotice
+                      penalty={currentAssessment.estimatedPenalty}
+                      className="mt-4"
+                    />
+                  </section>
+                )}
+                {currentAssessment.notes.length > 0 && (
+                  <section className="rule">
+                    <p className="eyebrow mb-1.5">Notes on this assessment</p>
+                    <ul className="space-y-1 text-tiny text-ink-3">
+                      {currentAssessment.notes.map((note) => (
+                        <li key={note}>{note}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </>
             ) : (
-              <EmptyState
+              <Empty
                 title="No BEPS standard applies to this building."
                 detail="It sits outside the jurisdictions the portal tracks, or below the coverage threshold."
               />
             )}
+
             {assessments.length > 1 && (
-              <div className="card card-pad">
-                <SectionHeading title="All compliance cycles" />
-                <ul className="space-y-2 text-sm">
+              <section className="panel panel-pad">
+                <SectionHead title="All compliance cycles" />
+                <ul className="divide-y divide-line border-t border-line">
                   {assessments.map((a) => (
-                    <li
-                      key={a.cycleId}
-                      className="flex items-start justify-between gap-3 border-b border-cream-100 pb-2 last:border-0"
-                    >
-                      <div>
-                        <span className="text-forest-800">{a.cycleLabel}</span>
+                    <li key={a.cycleId} className="flex items-start justify-between gap-3 py-2.5">
+                      <div className="min-w-0">
+                        <p className="text-base text-ink">{a.cycleLabel}</p>
                         {/* A cycle with no target is not "fine" — it is a
                             standard that has not been published yet, and
                             saying so beats printing an em dash. */}
                         {a.targetValue === null && a.notes[0] && (
-                          <p className="text-xs text-forest-800/50">{a.notes[0]}</p>
+                          <p className="mt-0.5 text-tiny text-ink-3">{a.notes[0]}</p>
                         )}
                       </div>
-                      <span className="shrink-0 text-xs text-forest-800/60">
-                        due {a.complianceDate}
+                      <span className="measure shrink-0 text-tiny text-ink-3">
+                        {a.complianceDate}
                         {a.targetValue !== null && ` · target ${a.targetValue}`}
                       </span>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </section>
             )}
           </div>
+
           <div>
-            <SectionHeading title="Alerts" />
+            <SectionHead title="Alerts" />
             <AlertList alerts={alerts} />
           </div>
         </div>

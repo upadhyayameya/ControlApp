@@ -11,7 +11,10 @@ import { create } from 'zustand'
 import type {
   BuildingDetailResponse,
   Organization,
+  OrganizationProfile,
+  OrgOverviewResponse,
   PortfolioResponse,
+  SessionResponse,
   User,
 } from '@hbs/shared'
 import { ApiError, api } from '../api/client'
@@ -19,6 +22,10 @@ import { ApiError, api } from '../api/client'
 interface PortalState {
   user: User | null
   organization: Organization | null
+  /** Tenant settings and branding. Null for HBS staff, who belong to no tenant. */
+  profile: OrganizationProfile | null
+  /** The account console's data, loaded on demand. */
+  org: OrgOverviewResponse | null
   /** Staff only: which organization the portfolio view is narrowed to. */
   viewingOrganizationId: string | null
   organizations: Organization[]
@@ -38,6 +45,9 @@ interface PortalState {
 
   bootstrap: () => Promise<void>
   login: (email: string, password: string) => Promise<void>
+  /** Adopt a session created by signup or an accepted invitation. */
+  adoptSession: (session: SessionResponse) => Promise<void>
+  loadOrg: () => Promise<void>
   logout: () => Promise<void>
   loadPortfolio: () => Promise<void>
   loadBuilding: (id: string) => Promise<void>
@@ -49,6 +59,8 @@ interface PortalState {
 export const usePortal = create<PortalState>((set, get) => ({
   user: null,
   organization: null,
+  profile: null,
+  org: null,
   viewingOrganizationId: null,
   organizations: [],
   portfolio: null,
@@ -62,10 +74,12 @@ export const usePortal = create<PortalState>((set, get) => ({
   bootstrap: async () => {
     try {
       const session = await api.session()
-      set({ user: session.user, organization: session.organization })
+      set({ user: session.user, organization: session.organization, profile: session.profile })
       if (session.user.role === 'hbs_staff') {
         const { organizations } = await api.organizations()
         set({ organizations })
+      } else {
+        await get().loadOrg()
       }
       await get().loadPortfolio()
     } catch {
@@ -79,13 +93,7 @@ export const usePortal = create<PortalState>((set, get) => ({
   login: async (email, password) => {
     set({ loading: true, error: null })
     try {
-      const session = await api.login(email, password)
-      set({ user: session.user, organization: session.organization, justLoggedIn: true })
-      if (session.user.role === 'hbs_staff') {
-        const { organizations } = await api.organizations()
-        set({ organizations })
-      }
-      await get().loadPortfolio()
+      await get().adoptSession(await api.login(email, password))
     } catch (err) {
       set({ error: messageFor(err) })
       throw err
@@ -94,11 +102,49 @@ export const usePortal = create<PortalState>((set, get) => ({
     }
   },
 
+  /**
+   * Take up a session however it was created — signing in, signing up, or
+   * accepting an invitation all land here, so the post-auth loading sequence
+   * exists once rather than three times.
+   */
+  adoptSession: async (session) => {
+    set({
+      user: session.user,
+      organization: session.organization,
+      profile: session.profile,
+      justLoggedIn: true,
+      error: null,
+    })
+    if (session.user.role === 'hbs_staff') {
+      const { organizations } = await api.organizations().catch(() => ({ organizations: [] }))
+      set({ organizations })
+    } else {
+      await get().loadOrg()
+    }
+    await get().loadPortfolio()
+  },
+
+  loadOrg: async () => {
+    try {
+      const org = await api.org()
+      // Carry the profile across too: the shell's name, mark and accent read
+      // from `profile`, so refreshing only `org` left branding changes
+      // invisible until the next sign-in.
+      set({ org, profile: org.profile })
+    } catch {
+      // Staff have no tenant of their own; a 403 here is expected, not an error
+      // worth showing on the dashboard.
+      set({ org: null })
+    }
+  },
+
   logout: async () => {
     await api.logout().catch(() => undefined)
     set({
       user: null,
       organization: null,
+      profile: null,
+      org: null,
       portfolio: null,
       building: null,
       organizations: [],

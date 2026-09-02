@@ -15,6 +15,23 @@
 // ---------------------------------------------------------------------------
 
 import type {
+  AcceptInviteRequest,
+  AuditEvent,
+  AuditResponse,
+  ConnectEspmRequest,
+  CreateInvitationRequest,
+  EspmConnectionSummary,
+  Invitation,
+  InvitePreview,
+  OrganizationProfile,
+  OrgOverviewResponse,
+  PlanUsage,
+  ServiceTier,
+  SignupRequest,
+  UpdateOrgRequest,
+} from '@hbs/shared'
+import { onboardingStepsFrom, planFor } from './demoPlatform'
+import type {
   Alert,
   BuildingDetailResponse,
   ConsumptionEntry,
@@ -51,6 +68,19 @@ interface DemoData {
   sampleReportHtml: string
 }
 
+/**
+ * Tenant state the demo mutates: profiles, members, invitations, connections
+ * and the audit trail. Seeded from the captured session data so the demo opens
+ * on a plausible account rather than an empty one.
+ */
+interface DemoTenant {
+  profile: OrganizationProfile
+  members: User[]
+  invitations: Invitation[]
+  connection: EspmConnectionSummary | null
+  audit: AuditEvent[]
+}
+
 /** The password the seed script sets on every demo account. */
 export const DEMO_PASSWORD = 'PortalDemo123!'
 
@@ -66,6 +96,80 @@ export const DEMO_ACCOUNTS = Object.entries(data.users).map(([email, record]) =>
 
 let currentEmail: string | null = null
 let nextEspmId = 950_000
+
+/** Tenants, keyed by organization id, built from the captured session data. */
+const tenants = new Map<string, DemoTenant>()
+
+for (const [email, record] of Object.entries(data.users)) {
+  const org = record.session.organization
+  const profile = record.session.profile
+  if (!org || !profile) continue
+  const existing = tenants.get(org.id)
+  if (existing) {
+    if (!existing.members.some((m) => m.id === record.session.user.id)) {
+      existing.members.push(record.session.user)
+    }
+    continue
+  }
+  tenants.set(org.id, {
+    profile,
+    members: [record.session.user],
+    invitations: [],
+    connection: {
+      id: `conn-${org.id}`,
+      label: `${org.name} — Portfolio Manager`,
+      username: `${profile.slug.replace(/-/g, '_')}_esp`,
+      environment: 'test',
+      scope: profile.tier === 'benchmarking' ? 'shared-hbs' : 'own-account',
+      status: 'connected',
+      lastError: null,
+      verifiedAt: profile.createdAt,
+      lastPullAt: record.syncStatus?.lastPullAt ?? profile.createdAt,
+    },
+    audit: [
+      {
+        id: `audit-${org.id}-created`,
+        organizationId: org.id,
+        actorLabel: record.session.user.fullName,
+        action: 'organization.created',
+        targetType: 'organization',
+        targetLabel: org.name,
+        detail: null,
+        createdAt: profile.createdAt,
+      },
+    ],
+  })
+  void email
+}
+
+function currentTenant(): DemoTenant {
+  const record = requireUser()
+  const orgId = record.session.organization?.id
+  const tenant = orgId ? tenants.get(orgId) : undefined
+  if (!tenant) {
+    throw new ApiError('This is an account setting for a customer organization.', 403)
+  }
+  return tenant
+}
+
+function requireAdmin(): void {
+  if (currentRole() !== 'customer_admin') {
+    throw new ApiError('Only an account admin can change this.', 403)
+  }
+}
+
+function logAudit(tenant: DemoTenant, action: string, targetLabel?: string, detail?: string): void {
+  tenant.audit.unshift({
+    id: uid(),
+    organizationId: tenant.profile.id,
+    actorLabel: requireUser().session.user.fullName,
+    action,
+    targetType: null,
+    targetLabel: targetLabel ?? null,
+    detail: detail ?? null,
+    createdAt: now(),
+  })
+}
 
 function requireUser(): DemoUserRecord {
   if (!currentEmail) throw new ApiError('Not signed in.', 401)
@@ -139,7 +243,10 @@ export const demoApi = {
     const detail = data.buildings[id]
     // Same 404 for "does not exist" and "not yours", as the server does.
     if (!visible || !detail) throw new ApiError('No such building.', 404)
-    return settle(detail)
+    // A fresh object, as the live API would produce. Handing back the same
+    // reference makes a state update invisible to React and the screen stops
+    // reflecting writes that did in fact happen.
+    return settle(structuredClone(detail))
   },
 
   addConsumption: async (
@@ -354,6 +461,222 @@ export const demoApi = {
     requireStaff()
     return settle({ organizations: requireUser().organizations })
   },
+
+  // --- Platform ------------------------------------------------------------
+
+  signup: async (): Promise<SessionResponse> => {
+    // Creating a real tenant would need a server. Saying so beats a form that
+    // appears to work and silently does nothing.
+    throw new ApiError(
+      'Sign-up is not available in the static demo.',
+      400,
+      'Use one of the demo accounts on the sign-in screen.',
+    )
+  },
+
+  invitePreview: async (): Promise<InvitePreview> => {
+    throw new ApiError('Invitation links are not available in the static demo.', 404)
+  },
+
+  acceptInvite: async (): Promise<SessionResponse> => {
+    throw new ApiError('Invitation links are not available in the static demo.', 404)
+  },
+
+  org: async (): Promise<OrgOverviewResponse> => {
+    const tenant = currentTenant()
+    const record = requireUser()
+    const buildings = record.portfolio.entries.length
+    const plan = planFor(tenant.profile.tier)
+
+    const usage: PlanUsage = {
+      plan,
+      status: tenant.profile.planStatus,
+      trialEndsAt: tenant.profile.trialEndsAt,
+      buildings,
+      users: tenant.members.length,
+      exceeded: [
+        ...(plan.limits.maxBuildings !== null && buildings > plan.limits.maxBuildings
+          ? [`${buildings} buildings against a ${plan.name} limit of ${plan.limits.maxBuildings}.`]
+          : []),
+        ...(plan.limits.maxUsers !== null && tenant.members.length > plan.limits.maxUsers
+          ? [`${tenant.members.length} people against a ${plan.name} limit of ${plan.limits.maxUsers}.`]
+          : []),
+      ],
+    }
+
+    const steps = onboardingStepsFrom({
+      organizationName: tenant.profile.name,
+      connected: tenant.connection?.status === 'connected',
+      buildings,
+      unplaced: record.portfolio.entries.filter((e) => e.building.jurisdiction === 'none').length,
+      members: tenant.members.length,
+    })
+
+    return settle({
+      profile: tenant.profile,
+      usage,
+      onboarding: {
+        steps,
+        complete: steps.every((s) => s.done),
+        completedCount: steps.filter((s) => s.done).length,
+      },
+      members: tenant.members,
+      invitations: currentRole() === 'customer_admin' ? tenant.invitations : [],
+      connection: tenant.connection,
+    })
+  },
+
+  updateOrg: async (body: UpdateOrgRequest): Promise<OrganizationProfile> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    if (body.accentColor !== undefined && !/^#[0-9a-fA-F]{6}$/.test(body.accentColor)) {
+      throw new ApiError('Accent colour must be a hex value such as #0B5D66.', 400)
+    }
+    tenant.profile = {
+      ...tenant.profile,
+      ...(body.name !== undefined ? { name: body.name } : {}),
+      ...(body.billingEmail !== undefined ? { billingEmail: body.billingEmail } : {}),
+      ...(body.accentColor !== undefined ? { accentColor: body.accentColor.toUpperCase() } : {}),
+      ...(body.logoMark !== undefined ? { logoMark: body.logoMark } : {}),
+    }
+    // The session carries the profile, so the shell picks up branding at once.
+    requireUser().session = { ...requireUser().session, profile: tenant.profile }
+    logAudit(tenant, 'organization.updated', tenant.profile.name)
+    return settle(tenant.profile)
+  },
+
+  createInvitation: async (body: CreateInvitationRequest): Promise<Invitation> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    const email = body.email.trim().toLowerCase()
+    if (tenant.members.some((m) => m.email.toLowerCase() === email)) {
+      throw new ApiError('That person is already on your team.', 400)
+    }
+    // Re-inviting supersedes anything outstanding, as the server does.
+    for (const existing of tenant.invitations) {
+      if (existing.email === email && existing.state === 'pending') existing.state = 'revoked'
+    }
+    const invitation: Invitation = {
+      id: uid(),
+      organizationId: tenant.profile.id,
+      email,
+      role: body.role,
+      state: 'pending',
+      invitedByName: requireUser().session.user.fullName,
+      expiresAt: new Date(Date.now() + 14 * 86_400_000).toISOString(),
+      acceptedAt: null,
+      createdAt: now(),
+      inviteUrl: `https://portal.example/invite/${uid()}`,
+    }
+    tenant.invitations.unshift(invitation)
+    logAudit(tenant, 'member.invited', email, body.role === 'customer_admin' ? 'as an admin' : 'as a viewer')
+    return settle(invitation)
+  },
+
+  revokeInvitation: async (id: string): Promise<{ ok: true }> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    const invitation = tenant.invitations.find((i) => i.id === id)
+    if (!invitation) throw new ApiError('No such invitation.', 404)
+    invitation.state = 'revoked'
+    logAudit(tenant, 'member.invite_revoked', invitation.email)
+    return { ok: true }
+  },
+
+  changeMemberRole: async (
+    id: string,
+    role: 'customer_admin' | 'customer_viewer',
+  ): Promise<{ ok: true }> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    const member = tenant.members.find((m) => m.id === id)
+    if (!member) throw new ApiError('No such team member.', 404)
+    if (member.role === 'customer_admin' && role !== 'customer_admin') {
+      assertNotLastAdmin(tenant, member.id)
+    }
+    const previous = member.role
+    member.role = role
+    logAudit(tenant, 'member.role_changed', member.email, `${previous} → ${role}`)
+    return { ok: true }
+  },
+
+  removeMember: async (id: string): Promise<{ ok: true }> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    const member = tenant.members.find((m) => m.id === id)
+    if (!member) throw new ApiError('No such team member.', 404)
+    if (member.id === requireUser().session.user.id) {
+      throw new ApiError('You cannot remove your own account.', 400)
+    }
+    if (member.role === 'customer_admin') assertNotLastAdmin(tenant, member.id)
+    tenant.members = tenant.members.filter((m) => m.id !== id)
+    logAudit(tenant, 'member.removed', member.email)
+    return { ok: true }
+  },
+
+  connectEspm: async (body: ConnectEspmRequest): Promise<EspmConnectionSummary> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    if (!planFor(tenant.profile.tier).limits.ownEspmConnection) {
+      throw new ApiError(
+        `Connecting your own ENERGY STAR account is part of the Compliance plan.`,
+        402,
+      )
+    }
+    tenant.connection = {
+      id: tenant.connection?.id ?? uid(),
+      label: `${tenant.profile.name} — Portfolio Manager`,
+      username: body.username,
+      environment: body.environment,
+      scope: 'own-account',
+      status: 'connected',
+      lastError: null,
+      verifiedAt: now(),
+      lastPullAt: tenant.connection?.lastPullAt ?? null,
+    }
+    logAudit(tenant, 'espm.connected', body.username, `${body.environment} environment`)
+    return settle(tenant.connection)
+  },
+
+  disconnectEspm: async (): Promise<{ ok: true }> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    if (!tenant.connection) throw new ApiError('There is no connection to remove.', 404)
+    logAudit(tenant, 'espm.disconnected', tenant.connection.username)
+    tenant.connection = null
+    return { ok: true }
+  },
+
+  requestPlan: async (tier: ServiceTier): Promise<{ ok: true; message: string }> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    logAudit(tenant, 'plan.change_requested', tier)
+    return settle({
+      ok: true as const,
+      message:
+        'Thanks — we have your request and someone from HBS will confirm the change and the billing details.',
+    })
+  },
+
+  audit: async (): Promise<AuditResponse> => {
+    const tenant = currentTenant()
+    requireAdmin()
+    return settle({ events: tenant.audit })
+  },
+}
+
+/**
+ * An organization with no admin is unrecoverable by its own people, so the
+ * demo refuses it exactly as the server does.
+ */
+function assertNotLastAdmin(tenant: DemoTenant, excludingId: string): void {
+  const others = tenant.members.filter((m) => m.role === 'customer_admin' && m.id !== excludingId)
+  if (others.length === 0) {
+    throw new ApiError(
+      'This is the only admin on the account. Make someone else an admin first.',
+      400,
+    )
+  }
 }
 
 /** Kept in step with the server's totalsFor, for the staff organization filter. */

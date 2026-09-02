@@ -2,41 +2,251 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Tokens.
+
+   The complete light palette is declared on bare :root. Dark redefines only
+   the same names, guarded so an explicit light choice beats a dark OS, and
+   again under [data-theme="dark"] so a toggle wins in both directions. No
+   colour is ever defined for the first time inside a media or [data-theme]
+   block — that is the bug that renders one theme's text on the other theme's
+   ground.
+
+   Neutrals carry a slight cool-green bias rather than being pure grey, so they
+   sit with the status greens instead of fighting them.
+--------------------------------------------------------------------------- */
+:root {
+  --paper: 242 243 240;
+  --surface: 250 250 248;
+  --raised: 235 237 233;
+  --line: 219 222 216;
+  --line-strong: 191 196 188;
+  --ink: 16 20 24;
+  --ink-2: 74 82 78;
+  --ink-3: 120 128 122;
+
+  --accent: 11 93 102;
+
+  --good: 31 111 74;
+  --good-soft: 219 234 224;
+  --warn: 168 105 12;
+  --warn-soft: 246 233 209;
+  --bad: 163 43 28;
+  --bad-soft: 247 223 218;
+  --inert: 110 117 112;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: 14 17 19;
+    --surface: 21 25 27;
+    --raised: 30 35 37;
+    --line: 44 51 53;
+    --line-strong: 68 77 79;
+    --ink: 233 236 232;
+    --ink-2: 165 174 168;
+    --ink-3: 122 132 126;
+
+    --accent: 90 186 194;
+
+    /* Lifted and desaturated so they hold contrast on a dark ground rather
+       than glowing; the soft variants become tints of the ground, not of white. */
+    --good: 92 191 137;
+    --good-soft: 26 48 38;
+    --warn: 224 163 62;
+    --warn-soft: 54 42 20;
+    --bad: 234 116 96;
+    --bad-soft: 58 30 26;
+    --inert: 138 147 141;
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: 14 17 19;
+  --surface: 21 25 27;
+  --raised: 30 35 37;
+  --line: 44 51 53;
+  --line-strong: 68 77 79;
+  --ink: 233 236 232;
+  --ink-2: 165 174 168;
+  --ink-3: 122 132 126;
+
+  --accent: 90 186 194;
+
+  --good: 92 191 137;
+  --good-soft: 26 48 38;
+  --warn: 224 163 62;
+  --warn-soft: 54 42 20;
+  --bad: 234 116 96;
+  --bad-soft: 58 30 26;
+  --inert: 138 147 141;
+
+  color-scheme: dark;
+}
+
 @layer base {
   body {
-    @apply bg-cream-50 text-forest-900 antialiased;
+    /* Explicit, from a token: a transparent body borrows the host's ground and
+       renders the wrong theme when embedded. */
+    @apply bg-paper text-ink font-sans text-body antialiased;
   }
-  /* Numbers a customer will compare down a column must line up. */
-  .tabular {
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  /* Every figure a reader compares down a column. */
+  .tab {
     font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.22);
   }
 }
 
 @layer components {
-  .card {
-    @apply rounded-lg border border-cream-200 bg-white shadow-sm;
+  /* --- Structure ---------------------------------------------------------
+     Not everything is a card. A panel is a plain surface with a hairline; the
+     border, the fill and the shadow are spent only where something genuinely
+     needs lifting off the page. */
+  .panel {
+    @apply border border-line bg-surface;
   }
-  .card-pad {
+  .panel-pad {
     @apply p-4 sm:p-5;
   }
-  .label {
-    @apply text-xs font-semibold uppercase tracking-wide text-forest-700/70;
+
+  /* A section divider that carries a measurement tick at its left, echoing a
+     ruler — the page's own vernacular rather than a plain rule. */
+  .rule {
+    @apply relative border-t border-line pt-4;
   }
+  .rule::before {
+    content: '';
+    @apply absolute left-0 top-0 h-2 w-px bg-line-strong;
+  }
+
+  /* --- Type roles -------------------------------------------------------- */
+  .eyebrow {
+    @apply font-mono text-micro uppercase text-ink-3;
+  }
+  .figure {
+    @apply font-display text-figure tab text-ink;
+  }
+  .measure {
+    @apply font-mono tab;
+  }
+
+  /* --- Controls ---------------------------------------------------------- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium
-           transition disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border px-3 py-2
+           font-sans text-base font-medium transition
+           disabled:cursor-not-allowed disabled:opacity-45;
   }
   .btn-primary {
-    @apply btn bg-forest-500 text-white hover:bg-forest-600;
+    @apply btn border-ink bg-ink text-paper hover:bg-ink/90;
   }
   .btn-secondary {
-    @apply btn border border-cream-300 bg-white text-forest-800 hover:bg-cream-100;
+    @apply btn border-line-strong bg-surface text-ink hover:bg-raised;
   }
-  .btn-copper {
-    @apply btn bg-copper-500 text-white hover:bg-copper-600;
+  .btn-ghost {
+    @apply btn border-transparent bg-transparent text-ink-2 hover:bg-raised hover:text-ink;
   }
-  .input {
-    @apply w-full rounded-md border border-cream-300 bg-white px-3 py-2 text-sm
-           outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/20;
+  .btn-danger {
+    @apply btn border-bad/40 bg-transparent text-bad hover:bg-bad-soft;
+  }
+  .btn-sm {
+    @apply px-2 py-1 text-tiny;
+  }
+
+  .field {
+    @apply w-full rounded-sm border border-line-strong bg-surface px-3 py-2 text-base text-ink
+           outline-none transition placeholder:text-ink-3
+           focus:border-accent focus:ring-2 focus:ring-accent/25;
+  }
+  .field-label {
+    @apply mb-1.5 block font-mono text-micro uppercase text-ink-3;
+  }
+
+  /* --- Instruments -------------------------------------------------------
+     Tracks and bars stay square-cornered: they read as measurement, and a
+     rounded gauge reads as ornament. */
+  .track {
+    @apply relative overflow-hidden bg-raised;
+  }
+  .tick {
+    @apply absolute inset-y-0 w-px bg-ink;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 font-mono text-micro uppercase;
+  }
+  .chip-good {
+    @apply chip border-good/35 bg-good-soft text-good;
+  }
+  .chip-warn {
+    @apply chip border-warn/35 bg-warn-soft text-warn;
+  }
+  .chip-bad {
+    @apply chip border-bad/35 bg-bad-soft text-bad;
+  }
+  .chip-inert {
+    @apply chip border-line-strong bg-raised text-ink-2;
+  }
+
+  /* --- Tables ------------------------------------------------------------ */
+  .grid-table {
+    @apply w-full border-collapse text-base;
+  }
+  .grid-table thead th {
+    @apply border-b border-line-strong px-3 py-2 text-left font-mono text-micro uppercase text-ink-3;
+  }
+  .grid-table tbody td {
+    @apply border-b border-line px-3 py-3 align-top;
+  }
+  .grid-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+}
+
+/* --- Motion --------------------------------------------------------------
+   One idea only: instruments grow to their reading once, and rows arrive in
+   sequence. Everything else is still. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 320ms cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
   }
 }

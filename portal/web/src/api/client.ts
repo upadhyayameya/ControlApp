@@ -20,6 +20,20 @@ export { ApiError }
 export const IS_DEMO = import.meta.env['VITE_DEMO'] === '1'
 
 import type {
+  AcceptInviteRequest,
+  AuditResponse,
+  ConnectEspmRequest,
+  CreateInvitationRequest,
+  EspmConnectionSummary,
+  Invitation,
+  InvitePreview,
+  OrganizationProfile,
+  OrgOverviewResponse,
+  ServiceTier,
+  SignupRequest,
+  UpdateOrgRequest,
+} from '@hbs/shared'
+import type {
   Alert,
   BuildingDetailResponse,
   ConsumptionEntry,
@@ -144,6 +158,37 @@ const liveApi = {
     }),
 
   organizations: () => request<{ organizations: Organization[] }>('/organizations'),
+
+  // --- Platform ------------------------------------------------------------
+  signup: (body: SignupRequest) =>
+    request<SessionResponse>('/auth/signup', { method: 'POST', body: JSON.stringify(body) }),
+  invitePreview: (token: string) => request<InvitePreview>(`/invitations/${token}`),
+  acceptInvite: (body: AcceptInviteRequest) =>
+    request<SessionResponse>('/invitations/accept', { method: 'POST', body: JSON.stringify(body) }),
+
+  org: () => request<OrgOverviewResponse>('/org'),
+  updateOrg: (body: UpdateOrgRequest) =>
+    request<OrganizationProfile>('/org', { method: 'PATCH', body: JSON.stringify(body) }),
+
+  createInvitation: (body: CreateInvitationRequest) =>
+    request<Invitation>('/org/invitations', { method: 'POST', body: JSON.stringify(body) }),
+  revokeInvitation: (id: string) =>
+    request<{ ok: true }>(`/org/invitations/${id}`, { method: 'DELETE' }),
+  changeMemberRole: (id: string, role: 'customer_admin' | 'customer_viewer') =>
+    request<{ ok: true }>(`/org/members/${id}`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+  removeMember: (id: string) => request<{ ok: true }>(`/org/members/${id}`, { method: 'DELETE' }),
+
+  connectEspm: (body: ConnectEspmRequest) =>
+    request<EspmConnectionSummary>('/org/connection', { method: 'POST', body: JSON.stringify(body) }),
+  disconnectEspm: () => request<{ ok: true }>('/org/connection', { method: 'DELETE' }),
+
+  requestPlan: (tier: ServiceTier) =>
+    request<{ ok: true; message: string }>('/org/plan', {
+      method: 'POST',
+      body: JSON.stringify({ tier }),
+    }),
+
+  audit: () => request<AuditResponse>('/org/audit'),
 }
 
 /** The contract both implementations satisfy. */

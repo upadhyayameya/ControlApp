@@ -1,13 +1,28 @@
 # HBS Client Portal
 
-A customer-facing portal for BEPS compliance, built on ENERGY STAR Portfolio
-Manager. Customers sign in to see their own buildings measured against the
-performance standard, what missing it would cost, how they are trending, and
-what we can do about it — and to put new energy data in, which the portal
-pushes back to Portfolio Manager.
+A multi-tenant platform for BEPS compliance, built on ENERGY STAR Portfolio
+Manager. Organizations sign up, connect their ENERGY STAR account, invite their
+team, and see every building measured against the performance standard — what
+missing it would cost, how they are trending, and what we can do about it. New
+energy data entered in the portal is pushed back to Portfolio Manager.
 
-This lives alongside the BAS Simulation Trainer in the repository root; the two
-share a palette and nothing else.
+It lives alongside the BAS Simulation Trainer in the repository root; the two
+share a repository and nothing else.
+
+---
+
+## The design in one line
+
+BEPS reduces to one fact: **there is a line, and a building is above it or
+below it.** The whole interface is built from that — a threshold instrument
+that normalises the two metrics (an ENERGY STAR score is a floor, a site EUI is
+a ceiling) so that on every screen, fuller always means better and the standard
+always sits in the same place.
+
+The palette is monochrome on purpose. The only saturated colour in the product
+is compliance status, so colour on screen always carries information. A
+tenant's own accent is quarantined to its mark and focus rings, where it can
+never be mistaken for meaning.
 
 ---
 
@@ -19,6 +34,12 @@ npm install
 npm run seed          # demo organizations, five buildings, four years of data
 npm run dev:server    # API on :4000
 npm run dev:web       # portal on :5173
+```
+
+Or build a single self-contained file that runs with no server at all:
+
+```bash
+npm run build:demo --workspace=web   # → web/dist/index.html, open it directly
 ```
 
 Open http://localhost:5173. Demo accounts, password `PortalDemo123!` for all:
@@ -93,6 +114,11 @@ customer.
 
 | Feature | Status |
 | --- | --- |
+| Self-service signup, per-tenant organizations | ✅ |
+| Team invitations, roles, last-admin protection | ✅ |
+| Per-tenant ENERGY STAR connection, credentials encrypted at rest | ✅ |
+| Plans with enforced limits, and an audit trail | ✅ |
+| Onboarding checklist computed from real state | ✅ |
 | Per-customer logins, scoped to their own portfolio | ✅ |
 | Building metrics (score, EUI, GHG, water) vs the BEPS standard | ✅ |
 | Estimated fines for missing the standard | ✅ (provisional constants) |
@@ -103,6 +129,7 @@ customer.
 | Contextual service promotion tied to the building's own gap | ✅ |
 | Automatic report generation | ✅ (HTML; prints to PDF) |
 | Anomaly and usage-spike monitoring | ✅ (endpoint; no scheduler yet) |
+| Light and dark, on real design tokens | ✅ |
 
 ---
 
@@ -122,6 +149,12 @@ portal/
     offerings.ts     Services, and the rules that decide when to surface one.
 
   server/
+    services/
+      tenancy.ts       Signup, the organization profile, plan usage, onboarding.
+      invitations.ts   Invite, accept, revoke; members and roles.
+      connections.ts   Which ESPM account a request uses, and its credential.
+      secrets.ts       AES-256-GCM for credentials that must be replayable.
+      audit.ts         Who did what, with the actor's name denormalised.
     espm/
       client.ts        EspmClient. Injectable transport, queued + throttled +
                        retried, reads and writes.
@@ -138,9 +171,41 @@ portal/
     db/                Schema, row mappers, demo seed.
 
   web/
-    pages/           Login, Dashboard, BuildingDetail, Messages, Reports, Admin.
-    components/      ComplianceGauge, TrendCharts, DataEntry, Recommendations.
+    index.css        The design tokens. Light on :root, dark redefining the
+                     same names — no colour is ever first defined inside a
+                     media or [data-theme] block.
+    components/
+      Threshold.tsx    The signature instrument: the normalised threshold track
+                       and the band that opens every building page.
+      Shell.tsx        Left rail, tenant mark, accent injection.
+      TrendCharts.tsx  Trends with the target line and an arrival projection.
+      DataEntry.tsx    The two-way sync surface.
+    pages/           Login, Signup, AcceptInvite, Dashboard, BuildingDetail,
+                     Messages, Reports, Settings (team / connection / plan /
+                     branding / activity), Staff.
+    api/
+      client.ts        The live client, and the demo/live switch.
+      demoClient.ts    The whole app running in the browser on captured
+                       responses — see "Running it" above.
 ```
+
+### Tenancy
+
+`espm_connections.organization_id` is nullable: NULL is the shared HBS
+service-provider account customers share properties into, and a row with an
+organization is that customer's own ENERGY STAR account. `connectionFor()`
+picks between them, and it is the only place that decision is made.
+
+A tenant's credential is encrypted at rest with AES-256-GCM and a key held
+outside the database. It cannot be hashed, because ESPM speaks HTTP Basic and
+the password has to be replayable — which makes how it is stored the most
+security-sensitive decision here. A tenant connection missing its credential is
+**refused**, never quietly fulfilled with the HBS password: authenticating as
+HBS against a customer's account would be both wrong and nearly invisible.
+
+Invitation tokens exist only in the emailed link; the database holds a SHA-256
+hash. They are single-use, superseded on re-invite, and an unknown, revoked or
+expired token all answer identically so probing tells an attacker nothing.
 
 ### The two-way sync
 
@@ -227,6 +292,9 @@ Things a reviewer should look at rather than trust:
 
 ## Not built yet
 
+- **Payment.** Plans are enforced, but changing one raises a request rather
+  than charging a card. There is no payment processor wired up and the UI says
+  so rather than pretending.
 - **SMTP delivery.** `email_outbox` is written correctly; nothing drains it,
   and there is no inbound mail webhook. `ingestInboundEmail` is the entry point
   and is tested-shaped, waiting for a provider.
@@ -234,6 +302,6 @@ Things a reviewer should look at rather than trust:
   it needs cron or a queue in front of it.
 - **Report templates beyond HTML.** `buildComplianceReport` returns structured
   data precisely so a formal template can render the same numbers.
-- **User self-management.** Users are created by the seed; there is no invite
-  flow.
 - **Rate limiting on login**, and password reset.
+- **A proper migration system.** `db/migrations.ts` applies additive columns
+  idempotently, which is honest but additive-only — no renames, no drops.

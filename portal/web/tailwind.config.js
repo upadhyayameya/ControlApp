@@ -1,46 +1,69 @@
 /** @type {import('tailwindcss').Config} */
-// Shares the HBS palette with the BAS trainer at the repository root — forest
-// green, copper, warm cream — but light-first rather than dark: this is a
-// customer-facing document, not an operator workstation.
+// Every colour resolves through a CSS custom property defined in index.css, so
+// light and dark are one token swap rather than two sets of classes. The
+// palette is deliberately monochrome: the only hue in the product is
+// compliance status, which means colour on this screen always carries
+// information.
+const withAlpha = (variable) => `rgb(var(${variable}) / <alpha-value>)`
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        forest: {
-          50: '#eef4ef',
-          100: '#d3e3d6',
-          200: '#b3cfb8',
-          300: '#7fa587',
-          500: '#2f6b3d',
-          600: '#255733',
-          700: '#1c4227',
-          800: '#14301c',
-          900: '#0d2013',
-        },
-        copper: {
-          100: '#f7e7d8',
-          300: '#d99a6c',
-          400: '#c97f4a',
-          500: '#b56a33',
-          600: '#9a5526',
-        },
-        cream: {
-          50: '#fbf8f1',
-          100: '#f4eede',
-          200: '#e7dcc4',
-          300: '#d6c8a8',
-        },
-        status: {
-          compliant: '#2f6b3d',
-          'at-risk': '#c98a1f',
-          'non-compliant': '#b4392a',
-          exempt: '#6b7280',
-          'insufficient-data': '#8a8578',
-        },
+        paper: withAlpha('--paper'),
+        surface: withAlpha('--surface'),
+        raised: withAlpha('--raised'),
+        line: withAlpha('--line'),
+        'line-strong': withAlpha('--line-strong'),
+        ink: withAlpha('--ink'),
+        'ink-2': withAlpha('--ink-2'),
+        'ink-3': withAlpha('--ink-3'),
+        // Per-tenant branding, kept out of the core palette on purpose: it is
+        // set at runtime from the organization record and must never be load
+        // bearing for meaning.
+        accent: withAlpha('--accent'),
+        // The only hues in the product.
+        good: withAlpha('--good'),
+        'good-soft': withAlpha('--good-soft'),
+        warn: withAlpha('--warn'),
+        'warn-soft': withAlpha('--warn-soft'),
+        bad: withAlpha('--bad'),
+        'bad-soft': withAlpha('--bad-soft'),
+        inert: withAlpha('--inert'),
       },
       fontFamily: {
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+        display: ['Archivo', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        sans: ['Public Sans', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
+      fontSize: {
+        // A single scale, used everywhere. Display sizes carry tight tracking
+        // because Archivo opens up badly at large sizes on default tracking.
+        micro: ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.08em' }],
+        tiny: ['0.75rem', { lineHeight: '1.1rem' }],
+        base: ['0.875rem', { lineHeight: '1.4rem' }],
+        body: ['0.9375rem', { lineHeight: '1.55rem' }],
+        lead: ['1.0625rem', { lineHeight: '1.7rem' }],
+        h3: ['1.125rem', { lineHeight: '1.5rem', letterSpacing: '-0.01em' }],
+        h2: ['1.5rem', { lineHeight: '1.85rem', letterSpacing: '-0.02em' }],
+        h1: ['2rem', { lineHeight: '2.25rem', letterSpacing: '-0.025em' }],
+        figure: ['2.75rem', { lineHeight: '1', letterSpacing: '-0.035em' }],
+        'figure-lg': ['4rem', { lineHeight: '0.95', letterSpacing: '-0.04em' }],
+      },
+      borderRadius: {
+        // Restrained: a small radius reads as considered, a large one as a
+        // template. Instruments (bars, tracks) stay square.
+        DEFAULT: '3px',
+        sm: '2px',
+        md: '4px',
+        lg: '6px',
+      },
+      spacing: {
+        rail: '15rem',
+      },
+      transitionTimingFunction: {
+        instrument: 'cubic-bezier(0.16, 0.84, 0.44, 1)',
       },
     },
   },

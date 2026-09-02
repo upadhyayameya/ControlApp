@@ -1,16 +1,20 @@
 // ---------------------------------------------------------------------------
-// Application shell: session gate, navigation, routes.
+// Routes and the session gate.
 // ---------------------------------------------------------------------------
 
 import { useEffect } from 'react'
-import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { usePortal } from './state/store'
+import { Shell } from './components/Shell'
 import { Login } from './pages/Login'
+import { Signup } from './pages/Signup'
+import { AcceptInvite } from './pages/AcceptInvite'
 import { Dashboard } from './pages/Dashboard'
 import { BuildingDetail } from './pages/BuildingDetail'
 import { Messages } from './pages/Messages'
 import { Reports } from './pages/Reports'
-import { Admin } from './pages/Admin'
+import { Settings } from './pages/Settings'
+import { Staff } from './pages/Staff'
 import { Spinner } from './components/primitives'
 
 export function App(): JSX.Element {
@@ -31,86 +35,37 @@ export function App(): JSX.Element {
     navigate('/', { replace: true })
   }, [justLoggedIn, consumeJustLoggedIn, navigate])
 
-  // Rendering the login form before the session check would flash it at
-  // someone who is already signed in.
+  // Rendering the signed-out routes before the session check would flash a
+  // login screen at someone who is already signed in.
   if (!sessionChecked) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Spinner label="Starting…" />
+        <Spinner label="Starting" />
       </div>
     )
   }
 
-  if (!user) return <Login />
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/invite/:token" element={<AcceptInvite />} />
+        <Route path="*" element={<Login />} />
+      </Routes>
+    )
+  }
 
   return (
-    <div className="min-h-full">
-      <Header />
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/buildings/:id" element={<BuildingDetail />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/reports" element={<Reports />} />
-          {user.role === 'hbs_staff' && <Route path="/admin" element={<Admin />} />}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-    </div>
-  )
-}
-
-function Header(): JSX.Element {
-  const { user, organization, logout } = usePortal()
-
-  const links = [
-    { to: '/', label: 'Portfolio', end: true },
-    { to: '/messages', label: 'Messages', end: false },
-    { to: '/reports', label: 'Reports', end: false },
-    ...(user?.role === 'hbs_staff' ? [{ to: '/admin', label: 'Staff', end: false }] : []),
-  ]
-
-  return (
-    <header className="border-b border-forest-700 bg-forest-800">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
-        <div className="mr-auto">
-          <p className="font-semibold text-cream-50">HBS Client Portal</p>
-          <p className="text-xs text-cream-200/60">
-            {organization?.name ?? 'All organizations'}
-            {organization && ` · ${organization.tier} tier`}
-          </p>
-        </div>
-
-        <nav className="flex gap-1">
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              className={({ isActive }) =>
-                `rounded px-3 py-1.5 text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-forest-600 text-cream-50'
-                    : 'text-cream-200/70 hover:bg-forest-700 hover:text-cream-50'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-cream-200/70">{user?.fullName}</span>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="text-cream-200/70 underline-offset-2 hover:text-cream-50 hover:underline"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    </header>
+    <Shell>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/buildings/:id" element={<BuildingDetail />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/reports" element={<Reports />} />
+        {user.role !== 'hbs_staff' && <Route path="/settings/*" element={<Settings />} />}
+        {user.role === 'hbs_staff' && <Route path="/staff" element={<Staff />} />}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Shell>
   )
 }
