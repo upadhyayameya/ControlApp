@@ -12,6 +12,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { config } from '../config.js'
+import { applyColumnMigrations } from './migrations.js'
 
 export type Db = Database.Database
 
@@ -28,10 +29,11 @@ export function getDb(): Db {
   return db
 }
 
-export function migrate(db: Db): void {
+export function migrate(db: Db, quiet = false): void {
   const here = path.dirname(fileURLToPath(import.meta.url))
-  // schema.sql sits beside the source in dev and beside the build output in
-  // production, so look in both rather than assuming a layout.
+  // The build copies schema.sql next to the compiled output (see package.json),
+  // so the first candidate is the current one. The source path is the fallback
+  // for running straight from TypeScript.
   const candidates = [
     path.join(here, 'schema.sql'),
     path.join(here, '../../src/db/schema.sql'),
@@ -39,12 +41,19 @@ export function migrate(db: Db): void {
   const schemaPath = candidates.find((p) => fs.existsSync(p))
   if (!schemaPath) throw new Error(`Could not locate schema.sql (looked in ${candidates.join(', ')})`)
   db.exec(fs.readFileSync(schemaPath, 'utf8'))
+
+  // Tables come from schema.sql; columns added to tables that already exist
+  // come from here, so an existing database picks up new fields on boot.
+  const added = applyColumnMigrations(db)
+  if (added.length > 0 && !quiet) console.log(`[db] added columns: ${added.join(', ')}`)
 }
 
 /** An in-memory database with the schema applied. Used by tests and seeds. */
 export function createTestDb(): Db {
   const db = new Database(':memory:')
   db.pragma('foreign_keys = ON')
-  migrate(db)
+  // Quiet: a test creates dozens of these and the migration log would bury
+  // the test output it is meant to sit alongside.
+  migrate(db, true)
   return db
 }

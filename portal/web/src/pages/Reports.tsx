@@ -35,6 +35,7 @@ export function Reports(): JSX.Element {
   const [reports, setReports] = useState<ReportRecord[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [preview, setPreview] = useState<{ id: string; html: string } | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -59,6 +60,15 @@ export function Reports(): JSX.Element {
       setError(messageFor(err))
     } finally {
       setBusy(null)
+    }
+  }
+
+  async function open(report: ReportRecord): Promise<void> {
+    setError(null)
+    try {
+      setPreview({ id: report.id, html: await api.reportHtml(report.id) })
+    } catch (err) {
+      setError(messageFor(err))
     }
   }
 
@@ -103,14 +113,9 @@ export function Reports(): JSX.Element {
                   </p>
                 </div>
                 {report.status === 'ready' ? (
-                  <a
-                    className="btn-secondary"
-                    href={`/api/reports/${report.id}/download`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open
-                  </a>
+                  <button type="button" className="btn-secondary" onClick={() => void open(report)}>
+                    {preview?.id === report.id ? 'Showing' : 'Open'}
+                  </button>
                 ) : (
                   <span className="text-xs uppercase tracking-wide text-forest-800/50">
                     {report.status}
@@ -121,6 +126,32 @@ export function Reports(): JSX.Element {
           </div>
         )}
       </div>
+
+      {preview && (
+        <div className="card overflow-hidden">
+          <div className="flex items-center justify-between border-b border-cream-200 bg-cream-100 px-4 py-2.5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-forest-700">
+              Report preview
+            </h2>
+            <button
+              type="button"
+              className="text-xs text-forest-700 hover:underline"
+              onClick={() => setPreview(null)}
+            >
+              Close
+            </button>
+          </div>
+          {/* Rendered in an iframe rather than offered as a download: a viewer
+              embedding the portal may block downloads, and print-to-PDF from
+              here works the same way. */}
+          <iframe
+            title="Report preview"
+            srcDoc={preview.html}
+            className="h-[38rem] w-full border-0 bg-white"
+            sandbox=""
+          />
+        </div>
+      )}
     </div>
   )
 }

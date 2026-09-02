@@ -15,10 +15,12 @@
 import { randomUUID } from 'node:crypto'
 import { config } from '../config.js'
 import { getDb, type Db } from './index.js'
+import { slugify } from './migrations.js'
 import { clientFor } from '../espm/factory.js'
 import { pullProperty } from '../espm/sync.js'
 import { toConnection, type ConnectionRow } from './rows.js'
 import { createUser } from '../services/auth.js'
+import { encryptSecret } from '../services/secrets.js'
 import { createThread, postMessage } from '../services/messaging.js'
 import { runMonitor } from '../services/alerts.js'
 
@@ -32,6 +34,8 @@ interface SeedOrg {
   /** ESPM property ids from the fixtures that belong to this organization. */
   espmPropertyIds: number[]
   users: Array<{ email: string; fullName: string; role: 'customer_admin' | 'customer_viewer' }>
+  accentColor: string
+  logoMark: string
 }
 
 const ORGS: SeedOrg[] = [
@@ -40,6 +44,8 @@ const ORGS: SeedOrg[] = [
     name: 'Meridian Property Group',
     tier: 'compliance',
     billingEmail: 'accounts@meridian.example',
+    accentColor: '#0B5D66',
+    logoMark: 'MP',
     espmPropertyIds: [1810001, 1810002, 1810005],
     users: [
       { email: 'dana@meridian.example', fullName: 'Dana Whitfield', role: 'customer_admin' },
@@ -51,6 +57,8 @@ const ORGS: SeedOrg[] = [
     name: 'Cedarline Holdings',
     tier: 'benchmarking',
     billingEmail: 'ops@cedarline.example',
+    accentColor: '#7A4A17',
+    logoMark: 'CH',
     espmPropertyIds: [1810003, 1810004],
     users: [{ email: 'sam@cedarline.example', fullName: 'Sam Ferreira', role: 'customer_admin' }],
   },
@@ -89,14 +97,28 @@ async function seed(): Promise<void> {
     role: 'hbs_staff',
   })
 
-  const client = clientFor(connection)
+  const client = clientFor(db, connection)
 
   for (const org of ORGS) {
     db.prepare(
-      `INSERT INTO organizations (id, name, billing_email, tier, created_at)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT (id) DO UPDATE SET name = excluded.name, tier = excluded.tier`,
-    ).run(org.id, org.name, org.billingEmail, org.tier, now)
+      `INSERT INTO organizations
+         (id, name, billing_email, tier, created_at, slug, accent_color, logo_mark,
+          plan_status, trial_ends_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', NULL)
+       ON CONFLICT (id) DO UPDATE SET
+         name = excluded.name, tier = excluded.tier,
+         accent_color = excluded.accent_color, logo_mark = excluded.logo_mark,
+         plan_status = excluded.plan_status`,
+    ).run(
+      org.id,
+      org.name,
+      org.billingEmail,
+      org.tier,
+      now,
+      slugify(org.name),
+      org.accentColor,
+      org.logoMark,
+    )
 
     for (const user of org.users) {
       await ensureUser(db, { organizationId: org.id, ...user })
@@ -113,6 +135,7 @@ async function seed(): Promise<void> {
 
   seedConversations(db)
   seedPendingEntry(db)
+  seedTenantConnections(db)
 
   const monitor = runMonitor(db)
   console.log(`\nMonitor: ${monitor.created} alert(s) created, ${monitor.updated} updated.`)
@@ -188,6 +211,41 @@ function seedConversations(db: Db): void {
       )
     }
   }
+}
+
+/**
+ * Give one organization its own connected ENERGY STAR account, so the demo
+ * shows both arrangements the platform supports: Meridian on their own
+ * account, Cedarline sharing properties into the HBS account.
+ */
+function seedTenantConnections(db: Db): void {
+  const meridian = ORGS[0]!
+  const already = db
+    .prepare<[string], { n: number }>(
+      'SELECT COUNT(*) AS n FROM espm_connections WHERE organization_id = ?',
+    )
+    .get(meridian.id)
+  if ((already?.n ?? 0) > 0) return
+
+  const sealed = encryptSecret('demo-portfolio-manager-password')
+  const now = new Date().toISOString()
+  db.prepare(
+    `INSERT INTO espm_connections
+       (id, label, organization_id, espm_account_id, username, environment, active, created_at,
+        status, verified_at, secret_ciphertext, secret_iv, secret_tag)
+     VALUES (?, ?, ?, 555001, ?, ?, 1, ?, 'connected', ?, ?, ?, ?)`,
+  ).run(
+    randomUUID(),
+    `${meridian.name} — Portfolio Manager`,
+    meridian.id,
+    'meridian_esp',
+    config.espm.environment,
+    now,
+    now,
+    sealed.ciphertext,
+    sealed.iv,
+    sealed.tag,
+  )
 }
 
 /**

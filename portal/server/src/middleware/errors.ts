@@ -4,6 +4,9 @@
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 import { EspmApiError } from '../espm/client.js'
+import { ConnectionError } from '../services/connections.js'
+import { InvitationError } from '../services/invitations.js'
+import { SignupError } from '../services/tenancy.js'
 import { HttpError } from './auth.js'
 
 export function errorHandler(
@@ -14,6 +17,16 @@ export function errorHandler(
 ): void {
   if (err instanceof HttpError) {
     res.status(err.status).json({ error: err.message })
+    return
+  }
+  // Domain errors carry their own status and a message written for the person
+  // reading it, so they pass through rather than becoming a generic 500.
+  if (err instanceof InvitationError || err instanceof ConnectionError) {
+    res.status(err.status).json({ error: err.message })
+    return
+  }
+  if (err instanceof SignupError) {
+    res.status(409).json({ error: err.message, detail: err.field })
     return
   }
   if (err instanceof ZodError) {

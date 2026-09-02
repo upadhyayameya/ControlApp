@@ -28,6 +28,7 @@ import {
 } from '../db/rows.js'
 import { EspmApiError, type EspmClient } from './client.js'
 import { clientFor } from './factory.js'
+import { markConnectionError, markConnectionHealthy } from '../services/connections.js'
 import { mapMeter, mapProperty } from './mapper.js'
 import { METRIC_NAMES, type MetricKey } from './types.js'
 
@@ -52,7 +53,7 @@ export async function pullAll(
   connection: EspmConnection,
   organizationId: string,
 ): Promise<SyncResult> {
-  const client = clientFor(connection)
+  const client = clientFor(db, connection)
   const runId = beginRun(db, connection.id, 'pull', 'full')
   const messages: string[] = []
   let processed = 0
@@ -82,10 +83,14 @@ export async function pullAll(
       new Date().toISOString(),
       connection.id,
     )
+    markConnectionHealthy(db, connection.id)
 
     return finishRun(db, runId, processed, failed, messages)
   } catch (err) {
     messages.push(describe(err))
+    // A pull that failed outright is a connection problem, not a data problem;
+    // recording it here is what lets the settings page say why.
+    markConnectionError(db, connection.id, describe(err))
     return finishRun(db, runId, processed, failed + 1, messages, 'failed')
   }
 }
@@ -308,7 +313,7 @@ export async function pushPending(
   connection: EspmConnection,
   opts: { buildingId?: string } = {},
 ): Promise<SyncResult> {
-  const client = clientFor(connection)
+  const client = clientFor(db, connection)
   const runId = beginRun(db, connection.id, 'push', opts.buildingId ?? 'all')
   const messages: string[] = []
   let processed = 0

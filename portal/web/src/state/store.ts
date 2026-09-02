@@ -29,6 +29,12 @@ interface PortalState {
   sessionChecked: boolean
   loading: boolean
   error: string | null
+  /**
+   * Set by a sign-in through the login form, and only that — a session
+   * restored on page load must not steal the route the user opened. App.tsx
+   * consumes it to send a fresh sign-in to the portfolio.
+   */
+  justLoggedIn: boolean
 
   bootstrap: () => Promise<void>
   login: (email: string, password: string) => Promise<void>
@@ -36,6 +42,7 @@ interface PortalState {
   loadPortfolio: () => Promise<void>
   loadBuilding: (id: string) => Promise<void>
   setViewingOrganization: (id: string | null) => Promise<void>
+  consumeJustLoggedIn: () => void
   clearError: () => void
 }
 
@@ -49,6 +56,7 @@ export const usePortal = create<PortalState>((set, get) => ({
   sessionChecked: false,
   loading: false,
   error: null,
+  justLoggedIn: false,
 
   /** Restore an existing session on first paint, so a refresh does not log out. */
   bootstrap: async () => {
@@ -72,7 +80,7 @@ export const usePortal = create<PortalState>((set, get) => ({
     set({ loading: true, error: null })
     try {
       const session = await api.login(email, password)
-      set({ user: session.user, organization: session.organization })
+      set({ user: session.user, organization: session.organization, justLoggedIn: true })
       if (session.user.role === 'hbs_staff') {
         const { organizations } = await api.organizations()
         set({ organizations })
@@ -134,6 +142,8 @@ export const usePortal = create<PortalState>((set, get) => ({
     set({ viewingOrganizationId: id })
     await get().loadPortfolio()
   },
+
+  consumeJustLoggedIn: () => set({ justLoggedIn: false }),
 
   clearError: () => set({ error: null }),
 }))

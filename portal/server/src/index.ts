@@ -7,6 +7,7 @@ import express from 'express'
 import { config } from './config.js'
 import { getDb } from './db/index.js'
 import { api } from './routes/index.js'
+import { platform } from './routes/platform.js'
 import { errorHandler } from './middleware/errors.js'
 import { loadSession } from './middleware/auth.js'
 import { purgeExpiredSessions } from './services/auth.js'
@@ -29,6 +30,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, espmMode: config.espm.mode })
 })
 
+app.use('/api', platform)
 app.use('/api', api)
 app.use(errorHandler)
 

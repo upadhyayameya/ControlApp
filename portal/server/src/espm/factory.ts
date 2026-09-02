@@ -9,6 +9,8 @@
 
 import type { EspmConnection } from '@hbs/shared'
 import { config } from '../config.js'
+import type { Db } from '../db/index.js'
+import { passwordFor } from '../services/connections.js'
 import { EspmClient, type EspmEnvironment } from './client.js'
 import { FixtureTransport } from './fixtureTransport.js'
 
@@ -20,25 +22,24 @@ export function fixtureTransport(): FixtureTransport {
 }
 
 /**
- * Resolve the password for a connection.
+ * A client for one connection.
  *
- * Today: the shared HBS account's password comes from ESPM_PASSWORD, and a
- * per-customer connection looks for ESPM_PASSWORD_<CONNECTION_ID>. When
- * per-customer connections become real this should move to a secret manager —
- * the function signature is the seam, and nothing else needs to change.
+ * The credential comes from services/connections.ts: the environment for the
+ * shared HBS account, the tenant's own encrypted record for their own account.
+ * A tenant connection with no usable credential is refused rather than falling
+ * back to the HBS password — authenticating as HBS against a customer's
+ * account would be wrong and nearly invisible.
  */
-function resolvePassword(connection: EspmConnection): string {
-  if (connection.organizationId === null) return config.espm.password
-  const key = `ESPM_PASSWORD_${connection.id.replace(/-/g, '_').toUpperCase()}`
-  const specific = process.env[key]
-  if (specific && specific.trim() !== '') return specific.trim()
-  return config.espm.password
-}
-
-export function clientFor(connection: EspmConnection): EspmClient {
+export function clientFor(db: Db, connection: EspmConnection): EspmClient {
+  const password = passwordFor(db, connection.id)
+  if (password === null) {
+    throw new Error(
+      `No stored credential for Portfolio Manager connection "${connection.label}". Reconnect it in settings.`,
+    )
+  }
   return new EspmClient({
     username: connection.username,
-    password: resolvePassword(connection),
+    password,
     environment: connection.environment as EspmEnvironment,
     transport: config.espm.mode === 'fixture' ? sharedFixtureTransport : undefined,
     logger: (level, message, meta) => {

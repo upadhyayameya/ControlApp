@@ -220,3 +220,43 @@ CREATE TABLE IF NOT EXISTS sync_runs (
   finished_at     TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_sync_runs_started ON sync_runs(started_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- Platform tables.
+--
+-- Everything above models one customer's buildings. Everything below is what
+-- makes the portal a product other organizations sign up for on their own:
+-- invitations, an audit trail, and the plan an organization is on.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS invitations (
+  id              TEXT PRIMARY KEY,
+  organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  email           TEXT NOT NULL COLLATE NOCASE,
+  role            TEXT NOT NULL CHECK (role IN ('customer_admin','customer_viewer')),
+  -- Only the hash is stored. The token itself is in the invitation link and
+  -- exists nowhere else, so a database read cannot be used to accept invites.
+  token_hash      TEXT NOT NULL UNIQUE,
+  invited_by      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at      TEXT NOT NULL,
+  accepted_at     TEXT,
+  revoked_at      TEXT,
+  created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_invitations_org ON invitations(organization_id, created_at DESC);
+
+-- Who did what. Written on every state change that a customer or an auditor
+-- might later need to account for — never on reads, which would drown it.
+CREATE TABLE IF NOT EXISTS audit_events (
+  id              TEXT PRIMARY KEY,
+  organization_id TEXT REFERENCES organizations(id) ON DELETE CASCADE,
+  actor_user_id   TEXT REFERENCES users(id) ON DELETE SET NULL,
+  actor_label     TEXT NOT NULL,
+  action          TEXT NOT NULL,
+  target_type     TEXT,
+  target_id       TEXT,
+  target_label    TEXT,
+  detail          TEXT,
+  created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_audit_org ON audit_events(organization_id, created_at DESC);

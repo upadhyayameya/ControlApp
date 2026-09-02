@@ -6,6 +6,13 @@
 // ---------------------------------------------------------------------------
 
 import type {
+  AuditEvent,
+  Invitation,
+  OnboardingState,
+  OrganizationProfile,
+  PlanUsage,
+} from './platform.js'
+import type {
   Alert,
   Building,
   ComplianceAssessment,
@@ -29,6 +36,74 @@ export interface LoginRequest {
 export interface SessionResponse {
   user: User
   organization: Organization | null
+  /** Tenant settings and branding; null for HBS staff, who belong to no tenant. */
+  profile: OrganizationProfile | null
+}
+
+export interface SignupRequest {
+  organizationName: string
+  fullName: string
+  email: string
+  password: string
+}
+
+export interface AcceptInviteRequest {
+  token: string
+  fullName: string
+  password: string
+}
+
+/** What an invited person is shown before they choose a password. */
+export interface InvitePreview {
+  organizationName: string
+  email: string
+  role: 'customer_admin' | 'customer_viewer'
+  invitedByName: string
+  expiresAt: string
+}
+
+export interface OrgOverviewResponse {
+  profile: OrganizationProfile
+  usage: PlanUsage
+  onboarding: OnboardingState
+  members: User[]
+  invitations: Invitation[]
+  connection: EspmConnectionSummary | null
+}
+
+/** Never carries the credential — only whether one is stored and whether it works. */
+export interface EspmConnectionSummary {
+  id: string
+  label: string
+  username: string
+  environment: 'test' | 'live'
+  scope: 'shared-hbs' | 'own-account'
+  status: 'unverified' | 'connected' | 'error'
+  lastError: string | null
+  verifiedAt: string | null
+  lastPullAt: string | null
+}
+
+export interface ConnectEspmRequest {
+  username: string
+  password: string
+  environment: 'test' | 'live'
+}
+
+export interface UpdateOrgRequest {
+  name?: string
+  billingEmail?: string | null
+  accentColor?: string
+  logoMark?: string | null
+}
+
+export interface CreateInvitationRequest {
+  email: string
+  role: 'customer_admin' | 'customer_viewer'
+}
+
+export interface AuditResponse {
+  events: AuditEvent[]
 }
 
 /** One row of the portfolio table: the building plus everything it is judged on. */

@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import { useEffect } from 'react'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { usePortal } from './state/store'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
@@ -14,11 +14,22 @@ import { Admin } from './pages/Admin'
 import { Spinner } from './components/primitives'
 
 export function App(): JSX.Element {
-  const { user, sessionChecked, bootstrap } = usePortal()
+  const { user, sessionChecked, bootstrap, justLoggedIn, consumeJustLoggedIn } = usePortal()
+  const navigate = useNavigate()
 
   useEffect(() => {
     void bootstrap()
   }, [bootstrap])
+
+  // A fresh sign-in lands on the portfolio. Without this the router keeps
+  // whatever route was open when the last session ended, so signing out from
+  // Reports and back in drops the next person straight into Reports. A session
+  // restored on load is deliberately excluded — that one should keep its route.
+  useEffect(() => {
+    if (!justLoggedIn) return
+    consumeJustLoggedIn()
+    navigate('/', { replace: true })
+  }, [justLoggedIn, consumeJustLoggedIn, navigate])
 
   // Rendering the login form before the session check would flash it at
   // someone who is already signed in.

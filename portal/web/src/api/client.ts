@@ -7,12 +7,25 @@
 // changes breaks this build rather than a customer's screen.
 // ---------------------------------------------------------------------------
 
+import { demoApi } from './demoClient'
+import { ApiError } from './error'
+
+export { ApiError }
+
+/**
+ * Built with VITE_DEMO=1, the portal runs entirely in the browser against
+ * captured API responses — see demoClient.ts. Everything downstream of `api`
+ * is identical in both modes.
+ */
+export const IS_DEMO = import.meta.env['VITE_DEMO'] === '1'
+
 import type {
   Alert,
   BuildingDetailResponse,
   ConsumptionEntry,
   CreateConsumptionRequest,
   CreateThreadRequest,
+  Message,
   MessageThread,
   Organization,
   PortfolioResponse,
@@ -23,16 +36,6 @@ import type {
   ThreadWithMessages,
 } from '@hbs/shared'
 
-export class ApiError extends Error {
-  constructor(
-    override readonly message: string,
-    readonly status: number,
-    readonly detail?: string,
-  ) {
-    super(message)
-    this.name = 'ApiError'
-  }
-}
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api${path}`, {
@@ -69,7 +72,7 @@ function safeParse(text: string): unknown {
   }
 }
 
-export const api = {
+const liveApi = {
   login: (email: string, password: string) =>
     request<SessionResponse>('/auth/login', {
       method: 'POST',
@@ -118,12 +121,22 @@ export const api = {
   createThread: (body: CreateThreadRequest) =>
     request<MessageThread>('/threads', { method: 'POST', body: JSON.stringify(body) }),
   postMessage: (threadId: string, body: string) =>
-    request<Comment>(`/threads/${threadId}/messages`, {
+    request<Message>(`/threads/${threadId}/messages`, {
       method: 'POST',
       body: JSON.stringify({ body }),
     }),
 
   reports: () => request<{ reports: ReportRecord[] }>('/reports'),
+  /**
+   * The rendered report, fetched as text for inline display rather than linked
+   * as a download — a viewer embedding the portal may block downloads, and an
+   * inline preview is better anyway.
+   */
+  reportHtml: (id: string) =>
+    fetch(`/api/reports/${id}/download`, { credentials: 'include' }).then((r) => {
+      if (!r.ok) throw new ApiError('That report is not ready.', r.status)
+      return r.text()
+    }),
   generateReport: (kind: ReportRecord['kind'], buildingId?: string | null) =>
     request<ReportRecord>('/reports', {
       method: 'POST',
@@ -132,3 +145,8 @@ export const api = {
 
   organizations: () => request<{ organizations: Organization[] }>('/organizations'),
 }
+
+/** The contract both implementations satisfy. */
+export type PortalApi = typeof liveApi
+
+export const api: PortalApi = IS_DEMO ? demoApi : liveApi

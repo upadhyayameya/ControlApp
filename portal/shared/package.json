@@ -5,11 +5,19 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b",
     "test": "tsc -b && node --test \"dist/**/*.test.js\""
   },
-  "devDependencies": { "typescript": "^5.6.3", "@types/node": "^22.9.0" }
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^22.9.0"
+  }
 }

@@ -33,6 +33,7 @@ import {
   type MeterRow,
 } from '../db/rows.js'
 import { isFixtureMode } from '../espm/factory.js'
+import { connectionFor } from '../services/connections.js'
 import { pullAll, pushPending, readEntry } from '../espm/sync.js'
 import {
   assertBuildingAccess,
@@ -53,6 +54,7 @@ import {
   setThreadStatus,
 } from '../services/messaging.js'
 import { listOrganizations, organizationById } from '../services/organizations.js'
+import { profileById } from '../services/tenancy.js'
 import {
   assessmentsFor,
   buildPortfolio,
@@ -100,7 +102,8 @@ api.post(
       expires: new Date(session.expiresAt),
     })
     const organization = user.organizationId ? organizationById(db, user.organizationId) : null
-    res.json({ user, organization } satisfies SessionResponse)
+    const profile = user.organizationId ? profileById(db, user.organizationId) : null
+    res.json({ user, organization, profile } satisfies SessionResponse)
   }),
 )
 
@@ -111,9 +114,11 @@ api.post('/auth/logout', (req, res) => {
 })
 
 api.get('/auth/session', requireAuth, (req, res) => {
+  const db = getDb()
   const user = req.user!
-  const organization = user.organizationId ? organizationById(getDb(), user.organizationId) : null
-  res.json({ user, organization } satisfies SessionResponse)
+  const organization = user.organizationId ? organizationById(db, user.organizationId) : null
+  const profile = user.organizationId ? profileById(db, user.organizationId) : null
+  res.json({ user, organization, profile } satisfies SessionResponse)
 })
 
 // --- Portfolio ------------------------------------------------------------
@@ -278,7 +283,7 @@ api.post(
       return
     }
 
-    const connection = activeConnection(db)
+    const connection = activeConnection(db, req.user!.organizationId)
     const result = await pushPending(db, connection, { buildingId })
     const entry = readEntry(db, saved.id)!
 
@@ -308,7 +313,7 @@ api.get('/buildings/:id/consumption', requireAuth, (req, res) => {
 
 api.get('/sync/status', requireAuth, (req, res) => {
   const db = getDb()
-  const connection = activeConnection(db)
+  const connection = activeConnection(db, scopeOrganizationId(req))
   const runs = db
     .prepare<[], never>('SELECT * FROM sync_runs ORDER BY started_at DESC LIMIT 20')
     .all()
@@ -341,7 +346,7 @@ api.post(
     if (!organizationId) {
       throw new HttpError(400, 'Choose an organization to pull into (?organizationId=…).')
     }
-    res.json(await pullAll(db, activeConnection(db), organizationId))
+    res.json(await pullAll(db, activeConnection(db, organizationId), organizationId))
   }),
 )
 
@@ -353,7 +358,9 @@ api.post(
     const db = getDb()
     const buildingId = typeof req.query['buildingId'] === 'string' ? req.query['buildingId'] : undefined
     if (buildingId) assertBuildingAccess(req, buildingId)
-    res.json(await pushPending(db, activeConnection(db), buildingId ? { buildingId } : {}))
+    res.json(
+      await pushPending(db, activeConnection(db, req.user!.organizationId), buildingId ? { buildingId } : {}),
+    )
   }),
 )
 
@@ -474,24 +481,18 @@ api.get('/organizations', requireAuth, requireStaff, (_req, res) => {
 })
 
 api.get('/espm/connection', requireAuth, requireStaff, (_req, res) => {
-  const connection = activeConnection(getDb())
+  const connection = activeConnection(getDb(), null)
   res.json({ connection, mode: config.espm.mode })
 })
 
 // --- Helpers --------------------------------------------------------------
 
 /**
- * The connection to use for a sync. Today there is exactly one — the shared
- * HBS service-provider account. When per-customer connections arrive this
- * becomes a lookup by organization, and every caller already passes through
- * here.
+ * The connection a request should use: the tenant's own where they have
+ * connected one, otherwise the shared HBS service-provider account. The choice
+ * lives in services/connections.ts so the API, the background jobs and the
+ * seed all resolve it the same way.
  */
-function activeConnection(db: ReturnType<typeof getDb>) {
-  const row = db
-    .prepare<[], ConnectionRow>(
-      'SELECT * FROM espm_connections WHERE active = 1 ORDER BY organization_id IS NULL DESC LIMIT 1',
-    )
-    .get()
-  if (!row) throw new HttpError(503, 'No Portfolio Manager connection is configured.')
-  return toConnection(row)
+function activeConnection(db: ReturnType<typeof getDb>, organizationId: string | null) {
+  return connectionFor(db, organizationId)
 }
