@@ -1,0 +1,29 @@
+{
+  "name": "@hbs/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --experimental-strip-types src/index.ts",
+    "build": "tsc -b",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -b --noEmit",
+    "seed": "tsc -b && node dist/db/seed.js",
+    "test": "tsc -b && node --test \"dist/**/*.test.js\""
+  },
+  "dependencies": {
+    "@hbs/shared": "*",
+    "better-sqlite3": "^11.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "fast-xml-parser": "^4.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
+  }
+}

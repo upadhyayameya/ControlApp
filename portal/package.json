@@ -1,0 +1,17 @@
+{
+  "name": "hbs-espm-portal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HBS client portal for BEPS compliance, backed by ENERGY STAR Portfolio Manager.",
+  "workspaces": ["shared", "server", "web"],
+  "scripts": {
+    "dev": "npm run dev --workspace=server & npm run dev --workspace=web",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:web": "npm run dev --workspace=web",
+    "build": "npm run build --workspace=shared && npm run build --workspace=server && npm run build --workspace=web",
+    "typecheck": "npm run typecheck --workspace=shared && npm run typecheck --workspace=server && npm run typecheck --workspace=web",
+    "seed": "npm run seed --workspace=server",
+    "test": "npm run test --workspace=shared && npm run test --workspace=server"
+  }
+}
