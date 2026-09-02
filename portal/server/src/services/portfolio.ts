@@ -22,6 +22,7 @@ import {
   type ServiceTier,
 } from '@hbs/shared'
 import type { Db } from '../db/index.js'
+import { listGroups } from './groups.js'
 import {
   toBuilding,
   toMetricYear,
@@ -58,11 +59,11 @@ export function latestMetric(metrics: MetricYear[]): MetricYear | null {
   return metrics.length === 0 ? null : (metrics[metrics.length - 1] ?? null)
 }
 
-export function buildPortfolio(db: Db, organizationId: string | null): PortfolioResponse {
+export function portfolioEntries(db: Db, organizationId: string | null): PortfolioEntry[] {
   const buildings = listBuildings(db, organizationId)
   const now = today()
 
-  const entries: PortfolioEntry[] = buildings.map((building) => {
+  return buildings.map((building) => {
     const metrics = metricsFor(db, building.id)
     const latest = latestMetric(metrics)
     return {
@@ -72,8 +73,15 @@ export function buildPortfolio(db: Db, organizationId: string | null): Portfolio
       openAlerts: countOpenAlerts(db, building.id),
     }
   })
+}
 
-  return { entries, totals: totalsFor(entries) }
+export function buildPortfolio(db: Db, organizationId: string | null): PortfolioResponse {
+  const entries = portfolioEntries(db, organizationId)
+  return {
+    entries,
+    totals: totalsFor(entries),
+    groups: listGroups(db, organizationId),
+  }
 }
 
 function countOpenAlerts(db: Db, buildingId: string): number {

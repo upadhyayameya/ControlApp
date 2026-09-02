@@ -26,6 +26,15 @@ import { runMonitor } from '../services/alerts.js'
 
 const DEMO_PASSWORD = 'PortalDemo123!'
 
+/** One node of the portfolio tree, with the ESPM properties filed under it. */
+interface SeedGroup {
+  key: string
+  name: string
+  /** Key of the parent node, or null for a portfolio. */
+  parent: string | null
+  espmPropertyIds?: number[]
+}
+
 interface SeedOrg {
   id: string
   name: string
@@ -36,6 +45,11 @@ interface SeedOrg {
   users: Array<{ email: string; fullName: string; role: 'customer_admin' | 'customer_viewer' }>
   accentColor: string
   logoMark: string
+  /**
+   * The portfolio → phase → building structure. Buildings not named by any
+   * node stay unfiled, which is a state the portfolio view has to handle.
+   */
+  groups: SeedGroup[]
 }
 
 const ORGS: SeedOrg[] = [
@@ -51,6 +65,12 @@ const ORGS: SeedOrg[] = [
       { email: 'dana@meridian.example', fullName: 'Dana Whitfield', role: 'customer_admin' },
       { email: 'chris@meridian.example', fullName: 'Chris Okonkwo', role: 'customer_viewer' },
     ],
+    groups: [
+      { key: 'core', name: 'Meridian core portfolio', parent: null },
+      { key: 'core-office', name: 'Office', parent: 'core', espmPropertyIds: [1810001] },
+      { key: 'core-resi', name: 'Residential', parent: 'core', espmPropertyIds: [1810002] },
+      { key: 'hosp', name: 'Hospitality portfolio', parent: null, espmPropertyIds: [1810005] },
+    ],
   },
   {
     id: '22222222-2222-4222-8222-222222222222',
@@ -61,6 +81,33 @@ const ORGS: SeedOrg[] = [
     logoMark: 'CH',
     espmPropertyIds: [1810003, 1810004],
     users: [{ email: 'sam@cedarline.example', fullName: 'Sam Ferreira', role: 'customer_admin' }],
+    groups: [
+      { key: 'cl', name: 'Cedarline portfolio', parent: null },
+      { key: 'cl-md', name: 'Maryland', parent: 'cl', espmPropertyIds: [1810003] },
+      // 1810004 is left unfiled on purpose, so the demo shows what an unfiled
+      // building looks like rather than pretending everything is always tidy.
+    ],
+  },
+  {
+    // The structure from the brief: a portfolio, phases inside it, buildings
+    // inside those.
+    id: '33333333-3333-4333-8333-333333333333',
+    name: 'SJP Development',
+    tier: 'managed',
+    billingEmail: 'accounts@sjp.example',
+    accentColor: '#1F4E79',
+    logoMark: 'SJP',
+    espmPropertyIds: [1810006, 1810007, 1810008],
+    users: [
+      { email: 'jordan@sjp.example', fullName: 'Jordan Reyes', role: 'customer_admin' },
+      { email: 'priya@sjp.example', fullName: 'Priya Raman', role: 'customer_viewer' },
+    ],
+    groups: [
+      { key: 'sjp', name: 'SJP portfolio', parent: null },
+      { key: 'sjp-p1', name: 'Phase 1', parent: 'sjp', espmPropertyIds: [1810006] },
+      { key: 'sjp-p2', name: 'Phase 2', parent: 'sjp', espmPropertyIds: [1810007] },
+      { key: 'sjp-mc', name: 'Montgomery County', parent: null, espmPropertyIds: [1810008] },
+    ],
   },
 ]
 
@@ -127,10 +174,14 @@ async function seed(): Promise<void> {
     // Pull each property through the same code path production uses, so the
     // demo data is shaped exactly like real synced data — including sync
     // states, meter links and metric history.
+    const buildingIdByEspmId = new Map<number, string>()
     for (const espmPropertyId of org.espmPropertyIds) {
       const buildingId = await pullProperty(db, client, espmPropertyId, org.id)
+      buildingIdByEspmId.set(espmPropertyId, buildingId)
       console.log(`  pulled ${espmPropertyId} → ${buildingId}`)
     }
+
+    seedGroups(db, org, buildingIdByEspmId)
   }
 
   seedConversations(db)
@@ -166,6 +217,41 @@ async function ensureUser(
 }
 
 /** A conversation on each organization, including one with an email CC. */
+/**
+ * Build the organization's portfolio tree and file its buildings into it.
+ * Idempotent by name, so re-running the seed does not stack duplicate phases.
+ */
+function seedGroups(db: Db, org: SeedOrg, buildingIdByEspmId: Map<number, string>): void {
+  const idByKey = new Map<string, string>()
+  const now = new Date().toISOString()
+
+  org.groups.forEach((node, index) => {
+    const parentId = node.parent === null ? null : (idByKey.get(node.parent) ?? null)
+
+    const existing = db
+      .prepare<[string, string], { id: string }>(
+        'SELECT id FROM building_groups WHERE organization_id = ? AND name = ?',
+      )
+      .get(org.id, node.name)
+
+    const id = existing?.id ?? randomUUID()
+    if (!existing) {
+      db.prepare(
+        `INSERT INTO building_groups (id, organization_id, parent_id, name, kind, sort_order, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      ).run(id, org.id, parentId, node.name, parentId === null ? 'portfolio' : 'phase', index, now)
+    }
+    idByKey.set(node.key, id)
+
+    for (const espmPropertyId of node.espmPropertyIds ?? []) {
+      const buildingId = buildingIdByEspmId.get(espmPropertyId)
+      if (buildingId) {
+        db.prepare('UPDATE buildings SET group_id = ? WHERE id = ?').run(id, buildingId)
+      }
+    }
+  })
+}
+
 function seedConversations(db: Db): void {
   const already = db.prepare<[], { n: number }>('SELECT COUNT(*) AS n FROM message_threads').get()
   if ((already?.n ?? 0) > 0) return

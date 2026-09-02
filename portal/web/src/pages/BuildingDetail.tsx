@@ -126,7 +126,11 @@ export function BuildingDetail(): JSX.Element {
             ) : (
               <Empty
                 title="No BEPS standard applies to this building."
-                detail="It sits outside the jurisdictions the portal tracks, or below the coverage threshold."
+                detail={
+                  b.jurisdiction === 'none'
+                    ? `${[b.city, b.state].filter(Boolean).join(', ') || 'This address'} is outside the District and Montgomery County, the two jurisdictions the portal tracks. Its data is still collected and charted — there is simply no standard to measure it against. If that is wrong, HBS can set the jurisdiction on this building.`
+                    : 'It sits below the coverage threshold for every cycle in its jurisdiction.'
+                }
               />
             )}
 

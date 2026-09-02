@@ -260,3 +260,31 @@ CREATE TABLE IF NOT EXISTS audit_events (
   created_at      TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_audit_org ON audit_events(organization_id, created_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- The portfolio tree.
+--
+--   SJP portfolio            ← a group with no parent
+--     └ Phase 1              ← a group whose parent is the portfolio
+--         └ Maple Lawn       ← a building assigned to that group
+--
+-- Modelled as an arbitrary-depth tree rather than two fixed levels, because a
+-- second phase-within-a-phase costs nothing here and a migration later.
+-- Depth is bounded in code (services/groups.ts) rather than by the schema.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS building_groups (
+  id              TEXT PRIMARY KEY,
+  organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  -- NULL means a root: a portfolio. Deleting a parent detaches its children
+  -- rather than destroying them, so a mis-click cannot take a phase's
+  -- buildings with it.
+  parent_id       TEXT REFERENCES building_groups(id) ON DELETE SET NULL,
+  name            TEXT NOT NULL,
+  kind            TEXT NOT NULL DEFAULT 'phase'
+                  CHECK (kind IN ('portfolio','phase','group')),
+  sort_order      INTEGER NOT NULL DEFAULT 0,
+  created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_groups_org ON building_groups(organization_id, sort_order);
+CREATE INDEX IF NOT EXISTS idx_groups_parent ON building_groups(parent_id);

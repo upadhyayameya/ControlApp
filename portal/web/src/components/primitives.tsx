@@ -1,9 +1,24 @@
 // Shared pieces, in the threshold design language.
 import type { ReactNode } from 'react'
-import type { ComplianceStatus, PenaltyEstimate } from '@hbs/shared'
+import type { ComplianceStatus, Jurisdiction, PenaltyEstimate } from '@hbs/shared'
 import { statusTone } from './Threshold'
 
-export function StatusChip({ status }: { status: ComplianceStatus | undefined }): JSX.Element {
+/**
+ * A building with no assessment is usually one we lack data for — but a
+ * building outside DC and Montgomery County has no assessment because no
+ * standard applies to it, which is a different thing entirely. Labelling that
+ * "data needed" sends someone hunting for bills that are not missing.
+ */
+export function StatusChip({
+  status,
+  jurisdiction,
+}: {
+  status: ComplianceStatus | undefined
+  jurisdiction?: Jurisdiction
+}): JSX.Element {
+  if (status === undefined && jurisdiction === 'none') {
+    return <span className="chip-inert">Not covered</span>
+  }
   const tone = statusTone(status)
   return <span className={tone.chip}>{tone.label}</span>
 }

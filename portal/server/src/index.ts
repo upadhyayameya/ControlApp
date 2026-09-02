@@ -2,6 +2,8 @@
 // Server entry point.
 // ---------------------------------------------------------------------------
 
+import fs from 'node:fs'
+import path from 'node:path'
 import cors from 'cors'
 import express from 'express'
 import { config } from './config.js'
@@ -33,6 +35,24 @@ app.get('/api/health', (_req, res) => {
 app.use('/api', platform)
 app.use('/api', api)
 app.use(errorHandler)
+
+// Serve the built web app, when there is one.
+//
+// The history fallback is the part that matters: the portal is a
+// single-page app, so a deep link like /settings/team or /hbs has no file
+// behind it. Without this, opening one of those URLs directly — or refreshing
+// on it — is a 404, which is exactly what a customer does with a bookmark.
+const webDist = path.resolve(process.cwd(), '../web/dist')
+if (fs.existsSync(path.join(webDist, 'index.html'))) {
+  app.use(express.static(webDist, { index: false }))
+  app.get('*', (req, res, next) => {
+    // Anything under /api that reached here is a genuine 404, not a route for
+    // the browser to resolve.
+    if (req.path.startsWith('/api/')) return next()
+    res.sendFile(path.join(webDist, 'index.html'))
+  })
+  console.log(`[portal] serving the web app from ${webDist}`)
+}
 
 const db = getDb()
 const purged = purgeExpiredSessions(db)

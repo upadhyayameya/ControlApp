@@ -24,13 +24,42 @@ export function AuthFrame({
   intro,
   children,
   footer,
+  /**
+   * The staff door is deliberately plainer than the client one: it is an
+   * internal tool, and dressing it up as a product would only confuse a
+   * customer who arrives at the wrong address.
+   */
+  variant = 'client',
 }: {
   eyebrow: string
   title: string
   intro?: ReactNode
   children: ReactNode
   footer?: ReactNode
+  variant?: 'client' | 'staff'
 }): JSX.Element {
+  if (variant === 'staff') {
+    return (
+      <div className="flex min-h-full items-center justify-center bg-raised px-6 py-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-7 border-b border-line-strong pb-5">
+            <p className="font-display text-base font-bold tracking-tight text-ink">
+              HBS Solutions
+            </p>
+            <p className="eyebrow mt-0.5">Internal · staff console</p>
+          </div>
+          <p className="eyebrow">{eyebrow}</p>
+          <h1 className="mt-1.5 font-display text-h2 text-ink">{title}</h1>
+          {intro && <div className="mt-2 text-base text-ink-2">{intro}</div>}
+          <div className="mt-6">{children}</div>
+          {footer && (
+            <div className="mt-6 border-t border-line pt-4 text-tiny text-ink-3">{footer}</div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="grid min-h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
       {/* The argument. Hidden on small screens, where the form is the job. */}

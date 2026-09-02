@@ -7,6 +7,7 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { usePortal } from './state/store'
 import { Shell } from './components/Shell'
 import { Login } from './pages/Login'
+import { StaffLogin } from './pages/StaffLogin'
 import { Signup } from './pages/Signup'
 import { AcceptInvite } from './pages/AcceptInvite'
 import { Dashboard } from './pages/Dashboard'
@@ -48,6 +49,10 @@ export function App(): JSX.Element {
   if (!user) {
     return (
       <Routes>
+        {/* Two front doors: clients arrive at the branded one, HBS staff at
+            their own. Both authenticate the same way — the split is about
+            where people land, not a second auth system. */}
+        <Route path="/hbs" element={<StaffLogin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/invite/:token" element={<AcceptInvite />} />
         <Route path="*" element={<Login />} />

@@ -61,6 +61,7 @@ export interface BuildingRow {
   gross_floor_area_sqft: number
   year_built: number | null
   jurisdiction: string
+  group_id: string | null
   compliance_exempt: number
   exemption_note: string | null
   last_synced_at: string | null
@@ -222,6 +223,7 @@ export function toBuilding(r: BuildingRow): Building {
     grossFloorAreaSqFt: r.gross_floor_area_sqft,
     yearBuilt: r.year_built,
     jurisdiction: r.jurisdiction as Jurisdiction,
+    groupId: r.group_id,
     complianceExempt: r.compliance_exempt === 1,
     exemptionNote: r.exemption_note,
     lastSyncedAt: r.last_synced_at,

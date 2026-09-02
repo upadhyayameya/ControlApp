@@ -5,6 +5,7 @@
 // frontend build rather than a customer's dashboard.
 // ---------------------------------------------------------------------------
 
+import type { BuildingGroup, GroupKind } from './tree.js'
 import type {
   AuditEvent,
   Invitation,
@@ -116,6 +117,41 @@ export interface PortfolioEntry {
 
 export interface PortfolioResponse {
   entries: PortfolioEntry[]
+  totals: PortfolioTotals
+  /** The portfolio → phase → building tree these entries are filed into. */
+  groups: BuildingGroup[]
+}
+
+export interface CreateGroupRequest {
+  name: string
+  parentId?: string | null
+  kind?: GroupKind
+}
+
+export interface UpdateGroupRequest {
+  name?: string
+  /** Move under a different parent, or to the root with null. */
+  parentId?: string | null
+  sortOrder?: number
+}
+
+export interface AssignBuildingRequest {
+  groupId: string | null
+}
+
+/** One customer as HBS staff see them: the account, and its whole tree. */
+export interface StaffClientSummary {
+  organization: Organization
+  profile: OrganizationProfile
+  groups: BuildingGroup[]
+  entries: PortfolioEntry[]
+  totals: PortfolioTotals
+  memberCount: number
+  connectionStatus: 'connected' | 'error' | 'unverified' | 'none'
+}
+
+export interface StaffOverviewResponse {
+  clients: StaffClientSummary[]
   totals: PortfolioTotals
 }
 

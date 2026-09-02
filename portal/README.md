@@ -11,6 +11,43 @@ share a repository and nothing else.
 
 ---
 
+## Two doors
+
+- **`/login`** — the client portal. A customer sees their own organization and
+  nothing else.
+- **`/hbs`** — the HBS staff console. Every client account, their portfolios,
+  and the Portfolio Manager sync behind them.
+
+Both authenticate against the same endpoint; the split is about where people
+arrive, not a second authentication system, which would be two places to get
+wrong. Signing in with the "wrong" kind of account still works and routes you
+where you belong — refusing would add friction and tell an attacker with valid
+credentials nothing they do not already know.
+
+## The portfolio tree
+
+```
+SJP portfolio                 2 buildings · 275,000 ft²
+  └ Phase 1
+      └ Maple Lawn
+  └ Phase 2
+      └ Maple Lawn North
+```
+
+Arbitrary depth rather than two fixed levels, because a phase-within-a-phase
+costs nothing in the schema and a migration later. A group only earns its
+indentation if it says something the building list does not, so every node
+carries a roll-up: the combined floor area, compliance counts and penalty
+exposure of everything beneath it, at any depth. That is what makes "Phase 1 is
+carrying $2.4M" answerable without opening five buildings.
+
+The assembly (`shared/src/tree.ts`) is deliberately forgiving. A group whose
+parent is missing, or part of a cycle, becomes a root; a building filed under a
+group that no longer exists is listed as unfiled. Losing a customer's building
+because a row was inconsistent would be far worse than showing it in the wrong
+place. Deleting a group detaches its contents rather than destroying them, for
+the same reason.
+
 ## The design in one line
 
 BEPS reduces to one fact: **there is a line, and a building is above it or

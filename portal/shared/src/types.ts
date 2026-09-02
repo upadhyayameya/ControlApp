@@ -81,6 +81,12 @@ export interface Building {
   grossFloorAreaSqFt: number
   yearBuilt: number | null
   jurisdiction: Jurisdiction
+  /**
+   * The phase or portfolio this building is filed under. Null means unfiled,
+   * which is a normal state, not an error — the portfolio view lists those
+   * separately rather than hiding them.
+   */
+  groupId: string | null
   /** Set when the customer disputes coverage or has an approved exemption. */
   complianceExempt: boolean
   exemptionNote: string | null

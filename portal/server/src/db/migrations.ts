@@ -39,6 +39,11 @@ const ADDITIONS: ColumnAddition[] = [
   { table: 'espm_connections', column: 'secret_ciphertext', definition: 'TEXT' },
   { table: 'espm_connections', column: 'secret_iv', definition: 'TEXT' },
   { table: 'espm_connections', column: 'secret_tag', definition: 'TEXT' },
+
+  // --- The portfolio tree ---
+  // A building with no group is not an error; it is simply unfiled, and the
+  // portfolio view lists those separately rather than hiding them.
+  { table: 'buildings', column: 'group_id', definition: 'TEXT REFERENCES building_groups(id) ON DELETE SET NULL' },
 ]
 
 export function applyColumnMigrations(db: Db): string[] {

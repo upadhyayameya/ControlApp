@@ -21,9 +21,10 @@ import {
 import { config } from '../config.js'
 import { onboardingFor } from '../services/tenancy.js'
 import { getDb } from '../db/index.js'
-import { HttpError, requireAuth } from '../middleware/auth.js'
+import { HttpError, requireAuth, requireWriteAccess } from '../middleware/auth.js'
 import { asyncRoute } from '../middleware/errors.js'
 import { listAudit, record } from '../services/audit.js'
+import { assignBuilding, createGroup, deleteGroup, updateGroup } from '../services/groups.js'
 import { createSession, SESSION_COOKIE } from '../services/auth.js'
 import {
   connectOwnAccount,
@@ -314,6 +315,67 @@ platform.post('/org/plan', requireAuth, (req, res) => {
     message:
       'Thanks — we have your request and someone from HBS will confirm the change and the billing details.',
   })
+})
+
+// --- The portfolio tree ---------------------------------------------------
+//
+// Portfolios and phases are the same entity at different depths, so one set of
+// routes serves both. Every one resolves the organization from the session
+// rather than the body: a customer cannot file a building into another
+// tenant's phase by guessing an id.
+
+platform.post('/groups', requireAuth, requireWriteAccess, (req, res) => {
+  const organizationId = requireOwnOrganization(req)
+  const body = z
+    .object({
+      name: z.string().min(1).max(120),
+      parentId: z.string().uuid().nullable().optional(),
+      kind: z.enum(['portfolio', 'phase', 'group']).optional(),
+    })
+    .parse(req.body)
+
+  res.json(
+    createGroup(getDb(), {
+      organizationId,
+      name: body.name,
+      parentId: body.parentId ?? null,
+      kind: body.kind,
+      actor: req.user!,
+    }),
+  )
+})
+
+platform.patch('/groups/:id', requireAuth, requireWriteAccess, (req, res) => {
+  const organizationId = requireOwnOrganization(req)
+  const groupId = req.params['id']
+  if (!groupId) throw new HttpError(400, 'Missing group id.')
+
+  const body = z
+    .object({
+      name: z.string().min(1).max(120).optional(),
+      parentId: z.string().uuid().nullable().optional(),
+      sortOrder: z.number().int().optional(),
+    })
+    .parse(req.body)
+
+  res.json(updateGroup(getDb(), { organizationId, groupId, actor: req.user!, ...body }))
+})
+
+platform.delete('/groups/:id', requireAuth, requireWriteAccess, (req, res) => {
+  const organizationId = requireOwnOrganization(req)
+  const groupId = req.params['id']
+  if (!groupId) throw new HttpError(400, 'Missing group id.')
+  res.json(deleteGroup(getDb(), { organizationId, groupId, actor: req.user! }))
+})
+
+platform.post('/buildings/:id/group', requireAuth, requireWriteAccess, (req, res) => {
+  const organizationId = requireOwnOrganization(req)
+  const buildingId = req.params['id']
+  if (!buildingId) throw new HttpError(400, 'Missing building id.')
+  const body = z.object({ groupId: z.string().uuid().nullable() }).parse(req.body)
+
+  assignBuilding(getDb(), { organizationId, buildingId, groupId: body.groupId, actor: req.user! })
+  res.json({ ok: true })
 })
 
 // --- The audit trail ------------------------------------------------------

@@ -21,6 +21,7 @@ function building(overrides: Partial<Building> = {}): Building {
     grossFloorAreaSqFt: 100_000,
     yearBuilt: 1990,
     jurisdiction: 'dc',
+    groupId: null,
     complianceExempt: false,
     exemptionNote: null,
     lastSyncedAt: null,

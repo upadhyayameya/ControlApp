@@ -20,6 +20,12 @@ export { ApiError }
 export const IS_DEMO = import.meta.env['VITE_DEMO'] === '1'
 
 import type {
+  BuildingGroup,
+  CreateGroupRequest,
+  StaffOverviewResponse,
+  UpdateGroupRequest,
+} from '@hbs/shared'
+import type {
   AcceptInviteRequest,
   AuditResponse,
   ConnectEspmRequest,
@@ -189,6 +195,23 @@ const liveApi = {
     }),
 
   audit: () => request<AuditResponse>('/org/audit'),
+
+  // --- The portfolio tree --------------------------------------------------
+  createGroup: (body: CreateGroupRequest) =>
+    request<BuildingGroup>('/groups', { method: 'POST', body: JSON.stringify(body) }),
+  updateGroup: (id: string, body: UpdateGroupRequest) =>
+    request<BuildingGroup>(`/groups/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteGroup: (id: string) =>
+    request<{ detachedGroups: number; detachedBuildings: number }>(`/groups/${id}`, {
+      method: 'DELETE',
+    }),
+  fileBuilding: (buildingId: string, groupId: string | null) =>
+    request<{ ok: true }>(`/buildings/${buildingId}/group`, {
+      method: 'POST',
+      body: JSON.stringify({ groupId }),
+    }),
+
+  staffClients: () => request<StaffOverviewResponse>('/staff/clients'),
 }
 
 /** The contract both implementations satisfy. */

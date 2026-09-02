@@ -33,6 +33,9 @@ const propertyList = `<?xml version="1.0" encoding="UTF-8"?>
     <link linkDescription="property" id="1810003" hint="Rockville Medical Pavilion" link="/property/1810003"/>
     <link linkDescription="property" id="1810004" hint="Wheaton Distribution Center" link="/property/1810004"/>
     <link linkDescription="property" id="1810005" hint="Dupont Grand Hotel" link="/property/1810005"/>
+    <link linkDescription="property" id="1810006" hint="Maple Lawn" link="/property/1810006"/>
+    <link linkDescription="property" id="1810007" hint="Maple Lawn North" link="/property/1810007"/>
+    <link linkDescription="property" id="1810008" hint="Bethesda Metro Tower" link="/property/1810008"/>
   </links>
 </response>`
 
@@ -191,6 +194,27 @@ const METRIC_SERIES: Record<number, Array<[number, number | null, number, number
     [2023, 44, 127.9, 289.1, 126.6, 15_348_000, 984, 8.20, 85.7],
     [2024, 46, 124.6, 281.6, 123.4, 14_952_000, 959, 7.99, 84.1],
   ],
+  // A newer, efficient building — comfortably above any standard, but in a
+  // county the portal does not track, so it reports as not covered.
+  1810006: [
+    [2021, 78, 48.2, 112.1, 47.6, 8_676_000, 402, 2.23, 14.1],
+    [2022, 79, 47.1, 109.6, 46.6, 8_478_000, 393, 2.18, 13.8],
+    [2023, 81, 45.8, 106.5, 45.3, 8_244_000, 382, 2.12, 13.5],
+    [2024, 82, 44.9, 104.4, 44.4, 8_082_000, 374, 2.08, 13.2],
+  ],
+  1810007: [
+    [2021, 84, 41.0, 95.3, 40.6, 3_895_000, 181, 1.90, 12.4],
+    [2022, 85, 40.2, 93.5, 39.8, 3_819_000, 177, 1.86, 12.2],
+    [2023, 86, 39.5, 91.9, 39.1, 3_752_000, 174, 1.83, 12.0],
+    [2024, 87, 38.8, 90.2, 38.4, 3_686_000, 171, 1.80, 11.8],
+  ],
+  // Montgomery County, and comfortably over the interim site-EUI standard.
+  1810008: [
+    [2021, 39, 96.4, 218.0, 95.3, 29_884_000, 1_812, 5.85, 26.4],
+    [2022, 40, 94.8, 214.4, 93.8, 29_388_000, 1_782, 5.75, 26.0],
+    [2023, 41, 93.1, 210.5, 92.1, 28_861_000, 1_750, 5.65, 25.6],
+    [2024, 42, 91.6, 207.1, 90.6, 28_396_000, 1_722, 5.56, 25.2],
+  ],
 }
 
 function metricFixtures(): Record<string, string> {
@@ -217,12 +241,21 @@ export const FIXTURES: Record<string, string> = {
   'GET /property/1810003': property(1810003, 'Rockville Medical Pavilion', 'Medical Office', 70_000, 1988, 'Rockville', 'MD', '20850'),
   'GET /property/1810004': property(1810004, 'Wheaton Distribution Center', 'Non-Refrigerated Warehouse', 200_000, 2001, 'Wheaton', 'MD', '20902'),
   'GET /property/1810005': property(1810005, 'Dupont Grand Hotel', 'Hotel', 120_000, 1955, 'Washington', 'DC', '20036'),
+  // Maple Lawn sits in Howard County, outside both BEPS jurisdictions the
+  // portal tracks — a useful demo case, because the portal must say "not
+  // covered" rather than inventing a standard for it.
+  'GET /property/1810006': property(1810006, 'Maple Lawn', 'Office', 180_000, 2006, 'Fulton', 'MD', '20759'),
+  'GET /property/1810007': property(1810007, 'Maple Lawn North', 'Office', 95_000, 2011, 'Fulton', 'MD', '20759'),
+  'GET /property/1810008': property(1810008, 'Bethesda Metro Tower', 'Office', 310_000, 1984, 'Bethesda', 'MD', '20814'),
 
   'GET /property/1810001/meter/list': meterList(1810001, [4410011, 4410012]),
   'GET /property/1810002/meter/list': meterList(1810002, [4410021, 4410022]),
   'GET /property/1810003/meter/list': meterList(1810003, [4410031]),
   'GET /property/1810004/meter/list': meterList(1810004, [4410041]),
   'GET /property/1810005/meter/list': meterList(1810005, [4410051, 4410052]),
+  'GET /property/1810006/meter/list': meterList(1810006, [4410061]),
+  'GET /property/1810007/meter/list': meterList(1810007, [4410071]),
+  'GET /property/1810008/meter/list': meterList(1810008, [4410081]),
 
   'GET /meter/4410011': meter(4410011, 'Franklin Square — Electric', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
   'GET /meter/4410012': meter(4410012, 'Franklin Square — Gas', 'Natural Gas', 'therms'),
@@ -232,6 +265,9 @@ export const FIXTURES: Record<string, string> = {
   'GET /meter/4410041': meter(4410041, 'Wheaton DC — Electric', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
   'GET /meter/4410051': meter(4410051, 'Dupont Grand — Electric', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
   'GET /meter/4410052': meter(4410052, 'Dupont Grand — Steam', 'District Steam', 'kBtu (thousand Btu)'),
+  'GET /meter/4410061': meter(4410061, 'Maple Lawn — Electric', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
+  'GET /meter/4410071': meter(4410071, 'Maple Lawn North — Electric', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
+  'GET /meter/4410081': meter(4410081, 'Bethesda Metro — Electric', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
 
   // Meter 4410011 carries an August 2024 spike, which the anomaly monitor should catch.
   'GET /meter/4410011/consumptionData': consumption(4410011, 420_000, 8),
@@ -242,6 +278,9 @@ export const FIXTURES: Record<string, string> = {
   'GET /meter/4410041/consumptionData': consumption(4410041, 96_000, null),
   'GET /meter/4410051/consumptionData': consumption(4410051, 310_000, null),
   'GET /meter/4410052/consumptionData': consumption(4410052, 240_000, null),
+  'GET /meter/4410061/consumptionData': consumption(4410061, 205_000, null),
+  'GET /meter/4410071/consumptionData': consumption(4410071, 112_000, null),
+  'GET /meter/4410081/consumptionData': consumption(4410081, 480_000, 2),
 
   ...metricFixtures(),
 }

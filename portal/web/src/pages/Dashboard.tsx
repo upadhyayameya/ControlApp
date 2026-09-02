@@ -9,13 +9,13 @@
 // legible without reading a single number.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { PortfolioEntry } from '@hbs/shared'
-import { metricLabel } from '@hbs/shared'
-import { usePortal } from '../state/store'
-import { int, num, penaltyText, usdCompact } from '../lib/format'
-import { ThresholdTrack } from '../components/Threshold'
+import { buildTree } from '@hbs/shared'
+import { api } from '../api/client'
+import { messageFor, usePortal } from '../state/store'
+import { int, usdCompact } from '../lib/format'
+import { PortfolioTree } from '../components/PortfolioTree'
 import {
   Empty,
   ErrorNote,
@@ -24,18 +24,40 @@ import {
   Reading,
   SectionHead,
   Spinner,
-  StatusChip,
 } from '../components/primitives'
 import { OnboardingPanel } from '../components/OnboardingPanel'
 
 export function Dashboard(): JSX.Element {
-  const { portfolio, loading, error, loadPortfolio, profile, org } = usePortal()
+  const { portfolio, loading, error, loadPortfolio, profile, org, user } = usePortal()
+  const [manage, setManage] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!portfolio) void loadPortfolio()
   }, [portfolio, loadPortfolio])
 
-  const entries = useMemo(() => rank(portfolio?.entries ?? []), [portfolio])
+  // The tree is assembled in the browser from the flat lists the API returns,
+  // using the same pure function the server and the background tools use — so
+  // a roll-up here can never disagree with a roll-up there.
+  const tree = useMemo(
+    () => buildTree(portfolio?.groups ?? [], portfolio?.entries ?? []),
+    [portfolio],
+  )
+
+  const canManage = user?.role === 'customer_admin' || user?.role === 'hbs_staff'
+
+  const act = useCallback(
+    async (fn: () => Promise<unknown>) => {
+      setActionError(null)
+      try {
+        await fn()
+        await loadPortfolio()
+      } catch (err) {
+        setActionError(messageFor(err))
+      }
+    },
+    [loadPortfolio],
+  )
 
   if (loading && !portfolio) return <Spinner label="Loading portfolio" />
   if (error) return <ErrorNote message={error} />
@@ -84,9 +106,29 @@ export function Dashboard(): JSX.Element {
         <ProvisionalNotice className="mb-6" />
       )}
 
-      <SectionHead title="Buildings" detail="Ordered by what it costs to ignore" />
+      <SectionHead
+        title="Portfolio"
+        detail="Portfolios and phases roll up everything beneath them"
+        action={
+          canManage && tree.totals.buildings > 0 ? (
+            <button
+              type="button"
+              className={manage ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+              onClick={() => setManage((v) => !v)}
+            >
+              {manage ? 'Done organising' : 'Organise'}
+            </button>
+          ) : undefined
+        }
+      />
 
-      {entries.length === 0 ? (
+      {actionError && (
+        <div className="mb-3">
+          <ErrorNote message={actionError} />
+        </div>
+      )}
+
+      {tree.totals.buildings === 0 ? (
         <Empty
           title="No buildings yet."
           detail="Buildings appear once your properties are shared with HBS in Portfolio Manager, or once you connect your own ENERGY STAR account."
@@ -97,88 +139,36 @@ export function Dashboard(): JSX.Element {
           }
         />
       ) : (
-        <div className="panel overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="grid-table">
-              <thead>
-                <tr>
-                  <th className="min-w-[16rem]">Building</th>
-                  <th className="min-w-[11rem]">Against standard</th>
-                  <th className="text-right">Current</th>
-                  <th className="text-right">Standard</th>
-                  <th>Status</th>
-                  <th className="text-right">Exposure</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry, i) => (
-                  <Row key={entry.building.id} entry={entry} index={i} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="overflow-x-auto">
+          <PortfolioTree
+            tree={tree}
+            manage={manage && canManage}
+            onFileBuilding={(buildingId, groupId) =>
+              void act(() => api.fileBuilding(buildingId, groupId))
+            }
+            onAddChild={(parentId) => {
+              const name = window.prompt(
+                parentId === null ? 'Name for the new portfolio' : 'Name for the new phase',
+                parentId === null ? 'New portfolio' : 'Phase 1',
+              )
+              if (name?.trim()) void act(() => api.createGroup({ name: name.trim(), parentId }))
+            }}
+            onRename={(groupId, name) => void act(() => api.updateGroup(groupId, { name }))}
+            onDelete={(groupId) => {
+              // Deleting detaches rather than destroys, and saying so is what
+              // makes the confirmation honest.
+              if (
+                window.confirm(
+                  'Delete this group? Anything inside it becomes unfiled — no buildings are removed.',
+                )
+              ) {
+                void act(() => api.deleteGroup(groupId))
+              }
+            }}
+          />
         </div>
       )}
     </div>
   )
 }
 
-function Row({ entry, index }: { entry: PortfolioEntry; index: number }): JSX.Element {
-  const { building, assessment, openAlerts } = entry
-  return (
-    <tr
-      className="rise transition-colors hover:bg-raised/60"
-      // A short stagger so the table arrives in reading order rather than all
-      // at once. Capped so a large portfolio does not crawl in.
-      style={{ animationDelay: `${Math.min(index, 12) * 22}ms` }}
-    >
-      <td>
-        <Link to={`/buildings/${building.id}`} className="font-medium text-ink hover:underline">
-          {building.name}
-        </Link>
-        <p className="mt-0.5 text-tiny text-ink-3">
-          {building.propertyType} · <span className="measure">{int(building.grossFloorAreaSqFt)}</span> ft²
-          {building.city ? ` · ${building.city}, ${building.state ?? ''}` : ''}
-        </p>
-        {openAlerts > 0 && (
-          <span className="chip-warn mt-1.5">
-            {openAlerts} alert{openAlerts === 1 ? '' : 's'}
-          </span>
-        )}
-      </td>
-      <td className="w-48">
-        {assessment ? (
-          <>
-            <ThresholdTrack assessment={assessment} />
-            <p className="mt-1.5 font-mono text-micro uppercase text-ink-3">
-              {metricLabel(assessment.metric)}
-            </p>
-          </>
-        ) : (
-          <span className="text-tiny text-ink-3">—</span>
-        )}
-      </td>
-      <td className="measure text-right text-ink">{num(assessment?.currentValue ?? null)}</td>
-      <td className="measure text-right text-ink-3">{num(assessment?.targetValue ?? null)}</td>
-      <td>
-        <StatusChip status={assessment?.status} />
-      </td>
-      <td className="measure text-right font-medium text-bad">
-        {penaltyText(assessment?.estimatedPenalty)}
-      </td>
-    </tr>
-  )
-}
-
-function rank(entries: PortfolioEntry[]): PortfolioEntry[] {
-  const weight = (e: PortfolioEntry): number => {
-    const penalty = e.assessment?.estimatedPenalty?.amount ?? 0
-    if (penalty > 0) return 1_000_000_000 + penalty
-    if (e.assessment?.status === 'insufficient-data') return 500_000
-    if (e.assessment?.status === 'at-risk') return 400_000
-    return 0
-  }
-  return [...entries].sort(
-    (a, b) => weight(b) - weight(a) || a.building.name.localeCompare(b.building.name),
-  )
-}

@@ -15,6 +15,14 @@
 // ---------------------------------------------------------------------------
 
 import type {
+  BuildingGroup,
+  CreateGroupRequest,
+  StaffClientSummary,
+  StaffOverviewResponse,
+  UpdateGroupRequest,
+} from '@hbs/shared'
+import { emptyTotals, mergeTotals } from '@hbs/shared'
+import type {
   AcceptInviteRequest,
   AuditEvent,
   AuditResponse,
@@ -65,6 +73,7 @@ interface DemoData {
   buildings: Record<string, BuildingDetailResponse>
   threads: Record<string, ThreadWithMessages>
   users: Record<string, DemoUserRecord>
+  groups: BuildingGroup[]
   sampleReportHtml: string
 }
 
@@ -228,13 +237,20 @@ export const demoApi = {
 
   portfolio: async (organizationId?: string): Promise<PortfolioResponse> => {
     const record = requireUser()
+    const groups = groupsVisibleTo(record)
     // Only staff may narrow to another organization; a customer's scope is
     // fixed, exactly as the server enforces it.
-    if (currentRole() !== 'hbs_staff' || !organizationId) return settle(record.portfolio)
+    if (currentRole() !== 'hbs_staff' || !organizationId) {
+      return settle({ ...record.portfolio, groups })
+    }
     const entries = record.portfolio.entries.filter(
       (e) => e.building.organizationId === organizationId,
     )
-    return settle({ entries, totals: recomputeTotals(entries) })
+    return settle({
+      entries,
+      totals: recomputeTotals(entries),
+      groups: groups.filter((g) => g.organizationId === organizationId),
+    })
   },
 
   building: async (id: string): Promise<BuildingDetailResponse> => {
@@ -663,6 +679,143 @@ export const demoApi = {
     requireAdmin()
     return settle({ events: tenant.audit })
   },
+
+  // --- The portfolio tree --------------------------------------------------
+
+  createGroup: async (body: CreateGroupRequest): Promise<BuildingGroup> => {
+    const tenant = currentTenant()
+    requireWrite()
+    const group: BuildingGroup = {
+      id: uid(),
+      organizationId: tenant.profile.id,
+      parentId: body.parentId ?? null,
+      name: body.name.trim(),
+      kind: body.kind ?? (body.parentId ? 'phase' : 'portfolio'),
+      sortOrder: data.groups.filter((g) => g.parentId === (body.parentId ?? null)).length,
+      createdAt: now(),
+    }
+    data.groups.push(group)
+    logAudit(tenant, 'group.created', group.name)
+    return settle(group)
+  },
+
+  updateGroup: async (id: string, body: UpdateGroupRequest): Promise<BuildingGroup> => {
+    const tenant = currentTenant()
+    requireWrite()
+    const group = data.groups.find((g) => g.id === id && g.organizationId === tenant.profile.id)
+    if (!group) throw new ApiError('No such group.', 404)
+    if (body.parentId !== undefined) {
+      if (body.parentId === id) throw new ApiError('A group cannot be moved inside itself.', 400)
+      group.parentId = body.parentId
+    }
+    if (body.name !== undefined) group.name = body.name.trim()
+    if (body.sortOrder !== undefined) group.sortOrder = body.sortOrder
+    logAudit(tenant, 'group.updated', group.name)
+    return settle({ ...group })
+  },
+
+  deleteGroup: async (id: string): Promise<{ detachedGroups: number; detachedBuildings: number }> => {
+    const tenant = currentTenant()
+    requireWrite()
+    const group = data.groups.find((g) => g.id === id && g.organizationId === tenant.profile.id)
+    if (!group) throw new ApiError('No such group.', 404)
+
+    // Detach rather than destroy, exactly as the server does: a mis-click must
+    // not take a phase's buildings with it.
+    let detachedGroups = 0
+    for (const other of data.groups) {
+      if (other.parentId === id) {
+        other.parentId = null
+        other.kind = 'portfolio'
+        detachedGroups++
+      }
+    }
+    let detachedBuildings = 0
+    for (const detail of Object.values(data.buildings)) {
+      if (detail.building.groupId === id) {
+        detail.building.groupId = null
+        detachedBuildings++
+      }
+    }
+    for (const record of Object.values(data.users)) {
+      for (const entry of record.portfolio.entries) {
+        if (entry.building.groupId === id) entry.building.groupId = null
+      }
+    }
+
+    data.groups = data.groups.filter((g) => g.id !== id)
+    logAudit(tenant, 'group.deleted', group.name)
+    return settle({ detachedGroups, detachedBuildings })
+  },
+
+  fileBuilding: async (buildingId: string, groupId: string | null): Promise<{ ok: true }> => {
+    const tenant = currentTenant()
+    requireWrite()
+    const detail = data.buildings[buildingId]
+    if (!detail) throw new ApiError('No such building.', 404)
+    detail.building.groupId = groupId
+    // The portfolio lists carry their own copies of each building, so they
+    // have to move too or the tree and the table disagree.
+    for (const record of Object.values(data.users)) {
+      for (const entry of record.portfolio.entries) {
+        if (entry.building.id === buildingId) entry.building.groupId = groupId
+      }
+    }
+    logAudit(tenant, 'building.filed', detail.building.name)
+    return { ok: true }
+  },
+
+  staffClients: async (): Promise<StaffOverviewResponse> => {
+    requireStaff()
+    const record = requireUser()
+    const totals = emptyTotals()
+    const clients: StaffClientSummary[] = []
+
+    for (const organization of record.organizations) {
+      const entries = record.portfolio.entries.filter(
+        (e) => e.building.organizationId === organization.id,
+      )
+      const clientTotals = recomputeTotals(entries)
+      mergeTotals(totals, clientTotals)
+
+      const tenant = tenants.get(organization.id)
+      clients.push({
+        organization,
+        profile: tenant?.profile ?? {
+          id: organization.id,
+          name: organization.name,
+          slug: organization.id,
+          billingEmail: organization.billingEmail,
+          tier: organization.tier,
+          planStatus: 'active',
+          trialEndsAt: null,
+          accentColor: '#0B5D66',
+          logoMark: null,
+          onboardingCompletedAt: null,
+          createdAt: organization.createdAt,
+        },
+        groups: data.groups.filter((g) => g.organizationId === organization.id),
+        entries,
+        totals: clientTotals,
+        memberCount: tenant?.members.length ?? 0,
+        connectionStatus: tenant?.connection?.status ?? 'none',
+      })
+    }
+
+    clients.sort(
+      (a, b) =>
+        b.totals.estimatedPenaltyExposure - a.totals.estimatedPenaltyExposure ||
+        a.organization.name.localeCompare(b.organization.name),
+    )
+    return settle({ clients, totals })
+  },
+}
+
+/** Groups the signed-in user may see: their own tenant's, or all for staff. */
+function groupsVisibleTo(record: DemoUserRecord): BuildingGroup[] {
+  const orgId = record.session.organization?.id
+  if (record.session.user.role === 'hbs_staff') return data.groups
+  return data.groups.filter((g) => g.organizationId === orgId)
 }
 
 /**

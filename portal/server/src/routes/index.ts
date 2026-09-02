@@ -15,8 +15,11 @@ import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { Router } from 'express'
 import { z } from 'zod'
+import { emptyTotals, mergeTotals } from '@hbs/shared'
 import type {
   BuildingDetailResponse,
+  StaffClientSummary,
+  StaffOverviewResponse,
   PushResultResponse,
   SessionResponse,
   SyncStatusResponse,
@@ -60,8 +63,12 @@ import {
   buildPortfolio,
   listBuildings,
   metricsFor,
+  portfolioEntries,
   recommendationsForBuilding,
+  totalsFor,
 } from '../services/portfolio.js'
+import { listGroups } from '../services/groups.js'
+import { summaryFor } from '../services/connections.js'
 import { generateReport, listReports } from '../services/reports.js'
 
 export const api = Router()
@@ -478,6 +485,53 @@ api.get('/reports/:id/download', requireAuth, (req, res) => {
 
 api.get('/organizations', requireAuth, requireStaff, (_req, res) => {
   res.json({ organizations: listOrganizations(getDb()) })
+})
+
+/**
+ * Every client, each with their whole portfolio tree — the HBS view.
+ *
+ * Assembled per organization rather than as one flat list, because "which
+ * client is carrying the most exposure" is the question this screen exists to
+ * answer, and a flat list of every building across every tenant answers it
+ * only after the reader does the grouping themselves.
+ */
+api.get('/staff/clients', requireAuth, requireStaff, (_req, res) => {
+  const db = getDb()
+  const clients: StaffClientSummary[] = []
+  const totals = emptyTotals()
+
+  for (const organization of listOrganizations(db)) {
+    const entries = portfolioEntries(db, organization.id)
+    const clientTotals = totalsFor(entries)
+    mergeTotals(totals, clientTotals)
+
+    const memberCount =
+      db
+        .prepare<[string], { n: number }>(
+          'SELECT COUNT(*) AS n FROM users WHERE organization_id = ?',
+        )
+        .get(organization.id)?.n ?? 0
+
+    clients.push({
+      organization,
+      profile: profileById(db, organization.id)!,
+      groups: listGroups(db, organization.id),
+      entries,
+      totals: clientTotals,
+      memberCount,
+      connectionStatus: summaryFor(db, organization.id)?.status ?? 'none',
+    })
+  }
+
+  // Largest exposure first: the same ordering principle as the portfolio, one
+  // level up.
+  clients.sort(
+    (a, b) =>
+      b.totals.estimatedPenaltyExposure - a.totals.estimatedPenaltyExposure ||
+      a.organization.name.localeCompare(b.organization.name),
+  )
+
+  res.json({ clients, totals } satisfies StaffOverviewResponse)
 })
 
 api.get('/espm/connection', requireAuth, requireStaff, (_req, res) => {
