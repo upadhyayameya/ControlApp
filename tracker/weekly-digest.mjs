@@ -1939,6 +1939,93 @@ function hbsSummaryBody() {
   D.note('Median over what actually came back in the month, counted in the month it returned. '
     + 'Under three projects the figure is not shown — that is one project, not a trend.');
 
+  /* ---- Harry's scorecard.
+
+     Ameya asked for the scorecard he has been sending out to be looped into
+     this email, RAG-coloured, so the company has one weekly read on momentum.
+
+     There is a hard limit worth stating rather than papering over: of the 29
+     scorecard rows that carry a goal, monday holds NONE of them. They are
+     revenue and sales dollars that live in invoices and Harry's head. The four
+     rows monday CAN fill -- SOW sent, implementations scheduled, closeouts
+     submitted, closeouts received -- are exactly the four with no goal against
+     them. The overlap is empty.
+
+     So this section does the two honest things it can. It prints the pipeline
+     volume straight off the boards, and it scores the team's own dollar
+     milestones, which do have goals, against them. The revenue and sales
+     blocks stay in the workbook until it has somewhere to live that this
+     script can read. ---- */
+  D.h(`Scorecard — week ${WEEK_COL}`);
+  const rag = (v, goal) => {
+    if (!(goal > 0)) return '';
+    const p = v / goal;
+    return p >= 1 ? '\u{1F7E2} Green' : p >= 0.8 ? '\u{1F7E1} Yellow' : '\u{1F534} Red';
+  };
+  const scoreRowsCo = [
+    ['PAs submitted to ICF', GOALS.paSubmitted,     moTeam.$paSubmitted],
+    ['PAs approved by ICF',  GOALS.paReceived,      moTeam.$paReceived],
+    ['Implementations',      GOALS.implementations, moTeam.$implementations],
+    ['Closeouts paid',       GOALS.coReceived,      moTeam.$coReceived],
+  ];
+  D.table(
+    [{ h: 'Milestone', w: 24 }, { h: `${MONTH_NAME} to date`, align: 'r' }, { h: 'Monthly goal', align: 'r' },
+     { h: 'Progress' }, { h: 'Status', w: 10 }, { h: 'Against pace', w: 24 }],
+    scoreRowsCo.map(([label, goal, got]) => {
+      const due = goal * MONTH_PACE;
+      return [label, money(got), money(goal), `${bar(got, goal)} ${Math.round((got / goal) * 100)}%`,
+        rag(got, goal),
+        got >= goal ? 'goal met' : got >= due ? `on pace, ${money(goal - got)} to go` : `behind by ${money(due - got)}`];
+    }));
+  D.note(`Status is against the WHOLE month's goal, so early in a month everything reads red — `
+    + `"Against pace" is the column to read on ${MONTH_ELAPSED} of ${MONTH_LENGTH} days. `
+    + `Green = goal met, Yellow = within 80%, Red = below 80%, the same thresholds as the workbook.`);
+
+  /* Volume, straight off the boards. No goals exist for these, so no colour --
+     inventing a target to have something to shade would be making it up. */
+  const countIn = (grp, within) => kpiRows.filter(r => r.milestone === grp && within(r)).length;
+  const stageIn = (key, within) => projects.filter(p => p.ev[key]
+    && within({ date: p.ev[key] })).length;
+  D.h('Pipeline volume');
+  D.table(
+    [{ h: 'Row', w: 28 }, { h: WEEK_COL, align: 'r' }, { h: `${MONTH_NAME} to date`, align: 'r' },
+     { h: 'Source', w: 12 }],
+    [['SOW sent to customer',      stageIn('sowSent', inWeek), stageIn('sowSent', inMonth), 'monday.com'],
+     ['Implementations scheduled', countIn(G_IMPL, inWeek),    countIn(G_IMPL, inMonth),    'monday.com'],
+     ['Closeouts submitted',       countIn(G_CO_SUB, inWeek),  countIn(G_CO_SUB, inMonth),  'monday.com'],
+     ['Closeouts received',        countIn(G_CO_RCV, inWeek),  countIn(G_CO_RCV, inMonth),  'monday.com']]);
+  D.note('Company revenue and the sales block are not on any board — they stay in the workbook. '
+    + 'Tell me where the scorecard will live and this section will read those rows too, '
+    + 'RAG and all, instead of stopping here.');
+
+  /* ---- what everyone is working on. Ameya asked for it by name. One line per
+     person: the single thing their week should start with, which is the top of
+     the priority list their own digest opens with, so management and the
+     engineer are reading the same ranking rather than two. ---- */
+  const byOwner = new Map();
+  for (const p of projects) {
+    if (p.band === 'none') continue;
+    for (const n of p.ownerNames) {
+      const cur = byOwner.get(n);
+      if (!cur || p.priority > cur.top.priority) byOwner.set(n, { top: p, n: (cur ? cur.n : 0) });
+    }
+  }
+  for (const p of projects) if (p.band !== 'none') for (const n of p.ownerNames) byOwner.get(n).n++;
+  const working = [...byOwner].filter(([n]) => getsDigest(n))
+    .sort((a, b) => b[1].top.priority - a[1].top.priority);
+  if (working.length) {
+    const top = Math.max(1, ...working.map(w => w[1].top.priority));
+    D.h(`What everyone is working on (${working.length})`);
+    D.table(
+      [{ h: 'Engineer', w: 18 }, { h: 'Their top priority', w: 40 }, { h: 'What it needs', w: 36 },
+       { h: 'Score' }, { h: 'Waiting', align: 'r' }, { h: 'Flagged', align: 'r' }],
+      working.map(([n, v]) => [n.split(' ')[0], v.top.name, v.top.need,
+        `${bar(v.top.priority, top)} ${v.top.priority}`,
+        v.top.daysInPhase == null ? '' : `${v.top.daysInPhase}d`, v.n]));
+    D.note('The top row of each person\u2019s own priority list, ranked the same way theirs is — '
+      + 'so this and their Monday email agree. "Flagged" is how many of their projects scored at all.');
+  }
+
   /* ---- the shape of the book. ---- */
   const byPhase = new Map();
   for (const p of projects) if (p.phase) byPhase.set(p.phase, (byPhase.get(p.phase) || 0) + 1);
