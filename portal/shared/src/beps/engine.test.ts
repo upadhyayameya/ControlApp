@@ -132,11 +132,32 @@ test('gap-scaled penalties grow with the size of the shortfall', () => {
   assert.equal(huge.amount, large.amount)
 })
 
-test('unverified penalty schedules produce a wider band and an unverified flag', () => {
+test('a schedule not read off the published rule is never flagged verified', () => {
+  // 'secondary-source' is better than a placeholder and still not the rule, so
+  // it must not clear the caveat the UI keys off.
   const schedule = penaltyFor('dc', 'dc-cycle-1')!
+  assert.equal(schedule.verification, 'secondary-source')
   const est = estimatePenalty(100_000, 30, schedule)
   assert.equal(est.verified, false)
-  assert.ok((est.high - est.low) / est.amount > 0.5, 'unverified band should be wide')
+  assert.ok((est.high - est.low) / est.amount > 0.4, 'the band should still be wide')
+})
+
+test('DC exposure is capped per building', () => {
+  const schedule = penaltyFor('dc', 'dc-cycle-1')!
+  // A tower far past the standard would otherwise produce a headline figure
+  // larger than anything DC can actually levy.
+  const huge = estimatePenalty(5_000_000, 100, schedule)
+  assert.equal(huge.amount, 7_500_000)
+})
+
+test('Montgomery County is a daily fine, not a per-square-foot payment', () => {
+  const schedule = penaltyFor('montgomery-md', 'moco-interim-2030')!
+  assert.equal(schedule.model.kind, 'per-day')
+  // The whole point of the correction: exposure does not scale with area.
+  const small = estimatePenalty(30_000, 40, schedule)
+  const large = estimatePenalty(310_000, 40, schedule)
+  assert.equal(small.amount, large.amount)
+  assert.ok(large.amount <= 5_000, `expected the county cap, got ${large.amount}`)
 })
 
 test('currentAssessment picks the next cycle whose deadline has not passed', () => {

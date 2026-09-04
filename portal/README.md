@@ -125,13 +125,46 @@ Manager**.
 ## ⚠ The numbers are provisional
 
 **The compliance engine is exact. The constants it runs on are not yet
-verified.**
+verified against the published rules.**
 
 `shared/src/beps/standards.ts` holds every BEPS target and penalty rate as
-data, each carrying a `verification` field. Everything currently ships as
-`needs-verification`: the values are the right shape and the right ballpark,
-but they have not been checked against the published DOEE and Montgomery County
-rules.
+data, each carrying a `verification` field with three states:
+
+| State | Meaning |
+| --- | --- |
+| `verified` | Read off the published rule by a human, with the citation recorded. Nothing is in this state yet. |
+| `secondary-source` | Corroborated by independent commentary, not read at source. Still shows the caveat. |
+| `needs-verification` | A placeholder. No source found. |
+
+The middle state exists because collapsing it either way loses something: a
+figure two independent sources agree on is far better than a placeholder, and
+still not the rule.
+
+**Correcting the first pass found real errors**, which is the point of having
+the flag at all:
+
+- Five of six checkable DC score standards were wrong — K-12 School was 61
+  against a reported 36, Multifamily 74 against 66, Hotel 60 against 54,
+  Hospital 42 against 50, Retail 67 against 64. Only Office (71) was right.
+- DC's penalty is capped at **$7,500,000 per building**; the original model had
+  no cap, so a large property produced a headline figure larger than the
+  District can levy.
+- Montgomery County was wrong *in kind*, not magnitude. It was modelled as a
+  per-ft² payment like DC's; the county actually issues a **daily civil
+  citation** ($500/day rising to $750, capped at $5,000). That single error
+  overstated one demo building's exposure by **70×** — $350,000 against $5,000.
+
+Two gaps remain documented in the file rather than modelled: Montgomery County
+phases deadlines by building size group (final dates land in 2033–2037, not a
+single 2035), and a building there also complies by cutting site EUI 30% from
+its own baseline, which needs a stored baseline year the schema does not carry.
+
+**To finish it:** read DOEE's *Guide to the 2021 BEPS* and the county
+regulation, correct `standards.ts`, flip each `verification` to `'verified'`,
+and fill in `citationUrl`. Nothing else changes — the caveats disappear on
+their own. Both sources were unreachable from the build environment
+(`doee.dc.gov` is blocked by the network egress proxy), which is why nothing is
+marked verified.
 
 That flag is load-bearing. An unverified constant propagates `verified: false`
 into every `PenaltyEstimate`, which makes the UI render a **range with a

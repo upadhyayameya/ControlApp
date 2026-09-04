@@ -15,6 +15,7 @@ import type {
   PenaltyEstimate,
 } from '../types.js'
 import {
+  isConfirmed,
   type BepsCycle,
   type BepsStandard,
   type PenaltyModel,
@@ -114,8 +115,12 @@ export function assessBuilding(
   const { gap, gapPct, status } = compare(currentValue, standard)
   const notes: string[] = []
   if (standard.note) notes.push(standard.note)
-  if (standard.verification !== 'verified') {
-    notes.push('Target value is provisional and pending verification against the published rule.')
+  if (standard.verification === 'secondary-source') {
+    notes.push(
+      'Target value is corroborated by secondary sources but has not been read off the published rule.',
+    )
+  } else if (standard.verification !== 'verified') {
+    notes.push('Target value is a placeholder pending verification against the published rule.')
   }
   if (metric && metric.source === 'portal-entry') {
     notes.push(
@@ -231,16 +236,22 @@ export function estimatePenalty(
   schedule: PenaltySchedule,
 ): PenaltyEstimate {
   const amount = applyPenaltyModel(grossFloorAreaSqFt, gapPct, schedule.model)
-  // An unverified schedule gets a deliberately wide band, so nobody mistakes a
-  // placeholder for a quote. A verified one still carries ±15% because the
-  // final figure depends on the year's audited metrics.
-  const spread = schedule.verification === 'verified' ? 0.15 : 0.4
+  // The band widens as the provenance weakens, so nobody mistakes a
+  // placeholder for a quote. Even a verified schedule carries ±15%, because
+  // the final figure depends on the year's audited metrics.
+  const spread =
+    schedule.verification === 'verified'
+      ? 0.15
+      : schedule.verification === 'secondary-source'
+        ? 0.25
+        : 0.4
   return {
     amount: round(amount, 0),
     low: round(amount * (1 - spread), 0),
     high: round(amount * (1 + spread), 0),
     basis: schedule.basis,
-    verified: schedule.verification === 'verified',
+    // Only the published rule clears the caveat; see isConfirmed.
+    verified: isConfirmed(schedule.verification),
     citationUrl: schedule.citationUrl,
   }
 }
