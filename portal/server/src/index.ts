@@ -13,23 +13,49 @@ import { platform } from './routes/platform.js'
 import { errorHandler } from './middleware/errors.js'
 import { loadSession } from './middleware/auth.js'
 import { purgeExpiredSessions } from './services/auth.js'
+import { startScheduler } from './services/scheduler.js'
 
 const app = express()
 
-app.use(
-  cors({
-    origin: config.webOrigin,
-    // The session cookie is HttpOnly, so the browser only sends it when the
-    // request is made with credentials and the origin is explicitly allowed.
-    credentials: true,
-  }),
-)
+// Behind a load balancer or reverse proxy the client's real address arrives in
+// X-Forwarded-For. Express only believes it when told which hops to trust, and
+// trusting blindly would let anyone spoof their address past the rate limiter —
+// so this is opt-in through TRUST_PROXY.
+if (config.trustProxy !== false) app.set('trust proxy', config.trustProxy)
+
+// CORS only exists for the split-origin development setup. When the app is
+// served from this same process there is no second origin, and adding the
+// headers anyway would only widen what can reach the API with credentials.
+if (config.webOrigin) {
+  app.use(
+    cors({
+      origin: config.webOrigin,
+      // The session cookie is HttpOnly, so the browser only sends it when the
+      // request is made with credentials and the origin is explicitly allowed.
+      credentials: true,
+    }),
+  )
+}
 app.use(express.json({ limit: '1mb' }))
 app.use(cookieWriter)
 app.use(loadSession)
 
+// Liveness: the process is up. Deliberately does not touch the database, so a
+// database problem does not get the container killed and restarted in a loop
+// when restarting is not the fix.
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, espmMode: config.espm.mode })
+})
+
+// Readiness: it can actually serve. A failing query here means take this
+// instance out of rotation.
+app.get('/api/ready', (_req, res) => {
+  try {
+    db.prepare('SELECT 1').get()
+    res.json({ ready: true })
+  } catch (err) {
+    res.status(503).json({ ready: false, error: err instanceof Error ? err.message : 'unknown' })
+  }
 })
 
 app.use('/api', platform)
@@ -42,7 +68,7 @@ app.use(errorHandler)
 // single-page app, so a deep link like /settings/team or /hbs has no file
 // behind it. Without this, opening one of those URLs directly — or refreshing
 // on it — is a 404, which is exactly what a customer does with a bookmark.
-const webDist = path.resolve(process.cwd(), '../web/dist')
+const webDist = config.webDistPath
 if (fs.existsSync(path.join(webDist, 'index.html'))) {
   app.use(express.static(webDist, { index: false }))
   app.get('*', (req, res, next) => {
@@ -56,8 +82,9 @@ if (fs.existsSync(path.join(webDist, 'index.html'))) {
 
 const db = getDb()
 const purged = purgeExpiredSessions(db)
+const scheduler = startScheduler(db)
 
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   console.log(`[portal] listening on http://localhost:${config.port}`)
   console.log(`[portal] database  ${config.databasePath}`)
   console.log(
@@ -68,7 +95,54 @@ app.listen(config.port, () => {
     }`,
   )
   if (purged > 0) console.log(`[portal] purged ${purged} expired session(s)`)
+
+  if (config.isProduction && config.espm.mode === 'fixture') {
+    // Running a deployment on recorded responses would look like it worked
+    // while silently syncing nothing real.
+    console.warn(
+      '[portal] WARNING: production with ESPM in fixture mode — no data will sync from ' +
+        'Portfolio Manager. Set ESPM_USERNAME and ESPM_PASSWORD, or have each tenant ' +
+        'connect their own account.',
+    )
+  }
 })
+
+/**
+ * Shut down without dropping requests.
+ *
+ * A container gets SIGTERM and then a hard kill, so the work here is to stop
+ * accepting, let in-flight requests finish, and close the database — an
+ * interrupted SQLite write is how a WAL ends up needing recovery. The timer is
+ * unref'd so it never itself keeps the process alive.
+ */
+let shuttingDown = false
+function shutdown(signal: string): void {
+  if (shuttingDown) return
+  shuttingDown = true
+  console.log(`[portal] ${signal} received, finishing in-flight requests`)
+
+  scheduler.stop()
+
+  const force = setTimeout(() => {
+    console.error('[portal] shutdown timed out, exiting anyway')
+    process.exit(1)
+  }, 10_000)
+  force.unref()
+
+  server.close(() => {
+    try {
+      db.close()
+    } catch (err) {
+      console.error('[portal] error closing the database', err)
+    }
+    clearTimeout(force)
+    console.log('[portal] stopped cleanly')
+    process.exit(0)
+  })
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
 
 /**
  * A three-line cookie setter, so the app does not carry cookie-parser just to

@@ -122,6 +122,133 @@ Manager**.
 
 ---
 
+## Deploying it
+
+Everything below has been run and verified except the container build itself,
+which is called out where it applies.
+
+The portal is **one process**: it serves the API and the built browser app from
+a single origin. That is deliberate — the session cookie is `HttpOnly` and
+`SameSite=Lax`, so splitting API and app across two hosts means configuring
+CORS and cookie domains to buy back what one origin gives for free. In
+production, `WEB_ORIGIN` is unset and no cross-origin access is granted at all.
+
+### With Docker
+
+```bash
+cp .env.example .env          # fill in the four required values below
+docker compose up -d --build
+docker compose run --rm portal node dist/cli/createAdmin.js \
+  --email you@hbssolutions.com --name "Your Name"
+```
+
+The last command prints a password **once**. There is no default account and no
+seeded data in a production database — the demo seed is a separate command that
+a deployment never runs.
+
+To create a customer organization and its first admin at the same time:
+
+```bash
+docker compose run --rm portal node dist/cli/createAdmin.js \
+  --email ops@client.com --name "Their Name" --org "Client Property Group"
+```
+
+> **The image has not been built here.** `docker build` cannot reach Docker
+> Hub's layer CDN from this environment (`403 Forbidden` from
+> `production.cloudfront.docker.com`), which is an egress restriction rather
+> than something to work around. The `Dockerfile` and `docker-compose.yml` are
+> written and reviewed but unproven; budget a first build for the usual
+> `npm ci` and native-binding surprises. Everything the container runs — the
+> server, the CLI, the scheduler, the static serving — **has** been verified,
+> by running it directly (below).
+
+### Without Docker
+
+Which is how the run path above was actually verified:
+
+```bash
+npm ci
+npm run build                             # shared, server, web
+export NODE_ENV=production
+export SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+export CREDENTIAL_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
+export DATABASE_PATH=/var/lib/hbs-portal/portal.db
+export WEB_DIST_PATH=$PWD/web/dist
+export PUBLIC_ORIGIN=https://portal.hbssolutions.com
+npm run create-admin -- --email you@hbssolutions.com --name "Your Name"
+npm start
+```
+
+Put it behind systemd or any supervisor. `SIGTERM` stops accepting, lets
+in-flight requests finish, checkpoints the WAL and closes the database, with a
+10-second cap before it exits anyway.
+
+### The four things production requires
+
+The server **refuses to start** without the first three, rather than starting
+with an unsafe default:
+
+| Variable | Why it is required |
+| --- | --- |
+| `SESSION_SECRET` | A random per-boot secret would sign everyone out on each restart, and differ between instances. |
+| `CREDENTIAL_KEY` | Encrypts stored ENERGY STAR passwords. Separate from the session secret so rotating one does not destroy the other. |
+| `PUBLIC_ORIGIN` | Invitation links are built from it. A wrong value emails customers a link that cannot work, and nothing surfaces the mistake until someone clicks one. |
+| `TRUST_PROXY` | Not required, but set it to the number of proxy hops. Off by default, because trusting `X-Forwarded-For` that nobody set lets a caller spoof their address past the rate limiter. Left unset behind a proxy, every request looks like it came from the proxy. |
+
+### TLS is not optional
+
+In production the session cookie is marked `Secure`, so over plain HTTP the
+browser will not send it back and **nobody can stay signed in**. `docker
+compose` publishes on `127.0.0.1:4000` for exactly this reason: put a reverse
+proxy with a certificate in front of it.
+
+### Health checks
+
+| Path | Meaning |
+| --- | --- |
+| `/api/health` | The process is up. Deliberately does not touch the database — a database fault should not put the container in a restart loop when restarting is not the fix. |
+| `/api/ready` | It can actually serve; runs a query. A 503 here means take this instance out of rotation. |
+
+### Email
+
+With `SMTP_HOST` unset, invitations and thread notifications are written to the
+outbox and **never delivered** — an admin copies the invitation link out of the
+UI by hand. That is fine for a pilot and wrong for a platform, so set
+`SMTP_HOST` and the scheduler drains the outbox every minute, retrying a
+failure at 1, 5, 25 and 125 minutes before giving up.
+
+Queued-then-sent rather than sent-inline, on purpose: an invitation is a
+database row, so if the relay is down when an admin invites someone, the
+invitation still exists and its link still works. A mail failure loses a
+notification, not the grant.
+
+### Background jobs
+
+Both run in-process, on unref'd timers so neither holds up a shutdown:
+
+* **the outbox drain**, every minute;
+* **the anomaly sweep**, on the 1st and 15th — the fortnightly cadence HBS
+  already works to. It is checked twice a day rather than scheduled to the
+  minute, so a container that restarts on the 15th still runs that day's sweep.
+
+### One instance, for now
+
+Two things are in memory rather than shared: the rate-limiter buckets and the
+scheduler's sense of what has already run. On a second instance an attacker
+gets double the login budget and every job runs twice. Neither is a problem at
+one container, and both are honest limits rather than hidden ones — the fixes
+are Redis for the buckets and a lock for the jobs, and the seams for both are
+marked in `middleware/rateLimit.ts` and `services/scheduler.ts`.
+
+### Backups
+
+The entire application state is one SQLite file — the volume `portal-data`, or
+whatever `DATABASE_PATH` points at. Back that up and you have backed up
+everything. `sqlite3 portal.db ".backup out.db"` is safe against a running
+server; copying the file while it is being written is not.
+
+---
+
 ## ⚠ The numbers are provisional
 
 **The compliance engine is exact. The constants it runs on are not yet
@@ -338,8 +465,18 @@ right on the next refresh — no backfill, no stale rows disagreeing with the
 engine.
 
 **SQLite to start.** Zero setup while the hosting and database conversation is
-still open. Everything goes through `db/`, and nothing uses a SQLite-only
-feature, so Postgres is a driver swap.
+still open, and one file to back up. Nothing here uses a SQLite-only feature
+beyond `INTEGER PRIMARY KEY`, and every query goes through `db/`.
+
+I earlier described moving to Postgres as a driver swap. That was wrong, and
+worth correcting because it is the kind of estimate a plan gets built on:
+`better-sqlite3` is *synchronous*, so every service reads and writes without
+`await`, and every route calls them the same way. A Postgres driver is
+asynchronous. Swapping it turns every service function into an async one and
+every caller into an awaiting one — mechanical, but it touches nearly every
+file in `server/src`, and the transaction helpers have to be rewritten rather
+than adapted. Call it a focused week, not an afternoon. The schema itself
+ports almost unchanged.
 
 ---
 
@@ -365,13 +502,15 @@ Things a reviewer should look at rather than trust:
 - **Payment.** Plans are enforced, but changing one raises a request rather
   than charging a card. There is no payment processor wired up and the UI says
   so rather than pretending.
-- **SMTP delivery.** `email_outbox` is written correctly; nothing drains it,
-  and there is no inbound mail webhook. `ingestInboundEmail` is the entry point
-  and is tested-shaped, waiting for a provider.
-- **A scheduler.** `POST /api/alerts/run-monitor` is the "twice a month" job;
-  it needs cron or a queue in front of it.
+- **Inbound email.** Outbound is delivered (see *Deploying it*); the *reply*
+  half is not. `ingestInboundEmail` is the entry point and is tested, but
+  nothing calls it — it needs a webhook from whichever provider receives mail
+  at `MAIL_REPLY_DOMAIN`. Until then a customer can be notified by email but
+  has to reply in the portal.
 - **Report templates beyond HTML.** `buildComplianceReport` returns structured
   data precisely so a formal template can render the same numbers.
-- **Rate limiting on login**, and password reset.
+- **Password reset.** A user who forgets their password needs an admin to
+  issue a new one; there is no self-service reset link yet. Login rate
+  limiting *is* in place.
 - **A proper migration system.** `db/migrations.ts` applies additive columns
   idempotently, which is honest but additive-only — no renames, no drops.

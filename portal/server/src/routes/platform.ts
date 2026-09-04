@@ -23,6 +23,7 @@ import { onboardingFor } from '../services/tenancy.js'
 import { getDb } from '../db/index.js'
 import { HttpError, requireAuth, requireWriteAccess } from '../middleware/auth.js'
 import { asyncRoute } from '../middleware/errors.js'
+import { inviteLookupLimiter, signupLimiter } from '../middleware/rateLimit.js'
 import { listAudit, record } from '../services/audit.js'
 import { assignBuilding, createGroup, deleteGroup, updateGroup } from '../services/groups.js'
 import { createSession, SESSION_COOKIE } from '../services/auth.js'
@@ -84,6 +85,7 @@ function establishSession(res: Response, userId: string): void {
 
 platform.post(
   '/auth/signup',
+  signupLimiter,
   asyncRoute(async (req, res) => {
     const body = z
       .object({
@@ -109,7 +111,7 @@ platform.post(
 
 // --- Invitations, from the invited person's side --------------------------
 
-platform.get('/invitations/:token', (req, res) => {
+platform.get('/invitations/:token', inviteLookupLimiter, (req, res) => {
   const token = req.params['token']
   if (!token) throw new HttpError(400, 'Missing invitation token.')
   res.json(previewInvitation(getDb(), token) satisfies InvitePreview)
@@ -117,6 +119,7 @@ platform.get('/invitations/:token', (req, res) => {
 
 platform.post(
   '/invitations/accept',
+  inviteLookupLimiter,
   asyncRoute(async (req, res) => {
     const body = z
       .object({

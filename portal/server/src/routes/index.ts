@@ -47,6 +47,7 @@ import {
   scopeOrganizationId,
 } from '../middleware/auth.js'
 import { asyncRoute } from '../middleware/errors.js'
+import { loginAccountLimiter, loginIpLimiter } from '../middleware/rateLimit.js'
 import { acknowledgeAlert, listAlerts, runMonitor } from '../services/alerts.js'
 import { authenticate, createSession, destroySession, SESSION_COOKIE } from '../services/auth.js'
 import {
@@ -88,6 +89,8 @@ function param(req: { params: Record<string, string | undefined> }, name: string
 
 api.post(
   '/auth/login',
+  loginIpLimiter,
+  loginAccountLimiter,
   asyncRoute(async (req, res) => {
     const body = z
       .object({ email: z.string().email(), password: z.string().min(1) })
@@ -96,6 +99,8 @@ api.post(
     const db = getDb()
     const user = await authenticate(db, body.email, body.password)
     if (!user) {
+      // Only a failure spends the account's budget; see loginAccountLimiter.
+      loginAccountLimiter.record(req)
       // One message for both "no such user" and "wrong password".
       res.status(401).json({ error: 'That email and password do not match an account.' })
       return

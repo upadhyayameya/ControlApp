@@ -44,6 +44,10 @@ const ADDITIONS: ColumnAddition[] = [
   // A building with no group is not an error; it is simply unfiled, and the
   // portfolio view lists those separately rather than hiding them.
   { table: 'buildings', column: 'group_id', definition: 'TEXT REFERENCES building_groups(id) ON DELETE SET NULL' },
+
+  // --- Outbound email actually gets delivered ---
+  { table: 'email_outbox', column: 'attempts', definition: 'INTEGER NOT NULL DEFAULT 0' },
+  { table: 'email_outbox', column: 'next_attempt_at', definition: 'TEXT' },
 ]
 
 export function applyColumnMigrations(db: Db): string[] {

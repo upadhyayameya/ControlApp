@@ -46,6 +46,32 @@ function resolveCredentialKey(): string {
   return 'development-credential-key-not-for-production'
 }
 
+function resolveTrustProxy(): number | false {
+  const value = env('TRUST_PROXY')
+  if (value === undefined) return false
+  const hops = Number(value)
+  return Number.isFinite(hops) && hops > 0 ? hops : false
+}
+
+function resolveWebOrigin(): string | null {
+  const value = env('WEB_ORIGIN')
+  if (value) return value
+  // Only in development is there a separate origin to allow by default.
+  return isProduction ? null : 'http://localhost:5173'
+}
+
+function resolvePublicOrigin(): string {
+  const value = env('PUBLIC_ORIGIN') ?? env('WEB_ORIGIN')
+  if (value) return value
+  if (isProduction) {
+    // Invitation and password links are built from this. Defaulting to
+    // localhost would send customers a link that cannot possibly work, and
+    // nothing would surface the mistake until someone clicked one.
+    throw new Error('PUBLIC_ORIGIN must be set in production (e.g. https://portal.example.com).')
+  }
+  return 'http://localhost:5173'
+}
+
 function resolveSessionSecret(): string {
   const secret = env('SESSION_SECRET')
   if (secret) return secret
@@ -64,8 +90,15 @@ export const config = {
   sessionSecret: resolveSessionSecret(),
   credentialKey: resolveCredentialKey(),
   sessionTtlHours: Number(env('SESSION_TTL_HOURS') ?? 12),
-  /** Origin the browser app is served from, for CORS in development. */
-  webOrigin: env('WEB_ORIGIN') ?? 'http://localhost:5173',
+  /**
+   * Origin the browser app is served from, when it is served from a *different*
+   * origin than the API. That is the development setup: Vite on :5173, the API
+   * on :4000. A deployment serves the built app from this same process, so
+   * there is no second origin and CORS should be off entirely — an
+   * Access-Control-Allow-Origin header naming a stale dev host, with
+   * credentials allowed, is a way in that nothing needs.
+   */
+  webOrigin: resolveWebOrigin(),
   espm: {
     mode: resolveEspmMode(),
     /** ESPM's own test environment, which is what the HBS test account lives in. */
@@ -75,8 +108,20 @@ export const config = {
     /** ESPM account id for the shared HBS service-provider connection. */
     accountId: env('ESPM_ACCOUNT_ID') ? Number(env('ESPM_ACCOUNT_ID')) : null,
   },
+  /**
+   * Where the built browser app lives. Defaults to the sibling workspace, which
+   * is right for `npm run dev`; the container sets it explicitly.
+   */
+  webDistPath: env('WEB_DIST_PATH') ?? path.resolve(process.cwd(), '../web/dist'),
+  /**
+   * How many reverse-proxy hops to trust for the client address. Off by
+   * default: trusting a header nobody set lets a caller spoof their IP past
+   * the rate limiter. Set to the number of proxies in front of the app (1 for
+   * a single load balancer).
+   */
+  trustProxy: resolveTrustProxy(),
   /** Public origin, used to build invitation links. */
-  publicOrigin: env('PUBLIC_ORIGIN') ?? env('WEB_ORIGIN') ?? 'http://localhost:5173',
+  publicOrigin: resolvePublicOrigin(),
   /**
    * Outbound email. Unset in development, where the outbox is written to the
    * database and rendered in the UI instead of being delivered.
@@ -85,6 +130,9 @@ export const config = {
     enabled: env('SMTP_HOST') !== undefined,
     host: env('SMTP_HOST'),
     port: Number(env('SMTP_PORT') ?? 587),
+    /** Optional: relays on a private network often need no credentials. */
+    user: env('SMTP_USER'),
+    password: env('SMTP_PASSWORD'),
     from: env('MAIL_FROM') ?? 'portal@hbssolutions.example',
     /** Replies to this address are threaded back into the portal. */
     replyToDomain: env('MAIL_REPLY_DOMAIN') ?? 'reply.hbssolutions.example',

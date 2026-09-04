@@ -3,9 +3,15 @@
 --
 -- SQLite is the deliberate starting point, not the destination: it keeps the
 -- portal runnable with zero setup while the hosting and database conversation
--- is still open. Everything goes through db/repo.ts, so moving to Postgres is
--- a change of driver and a few types, not a rewrite. Nothing here uses a
--- SQLite-only feature beyond `INTEGER PRIMARY KEY`.
+-- is still open, and the whole application state is one file to back up.
+-- Nothing here uses a SQLite-only feature beyond `INTEGER PRIMARY KEY`, so the
+-- schema itself ports to Postgres almost unchanged.
+--
+-- The *code* is the harder half, and it is worth being accurate about: the
+-- better-sqlite3 driver is synchronous, so every service reads and writes
+-- without `await`. A Postgres driver is not, which turns every service
+-- function async and every caller into an awaiting one. Mechanical, but it
+-- touches nearly all of server/src — a focused week, not a driver swap.
 --
 -- Two conventions throughout:
 --   * ids are text (uuid), so rows can be created client-side or merged across
@@ -175,9 +181,17 @@ CREATE TABLE IF NOT EXISTS email_outbox (
   status       TEXT NOT NULL DEFAULT 'queued'
                CHECK (status IN ('queued','sent','failed')),
   error        TEXT,
+  -- Delivery attempts so far. A message that keeps failing is retried with a
+  -- widening delay and eventually marked 'failed' rather than retried forever.
+  attempts     INTEGER NOT NULL DEFAULT 0,
+  -- Earliest time the sender may try again; NULL means "as soon as possible".
+  next_attempt_at TEXT,
   created_at   TEXT NOT NULL,
   sent_at      TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_email_outbox_queued
+  ON email_outbox (status, next_attempt_at);
 
 CREATE TABLE IF NOT EXISTS alerts (
   id              TEXT PRIMARY KEY,
