@@ -7,6 +7,7 @@
 
 import { randomBytes } from 'node:crypto'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 function env(name: string): string | undefined {
   const value = process.env[name]
@@ -61,7 +62,12 @@ function resolveWebOrigin(): string | null {
 }
 
 function resolvePublicOrigin(): string {
-  const value = env('PUBLIC_ORIGIN') ?? env('WEB_ORIGIN')
+  // RENDER_EXTERNAL_URL is injected by Render and is the full https:// origin
+  // the service is reachable at. Honouring it means the hostname does not have
+  // to be copied by hand into an env var after the first deploy — which is
+  // exactly the step someone forgets, and the failure is invitation links that
+  // point at the wrong place.
+  const value = env('PUBLIC_ORIGIN') ?? env('RENDER_EXTERNAL_URL') ?? env('WEB_ORIGIN')
   if (value) return value
   if (isProduction) {
     // Invitation and password links are built from this. Defaulting to
@@ -70,6 +76,11 @@ function resolvePublicOrigin(): string {
     throw new Error('PUBLIC_ORIGIN must be set in production (e.g. https://portal.example.com).')
   }
   return 'http://localhost:5173'
+}
+
+/** portal/web/dist, from either server/src/config.ts or server/dist/config.js. */
+function defaultWebDist(): string {
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../web/dist')
 }
 
 function resolveSessionSecret(): string {
@@ -109,10 +120,14 @@ export const config = {
     accountId: env('ESPM_ACCOUNT_ID') ? Number(env('ESPM_ACCOUNT_ID')) : null,
   },
   /**
-   * Where the built browser app lives. Defaults to the sibling workspace, which
-   * is right for `npm run dev`; the container sets it explicitly.
+   * Where the built browser app lives.
+   *
+   * Resolved from this module's own location rather than the working
+   * directory, so it is right whether the process was started from the
+   * workspace root, from server/, or by a host that picks its own cwd. Getting
+   * this wrong is silent: the API works and every page is a 404.
    */
-  webDistPath: env('WEB_DIST_PATH') ?? path.resolve(process.cwd(), '../web/dist'),
+  webDistPath: env('WEB_DIST_PATH') ?? defaultWebDist(),
   /**
    * How many reverse-proxy hops to trust for the client address. Off by
    * default: trusting a header nobody set lets a caller spoof their IP past
