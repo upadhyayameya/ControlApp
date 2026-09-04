@@ -523,13 +523,56 @@ function latestNote(text) {
   if (!lines.length) return '';
   return lines.find(l => /^\d{1,2}[\/\-]\d{1,2}\b/.test(l)) || lines[0];
 }
+/* ONE week, Monday to Sunday. It used to run from last Monday to today, which
+   is eight to fourteen days -- so "this week" quietly counted part of the week
+   before it, and the subject line named a Monday up to a fortnight back.
+
+   The digest goes out twice, Monday and Friday, and the two runs want
+   different weeks:
+
+     Monday   -- the week that just ENDED, Mon to Sun, complete. A week that is
+                 half a day old has nothing in it, and an email of zeros on a
+                 Monday morning is worse than no email.
+     Any other day -- the week in flight, Monday to today.
+
+   Then the month rule Ameya asked for: "once a new month starts the week is
+   updated to start from 0". A week that straddles a month boundary is cut at
+   the 1st, so no part of last month is ever counted into this month's week.
+   The month taken is the one the LAST reported day falls in -- for the Monday
+   run that is the Sunday just gone, not today. */
 function weekRange(now) {
   const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const isMonday = d.getDay() === 1;
   const dow = (d.getDay() + 6) % 7;
-  const start = new Date(d); start.setDate(d.getDate() - dow);
-  const end = new Date(d); end.setDate(end.getDate() + 1);
+  const thisMonday = new Date(d); thisMonday.setDate(d.getDate() - dow);
+
+  let start, end;
+  if (isMonday) {
+    /* Last week, whole: Mon 00:00 through Sun 23:59, end exclusive. */
+    start = new Date(thisMonday); start.setDate(start.getDate() - 7);
+    end = new Date(thisMonday);
+  } else {
+    start = new Date(thisMonday);
+    end = new Date(d); end.setDate(end.getDate() + 1);
+  }
+
+  /* The last day actually covered, which is what decides the month. */
+  const lastDay = new Date(end); lastDay.setDate(lastDay.getDate() - 1);
+  const monthStart = new Date(lastDay.getFullYear(), lastDay.getMonth(), 1);
+  const clipped = monthStart > start;
+  if (clipped) start = monthStart;
+
+  const prevEnd = new Date(start);
   const prevStart = new Date(start); prevStart.setDate(prevStart.getDate() - 7);
-  return { start, end, prevStart, prevEnd: new Date(start) };
+  return { start, end, prevStart, prevEnd, lastDay, clipped, full: !clipped };
+}
+/* "Mon 31 Aug - Sun 6 Sep". The window is stated rather than implied: a reader
+   who cannot see which days a number covers cannot check it. */
+function weekLabel(w) {
+  const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const f = dt => `${DAY[dt.getDay()]} ${dt.getDate()} ${MON[dt.getMonth()]}`;
+  return `${f(w.start)} \u2013 ${f(w.lastDay)}`;
 }
 const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 
@@ -686,6 +729,54 @@ for (const p of allProjects) { const l = lifecycle(p); if (l !== 'active') retir
 const projects = allProjects.filter(p => lifecycle(p) === 'active');
 
 /* ---------------------------------------------------------------------------
+   Automatic priority — the same scorer the dashboard's ASAP tab runs.
+
+   Ported from pipeline-dashboard.html deliberately rather than reinvented: an
+   email that ranked projects differently from the board people work off would
+   be a second opinion nobody asked for, and the first argument would be about
+   which one is right.
+
+   Every input is something the boards already record, so the ranking needs no
+   judgement from anyone: what the status says is owed, how long it has sat,
+   whether a due date has passed, and whether anyone owns it at all.
+
+   sharedOnly drops every term read off the Master TU tracker. A reviewer's
+   email may be built from the shared board and nothing else, so their ranking
+   has to be computable from the shared board alone -- scoring on a column they
+   cannot see would leak it through the ordering.
+--------------------------------------------------------------------------- */
+function scoreProject(p, { sharedOnly = false } = {}) {
+  const why = [];
+  let n = 0;
+  const tu = sharedOnly ? '' : (p.tuStatus || '');
+  if (/RFI/i.test(tu) && /Received/i.test(tu)) { n += 45; why.push(`${p.side} RFI open`); }
+  if (/RFI/i.test(p.icfStatus)) { n += 45; why.push('RFI with HBS'); }
+  if (/Flawed|FLAWED/.test(`${tu} ${p.icfStatus}`)) { n += 40; why.push('flawed in portal'); }
+  if (tu === 'Action Needed from HBS') { n += 35; why.push('action needed from HBS'); }
+  if (tu === 'Stuck') { n += 30; why.push('marked stuck'); }
+  if (tu === 'CD to Submit') { n += 25; why.push('closeout docs to submit'); }
+  if (tu === 'Implementation & MV Complete') { n += 22; why.push('implementation complete, closeout owed'); }
+  if (tu === 'Waiting on Info/Others') { n += 15; why.push('waiting on outside info'); }
+  if (p.aging === 'Critical') { n += 30; why.push('60+ days without movement'); }
+  else if (p.aging === 'Watch') { n += 12; why.push('30+ days without movement'); }
+  if (p.daysInPhase != null && p.daysInPhase > 120) { n += 12; why.push(`${p.daysInPhase} days in phase`); }
+  if (!p.ownerNames.length && p.sev !== 'good') { n += 20; why.push('no owner on the next step'); }
+  const nx = dparse(p.icfDates && p.icfDates.nextAction);
+  if (nx && nx < today) { n += 18; why.push('next-action date has passed'); }
+  if (p.sev === 'good') n = Math.max(0, n - 40);
+  return { score: n, why };
+}
+const priorityBand = n => (n >= 60 ? 'critical' : n >= 35 ? 'serious' : n >= 18 ? 'warning' : 'none');
+for (const p of projects) {
+  const sc = scoreProject(p);
+  p.priority = sc.score; p.priorityWhy = sc.why; p.band = priorityBand(sc.score);
+  /* Scored a second time with the TU tracker withheld, so a reviewer's list can
+     be ordered without any column they are not entitled to see. */
+  const shared = scoreProject(p, { sharedOnly: true });
+  p.priorityShared = shared.score; p.priorityWhyShared = shared.why;
+}
+
+/* ---------------------------------------------------------------------------
    The workload boards: what is actually on someone's desk this week.
 
    The pipeline boards say where a project has got to. They do not say who is
@@ -752,10 +843,16 @@ const numStr = v => {
    than split, because the question being answered is "did you do this", not
    "how do we divide the money".
 --------------------------------------------------------------------------- */
-/* wk.end is exclusive -- tomorrow -- so the month has to be taken from today,
-   or on the last day of a month MONTH_START jumps to the next month and every
-   month-to-date number collapses to zero. */
-const TODAY = new Date(wk.end); TODAY.setDate(TODAY.getDate() - 1);
+/* Taken from the real today, never from wk.end. Two reasons: the week window
+   is exclusive at the top, so deriving today from it lands on yesterday and on
+   the last day of a month MONTH_START jumps forward and every month-to-date
+   number collapses to zero; and the Monday run's window now ENDS on Sunday, so
+   wk.end would put the whole month a week behind. */
+const TODAY = new Date(today);
+/* Exclusive upper bound for anything measured "as of now" -- month-to-date in
+   particular, which must include today even when the week window stops on
+   Sunday. */
+const NOW_END = new Date(TODAY); NOW_END.setDate(NOW_END.getDate() + 1);
 const MONTH_START = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
 const PREV_MONTH_START = new Date(MONTH_START.getFullYear(), MONTH_START.getMonth() - 1, 1);
 /* Calendar months, named. Ameya asked for the month rather than a rolling
@@ -792,8 +889,8 @@ const kpiRows = kpiItems.map(it => ({
   money: (() => { const n = Number(String(txt(it, K.incentive)).replace(/[^0-9.-]/g, '')); return Number.isFinite(n) ? n : 0; })(),
 })).filter(r => r.date && r.milestone);
 
-const inWeek = r => inRange(r.date, wk.prevStart, wk.end);
-const inMonth = r => inRange(r.date, MONTH_START, wk.end);
+const inWeek = r => inRange(r.date, wk.start, wk.end);
+const inMonth = r => inRange(r.date, MONTH_START, NOW_END);
 const inPrevMonth = r => inRange(r.date, PREV_MONTH_START, MONTH_START);
 
 /* Count and value one person's milestones over one period. Passing null for
@@ -1200,7 +1297,21 @@ function reviewDigestBody(name, side, mine, departed) {
        One fact crosses over, never the note or anything else on that board. */
     rule: rfiRule(p) || ICF_ACTIONS[p.icfStatus] || null,
     owed: owedToIcf(p),
+    /* Scored WITHOUT the TU tracker. Everything feeding this number -- the
+       shared board's own status, its aging and days-in-phase formulas, its
+       next-action date, whether a reviewer is named -- is a column this
+       reader already sees on the board they share with us. */
+    pri: p.priorityShared, priWhy: p.priorityWhyShared,
   }));
+  /* One ranked order across everything of theirs, so "which of these first"
+     has an answer. Only the ones actually waiting on them: a reviewer's
+     priority list full of projects sitting at HBS is our to-do list, not
+     theirs. */
+  const priority = rows
+    .filter(r => r.rule && r.rule.role !== 'hbs' && r.pri >= 18)
+    .sort((a, b) => b.pri - a.pri || a.name.localeCompare(b.name))
+    .slice(0, 12);
+
   const onIcf   = rows.filter(r => r.rule && r.rule.role !== 'hbs');
   const onHbs   = rows.filter(r => r.rule && r.rule.role === 'hbs' && r.owed);
   const running = rows.filter(r => r.rule && r.rule.role === 'hbs' && !r.owed);
@@ -1224,6 +1335,17 @@ function reviewDigestBody(name, side, mine, departed) {
     L.push(`${rows.length} project${rows.length === 1 ? '' : 's'}.`);
   }
   const line = r => `  * ${r.name}${r.projectId ? ` (${r.projectId})` : ''} - ${r.status || r.phase}`;
+  if (priority.length) {
+    L.push('', `PRIORITY ORDER - START AT THE TOP (${priority.length})`);
+    L.push('  Ranked automatically from the shared tracker: how long each has sat without');
+    L.push('  movement, whether its next-action date has passed, and whether a reviewer is');
+    L.push('  named on it. The reason is printed so you can see why each one sits where it does.');
+    priority.forEach((r, i) => {
+      L.push(`  ${String(i + 1).padStart(2)}. ${r.name}${r.projectId ? ` (${r.projectId})` : ''}`);
+      L.push(`      ${r.rule.need}`);
+      if (r.priWhy.length) L.push(`      Ranked here because: ${r.priWhy.join(', ')}`);
+    });
+  }
   if (onIcf.length) {
     L.push('', `WITH ${side} (${onIcf.length})`);
     for (const { p: r, n } of fold(onIcf, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
@@ -1356,7 +1478,7 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   /* ---- the snapshot, first, because it is the only part that answers "how am
      I doing" -- everything below it is a task list, and a task list at the top
      is what made this email something people scrolled past. ---- */
-  D.h(`Your scorecard — week, ${MONTH_NAME} (${MONTH_ELAPSED} of ${MONTH_LENGTH} days), ${PREV_MONTH_NAME}`);
+  D.h(`Your scorecard — week ${WEEK_COL}, ${MONTH_NAME} (${MONTH_ELAPSED} of ${MONTH_LENGTH} days), ${PREV_MONTH_NAME}`);
   const paMe = turnaround(PA_LEGS, name, inMonth), coMe = turnaround(CO_LEGS, name, inMonth);
   const paMePrev = turnaround(PA_LEGS, name, inPrevMonth), coMePrev = turnaround(CO_LEGS, name, inPrevMonth);
   /* A median over one or two projects is not a turnaround, it is one project.
@@ -1379,9 +1501,10 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
       ['CO turnaround (median)',    '',                   days(coMe),           days(coMePrev)],
     ];
   D.table(
-    [{ h: 'Metric', w: 26 }, { h: 'This week', align: 'r' },
+    [{ h: 'Metric', w: 26 }, { h: WEEK_COL, align: 'r' },
      { h: MONTH_SO_FAR, align: 'r' }, { h: PREV_MONTH_NAME, align: 'r' }],
     scoreRows);
+  D.note(WEEK_NOTE);
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   const yourLine = (s, label) => auditOnly
     ? `Your ${label}: ${plural(s.audits, 'audit', 'audits')}`
@@ -1508,6 +1631,49 @@ function digestBody(name, org, mine, work = [], phaseByTu = new Map(), departed 
   ];
   const byAge = (a, b) => (b.waiting || 0) - (a.waiting || 0);
 
+  /* ---- the priority list: one ranked order across the whole book, so the
+     answer to "what do I do first" is a number and not a judgement call.
+
+     Scored by the same rules the dashboard's ASAP tab uses, and the reason is
+     printed beside the rank -- a ranking nobody can see the working of is one
+     nobody trusts, and the reason is also the fix.
+
+     Only projects where the next step is theirs, or where nobody is named at
+     all: ranking someone else's queue into a person's to-do list is how a
+     priority list stops being read. An auditor has no project book to rank --
+     they audit and hand over -- so theirs stays out. ---- */
+  const ranked = auditOnly ? [] : book
+    .filter(p => owns(p) && p.band !== 'none')
+    .sort((a, b) => b.priority - a.priority
+      || (b.daysInPhase || 0) - (a.daysInPhase || 0)
+      || a.name.localeCompare(b.name));
+  const priorityList = ranked.slice(0, 12);
+  if (priorityList.length) {
+    const top = Math.max(1, ...priorityList.map(p => p.priority));
+    D.h(`Your priority list — start at the top (${priorityList.length})`);
+    D.table(
+      [{ h: '#', align: 'r' }, { h: 'Project', w: 40 }, { h: 'What it needs', w: 40 },
+       { h: 'Why it is ranked here', w: 40 }, { h: 'Score' },
+       { h: 'In phase', align: 'r' }, { h: 'Due' }],
+      priorityList.map((p, i) => [
+        i + 1, p.name, p.need, p.priorityWhy.join(', '),
+        `${bar(p.priority, top)} ${p.priority}`,
+        p.daysInPhase == null ? '' : `${p.daysInPhase}d`,
+        (p.icfDates && p.icfDates.nextAction || '').slice(0, 10),
+      ]),
+      row => row[0] <= 3);
+    D.note('Ranked by the same automatic score the dashboard uses: an open RFI, a flawed '
+      + 'application, days without movement, a passed next-action date, nobody named on the '
+      + 'next step. Nothing here is a judgement about you — it is what the boards say is '
+      + 'waiting longest and costing most. The top three are in bold.');
+    /* The denominator is the projects that SCORED, not the whole book. "Top 12
+       of 300" would read as though 288 more were waiting on this person when
+       most of them are running perfectly well. */
+    if (ranked.length > priorityList.length)
+      D.note(`Showing the top ${priorityList.length} of ${ranked.length} that scored; `
+        + `the rest of your book has nothing flagged against it.`);
+  }
+
   if (rfis.length) {
     D.h(auditOnly
       ? `⚠ RFIs on projects you audited — answer these first (${rfis.length})`
@@ -1595,8 +1761,8 @@ function hbsSummaryBody() {
   const icfSide = projects.filter(p => p.side === 'ICF');
   const trcSide = projects.filter(p => p.side === 'TRC');
 
-  D.p(`${projects.length} active projects across the Master TU, BPTU and both reviewer trackers, `
-    + `week of ${weekOf}.`);
+  D.p(`${projects.length} active projects across the Master TU, BPTU and both reviewer trackers.`);
+  D.note(WEEK_NOTE);
 
   /* ---- whose turn it is, first: it is the one number that says whether the
      portfolio is blocked on us or on somebody else. ---- */
@@ -1720,7 +1886,7 @@ function hbsSummaryBody() {
   /* What actually moved. Only the stages that saw movement, so an empty week
      reads as empty rather than as a wall of zeros. */
   const moved = STAGES
-    .map(st => [st.label, projects.filter(p => inRange(p.ev[st.key], wk.prevStart, wk.end)).length])
+    .map(st => [st.label, projects.filter(p => inRange(p.ev[st.key], wk.start, wk.end)).length])
     .filter(([, n]) => n);
   D.h('Moved last week');
   if (moved.length) {
@@ -1859,7 +2025,7 @@ function icfSummaryBody() {
   const rfiIcf = rows.filter(r => r.rfi === 'icf');
 
   const L = [];
-  L.push(`ICF \u00d7 HBS portfolio \u2014 week of ${weekOf}`, '');
+  L.push(`ICF \u00d7 HBS portfolio \u2014 ${weekOf}`, '');
   L.push(`HBS is running ${rows.length} active project${rows.length === 1 ? '' : 's'} on the shared tracker.`);
   L.push(`${withIcf.length} are waiting on ICF, ${withHbs.length} on HBS.`);
 
@@ -1920,7 +2086,26 @@ const users = (await gql(`query { users(limit: 300) { name email enabled } }`)).
 const byName = new Map(users.filter(u => u.email).map(u => [u.name.toLowerCase(), u.email]));
 
 const perEngineer = [], unroutable = [], warnings = [];
-const weekOf = wk.prevStart.toDateString();
+/* The window itself, not a bare Monday. It used to print wk.prevStart, which
+   is why a mail sent on 4 September was headed "week of Mon Aug 24". */
+const weekOf = weekLabel(wk);
+/* Compact form for a table column header, where the long one would push every
+   other column off a phone screen: "1-4 Sep", or "28 Aug - 3 Sep" if the
+   window spans two months (which only a full, unclipped week can). */
+const WEEK_COL = (() => {
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const a = wk.start, b = wk.lastDay;
+  return a.getMonth() === b.getMonth()
+    ? `${a.getDate()}\u2013${b.getDate()} ${MON[b.getMonth()]}`
+    : `${a.getDate()} ${MON[a.getMonth()]} \u2013 ${b.getDate()} ${MON[b.getMonth()]}`;
+})();
+/* Said out loud wherever the week is shown. A number covering four days is not
+   a week, and a reader who is not told cannot tell. */
+const WEEK_NOTE = wk.clipped
+  ? `Week runs ${weekOf} \u2014 cut short because ${MONTH_NAME} started mid-week, so the week counts from the 1st.`
+  : (wk.full && wk.lastDay < TODAY
+    ? `Week runs ${weekOf} \u2014 the full Monday-to-Sunday week just finished.`
+    : `Week runs ${weekOf} \u2014 Monday to today; the week is not over yet.`);
 
 for (const name of [...hbsNames].sort()) {
   const mine = projects.filter(p => p.hbsAll.includes(name));
@@ -1967,7 +2152,7 @@ for (const side of ['ICF', 'TRC']) {
       ? { to, name, org: side, forwardedFor: name,
           subject: `${name} has left ${side} - ${mine.length} project${mine.length === 1 ? '' : 's'} to reassign`,
           body: d.text, counts: d.counts }
-      : { to, name, org: side, subject: `Your project update - week of ${weekOf}`, body: d.text, counts: d.counts };
+      : { to, name, org: side, subject: `Your project update - ${weekOf}`, body: d.text, counts: d.counts };
     if (to) perEngineer.push(rec);
     else unroutable.push({ name, org: side,
       reason: side === 'TRC'
@@ -1984,11 +2169,11 @@ for (const side of ['ICF', 'TRC']) {
 /* ------------------------------------------------------------------ roll-up */
 function rollupBody() {
   const L = [];
-  L.push(`ICF x HBS pipeline - week of ${weekOf}`, '');
+  L.push(`ICF x HBS pipeline - ${weekOf}`, '');
   const stageOpen = new Map(), stageWeek = new Map();
   for (const p of projects) {
     if (p.current) stageOpen.set(p.current, (stageOpen.get(p.current) || 0) + 1);
-    for (const s of STAGES) if (inRange(p.ev[s.key], wk.prevStart, wk.end)) stageWeek.set(s.key, (stageWeek.get(s.key) || 0) + 1);
+    for (const s of STAGES) if (inRange(p.ev[s.key], wk.start, wk.end)) stageWeek.set(s.key, (stageWeek.get(s.key) || 0) + 1);
   }
   L.push(`${projects.length} active projects.`);
   L.push(`(${retired.completed} completed and ${retired.cancelled} cancelled projects are excluded.)`, '');
@@ -2157,7 +2342,7 @@ const envelope = {
   weekOf,
   projectCount: projects.length,
   perEngineer: perEngineer.filter(e => e.to),
-  rollup: { to: ROLLUP_TO, subject: `ICF x HBS pipeline roll-up - week of ${weekOf}`, body: rollupBody() },
+  rollup: { to: ROLLUP_TO, subject: `ICF x HBS pipeline roll-up - ${weekOf}`, body: rollupBody() },
   /* "HBS x ICF" was the subject when ICF was the only reviewer; the body now
      covers both sides, so the subject would be telling management the wrong
      thing about what is inside.
@@ -2168,9 +2353,9 @@ const envelope = {
      a table cell because every block glyph is the same width, in any font.
      The plain-text rendering travels alongside for the transcript. */
   hbsSummary: (() => { const s = hbsSummaryBody();
-    return { to: HBS_SUMMARY_TO, subject: `HBS portfolio summary - week of ${weekOf}`,
+    return { to: HBS_SUMMARY_TO, subject: `HBS portfolio summary - ${weekOf}`,
       body: s.html, bodyType: 'html', plain: s.text }; })(),
-  icfSummary: { to: ICF_SUMMARY_TO, subject: `ICF x HBS portfolio summary - week of ${weekOf}`, body: icfSummaryBody() },
+  icfSummary: { to: ICF_SUMMARY_TO, subject: `ICF x HBS portfolio summary - ${weekOf}`, body: icfSummaryBody() },
   unroutable,
   warnings,
 };
