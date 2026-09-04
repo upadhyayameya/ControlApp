@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------------------
+# The portal as one service.
+#
+#   1. cp .env.example .env   and fill in the four required values
+#   2. docker compose up -d --build
+#   3. docker compose run --rm portal node dist/cli/createAdmin.js \
+#        --email you@hbssolutions.com --name "Your Name"
+#
+# Step 3 prints a password once. There is deliberately no default account.
+#
+# This publishes plain HTTP on 4000. Put a reverse proxy with TLS in front of
+# it before anyone signs in: the session cookie is marked Secure in production,
+# so over plain HTTP the browser will not send it back and nobody can stay
+# signed in. Set TRUST_PROXY to the number of proxy hops so the rate limiter
+# sees real client addresses rather than the proxy's.
+# ---------------------------------------------------------------------------
+
+services:
+  portal:
+    build: .
+    restart: unless-stopped
+    ports:
+      # Bound to loopback so only the reverse proxy on this host can reach it.
+      # Change to "4000:4000" only if something else already terminates TLS.
+      - "127.0.0.1:4000:4000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_PATH: /data/portal.db
+      WEB_DIST_PATH: /app/web/dist
+    volumes:
+      # The whole application state is this one file. Back up the volume.
+      - portal-data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  portal-data:
