@@ -1777,7 +1777,9 @@ function hbsSummaryBody() {
     [{ h: 'Side', w: 22 }, { h: 'Projects', align: 'r' }, { h: 'Share' }, { h: '%', align: 'r' }],
     turnRows.map(([l, n]) => [l, n, bar(n, turnTop),
       `${Math.round((n / Math.max(1, projects.length)) * 100)}%`]));
-  D.note(`Reviewed by ${icfSide.length} ICF · ${trcSide.length} TRC. `
+  const trcOwed = trcSide.filter(p => HBS_ROLES.has(roleOf(p))).length;
+  D.note(`Reviewed by ${icfSide.length} ICF · ${trcSide.length} TRC`
+    + (trcSide.length ? ` (${trcOwed} of the TRC ones on us)` : '') + '. '
     + 'The third row is board hygiene, not work — those projects carry no status anyone can act on.');
 
   /* ---- the goals. Team milestones over a whole month, so the honest read is
@@ -1966,14 +1968,12 @@ function hbsSummaryBody() {
   }
   /* This is the internal summary, so it may hold both sides at once -- it is
      the only thing here that may. Nothing addressed to either reviewer does.
-     The TRC reviewers cannot be emailed at all yet, which is a gap management
-     is the one to close, so it is raised here rather than left in the
-     unroutable list nobody reads. */
-  const trcOwed = trcSide.filter(p => HBS_ROLES.has(roleOf(p))).length;
-  if (trcSide.length)
-    decisions.push(`TRC side: ${trcSide.length} projects, ${trcOwed} of them on us — and nobody at TRC can `
-      + 'be emailed. We hold no address for Arya, Max, Brian, Elonna, Peter or Carson, so none of them '
-      + 'gets a weekly update. Send the addresses and they start receiving one, isolated from ICF.');
+
+     The TRC projects themselves stay: they are live work sitting on our own
+     engineers, and management should see them counted. What is NOT raised here
+     any more is the missing TRC reviewer addresses. Ameya has put emailing TRC
+     into a later phase, and a decision list that asks every Monday for
+     something deliberately deferred trains people to skim the list. */
   if (decisions.length) {
     /* Not a bulleted checklist: doc()'s bullets render with a tick in the
        text copy, and a tick beside an unresolved decision reads as done. */
