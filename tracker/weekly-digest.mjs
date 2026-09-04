@@ -446,6 +446,15 @@ const ICF_ACTIONS = {
   'Invoice Sent': { need: 'Invoice sent — awaiting payment', role: 'hbs' },
   'Pre-approval': { need: 'In pre-approval with ICF', role: 'icf' },
   'On Hold': { need: 'On hold', role: null },
+  /* These three were on neither map, so 42 projects reached a reviewer's
+     email reading "NO OPEN ACTION" -- 27 of them ones we had already answered.
+     "Responed" is the board's own spelling and is the ONLY one that occurs;
+     the corrected spelling is mapped too so fixing the typo upstream cannot
+     silently un-map them again. */
+  'RFI Responed by HBS': { need: 'HBS has answered the RFI — awaiting your re-review', role: 'icf' },
+  'RFI Responded by HBS': { need: 'HBS has answered the RFI — awaiting your re-review', role: 'icf' },
+  'Flawed Tech Review': { need: 'Flawed at technical review — correct and resubmit', role: 'hbs', sev: 'critical' },
+  'Flawed Post Tech Review': { need: 'Flawed at post-technical review — correct and resubmit', role: 'hbs', sev: 'critical' },
 };
 const PHASE_FALLBACK = {
   'Audit Phase': { need: 'Audit phase — confirm the audit is scheduled', role: 'auditor' },
@@ -749,8 +758,18 @@ function scoreProject(p, { sharedOnly = false } = {}) {
   const why = [];
   let n = 0;
   const tu = sharedOnly ? '' : (p.tuStatus || '');
-  if (/RFI/i.test(tu) && /Received/i.test(tu)) { n += 45; why.push(`${p.side} RFI open`); }
-  if (/RFI/i.test(p.icfStatus)) { n += 45; why.push('RFI with HBS'); }
+  /* One RFI is one fact. These were two separate tests -- the TU tracker's
+     "RFI Received" and any shared-board status containing "RFI" -- and on a
+     project where both were true the same single RFI scored 90, floating it
+     above everything else on the list. Worse, the second test also matched
+     "RFI Responed by HBS", so an RFI we had already ANSWERED scored 45 as
+     though it were outstanding.
+
+     rfiSide already knows which way an RFI points, and answered beats
+     outstanding there, so ask it once. Under sharedOnly it is asked without
+     the TU tracker, exactly as the rest of this function is. */
+  const rfi = rfiSide(sharedOnly ? { ...p, tuStatus: '' } : p);
+  if (rfi === 'hbs') { n += 45; why.push('RFI open — response owed by us'); }
   if (/Flawed|FLAWED/.test(`${tu} ${p.icfStatus}`)) { n += 40; why.push('flawed in portal'); }
   if (tu === 'Action Needed from HBS') { n += 35; why.push('action needed from HBS'); }
   if (tu === 'Stuck') { n += 30; why.push('marked stuck'); }
@@ -767,14 +786,6 @@ function scoreProject(p, { sharedOnly = false } = {}) {
   return { score: n, why };
 }
 const priorityBand = n => (n >= 60 ? 'critical' : n >= 35 ? 'serious' : n >= 18 ? 'warning' : 'none');
-for (const p of projects) {
-  const sc = scoreProject(p);
-  p.priority = sc.score; p.priorityWhy = sc.why; p.band = priorityBand(sc.score);
-  /* Scored a second time with the TU tracker withheld, so a reviewer's list can
-     be ordered without any column they are not entitled to see. */
-  const shared = scoreProject(p, { sharedOnly: true });
-  p.priorityShared = shared.score; p.priorityWhyShared = shared.why;
-}
 
 /* ---------------------------------------------------------------------------
    The workload boards: what is actually on someone's desk this week.
@@ -1234,7 +1245,8 @@ const times = n => (n > 1 ? ` [x${n} board rows]` : '');
    "awaiting your re-review", which is worse than saying nothing.
 
    One fact crosses over, never the note or anything else on that board. */
-const ICF_RFI_STATES = new Set(['', 'RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC']);
+const ICF_RFI_STATES = new Set(['', 'RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC',
+  'Flawed Tech Review', 'Flawed Post Tech Review']);
 
 /* "With HBS" was covering two different things. Of the 28 on Devashis's list,
    22 were installations under way, invoices out and payments processing --
@@ -1245,6 +1257,7 @@ const ICF_RFI_STATES = new Set(['', 'RFI Sent to HBS', 'RFI Respond by HBS', 'Fl
    Owed means the project is stopped until HBS does something the reviewer is
    waiting for. Everything else is simply in progress. */
 const ICF_OWED_STATES = new Set(['RFI Sent to HBS', 'RFI Respond by HBS', 'Flawed', 'Flawed ARC',
+  'Flawed Tech Review', 'Flawed Post Tech Review',
   'Site Inspection Pending', 'Internal Update Required']);
 const owedToIcf = p => ICF_OWED_STATES.has(p.icfStatus || '') || p.tuStatus === 'TRC/ICF RFI Received';
 
@@ -1272,6 +1285,18 @@ const rfiSide = p => {
   if (ICF_RFI_OWED.has(s) || p.tuStatus === 'TRC/ICF RFI Received') return 'hbs';
   return '';
 };
+/* Scored here rather than beside scoreProject: the scorer reads rfiSide, which
+   is defined just above, and running the loop earlier would hit it in its
+   temporal dead zone. Nothing between the two points reads p.priority. */
+for (const p of projects) {
+  const sc = scoreProject(p);
+  p.priority = sc.score; p.priorityWhy = sc.why; p.band = priorityBand(sc.score);
+  /* Scored a second time with the TU tracker withheld, so a reviewer's list can
+     be ordered without any column they are not entitled to see. */
+  const shared = scoreProject(p, { sharedOnly: true });
+  p.priorityShared = shared.score; p.priorityWhyShared = shared.why;
+}
+
 function rfiRule(p) {
   if (!ICF_RFI_STATES.has(p.icfStatus || '')) return null;
   if (p.tuStatus === 'TRC/ICF RFI Responded')
@@ -1282,6 +1307,15 @@ function rfiRule(p) {
 }
 
 function reviewDigestBody(name, side, mine, departed) {
+  /* THE WHITELIST. Every fact a reviewer is allowed to see is copied out here,
+     and nothing below this projection may touch `p` again. It is what keeps a
+     redesign from quietly widening what leaves the building: to add a column
+     to their email you have to add it here, deliberately, and every field here
+     is one already on the board we share with them.
+
+     The one deliberate exception is `rule`, which may consult the TU tracker
+     to decide who holds an RFI -- see below. One fact crosses over, never the
+     note or anything else on that board. */
   const rows = mine.map(p => ({
     name: p.name, projectId: p.projectId, utility: p.utility, type: p.type,
     phase: p.phase, status: p.icfStatus, d: p.icfDates,
@@ -1292,90 +1326,123 @@ function reviewDigestBody(name, side, mine, departed) {
        value told the reviewer we owed them a response on work we had already
        returned -- the exact opposite of the truth, on the one status where
        being wrong costs a week. The TU tracker is the board an engineer
-       actually updates when they answer, so it wins.
-
-       One fact crosses over, never the note or anything else on that board. */
+       actually updates when they answer, so it wins. */
     rule: rfiRule(p) || ICF_ACTIONS[p.icfStatus] || null,
     owed: owedToIcf(p),
-    /* Scored WITHOUT the TU tracker. Everything feeding this number -- the
-       shared board's own status, its aging and days-in-phase formulas, its
-       next-action date, whether a reviewer is named -- is a column this
-       reader already sees on the board they share with us. */
+    /* Shared-board columns, all of them visible to this reader already. */
+    days: p.daysInPhase, aging: p.aging,
+    next: (p.icfDates && p.icfDates.nextAction || '').slice(0, 10),
+    /* Scored WITHOUT the TU tracker, so the ORDER of their list cannot leak a
+       column they are not entitled to see. */
     pri: p.priorityShared, priWhy: p.priorityWhyShared,
   }));
-  /* One ranked order across everything of theirs, so "which of these first"
-     has an answer. Only the ones actually waiting on them: a reviewer's
-     priority list full of projects sitting at HBS is our to-do list, not
-     theirs. */
-  const priority = rows
-    .filter(r => r.rule && r.rule.role !== 'hbs' && r.pri >= 18)
-    .sort((a, b) => b.pri - a.pri || a.name.localeCompare(b.name))
-    .slice(0, 12);
 
   const onIcf   = rows.filter(r => r.rule && r.rule.role !== 'hbs');
   const onHbs   = rows.filter(r => r.rule && r.rule.role === 'hbs' && r.owed);
   const running = rows.filter(r => r.rule && r.rule.role === 'hbs' && !r.owed);
   const quiet   = rows.filter(r => !r.rule);
 
-  const L = [];
+  /* One ranked order across everything of theirs, so "which of these first"
+     has an answer. Only the ones actually waiting on them: a reviewer's
+     priority list full of projects sitting at HBS is our to-do list. */
+  const ranked = onIcf.filter(r => r.pri >= 18)
+    .sort((a, b) => b.pri - a.pri || (b.days || 0) - (a.days || 0) || a.name.localeCompare(b.name));
+  const priority = ranked.slice(0, 12);
+
+  const D = doc();
   /* A departed reviewer's queue is not "your project update" -- it is a
      handover, read by someone who has never seen these projects. Address it
      to the leads and say up front why it has arrived, or the first line
      greets a person who no longer works there. */
   if (departed) {
-    L.push('Hello,', '');
-    L.push(`${name} is no longer at ${side}, but these HBS projects are still assigned to ${name}`);
-    L.push('on the shared tracker, so they currently reach no reviewer. Below is where each');
-    L.push(`one stands as of ${new Date().toDateString()}, so they can be reassigned.`, '');
-    L.push(`${rows.length} project${rows.length === 1 ? '' : 's'} to reassign.`);
+    D.p('Hello,');
+    D.p(`${name} is no longer at ${side}, but ${rows.length} HBS project${rows.length === 1 ? ' is' : 's are'} `
+      + `still assigned to ${name} on the shared tracker, so they currently reach no reviewer. `
+      + `Below is where each one stands as of ${new Date().toDateString()}, so they can be reassigned.`);
   } else {
     const first = /\s/.test(name) ? name.split(' ')[0] : name;
-    L.push(`Hi ${first},`, '');
-    L.push(`Here is the current state of the HBS projects assigned to you, as of ${new Date().toDateString()}.`, '');
-    L.push(`${rows.length} project${rows.length === 1 ? '' : 's'}.`);
+    D.p(`Hi ${first},`);
+    D.p(`Here is the current state of the ${rows.length} HBS project${rows.length === 1 ? '' : 's'} `
+      + `assigned to you, as of ${new Date().toDateString()}.`);
   }
-  const line = r => `  * ${r.name}${r.projectId ? ` (${r.projectId})` : ''} - ${r.status || r.phase}`;
+
+  /* ---- whose turn it is. The first question a reviewer actually has is how
+     much of this pile is theirs, and it is the one number the old email made
+     them count for themselves. ---- */
+  const turn = [
+    [`With you at ${side}`, onIcf.length],
+    ['With HBS — we owe you a response', onHbs.length],
+    ['Moving at HBS — nothing needed from you', running.length],
+  ].filter(t => t[1]);
+  if (turn.length) {
+    const top = Math.max(1, ...turn.map(t => t[1]));
+    D.h('Whose turn it is');
+    D.table(
+      [{ h: 'Side', w: 40 }, { h: 'Projects', align: 'r' }, { h: 'Share' }, { h: '%', align: 'r' }],
+      turn.map(([l, n]) => [l, n, bar(n, top), `${Math.round((n / Math.max(1, rows.length)) * 100)}%`]));
+  }
+
+  const idCell = r => r.name + (r.projectId ? ` (${r.projectId})` : '');
+
   if (priority.length) {
-    L.push('', `PRIORITY ORDER - START AT THE TOP (${priority.length})`);
-    L.push('  Ranked automatically from the shared tracker: how long each has sat without');
-    L.push('  movement, whether its next-action date has passed, and whether a reviewer is');
-    L.push('  named on it. The reason is printed so you can see why each one sits where it does.');
-    priority.forEach((r, i) => {
-      L.push(`  ${String(i + 1).padStart(2)}. ${r.name}${r.projectId ? ` (${r.projectId})` : ''}`);
-      L.push(`      ${r.rule.need}`);
-      if (r.priWhy.length) L.push(`      Ranked here because: ${r.priWhy.join(', ')}`);
-    });
+    D.h(`Your priority list — start at the top (${priority.length})`);
+    const top = Math.max(1, ...priority.map(r => r.pri));
+    D.table(
+      [{ h: '#', align: 'r' }, { h: 'Project', w: 42 }, { h: 'What it needs', w: 40 },
+       { h: 'Why it is ranked here', w: 38 }, { h: 'Score' },
+       { h: 'In phase', align: 'r' }, { h: 'Next action due' }],
+      priority.map((r, i) => [i + 1, idCell(r), r.rule.need, r.priWhy.join(', '),
+        `${bar(r.pri, top)} ${r.pri}`, r.days == null ? '' : `${r.days}d`, r.next]),
+      row => row[0] <= 3);
+    D.note('Ranked automatically from the shared tracker: how long each has sat without movement, '
+      + 'whether its next-action date has passed, and whether a reviewer is named on it. '
+      + 'The reason is printed so you can see why each one sits where it does. Top three in bold.');
+    if (ranked.length > priority.length)
+      D.note(`Showing the top ${priority.length} of ${ranked.length} that scored.`);
   }
+
+  const listCols = [
+    { h: 'Project', w: 42 }, { h: 'Status', w: 26 }, { h: 'What it needs', w: 42 },
+    { h: 'In phase', align: 'r' }, { h: 'Next action due' },
+  ];
+  const listRow = r => [idCell(r), r.status || r.phase, r.rule ? r.rule.need : '',
+    r.days == null ? '' : `${r.days}d`, r.next];
+  const byAge = (a, b) => (b.days || 0) - (a.days || 0);
+
   if (onIcf.length) {
-    L.push('', `WITH ${side} (${onIcf.length})`);
-    for (const { p: r, n } of fold(onIcf, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
+    D.h(`With ${side} (${onIcf.length})`);
+    D.table(listCols, [...onIcf].sort(byAge).map(listRow));
   }
   if (onHbs.length) {
-    L.push('', `WITH HBS - WE OWE YOU A RESPONSE (${onHbs.length})`);
-    for (const { p: r, n } of fold(onHbs, r => r.rule.need)) { L.push(line(r) + times(n)); L.push(`      ${r.rule.need}`); }
+    D.h(`With HBS — we owe you a response (${onHbs.length})`);
+    D.table(listCols, [...onHbs].sort(byAge).map(listRow));
   }
   if (running.length) {
-    L.push('', `MOVING AT HBS - NOTHING NEEDED FROM YOU (${running.length})`);
-    for (const { p: r, n } of fold(running, r => r.rule.need)) L.push(line(r) + times(n) + ` - ${r.rule.need}`);
+    D.h(`Moving at HBS — nothing needed from you (${running.length})`);
+    D.table(listCols, [...running].sort(byAge).map(listRow));
   }
   if (quiet.length) {
-    L.push('', `NO OPEN ACTION (${quiet.length})`);
-    for (const { p: r, n } of fold(quiet, () => '')) L.push(line(r) + times(n));
+    D.h(`No status recorded (${quiet.length})`);
+    D.table(
+      [{ h: 'Project', w: 42 }, { h: 'Phase', w: 26 }, { h: 'In phase', align: 'r' }],
+      [...quiet].sort(byAge).map(r => [idCell(r), r.phase, r.days == null ? '' : `${r.days}d`]));
+    D.note('These carry no status on the shared tracker, so neither side can see what they are '
+      + 'waiting on. Setting a status on them is the fastest thing on this email.');
   }
+
   const dated = rows.filter(r => r.d.submittedPA || r.d.paDate || r.d.submittedCO || r.d.coDate);
   if (dated.length) {
-    L.push('', 'DATES ON RECORD');
-    for (const r of dated) {
-      const bits = [];
-      if (r.d.submittedPA) bits.push(`PA submitted ${r.d.submittedPA}`);
-      if (r.d.paDate) bits.push(`PA'd ${r.d.paDate}`);
-      if (r.d.submittedCO) bits.push(`CO submitted ${r.d.submittedCO}`);
-      if (r.d.coDate) bits.push(`CO'd ${r.d.coDate}`);
-      L.push(`  * ${r.name} - ${bits.join(', ')}`);
-    }
+    D.h(`Dates on record (${dated.length})`);
+    D.table(
+      [{ h: 'Project', w: 42 }, { h: 'PA submitted' }, { h: 'PA approved' },
+       { h: 'CO submitted' }, { h: 'CO paid' }],
+      dated.map(r => [idCell(r), r.d.submittedPA || '', r.d.paDate || '',
+        r.d.submittedCO || '', r.d.coDate || '']));
   }
-  L.push('', `Automated from the shared ${side}/HBS Project Tracker.`);
-  return { text: L.join('\n'), counts: { active: rows.length, yours: onIcf.length, ageing: 0, moved: 0 } };
+
+  D.note(`Automated from the shared ${side}/HBS Project Tracker.`);
+  return { text: D.text(), html: D.html(),
+    counts: { active: rows.length, yours: onIcf.length, ageing: 0, moved: 0 } };
 }
 
 /* ---------------------------------------------------------------------------
@@ -2148,11 +2215,15 @@ for (const side of ['ICF', 'TRC']) {
     const goneTo = gone && Array.isArray(gone.to) && gone.to.length ? gone.to : null;
     const to = gone ? goneTo : (cfg.emails()[name] || null);
     const d = digestBody(name, side, mine, [], new Map(), gone);
+    /* HTML now, like the engineers' mail: this digest is tables and bar charts,
+       and sending it as text would deliver the markup verbatim. The plain
+       rendering still travels alongside for any client that refuses HTML. */
     const rec = gone
       ? { to, name, org: side, forwardedFor: name,
           subject: `${name} has left ${side} - ${mine.length} project${mine.length === 1 ? '' : 's'} to reassign`,
-          body: d.text, counts: d.counts }
-      : { to, name, org: side, subject: `Your project update - ${weekOf}`, body: d.text, counts: d.counts };
+          body: d.html, bodyType: 'html', plain: d.text, counts: d.counts }
+      : { to, name, org: side, subject: `Your project update - ${weekOf}`,
+          body: d.html, bodyType: 'html', plain: d.text, counts: d.counts };
     if (to) perEngineer.push(rec);
     else unroutable.push({ name, org: side,
       reason: side === 'TRC'
@@ -2323,7 +2394,11 @@ if (rfiOwedPipeline && !rfiOwedSummary)
     .map(p => (p.name || '').trim()).filter(n => n.length > 8))];
   const outgoing = [
     ...perEngineer.filter(e => e.org === 'ICF' || e.org === 'TRC')
-      .map(e => ({ side: e.org, what: `${e.org} digest for ${e.name}`, body: e.body })),
+      /* Both renderings, because both are sent: the HTML body and the plain
+         alternative. They come off one doc() so a leak could not sit in only
+         one -- but this check exists precisely for the case where reasoning
+         like that turns out to be wrong. */
+      .map(e => ({ side: e.org, what: `${e.org} digest for ${e.name}`, body: `${e.body}\n${e.plain || ''}` })),
     { side: 'ICF', what: 'ICF portfolio summary', body: icfSummaryBody() },
   ];
   for (const o of outgoing) {
