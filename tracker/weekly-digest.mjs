@@ -500,14 +500,32 @@ const Q = `query($id: ID!, $cursor: String, $cols: [String!]) {
       ... on MirrorValue { display_value }
       ... on BoardRelationValue { linked_item_ids } } } } } }`;
 
+/* The page cap used to be 20, which at 250 rows a page silently stopped at
+   5,000 items. The KPI board passed that: it holds 7,576 rows, so a run would
+   have dropped ~2,576 of them with no error and no warning — every audit, PA,
+   closeout and incentive figure in the mail quietly short by a third.
+
+   A cap is still wanted so a pagination bug cannot spin forever, but it is now
+   far above any board here, and hitting it is reported rather than swallowed.
+   Silent truncation is the failure mode this whole script exists to avoid. */
+const PAGE_LIMIT = 250, MAX_PAGES = 400;   // 100,000 rows
+/* Declared up here, not with perEngineer and unroutable further down: the
+   truncation guard below is the earliest thing that can raise a warning, and
+   a guard that throws on its own warnings array is worse than no guard. */
+const warnings = [];
 async function fetchBoard(id, cols) {
-  const items = []; let cursor = null;
-  for (let i = 0; i < 20; i++) {
+  const items = []; let cursor = null; let i = 0;
+  for (; i < MAX_PAGES; i++) {
     const d = await gql(Q, { id, cursor, cols });
     const page = d.boards[0].items_page;
     items.push(...page.items);
     cursor = page.cursor;
     if (!cursor) break;
+  }
+  if (cursor) {
+    warnings.push(`BLOCKED: board ${id} still had pages after ${MAX_PAGES} `
+      + `(${items.length} rows read). The read is incomplete — every count off this `
+      + `board would be wrong. Do not send.`);
   }
   return items;
 }
@@ -2239,7 +2257,7 @@ for (const t of workTasks) {
 const users = (await gql(`query { users(limit: 300) { name email enabled } }`)).users;
 const byName = new Map(users.filter(u => u.email).map(u => [u.name.toLowerCase(), u.email]));
 
-const perEngineer = [], unroutable = [], warnings = [];
+const perEngineer = [], unroutable = [];   /* warnings is declared up by fetchBoard */
 /* The window itself, not a bare Monday. It used to print wk.prevStart, which
    is why a mail sent on 4 September was headed "week of Mon Aug 24". */
 const weekOf = weekLabel(wk);
