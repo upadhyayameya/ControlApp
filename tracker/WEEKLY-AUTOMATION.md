@@ -1,0 +1,449 @@
+# Weekly per-engineer digest — runbook
+
+This is the procedure the Monday-morning Routine follows. It is written to be
+executed by a fresh Claude session with the **monday.com** and **Microsoft 365**
+connectors available. Follow it exactly and in order.
+
+## What it produces
+
+1. **One email per engineer**, containing only that engineer's own projects.
+2. **One roll-up email** to management, covering every engineer.
+
+Nothing is typed by hand. Everything is read live from the two monday.com
+boards, so the digests reflect whatever the boards say at the moment it runs.
+
+## Sources
+
+| Board | ID | What it supplies |
+|---|---|---|
+| ICF/HBS Project Tracker | `18424932045` | The project list, current phase, ICF and HBS engineer assignment, PA/CO dates, ageing |
+| Master TU Tracker | `1069746645` | Audit and implementation dates, SOW status and dates, auditor / PA lead / CO lead, running admin notes |
+
+The two are joined through the Master TU Tracker's board-relation column
+`board_relation_mm5xccpb`, which points back at the ICF board. Around 330 of the
+450 ICF-board projects carry that link; the rest still appear, just without
+SOW or audit-date detail.
+
+## Steps
+
+1. **Get the builder script.** Read `tracker/weekly-digest.mjs` from this
+   repository, on branch `claude/monday-project-tracker-dashboard-x5zkit`.
+
+2. **Run it in the monday sandbox.** Call the monday.com tool `execute_code`
+   with `language: "javascript"` and the entire contents of that file as `code`.
+   The sandbox is already authenticated against the monday account, so the
+   script needs no token. It only reads; it sends nothing.
+
+   - To preview without sending, pass `vars: { "DIGEST_MODE": "summary" }`.
+   - For a real run, pass no vars. The script prints a JSON envelope.
+
+3. **Check the envelope before sending anything.**
+   - If `warnings` is non-empty, or `projectCount` is 0, **send nothing**.
+     Report the problem and stop.
+   - If `projectCount` is far below the usual few hundred, treat that as a
+     failed read rather than a quiet week — stop and report.
+
+4. **Send the individual digests.** For each entry in `perEngineer`, send a
+   plain-text email with the Microsoft 365 tool `outlook_send_mail`, using that
+   entry's `to`, `subject` and `body`. One recipient per email — never CC the
+   other engineers onto each other's digests.
+
+5. **Send the roll-up.** Send one email to every address in `rollup.to`, using
+   `rollup.subject` and `rollup.body`.
+
+6. **Report back** how many individual digests went out, to whom, and who was
+   skipped (the `unroutable` list).
+
+## Who receives what
+
+**Roll-up** goes to the addresses in `ROLLUP_TO` at the top of the script:
+Ameya Upadhyay, Devon Goforth, Michael Costa, David Rodriguez, Harry Haywood.
+
+**Individual digests** go to:
+
+- **HBS engineers** — resolved automatically. The HBS Engineer column is a real
+  monday people field, so the address comes from the engineer's own monday user
+  record. No mapping to maintain.
+- **ICF engineers** — only those listed in `ICF_EMAILS` in the script. The ICF
+  Engineer column is a dropdown of first names, so there is nothing to resolve
+  an address from. Every ICF engineer still appears in the roll-up whether or
+  not they receive their own email.
+
+### Adding an ICF engineer
+
+Uncomment or add the line in `ICF_EMAILS` in `tracker/weekly-digest.mjs`:
+
+```js
+const ICF_EMAILS = {
+  'Jason': 'jason.frazier@icf.com',
+};
+```
+
+The key must match the dropdown label on the board exactly. Only add an address
+that has been confirmed by a person — a wrong match sends one engineer's project
+list to someone at another company. Names that are placeholders rather than
+people (`TBD`, `ESAI Team`, `Centralized Engineering`) are never addressed.
+
+## Turning the schedule on
+
+The Routine has to be created from the claude.ai Routines UI rather than from a
+Claude Code session. A Routine carries its own connector grants, and a session
+cannot hand its monday.com and Microsoft 365 connections to one it creates — a
+Routine made that way fires with no connectors and fails every week. Creating it
+in the UI attaches your own connections.
+
+1. Go to claude.ai → **Routines** → **New routine**.
+2. Name it `Weekly ICF x HBS project digests`.
+3. Schedule: **Mondays at 7:00 AM Eastern** (see the note below about UTC).
+4. Connectors: enable **monday.com** and **Microsoft 365**.
+5. Paste this as the prompt:
+
+```
+Send the weekly ICF x HBS per-engineer project digests and the management roll-up.
+
+Work in the repository upadhyayameya/ControlApp on branch
+claude/monday-project-tracker-dashboard-x5zkit.
+
+1. Read tracker/WEEKLY-AUTOMATION.md and follow it exactly. It is the runbook.
+
+2. In short: read tracker/weekly-digest.mjs and run its entire contents as the
+   `code` argument of the monday.com execute_code tool (language "javascript",
+   no vars). The monday sandbox is already authenticated, so it needs no token.
+   It only reads monday.com and sends nothing.
+
+3. The script prints a JSON envelope:
+   { perEngineer, rollup, unroutable, warnings, projectCount }.
+
+   SAFETY CHECK before sending anything: if warnings is non-empty, or
+   projectCount is 0, or projectCount is far below the usual few hundred,
+   send NOTHING. Report the problem and stop.
+
+4. For each entry in perEngineer, send one plain-text email with the
+   Microsoft 365 outlook_send_mail tool using that entry's to, subject and body.
+   One recipient per email - never CC engineers onto each other's digests,
+   because each digest contains only that person's own projects.
+
+5. Send one email to all the addresses in rollup.to using rollup.subject and
+   rollup.body.
+
+6. Reply with a short report: how many digests went out and to whom, plus the
+   unroutable list.
+
+Anything bound for ICF must use only the shared ICF/HBS Project Tracker, never
+the HBS-internal Master TU Tracker, workload boards, admin notes or incentive
+figures. The script already enforces this; do not widen it.
+```
+
+Until that is switched on, the digests can be produced on demand: ask Claude in
+any session with the two connectors to "run the weekly digest runbook", and add
+"preview only, do not send" to see the output without emailing anyone.
+
+## Schedule
+
+The Routine fires **Mondays at 11:00 UTC**. Cron runs on UTC and does not shift
+with daylight saving, so that is 7:00 AM Eastern from March to November and
+6:00 AM Eastern from November to March. Adjust the cron to `0 12 * * 1` over the
+winter if the hour matters.
+
+## The Monday team update (draft, not sent)
+
+`tracker/weekly-team-update.mjs` builds a whole-team **engineering execution
+update** — the counterpart to Harry's Monday revenue scoreboard rather than a
+second copy of it. It reports what actually moved through the funnel last week,
+what is blocked, and what has to happen this week. It needs no manually
+maintained goals.
+
+It is created as an Outlook **draft**, never sent automatically, so it is read
+before it goes to the team.
+
+### Steps
+
+1. Read `tracker/weekly-team-update.mjs` and run its entire contents as the
+   `code` argument of the monday.com `execute_code` tool (language
+   `"javascript"`). Pass `vars: { "UPDATE_MODE": "summary" }` to preview it.
+2. It prints `{ weekEnding, subject, body, suggestedTo, stats, warnings }`.
+   If `warnings` is non-empty, stop and report.
+3. Create an Outlook **draft** with the Microsoft 365 `outlook_create_draft`
+   tool using `subject`, `body` and `suggestedTo`. Do not send it.
+4. Reply with the headline stats so it is clear what the draft says.
+
+### What it draws on
+
+| Source | What it contributes |
+|---|---|
+| Monthly KPIs | Milestones reached last week vs the week before vs month to date, and the incentive / HBS share / savings banked |
+| ICF/HBS Project Tracker + Master TU Tracker | RFIs, flawed applications, closeouts ready to move, ageing projects, projects with no engineer |
+| Preapproval + Closeout Workload | Open and overdue to-dos per person |
+| Projections/Actuals boards | This month's projected closeout value per programme, and invoiced-to-date against it |
+
+The Projections/Actuals boards store their value in a formula column wrapping a
+mirror. The mirror itself is unreadable through the connector, but the formula
+reads back fine, which is what makes the projection figures available at all.
+
+### Recipients
+
+`SUGGESTED_TO` at the top of the script is a starting point taken from the
+standing engineering meetings, not an authoritative distribution list. Edit it
+to match who should actually receive the update.
+
+## Reviewer addresses
+
+`ICF_EMAILS` in `tracker/weekly-digest.mjs` maps each name on the board's
+**ICF Engineer** dropdown to an address. Those reviewers span three outside
+companies, so the constant's name is historical — every one of them is
+external, and the same rule applies to all of them: a digest bound for any of
+these may use only the shared ICF/HBS board, never the HBS-internal boards,
+notes, chatter or commercials.
+
+| Company | Reviewers |
+|---|---|
+| icf.com | Jason, Jose, Nail, Darren, Victoria |
+| esai.technology | Ven, Kirti, Devashis |
+| mdenergyadvisors.com | Daniel, Devin, Priscille |
+
+### Still without an address
+
+| Label | Active projects | Why |
+|---|---|---|
+| `(unset)` | 116 | No reviewer named on the project at all |
+| `TBD` | 56 | Placeholder, not a person |
+| `ESAI Team` | 28 | A team — Ven, Kirti and Devashis are its members |
+| `Centralized Engineering` | 17 | A group, not a person |
+| `Soham` | 0 | On the dropdown, one completed project, no live work |
+| `Jalen` | 0 | On the dropdown, no projects |
+
+Placeholders and groups stay roll-up only by design. The first two rows are the
+ones worth acting on: 172 active projects have no individual reviewer, so no
+digest can reach anyone about them.
+
+### Named but not on the dropdown
+
+`Justin` (justin.lee@icf.com) and `Junior` (junior.myrie@icf.com) have
+addresses but no dropdown label, so no project maps to them and no digest can
+be addressed to them. They are held in `UNMAPPED_REVIEWERS` and not used. Add
+them to the ICF Engineer dropdown and assign work before enabling them.
+
+Never add an address from a first-name guess — only from a confirmed source.
+
+## What the dashboard covers
+
+The **Master TU Tracker** (`1069746645`) is the primary source: every project,
+every utility. The **ICF/HBS Project Tracker** (`18424932045`) is joined onto it
+through the board relation and supplies the ICF-side status and the ICF
+engineer for the subset ICF reviews.
+
+That means every utility on the books appears — BGE, Pepco, Delmarva, SMECO,
+Dominion, Dominion - TRC, GA Power, Washington Gas, West Penn, Penelec,
+Potomac Edison, National Grid, Met-Ed, JCPL and the rest. The utility filter is
+built from the data with a count per option, busiest first, so it follows the
+boards rather than a hard-coded list.
+
+A **Reviewer** filter splits the book three ways:
+
+| Reviewer | How it is decided |
+|---|---|
+| ICF | The project is on the ICF/HBS board, or its Review Engineer starts `ICF -` |
+| TRC | Review Engineer starts `TRC -`, or the utility names TRC |
+| In-house | Neither — reviewed inside HBS |
+
+The TU tracker stores utility as free text, so the same programme can appear as
+`PEPCO` and `Pepco`, or `Met ED` and `Met-Ed`. Those fold together on case and
+punctuation and are shown under one spelling, preferring a properly capitalised
+one. Programmes that genuinely differ, such as Dominion and Dominion - TRC, fold
+to different keys and stay separate.
+
+## Utilities and service groups
+
+The Monthly KPIs board stores utility as free text, and that column carries two
+different kinds of thing:
+
+- **Utilities** — BGE, Pepco, Delmarva, SMECO, Dominion, Dominion - TRC,
+  GA Power, Washington Gas, West Penn, Penelec, Potomac Edison, National Grid,
+  Met-Ed, JCPL, First Energy, Dominion - SC.
+- **Service groups** — `HVAC BTU`, `HVAC BPTU`, `HVAC Tune Up`. These are tune-up
+  and coil-cleaning work, a type of job rather than a programme.
+
+The Numbers tab reports them separately. Service groups record **no kWh or
+therms at all** — 367 rows across the board's history, every one of them zero.
+That is how the work is tracked, not a gap, so they are kept out of the savings
+averages, which would otherwise be pulled toward zero.
+
+Savings averages are taken across the rows that actually record savings, and the
+page says how many that is.
+
+`Potomac` is folded into `Potomac Edison`, and case and punctuation variants —
+`PEPCO` against `Pepco`, `Met ED` against `Met-Ed` — fold together and display
+under one spelling. Programmes that genuinely differ, such as Dominion and
+Dominion - TRC, keep their own keys.
+
+## Strategy
+
+The **Strategy** tab models the one real strategic choice in the data: volume
+against quality. Submitting more raises what goes in, but a flawed or queried
+application comes back and is submitted again, so approvals do not rise as fast
+as submissions.
+
+It deliberately does not model ICF or TRC as an opponent. They are a partner,
+the boards cannot observe their costs, and the useful question is not how to
+beat them — it is how to submit in the way their review actually rewards.
+
+| Section | What it does |
+|---|---|
+| Volume against quality | Correlates each engineer's live book against the share of it in rework, and states in plain terms whether load is costing quality |
+| Rework, per engineer | Share of each person's book sitting flawed, queried or sent back, against the team rate |
+| What each move actually buys | Approved applications, not submitted ones, under four scenarios |
+
+Rework is read from the statuses that mean an application came back: on the TU
+tracker `TRC/ICF RFI Received`, `FLAWED in Portal`, `Review sent back for
+corrections`, `Re-Audit Needed`; on the ICF board `Flawed`, `Flawed ARC`,
+`RFI Sent to HBS`, `RFI Respond by HBS`, `Internal Update Required`.
+
+The conclusion is derived from the numbers, never asserted. Where the approval
+history is too thin to rank the levers, the page says so instead of picking one.
+
+## Ask the tracker (in the dashboard)
+
+The **Ask & tasks** tab is a conversation with the boards. It answers from the
+data, not from a language model — there is no model available to a published
+artifact on this account — so it recognises what you name and replies from the
+rows behind it. Every answer is traceable to a board.
+
+What it understands:
+
+| You say | It does |
+|---|---|
+| A project name, or a `PCRCVA…` number | Shows phase, status, next step, owner, days in phase, latest note, and recent Teams/Fireflies mentions |
+| A person's name | Their active count, how many have the next step sitting with them, how many are past 60 days |
+| RFIs · flawed · unassigned · stuck · what's mine · due this week · priorities | Answers that question from the boards |
+| A note naming a project | Offers to log it on that project |
+| A note with an action verb and a day ("chase Robert Friday") | Offers a task with the owner and due date already filled in |
+
+It reads relative dates (today, tomorrow, Friday, next week, in 3 days) and
+"assign to <name>". When it cannot tie something to a project or a person it
+says so and lists what it does understand, rather than guessing.
+
+Nothing is written to monday until you press a button in a reply:
+
+- **Log this on N projects** posts a monday **update** — the comment thread,
+  never a column edit, so nothing is overwritten and it can be deleted.
+- **Make it a task** creates an item on the shared **Ameya To-do** board
+  (`4559143382`) with owner, priority, status and due date.
+
+### The shared task list
+
+Below the conversation, that board is shown grouped by owner, Caitlyn and Ameya
+first, with counts for overdue, critical and blocked. `Caitlyn` was added to the
+board's **Person responsible** dropdown; the board is private to Ameya, so it
+needs sharing with her before she can see it in monday itself.
+
+## Logging engineer replies
+
+When an engineer replies to their Monday digest saying what a project needs,
+that information otherwise stays in a mailbox. `tracker/log-reply.mjs` files it
+back onto the projects.
+
+It posts **updates** — the item's comment thread — never column edits. Nothing
+existing is overwritten, every entry is attributed and dated, and any single
+entry can be undone by deleting that update.
+
+### Steps
+
+1. Search Outlook for replies to the digest:
+   `outlook_email_search` with `query: "Your project update"`, restricted to the
+   last week. Replies come back with `RE:` on the subject.
+2. Read each reply with `read_resource`.
+3. For each one, run `tracker/log-reply.mjs` through the monday.com
+   `execute_code` tool:
+   `vars: { "FROM": "<engineer's name>", "REPLY": "<body>", "LOG_MODE": "summary" }`
+4. Read what it proposes. Re-run with `"APPLY": "true"` to post.
+5. Report the `unmatched` list — those are the parts nobody could file.
+
+### How it decides where something goes
+
+Per paragraph, not per email. A reply covering three projects posts three
+different excerpts rather than the whole message three times. A paragraph is
+matched by project name or by a quoted utility project number.
+
+Deliberately conservative:
+
+- Quoted original text is stripped, so only what the engineer wrote is logged.
+- Greetings and sign-offs are dropped.
+- A paragraph naming more than three projects is treated as unmatched — that
+  is a summary sentence, not a note about one project.
+- Anything it cannot place is returned rather than posted to a guessed item.
+
+## Utility portal reconciliation
+
+`tracker/portal-reconcile.mjs` closes the gap where a project sits in **Flawed**
+status in a utility portal and nobody notices until someone opens the portal and
+looks.
+
+The portals cannot be scraped from here — each needs an authenticated session —
+but every one of them has an **Export CSV** button on its My Applications page.
+That export carries the portal's own Status per application, which is all the
+reconciliation needs.
+
+### Steps
+
+1. In the portal (e.g. `https://pepco-rcx-full.customerapplication.com/customer-home`),
+   open **My Applications** and press **Export CSV**.
+2. Run `tracker/portal-reconcile.mjs` through the monday.com `execute_code` tool
+   with the file contents in the `CSV` variable:
+   `vars: { "CSV": "<file contents>", "RECONCILE_MODE": "summary" }`
+3. Read the report. It returns:
+
+   | Section | Meaning |
+   |---|---|
+   | `flawedInPortalNotOnBoard` | Rejected in the portal, not flagged on the board — the case that currently goes unnoticed |
+   | `statusMismatches` | Every other portal-vs-board status disagreement |
+   | `inPortalNotOnBoards` | Applications with no matching project on either board |
+   | `onBoardNotInExport` | Board projects for that programme absent from the export |
+   | `proposedStatusUpdates` | What would be written back |
+
+4. To write the statuses back to the ICF/HBS board, re-run with
+   `vars: { "CSV": "...", "APPLY": "true" }`. **It is read-only otherwise** —
+   nothing is written unless `APPLY` is set, and only the ICF board's status
+   column is touched, only where portal and board actually disagree.
+
+### How matching works
+
+On the utility **Project Number**, which is already on both boards:
+`text_mm5wf2g3` on the ICF/HBS Project Tracker (78% populated) and `text8` on
+the Master TU Tracker (71%). The prefix identifies the programme:
+
+| Prefix | Programme | On the boards |
+|---|---|---|
+| `BGRCVA`, `BGRFVA`, `BGPTPS` | BGE | 267 |
+| `PCRCVA`, `PCRFPS` | Pepco | 120 |
+| `DPRCVA`, `DPCCPS` | Delmarva | 44 |
+| `SMRCVA` | SMECO | 9 |
+| `WGCPPS` | Washington Gas | 36 |
+
+The same script works for every utility — the programme is inferred from the
+prefixes present in whichever export is supplied.
+
+### Header matching
+
+Portal exports differ in their column headings, so the parser matches on meaning
+rather than exact text (project number / application number / id, status /
+application status, and so on) and reports `headersSeen` on every run. If a
+portal uses wording it does not recognise, it says so and lists the headers it
+found instead of guessing.
+
+### What this does not do
+
+It cannot log in to the portals, so the export is still a manual click. If the
+utilities offer an API or a scheduled emailed report, that export step can be
+automated too and the whole loop becomes hands-off.
+
+## Changing what the digests say
+
+The stage definitions and the "what needs to happen / who owns it" rules live in
+two places and must be kept in step:
+
+- `tracker/weekly-digest.mjs` — used by the weekly email
+- `tracker/pipeline-dashboard.html` — used by the live dashboard
+
+Both derive the next step from the board's own status labels, so most changes
+are a matter of editing the `TU_ACTIONS`, `ICF_ACTIONS` and `PHASE_FALLBACK`
+tables rather than writing new logic.
