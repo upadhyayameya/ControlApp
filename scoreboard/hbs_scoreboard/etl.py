@@ -71,25 +71,31 @@ def event_from_item(item: dict, board_id: str) -> Optional[KpiEvent]:
     )
 
 
-def implementation_event(item: dict, board_id: str, date_col: str) -> Optional[KpiEvent]:
+def implementation_event(item: dict, spec: mc.TrackerSpec) -> Optional[KpiEvent]:
     """Implementations Completed is not on the Monthly KPIs board -- it comes
-    from the Implementation Date field on the two project trackers, where HBS
-    Share carries a different column id."""
+    from the Implementation Date field on the project trackers.
+
+    Every column is read through the board's own spec. The trackers do not
+    share the Monthly KPIs layout: BPTU names its utility column
+    `text_mkpea39n`, `text8` is Project ID rather than Source, and Source is a
+    dropdown. Reading the KPI ids here would return blank utilities and drop
+    every record into `Unmapped` without a word.
+    """
     cols = mc.column_map(item)
-    d = mc.parse_date(cols.get(date_col))
+    d = mc.parse_date(cols.get(spec.impl_date)) if spec.impl_date else None
     if d is None:
         return None
     return KpiEvent(
         item_id=str(item["id"]),
         project_name=item.get("name", ""),
         stage=Stage.IMP_COMPLETED,
-        utility_raw=cols.get(mc.COL_UTILITY, ""),
-        source=cols.get(mc.COL_SOURCE, ""),
+        utility_raw=cols.get(spec.utility, ""),
+        source=cols.get(spec.source, ""),
         completion_date=d,
-        hbs_share=mc.parse_number(cols.get(mc.COL_TRACKER_HBS_SHARE)),
-        gross_incentive=mc.parse_number(cols.get(mc.COL_GROSS_INCENTIVE)),
+        hbs_share=mc.parse_number(cols.get(spec.hbs_share)),
+        gross_incentive=mc.parse_number(cols.get(spec.gross)) if spec.gross else None,
         engineer=cols.get(mc.COL_ENGINEER, ""),
-        board_id=str(board_id),
+        board_id=str(spec.board_id),
     )
 
 
@@ -211,22 +217,20 @@ def pull(cfg: Config, client: mc.MondayClient,
         sources_ok["monthly_kpis"] = False
         failures.append(("Monthly KPIs", exc))
 
-    # Implementations Completed -- from the two project trackers.
-    for label, board, date_col in (
-        ("master_tu", mc.BOARD_MASTER_TU, mc.COL_IMPL_DATE_MASTER),
-        ("bge_bptu", mc.BOARD_BGE_BPTU, mc.COL_IMPL_DATE_BPTU),
-    ):
+    # Implementations Completed -- from the project trackers that carry it,
+    # each read through its own column spec.
+    for spec in mc.IMPLEMENTATION_TRACKERS:
         try:
-            cols = [date_col, mc.COL_UTILITY, mc.COL_SOURCE,
-                    mc.COL_TRACKER_HBS_SHARE, mc.COL_GROSS_INCENTIVE, mc.COL_ENGINEER]
-            for item in client.items_by_date_range(board, date_col, start, end, cols):
-                ev = implementation_event(item, str(board), date_col)
+            cols = spec.columns + [mc.COL_ENGINEER]
+            for item in client.items_by_date_range(
+                    spec.board_id, spec.impl_date, start, end, cols):
+                ev = implementation_event(item, spec)
                 if ev is not None:
                     events.append(ev)
-            sources_ok[label] = True
+            sources_ok[spec.name] = True
         except Exception as exc:                  # noqa: BLE001
-            sources_ok[label] = False
-            failures.append((label, exc))
+            sources_ok[spec.name] = False
+            failures.append((spec.label, exc))
 
     # Optional BPTU membership cross-check (rule 4).
     bptu_names: Optional[set[str]] = None

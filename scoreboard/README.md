@@ -189,9 +189,22 @@ Key columns on Monthly KPIs: `date4` Completion Date (**the event date** — nev
 `numbers_2`, the gross incentive — MDEA-sourced projects run ~50% share, so the
 two differ a lot), `person` Engineer.
 
-`Implementations Completed` is **not** on this board: it comes from
-`date_mm4b5x2` (Master TU) and `date_mm0whh86` (BPTU), where HBS Share is
-`dup__of_incentive_amount` — a different column id.
+`Implementations Completed` is **not** on this board: it comes from the
+Implementation Date on the project trackers. **The trackers do not share the
+Monthly KPIs column layout**, so each has its own spec in
+`monday_client.TRACKERS` — reading the KPI ids against a tracker returns blank
+utilities and uses the Project ID as the Source:
+
+| Tracker | Implementation Date | Utility | Source | HBS Share |
+|---|---|---|---|---|
+| Master TU `1069746645` | `date_mm4b5x2` | `text` | `dropdown` | `dup__of_incentive_amount` |
+| BGE BPTU `6530139050` | `date_mm0whh86` | `text_mkpea39n` | `dropdown` | `dup__of_incentive_amount` |
+| Prescriptive `18409151061` | *(none)* | `text` | `dropdown` | `numbers` |
+
+On every tracker `text8` is **Project ID**, not Source, and `numbers_2` does not
+exist. The Prescriptive tracker has no Implementation Date column at all —
+prescriptive implementations ride on Master TU, where the utility reads
+`HVAC BTU` and resolves through rule 3.
 
 Mirror columns return null through normal item queries and cannot be aggregated
 server-side; they are read via the `MirrorValue` fragment and summed in code.

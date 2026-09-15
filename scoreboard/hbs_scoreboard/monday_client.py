@@ -10,6 +10,7 @@ import datetime as dt
 import logging
 import os
 import time
+from dataclasses import dataclass
 from typing import Any, Iterator, Optional
 
 import requests
@@ -39,9 +40,69 @@ KPI_COLUMNS = [COL_COMPLETION_DATE, COL_UTILITY, COL_SOURCE,
                COL_HBS_SHARE, COL_GROSS_INCENTIVE, COL_ENGINEER]
 
 # --- project trackers: Implementations Completed lives here, not on KPIs ------
+# The trackers do NOT share the Monthly KPIs column layout. Every id below was
+# read off the live boards; reusing the KPI ids here silently produces empty
+# utilities and wrong sources. Each tracker gets an explicit spec.
 COL_IMPL_DATE_MASTER = "date_mm4b5x2"
 COL_IMPL_DATE_BPTU = "date_mm0whh86"
-COL_TRACKER_HBS_SHARE = "dup__of_incentive_amount"   # note: different id
+COL_TRACKER_HBS_SHARE = "dup__of_incentive_amount"   # Master TU + BPTU only
+
+
+@dataclass(frozen=True)
+class TrackerSpec:
+    """Per-board column map for a project tracker."""
+
+    board_id: int
+    label: str
+    name: str
+    utility: str
+    source: str            # a dropdown column on every tracker, not `text8`
+    hbs_share: str
+    gross: Optional[str] = None
+    impl_date: Optional[str] = None   # None: this board carries no implementations
+
+    @property
+    def columns(self) -> list[str]:
+        cols = [self.utility, self.source, self.hbs_share]
+        if self.gross:
+            cols.append(self.gross)
+        if self.impl_date:
+            cols.append(self.impl_date)
+        return cols
+
+
+# Verified against the live boards, not assumed from the Monthly KPIs layout.
+TRACKERS: dict[str, TrackerSpec] = {
+    "master_tu": TrackerSpec(
+        board_id=BOARD_MASTER_TU, label="Master TU Tracker", name="master_tu",
+        utility="text",                 # `text8` here is Project ID, not Source
+        source="dropdown",
+        hbs_share="dup__of_incentive_amount",
+        gross="numbers",                # `numbers_2` does not exist on this board
+        impl_date=COL_IMPL_DATE_MASTER,
+    ),
+    "bge_bptu": TrackerSpec(
+        board_id=BOARD_BGE_BPTU, label="BGE BPTU Tracker", name="bge_bptu",
+        utility="text_mkpea39n",        # NOT `text` -- this board names it differently
+        source="dropdown",
+        hbs_share="dup__of_incentive_amount",
+        gross="numbers",
+        impl_date=COL_IMPL_DATE_BPTU,
+    ),
+    "prescriptive": TrackerSpec(
+        board_id=BOARD_PRESCRIPTIVE, label="Prescriptive Tune Up Tracker",
+        name="prescriptive",
+        utility="text",
+        source="dropdown",
+        hbs_share="numbers",            # NOT dup__of_incentive_amount on this board
+        gross=None,
+        impl_date=None,                 # no Implementation Date column; prescriptive
+                                        # implementations ride on Master TU
+    ),
+}
+
+# Trackers that actually carry Implementations Completed.
+IMPLEMENTATION_TRACKERS = [t for t in TRACKERS.values() if t.impl_date]
 
 # --- mirror columns ----------------------------------------------------------
 COL_ESTIMATED_CO = "lookup_mm70wevh"  # Estimated $CO on Closeout Workload
