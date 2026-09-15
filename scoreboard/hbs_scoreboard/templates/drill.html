@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ kpi_row.kpi }} — {{ program.display }}{% endblock %}
+{% block content %}
+<p><a href="/">&larr; Dashboard</a> · <a href="/program/{{ program.key }}">{{ program.display }}</a></p>
+
+<div class="card">
+  <h2>{{ program.display }} — {{ kpi_row.kpi }}
+    <span class="tag">{% if week %}Week {{ week }}{% else %}Month to date{% endif %}</span>
+  </h2>
+  <div class="note">
+    {{ entries|selectattr('counts')|list|length }} counted ·
+    {{ entries|rejectattr('counts')|list|length }} not counted ·
+    {{ entries|length }} raw log entries.
+    Duplicates and repeats are greyed, never hidden.
+    {% if rm and rm.avg_value %} Average value ${{ '{:,.0f}'.format(rm.avg_value) }} per project.{% endif %}
+  </div>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th class="l">Project</th><th>Date</th><th>Wk</th><th class="l">Program</th>
+      <th class="l">Utility</th><th class="l">Source</th>
+      <th>HBS Share</th><th>Gross</th><th class="l">Verdict</th><th class="l">Why</th><th>monday</th>
+    </tr></thead>
+    <tbody>
+    {% for e in entries %}
+      <tr class="{{ '' if e.counts else 'excluded' }}">
+        <td class="l pname">{{ e.event.project_name }}</td>
+        <td>{{ e.event.completion_date or '—' }}</td>
+        <td>{{ e.week_index or '—' }}</td>
+        <td class="l">{{ e.program }}</td>
+        <td class="l">{{ e.utility or '—' }}</td>
+        <td class="l">{{ e.event.source or '—' }}</td>
+        <td>{{ e.event.hbs_share|money }}</td>
+        <td class="corr">{{ e.event.gross_incentive|money }}</td>
+        <td class="l">
+          {% if e.counts %}<span class="pill" style="background:var(--green-bg);color:var(--green)">counted</span>
+          {% elif e.exclusion == Exclusion.SAME_DAY_DUPLICATE %}<span class="pill dup">duplicate</span>
+          {% elif e.exclusion == Exclusion.REPEAT_SUBMISSION %}<span class="pill rep">repeat</span>
+          {% else %}<span class="pill">{{ e.exclusion.value.replace('_',' ') }}</span>{% endif %}
+        </td>
+        <td class="l corr">{{ e.note }}</td>
+        <td>{% if e.event.monday_url %}<a href="{{ e.event.monday_url }}" target="_blank" rel="noopener">{{ e.event.item_id }}</a>{% else %}—{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="11" class="l corr">No records. This cell is empty, not zero.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

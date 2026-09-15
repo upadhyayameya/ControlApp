@@ -1,0 +1,1572 @@
+{
+ "_provenance": {
+  "source": "monday.com board 1069742731 (Monthly KPIs), live account hbs-solutions-team",
+  "pulled": "2026-09-15",
+  "filter": "date4 between 2026-09-01 and 2026-09-30",
+  "completeness": "PARTIAL \u2014 first page of an Audits/Preapprovals pull (80 items) plus the full September Closeouts Submitted and Closeouts Received groups. Real records, but not the whole month. For smoke-testing the pipeline and UI, never for reporting.",
+  "columns": "date4=Completion Date, text=Utility, text8=Source, numbers_2=Incentive (gross), dup__of_incentive=HBS Share",
+  "note_gross": "numbers_2 (gross incentive) was not requested for the closeout rows, so it is null there rather than guessed."
+ },
+ "items": [
+  [
+   "12966337712",
+   "808 Bestgate Rd - 808 Bestgate-Vet Bldg",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966343589",
+   "1127 Benfield Blvd - I-97/Ritchie @ Cypress",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966333323",
+   "258 Najoles Rd - I-97 Business Park/Najoles",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966324406",
+   "304 Harry S Truman Parkway - Annaplos Crossing",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966345596",
+   "255 Najoles Rd - I-97 Business Park/Najoles",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966333830",
+   "251 Najoles Rd - I-97 Business Park/Najoles",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966314419",
+   "185 Harry S. Truman Parkway - Annapolis Corporate",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966345838",
+   "254 Najoles Rd - I-97 Business Park/Najoles",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966333324",
+   "804 Landmark Dr - Quarterfield Center",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966343687",
+   "253 Najoles Rd - I-97 Business Park/Najoles",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966333554",
+   "806 Landmark Dr - Quarterfield Center",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966341066",
+   "441 Defense Highway - Rt 450 Business Park",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966347068",
+   "183 Harry S. Truman Parkway - Annapolis Corporate",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966345842",
+   "2629 Riva Rd - Annapolis Crossing",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966331265",
+   "801 Landmark Dr - Quarterfield Center",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966335327",
+   "802 Landmark Dr - Quarterfield Center",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966318700",
+   "2635 Riva Rd - Annapolis Crossing",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   null
+  ],
+  [
+   "12966324491",
+   "1114 Benfield Blvd - I-97/Ritchie @ Cypress",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-02",
+   null,
+   null
+  ],
+  [
+   "12977317182",
+   "1 Church St - Capital Bank",
+   "group_mknza884",
+   "Pepco",
+   "HBS",
+   "2026-09-04",
+   null,
+   null
+  ],
+  [
+   "13026079945",
+   "1021 Dulaney-Valley Rd - Hoffberger Science (Phase 1)",
+   "group_mknza884",
+   "BGE",
+   "HBS",
+   "2026-09-10",
+   7225,
+   7225
+  ],
+  [
+   "13026161321",
+   "11710 Hunters Ln - Upper School - Upper School",
+   "group_mknza884",
+   "Pepco",
+   "Energy Dynamics",
+   "2026-09-09",
+   null,
+   null
+  ],
+  [
+   "13041744219",
+   "1 South St - One South Street",
+   "group_mknza884",
+   "BGE",
+   "CGS",
+   "2026-09-09",
+   null,
+   null
+  ],
+  [
+   "12948648908",
+   "17251 Melford Blvd - Melford Town Center",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   4716,
+   4716
+  ],
+  [
+   "12948864114",
+   "415 Williams Ct - Greenleigh at Crossroads",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   4382,
+   4382
+  ],
+  [
+   "12949014273",
+   "502 McCormick Dr - International Trade Center",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   3196,
+   3196
+  ],
+  [
+   "12949414836",
+   "9818-9860 Liberty Rd - Marriottsville Center",
+   "new_group53745",
+   "BGE",
+   "MDEA",
+   "2026-09-01",
+   25173,
+   12586
+  ],
+  [
+   "12949602811",
+   "11521 Cronridge Dr - Business Ctr @ Owings Mills IV",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   10849,
+   10849
+  ],
+  [
+   "12949988296",
+   "11403 Cronhill Dr - Business Ctr @ Owings Mills II",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   10031,
+   10031
+  ],
+  [
+   "12953603555",
+   "116 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-02",
+   25263,
+   25263
+  ],
+  [
+   "12955711464",
+   "114 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-02",
+   10932,
+   10932
+  ],
+  [
+   "12957664768",
+   "405 Williams Ct - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3840,
+   3840
+  ],
+  [
+   "12957669818",
+   "415 Williams Ct - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3680,
+   3680
+  ],
+  [
+   "12957769130",
+   "425 Williams Ct - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3840,
+   3840
+  ],
+  [
+   "12957887689",
+   "720 Concourse Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   640,
+   640
+  ],
+  [
+   "12957960410",
+   "740 Concourse Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   1440,
+   1440
+  ],
+  [
+   "12958481842",
+   "750 Concourse Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   2080,
+   2080
+  ],
+  [
+   "12958543463",
+   "6160 Guardian Gateway Dr - The Gate @ APG",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   2560,
+   2560
+  ],
+  [
+   "12958631100",
+   "6170 Guardian Gateway Dr - The Gate @ APG",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3200,
+   3200
+  ],
+  [
+   "12958733021",
+   "6180 Guardian Gateway Dr - The Gate @ APG",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3680,
+   3680
+  ],
+  [
+   "12958793037",
+   "6245 Guardian Gateway Dr - The Gate @ APG",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   4000,
+   4000
+  ],
+  [
+   "12958838547",
+   "11521 Wakefield St - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   1120,
+   1120
+  ],
+  [
+   "12958871727",
+   "11531 Wakefield St - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   800,
+   800
+  ],
+  [
+   "12959462968",
+   "11560 Crossroads Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3200,
+   3200
+  ],
+  [
+   "12959501232",
+   "11570 Crossroads Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3200,
+   3200
+  ],
+  [
+   "12959605226",
+   "11600 Crossroads Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   3200,
+   3200
+  ],
+  [
+   "12959571213",
+   "11615 Crossroads Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   2560,
+   2560
+  ],
+  [
+   "12959615110",
+   "11650 Crossroads Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   2400,
+   2400
+  ],
+  [
+   "12959748289",
+   "11695 Crossroads Cir - Greenleigh at Crossroads",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   2240,
+   2240
+  ],
+  [
+   "12960547064",
+   "11403 Cronhill Dr - Business Ctr @ Owings Mills II",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   1920,
+   1920
+  ],
+  [
+   "12960590619",
+   "11436 Cronridge Dr - Business Ctr @ Owings Mills I",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   1960,
+   1960
+  ],
+  [
+   "12960713862",
+   "11521 Cronridge Dr - Business Ctr @ Owings Mills IV",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-02",
+   1960,
+   1960
+  ],
+  [
+   "12968229150",
+   "425 Williams Ct - Greenleigh at Crossroads",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   16413,
+   16413
+  ],
+  [
+   "12968750343",
+   "114 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   1280,
+   1280
+  ],
+  [
+   "12968868052",
+   "118 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   3840,
+   3840
+  ],
+  [
+   "12968780416",
+   "116 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   1920,
+   1920
+  ],
+  [
+   "12968806195",
+   "120 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   3840,
+   3840
+  ],
+  [
+   "12969317841",
+   "120 Westminster Pike - Reisterstown Crossing",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   8500,
+   8500
+  ],
+  [
+   "12969497378",
+   "1 North Park Dr - North Park",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   5247,
+   5247
+  ],
+  [
+   "12969522237",
+   "77 Dover Rd - Glen Burnie Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   2240,
+   2240
+  ],
+  [
+   "12969582401",
+   "81 Dover Rd - Glen Burnie Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   640,
+   640
+  ],
+  [
+   "12969601851",
+   "87 Dover Rd - Glen Burnie Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   320,
+   320
+  ],
+  [
+   "12969655843",
+   "91 Dover Rd - Glen Burnie Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   160,
+   160
+  ],
+  [
+   "12969694831",
+   "93 Dover Rd - Glen Burnie Crossing",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   160,
+   160
+  ],
+  [
+   "12969767464",
+   "502 McCormick Dr - International Trade Center",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   2000,
+   2000
+  ],
+  [
+   "12969781296",
+   "901 Mercantile Dr - Arundel Overlook",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   3040,
+   3040
+  ],
+  [
+   "12969855053",
+   "1513 Signature Dr - Arundel Overlook",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   3680,
+   3680
+  ],
+  [
+   "12969932294",
+   "1743 Dorsey Rd - Route 100 Tech Park",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   2880,
+   2880
+  ],
+  [
+   "12970045109",
+   "2605 Cabover Dr - BWI Commerce Park",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   2060,
+   2060
+  ],
+  [
+   "12970093108",
+   "2609 Cabover Dr - BWI Commerce Park",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   1280,
+   1280
+  ],
+  [
+   "12970192321",
+   "7221 Grayburn Dr - Glen Burnie Business Center",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   480,
+   480
+  ],
+  [
+   "12970363216",
+   "7504 Connelley Dr - BWI Commerce Park",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   1920,
+   1920
+  ],
+  [
+   "12971167909",
+   "7520 Connelley Dr - BWI Commerce Park",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   480,
+   480
+  ],
+  [
+   "12971187082",
+   "7521 Connelley Dr - BWI Commerce Park",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-03",
+   1440,
+   1440
+  ],
+  [
+   "12972466702",
+   "983 Waugh Chapel Way - Waugh Chapel",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   8751,
+   8751
+  ],
+  [
+   "12976266870",
+   "23566 Oakview Dr - Lexington Exchange",
+   "new_group53745",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-04",
+   2560,
+   2560
+  ],
+  [
+   "12979656776",
+   "10540 York Rd - Yorkridge Center North",
+   "new_group53745",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-04",
+   3840,
+   3840
+  ],
+  [
+   "12997164478",
+   "17341 Melford Blvd - Melford Town Center",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-08",
+   2254,
+   2254
+  ],
+  [
+   "12997947717",
+   "7504 Connelley Dr - BWI Commerce Park",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-08",
+   5391,
+   5391
+  ],
+  [
+   "12998740847",
+   "7521 Connelley Dr - BWI Commerce Park",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-08",
+   2345,
+   2345
+  ],
+  [
+   "13002453411",
+   "2605 Cabover Dr - BWI Commerce Park",
+   "new_group53745",
+   "BGE",
+   "HBS",
+   "2026-09-09",
+   7038,
+   7038
+  ],
+  [
+   "12941688631",
+   "5061 Howerton Way - Melford Town Center",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   null,
+   3736
+  ],
+  [
+   "12941714247",
+   "5061 Howerton Way - Melford Town Center",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   null,
+   3736
+  ],
+  [
+   "12941681040",
+   "601 Global Way - BWI Tech I",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   null,
+   6599
+  ],
+  [
+   "12941717416",
+   "601 Global Way - BWI Tech I",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   null,
+   6599
+  ],
+  [
+   "12941758016",
+   "505 Progress Dr - BWI Technology Park",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   null,
+   1700
+  ],
+  [
+   "12941722468",
+   "505 Progress Dr - BWI Technology Park",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-01",
+   null,
+   1700
+  ],
+  [
+   "12948238864",
+   "1504 Joh Ave - Baltimore Gateway (Triangle)",
+   "new_group47105",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-01",
+   null,
+   960
+  ],
+  [
+   "12948238540",
+   "1506 Joh Ave - Baltimore Gateway (Triangle)",
+   "new_group47105",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-01",
+   null,
+   1760
+  ],
+  [
+   "12948207645",
+   "1502 Joh Ave - Baltimore Gateway (Triangle)",
+   "new_group47105",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-01",
+   null,
+   1440
+  ],
+  [
+   "12948248731",
+   "4420 73rd Ave - Landover Hills Baptist Church",
+   "new_group47105",
+   "Pepco",
+   "HBS",
+   "2026-09-01",
+   null,
+   2725
+  ],
+  [
+   "12948226949",
+   "4420 73rd Ave - Landover Hills Baptist Church",
+   "new_group47105",
+   "Pepco",
+   "HBS",
+   "2026-09-01",
+   null,
+   2725
+  ],
+  [
+   "12948598405",
+   "4901 Tesla Dr - Melford Town Center",
+   "new_group47105",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-01",
+   null,
+   3200
+  ],
+  [
+   "12948675228",
+   "4831 Tesla Dr - Melford Town Center",
+   "new_group47105",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-01",
+   null,
+   2080
+  ],
+  [
+   "12948757854",
+   "4801 Tesla Dr - Melford Town Center",
+   "new_group47105",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-01",
+   null,
+   2400
+  ],
+  [
+   "12972804104",
+   "4601 Liberty Heights Ave - Shop Rite",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   7879
+  ],
+  [
+   "12972841641",
+   "4601 Liberty Heights Ave - Shop Rite",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   7879
+  ],
+  [
+   "12972817511",
+   "14330 Jarrettsville Pike - Shop Rite Jacksonville",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   780
+  ],
+  [
+   "12972812417",
+   "14330 Jarrettsville Pike - Shop Rite Jacksonville",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   780
+  ],
+  [
+   "12972909028",
+   "2401 Cleanleigh Dr - Shop Rite of Perring Pkwy",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   807
+  ],
+  [
+   "12972909316",
+   "2401 Cleanleigh Dr - Shop Rite of Perring Pkwy",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   807
+  ],
+  [
+   "12972980243",
+   "223 N Main St - Shop Rite Broadway & Main",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   629
+  ],
+  [
+   "12973002067",
+   "223 N Main St - Shop Rite Broadway & Main",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-03",
+   null,
+   629
+  ],
+  [
+   "12973881186",
+   "949 Beards Hill Rd - Shop Rite Aberdeen",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-04",
+   null,
+   550
+  ],
+  [
+   "12973878117",
+   "949 Beards Hill Rd - Shop Rite Aberdeen",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-04",
+   null,
+   550
+  ],
+  [
+   "12973896997",
+   "5 Bel Air S Pkwy - Shop Rite Bel Air",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-04",
+   null,
+   1429
+  ],
+  [
+   "12973896617",
+   "5 Bel Air S Pkwy - Shop Rite Bel Air",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-04",
+   null,
+   1429
+  ],
+  [
+   "12973903984",
+   "2101 Rock Spring Rd - Shop Rite Tower Plaza",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-04",
+   null,
+   1851
+  ],
+  [
+   "12973920435",
+   "2101 Rock Spring Rd - Shop Rite Tower Plaza",
+   "new_group47105",
+   "BGE",
+   "MDEA",
+   "2026-09-04",
+   null,
+   1851
+  ],
+  [
+   "12976796000",
+   "55 N Court St - Courthouse Annex (Phase 2)",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-04",
+   null,
+   3795
+  ],
+  [
+   "12976831369",
+   "290 South Center St - Health Department (Phase 2)",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-04",
+   null,
+   2631
+  ],
+  [
+   "12997651506",
+   "16010 Excalibur Rd - Pin Oak Village",
+   "new_group47105",
+   "BGE",
+   "HBS",
+   "2026-09-08",
+   null,
+   9497
+  ],
+  [
+   "13018420877",
+   "1500 E Jefferson St - Jewish Foundation for Homes",
+   "new_group47105",
+   "Pepco",
+   "Loya Consulting",
+   "2026-09-10",
+   null,
+   11148
+  ],
+  [
+   "13018435129",
+   "1500 E Jefferson St - Jewish Foundation for Homes",
+   "new_group47105",
+   "Pepco",
+   "Loya Consulting",
+   "2026-09-10",
+   null,
+   11148
+  ],
+  [
+   "13018764603",
+   "11800 W Broad Street - Hyatt House (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   840
+  ],
+  [
+   "13018718728",
+   "11800 W Broad Street - Hyatt House (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   840
+  ],
+  [
+   "13018851523",
+   "8710 Midlothian Tpke - Holiday Inn Express (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   450
+  ],
+  [
+   "13018858657",
+   "8710 Midlothian Tpke - Holiday Inn Express (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   450
+  ],
+  [
+   "13018877546",
+   "500 E Broad St - Richmond Marriott Hotel (C)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   22450
+  ],
+  [
+   "13018867666",
+   "500 E Broad St - Richmond Marriott Hotel (C)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   22450
+  ],
+  [
+   "13020302102",
+   "1480 Crystal Dr - Crown Plaza Crystal City (C)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   26722
+  ],
+  [
+   "13020268042",
+   "1480 Crystal Dr - Crown Plaza Crystal City (C)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   26722
+  ],
+  [
+   "13020427673",
+   "1480 Crystal Dr - Crown Plaza Crystal City (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   1073
+  ],
+  [
+   "13020428451",
+   "1480 Crystal Dr - Crown Plaza Crystal City (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-10",
+   null,
+   1073
+  ],
+  [
+   "13027921211",
+   "22744 Holiday Park Dr - TownePlace Suites by Marriott Dulles Airport (C)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-11",
+   null,
+   391
+  ],
+  [
+   "13027898861",
+   "22744 Holiday Park Dr - TownePlace Suites by Marriott Dulles Airport (C)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-11",
+   null,
+   391
+  ],
+  [
+   "13027933614",
+   "22744 Holiday Park Dr - TownePlace Suites by Marriott Dulles Airport (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-11",
+   null,
+   287
+  ],
+  [
+   "13027906721",
+   "22744 Holiday Park Dr - TownePlace Suites by Marriott Dulles Airport (P)",
+   "new_group47105",
+   "Dominion - TRC",
+   "CGS",
+   "2026-09-11",
+   null,
+   287
+  ],
+  [
+   "12969230483",
+   "3920 Vero Rd - Caton Research Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-03",
+   null,
+   1280
+  ],
+  [
+   "12969236694",
+   "3918 Vero Rd - Caton Research Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-03",
+   null,
+   960
+  ],
+  [
+   "12969260083",
+   "3916 Vero Rd - Caton Research Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-03",
+   null,
+   1280
+  ],
+  [
+   "12969239540",
+   "9520 Gerwig Ln - Columbia 3",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-03",
+   null,
+   1440
+  ],
+  [
+   "12969199212",
+   "9475 Gerwig Ln - Columbia 2",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-03",
+   null,
+   2480
+  ],
+  [
+   "12972498260",
+   "914 Bay Ridge Rd - Georgetown Plaza (Phase 2)",
+   "new_group30190",
+   "BGE",
+   "HBS",
+   "2026-09-03",
+   null,
+   34597
+  ],
+  [
+   "12992240731",
+   "7021 Elm Rd - BWI Daily Parking Lot",
+   "new_group30190",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-08",
+   null,
+   2080
+  ],
+  [
+   "13010661339",
+   "7180 Troy Hill Dr - Troy Hill Corporate Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-09",
+   null,
+   2400
+  ],
+  [
+   "13010667324",
+   "3922 Vero Rd - Caton Research Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-09",
+   null,
+   2720
+  ],
+  [
+   "13010690227",
+   "2525 Lord Baltimore Dr - Windsor Corp Park",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-09",
+   null,
+   3040
+  ],
+  [
+   "13010685640",
+   "7020 Troy Hill Dr - Troy Hill Corporate Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-09",
+   null,
+   2560
+  ],
+  [
+   "13010655674",
+   "2605 Lord Baltimore Dr - Windsor Corp Park",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-09",
+   null,
+   2560
+  ],
+  [
+   "13010676848",
+   "1611 Guilford Ave - Reveal Real Estate MGMT",
+   "new_group30190",
+   "BGE",
+   "CGS",
+   "2026-09-09",
+   null,
+   24427
+  ],
+  [
+   "13015618445",
+   "6250 Peachtree Dunwoody Rd - Courtyard Marriott",
+   "new_group30190",
+   "GA Power",
+   "CGS",
+   "2026-09-10",
+   null,
+   3376
+  ],
+  [
+   "13015562201",
+   "1232 Hammond Dr - Hyatt Place Atlanta Perimeter Center",
+   "new_group30190",
+   "GA Power",
+   "CGS",
+   "2026-09-10",
+   null,
+   5623
+  ],
+  [
+   "13015679363",
+   "3443 Busbee Dr NW - Sonesta ES Kennesaw",
+   "new_group30190",
+   "GA Power",
+   "CGS",
+   "2026-09-10",
+   null,
+   5687
+  ],
+  [
+   "13020325812",
+   "3921 Vero Rd - Caton Research Center",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-10",
+   null,
+   1280
+  ],
+  [
+   "13021127155",
+   "9-19 East Main St - Winchester Exchange",
+   "new_group30190",
+   "BGE",
+   "MDEA",
+   "2026-09-10",
+   null,
+   5249
+  ],
+  [
+   "13022275882",
+   "6831 Benjamin Franklin Drive - AAK Eastridge (Phase 2)",
+   "new_group30190",
+   "BGE",
+   "Energy Tech",
+   "2026-09-10",
+   null,
+   26248
+  ],
+  [
+   "13022311553",
+   "6811 Benjamin Franklin Dr - AAK Eastridge (Phase 2)",
+   "new_group30190",
+   "BGE",
+   "Energy Tech",
+   "2026-09-10",
+   null,
+   22400
+  ],
+  [
+   "13022299035",
+   "7031 Columbia Gateway Dr - Oracle Columbia Gateway (Phase 2)",
+   "new_group30190",
+   "BGE",
+   "HBS",
+   "2026-09-10",
+   null,
+   87250
+  ],
+  [
+   "13029314992",
+   "1371 Brass Mill Rd - Riverside Corporate Park",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-11",
+   null,
+   3040
+  ],
+  [
+   "13029324240",
+   "2505 Lord Baltimore Dr - Windsor Corp Park",
+   "new_group30190",
+   "HVAC BPTU",
+   "HBS",
+   "2026-09-11",
+   null,
+   2720
+  ],
+  [
+   "13029332880",
+   "4861 Tesla Dr - Melford Town Center",
+   "new_group30190",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-11",
+   null,
+   3200
+  ],
+  [
+   "13029351422",
+   "4961 Tesla Dr - Melford Town Center",
+   "new_group30190",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-11",
+   null,
+   2080
+  ],
+  [
+   "13029363283",
+   "17251 Melford Blvd - Melford Town Center",
+   "new_group30190",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-11",
+   null,
+   520
+  ],
+  [
+   "13033376567",
+   "5061 Howerton Way - Melford Town Center",
+   "new_group30190",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-12",
+   null,
+   2320
+  ],
+  [
+   "13033352978",
+   "4891 Tesla Dr - Melford Town Center",
+   "new_group30190",
+   "HVAC BTU",
+   "HBS",
+   "2026-09-12",
+   null,
+   3060
+  ],
+  [
+   "13033364521",
+   "1420 Maryland Ave - Bogomolny Library (Phase 1)",
+   "new_group30190",
+   "BGE",
+   "HBS",
+   "2026-09-12",
+   null,
+   12750
+  ]
+ ]
+}

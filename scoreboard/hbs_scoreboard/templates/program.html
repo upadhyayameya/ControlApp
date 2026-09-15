@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_rows.html" import kpi_table %}
+{% block title %}{{ pm.program.display }} — HBS Scoreboard{% endblock %}
+{% block content %}
+<p><a href="/">&larr; All programs</a></p>
+<div class="card">
+  <h2>{{ pm.program.display }}
+    <span>{% if pm.program.priority %}<span class="tag priority">Priority push</span>{% endif %}</span>
+  </h2>
+  {% if pm.note %}<div class="note">{{ pm.note }}</div>{% endif %}
+  {{ kpi_table(sb, pm) }}
+</div>
+{% endblock %}

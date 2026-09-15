@@ -1,0 +1,7 @@
+data/*.sqlite
+data/*.sqlite-journal
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+*.xlsx.bak

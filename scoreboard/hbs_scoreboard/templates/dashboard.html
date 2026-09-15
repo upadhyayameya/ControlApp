@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "_rows.html" import kpi_table %}
+{% block content %}
+
+{% for w in sb.warnings %}
+<div class="banner {{ w.severity }}">
+  <b>{{ w.code.replace('_',' ').title() }}</b>{{ w.message }}
+  {% if w.detail %}<div class="detail">{{ w.detail }}</div>{% endif %}
+</div>
+{% endfor %}
+
+<div class="meta">
+  <div class="metric">
+    <div class="k">Month elapsed</div>
+    <div class="v">{{ sb.pace_pct|pct }}</div>
+    <div class="s">{{ sb.working_days_elapsed }} / {{ sb.working_days_total }} working days</div>
+  </div>
+  <div class="metric">
+    <div class="k">Weeks remaining</div>
+    <div class="v">{{ sb.weeks_remaining }}</div>
+    <div class="s">of {{ sb.config.weeks|length }}</div>
+  </div>
+  <div class="metric">
+    <div class="k">Repeat rate</div>
+    <div class="v">{{ sb.repeat_rate.rate|pct }}</div>
+    <div class="s">{{ sb.repeat_rate.repeats_flagged }} of {{ sb.repeat_rate.submissions_considered }} · target 0</div>
+  </div>
+  <div class="metric">
+    <div class="k">Colour basis</div>
+    <div class="v" style="font-size:15px">Pace to date</div>
+    <div class="s">not the latest week — this work batches</div>
+  </div>
+  <div class="metric">
+    <div class="k">Data pulled</div>
+    <div class="v" style="font-size:15px">{{ sb.dataset.pulled_at.strftime('%Y-%m-%d %H:%M UTC') if sb.dataset.pulled_at else 'from cache' }}</div>
+    <div class="s">{{ sb.dataset.entries|length }} raw items · {{ sb.dataset.counted|length }} counted</div>
+  </div>
+</div>
+
+{% for pm in sb.programs %}
+<div class="card">
+  <h2>
+    <span><a href="/program/{{ pm.program.key }}">{{ pm.program.display }}</a></span>
+    <span>
+      {% if pm.program.priority %}<span class="tag priority">Priority push</span>{% endif %}
+      {% if not pm.program.carries_utility %}<span class="tag">No utility</span>{% endif %}
+    </span>
+  </h2>
+  {% if pm.note %}<div class="note">{{ pm.note }}</div>{% endif %}
+  {{ kpi_table(sb, pm) }}
+</div>
+{% endfor %}
+
+{% if sb.cross_checks %}
+<div class="card">
+  <h2>Cash cross-check <span class="tag">monday vs accounting</span></h2>
+  <div class="note">
+    <b>Payments Received and Revenue are not monday numbers.</b> They are accounting figures
+    owned by the Director of Accounting and entered by hand; this tool never overwrites them.
+    monday's <i>Closeouts Received</i> is shown below only as a cross-check — the two will differ.
+  </div>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">Program</th><th>monday Closeouts Received ($)</th>
+      <th>Unique projects</th><th class="l">Label</th></tr></thead>
+    <tbody>
+    {% for c in sb.cross_checks %}
+      <tr><td class="l">{{ c.program }}</td>
+        <td>{{ c.monday_closeouts_received|money }}</td>
+        <td>{{ c.unique_projects }}</td>
+        <td class="l corr">{{ c.label }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
