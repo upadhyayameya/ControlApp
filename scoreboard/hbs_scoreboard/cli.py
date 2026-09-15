@@ -176,8 +176,32 @@ def cmd_upload(args) -> int:
 
 def cmd_serve(args) -> int:
     from .web import create_app
+
+    db = Path(args.db)
+    if not db.exists():
+        log.error("no cache at %s. Load the sample first:\n"
+                  "    python scripts/load_sample.py %s\n"
+                  "or pull live data with MONDAY_API_KEY set:\n"
+                  "    python -m hbs_scoreboard.cli --db %s pull",
+                  db, db, db)
+        return 2
+
     app = create_app(config_path=args.config, db_path=args.db, offline=args.offline)
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    url = f"http://{args.host}:{args.port}"
+    # Say it plainly and early: a silent start is indistinguishable from a
+    # process that died, and the browser just shows connection refused.
+    print(f"\n  HBS scoreboard serving at  {url}\n"
+          f"  cache: {db}  ({'offline' if args.offline else 'live'})\n"
+          f"  press Ctrl+C to stop. This window stays busy while it runs.\n",
+          flush=True)
+    try:
+        app.run(host=args.host, port=args.port, debug=args.debug)
+    except OSError as exc:
+        if getattr(exc, "errno", None) in (48, 98, 10048) or "in use" in str(exc).lower():
+            log.error("port %s is already in use. Try a different one:\n"
+                      "    ... serve --port %s", args.port, args.port + 1)
+            return 2
+        raise
     return 0
 
 
