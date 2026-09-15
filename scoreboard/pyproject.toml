@@ -1,0 +1,16 @@
+[project]
+name = "hbs-scoreboard"
+version = "0.1.0"
+description = "Live weekly scoreboard for the HBS Solutions Building Tune-Up division"
+requires-python = ">=3.11"
+dependencies = ["requests>=2.31", "PyYAML>=6.0", "openpyxl>=3.1", "Flask>=3.0"]
+
+[project.scripts]
+hbs-scoreboard = "hbs_scoreboard.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]

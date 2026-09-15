@@ -1,0 +1,177 @@
+# HBS Weekly Scoreboard -- layout, goals and Excel mapping.
+# Mirrors HBS_Weekly_Scoreboard_4.xlsx. Row numbers are the live workbook's.
+#
+# measure:  count | dollars | level
+#   level  = utilization %, MRR, live contract counts. Never summed across
+#            weeks, never divided by week count (rule 7).
+# source:   monday | manual
+#   manual = owned by the Director of Accounting and entered by hand. The
+#            Excel writer never touches these cells (rule 5).
+
+period:
+  year: 2026
+  month: 9
+
+weeks:
+  # calendar = whole-month coverage (default). team = the workbook's own
+  # convention, which leaves 9/1-9/6 in no week at all.
+  mode: calendar
+  count: 4
+  team_starts: ["2026-09-07", "2026-09-14", "2026-09-21", "2026-09-28"]
+
+rules:
+  # Rule 2: count a repeat submission once, at first logging. Flip to true if
+  # the business decides a resubmission after an ICF/TRC RFI is new work.
+  # Applied to goals and actuals together either way.
+  count_repeats_as_new: false
+  # Rule 4: cross-check the phase-marker split against BPTU Tracker membership.
+  bptu_membership_crosscheck: true
+
+status:
+  # Colour on pace-to-date by working days, not on the latest week. This work
+  # batches hard -- 40+ prescriptive preapprovals can land in a single day.
+  basis: pace_to_date
+  yellow_threshold: 0.85   # >= 85% of pace-to-date target
+  green_threshold: 1.00
+
+excel:
+  week_columns: ["E", "F", "G", "H"]   # Wk1..Wk4
+  sheets:
+    tune_up_factory: "Tune-Up Factory"
+    company_results: "Company Results"
+    direct_install: "Direct Install"
+    recurring_revenue: "Recurring Revenue"
+    aging: "Aging & Stalled Work"
+
+programs:
+  - key: prescriptive
+    name: "Prescriptive"
+    display: "EmPower MD Prescriptive HVAC Tune-Ups"
+    priority: true
+    sheet: tune_up_factory
+    # Prescriptive records carry no real utility at all (rule 3).
+    carries_utility: false
+    rows:
+      - {row: 6,  kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "Steve Weaver (PM)"}
+      - {row: 7,  kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "Steve Weaver (PM)"}
+      - {row: 8,  kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "Steve Weaver (PM)", goal: 80000}
+      - {row: 9,  kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "Steve Weaver (PM)"}
+      - {row: 10, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 80000}
+      - {row: 11, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 12, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "Steve Weaver (PM)"}
+      - {row: 13, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 80000}
+
+  - key: bge_tune_up
+    name: "BGE Tune-Up"
+    display: "BGE Tune-Up"
+    sheet: tune_up_factory
+    rows:
+      - {row: 17, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "David Wilkinson (Lead Engineer)"}
+      - {row: 18, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "David Wilkinson (Lead Engineer)"}
+      - {row: 19, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "David Wilkinson (Lead Engineer)", goal: 240000}
+      - {row: 20, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "David Wilkinson (Lead Engineer)"}
+      - {row: 21, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 240000}
+      - {row: 22, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 23, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 24, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 240000}
+
+  - key: bge_bptu
+    name: "BGE BPTU"
+    display: "BGE Building Performance Tune-Up (BPTU)"
+    sheet: tune_up_factory
+    rows:
+      - {row: 28, kpi: "# of BPTUs Submitted",                        stage: preapprovals_submitted,    measure: count,   owner: "David Wilkinson (Lead Engineer)", goal: 10}
+      - {row: 29, kpi: "Total $ of BPTU Phase-1 Applications Submitted", stage: preapprovals_submitted, measure: dollars, owner: "David Wilkinson (Lead Engineer)", goal: 86700, phase: 1}
+      - {row: 30, kpi: "$ Value of BPTU Phase-2 Incentive Submitted for Pre-Approval", stage: preapprovals_submitted, measure: dollars, owner: "David Wilkinson (Lead Engineer)", goal: 300000, phase: 2}
+      - {row: 31, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "David Wilkinson (Lead Engineer)"}
+      - {row: 32, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "David Wilkinson (Lead Engineer)"}
+      - {row: 33, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "David Wilkinson (Lead Engineer)", goal: 386700}
+      - {row: 34, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "David Wilkinson (Lead Engineer)"}
+      - {row: 35, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 300000}
+      - {row: 36, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 37, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 38, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 300000}
+
+  - key: pepco_wgl
+    name: "Pepco"
+    display: "Pepco / WGL"
+    sheet: tune_up_factory
+    also_utilities: ["Washington Gas"]
+    rows:
+      - {row: 42, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 43, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 44, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "Ameya (Lead Engineer)", goal: 240000}
+      - {row: 45, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 46, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 240000}
+      - {row: 47, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 48, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 49, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 240000}
+
+  - key: delmarva
+    name: "Delmarva"
+    display: "Delmarva"
+    sheet: tune_up_factory
+    rows:
+      - {row: 53, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 54, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 55, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "Ameya (Lead Engineer)", goal: 60000}
+      - {row: 56, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 57, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 200000}
+      - {row: 58, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 59, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 60, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 200000}
+
+  - key: smeco
+    name: "SMECO"
+    display: "SMECO"
+    sheet: tune_up_factory
+    rows:
+      - {row: 64, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 65, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 66, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "Ameya (Lead Engineer)", goal: 5000}
+      - {row: 67, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 68, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 5000}
+      - {row: 69, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 70, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 71, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 5000}
+
+  - key: georgia
+    name: "GA Power"
+    display: "Georgia"
+    sheet: tune_up_factory
+    rows:
+      - {row: 75, kpi: "New Qualified GA Opportunities",              source: manual, measure: count, owner: "TBD"}
+      - {row: 76, kpi: "Customer Meetings / Site Visits",             source: manual, measure: count, owner: "TBD"}
+      - {row: 77, kpi: "Proposals Submitted",                         source: manual, measure: count, owner: "TBD"}
+      - {row: 78, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 79, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 80, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "Ameya (Lead Engineer)", goal: 49000}
+      - {row: 81, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 82, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 49000}
+      - {row: 83, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 84, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 85, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 49000}
+      - {row: 86, kpi: "Revenue ($)",                                 source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)"}
+      - {row: 87, kpi: "Technician Utilization / Productive Hours (%)", source: manual, measure: level, owner: "David Rodriguez (Ops Mgr)"}
+
+  - key: virginia_cgs
+    name: "Dominion - TRC"
+    display: "Virginia / CGS"
+    sheet: tune_up_factory
+    source_filter: ["CGS"]
+    rows:
+      - {row: 91, kpi: "Audits Completed",                            stage: audits_performed,          measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 92, kpi: "Pre-Approvals Submitted (count)",             stage: preapprovals_submitted,    measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 93, kpi: "Pre-Approvals Submitted ($ Value)",           stage: preapprovals_submitted,    measure: dollars, owner: "Ameya (Lead Engineer)", goal: 1000}
+      - {row: 94, kpi: "Pre-Approvals Approved (count)",              stage: preapprovals_received,     measure: count,   owner: "Ameya (Lead Engineer)"}
+      - {row: 95, kpi: "Implementations Scheduled (Est. Incentive $)", stage: implementations_scheduled, measure: dollars, owner: "David Rodriguez (Ops Mgr)", goal: 5000}
+      - {row: 96, kpi: "Implementations Completed (count)",           stage: implementations_completed, measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 97, kpi: "Closeouts Submitted (count)",                 stage: closeouts_submitted,       measure: count,   owner: "David Rodriguez (Ops Mgr)"}
+      - {row: 98, kpi: "Payments Received ($)",                       source: manual, measure: dollars, owner: "Devon Goforth (Director of Accounting)", goal: 5000}
+
+# Rows the writer must never touch, beyond those marked source: manual above.
+# Accounting-owned figures across the other sheets (rule 5).
+protected:
+  - {sheet: company_results, rows: [6, 7, 8, 9, 10, 11, 38], reason: "Revenue by stream and deposits -- accounting-owned"}
+  - {sheet: direct_install,  rows: [10, 12], reason: "Revenue and payments -- accounting-owned"}
+  - {sheet: recurring_revenue, rows: [7, 15], reason: "MRR is a level; billed/received is accounting-owned"}

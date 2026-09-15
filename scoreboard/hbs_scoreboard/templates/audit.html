@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Audit trail — HBS Scoreboard{% endblock %}
+{% block content %}
+<p><a href="/">&larr; Dashboard</a></p>
+
+<div class="card">
+  <h2>Corrections applied <span class="tag">{{ sb.dataset.corrections|length }}</span></h2>
+  <div class="note">Every correction that changed a number, with the original kept visible beside it.</div>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">Rule</th><th class="l">Program</th><th class="l">Stage</th>
+      <th>Raw count</th><th>Counted</th><th>Raw $</th><th>Counted $</th>
+      <th class="l">Detail</th><th class="l">Items</th></tr></thead>
+    <tbody>
+    {% for c in sb.dataset.corrections %}
+      <tr>
+        <td class="l"><span class="pill {{ 'dup' if c.rule == 'unique_projects' else 'rep' }}">{{ c.rule.replace('_',' ') }}</span></td>
+        <td class="l">{{ c.program }}</td>
+        <td class="l">{{ c.stage.label }}</td>
+        <td>{{ c.raw_count }}</td><td>{{ c.corrected_count }}</td>
+        <td>{{ c.raw_value|money }}</td><td>{{ c.corrected_value|money }}</td>
+        <td class="l corr">{{ c.detail }}</td>
+        <td class="l corr">{{ c.item_ids|join(', ') }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="9" class="l corr">No corrections for this period.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Repeat rate <span class="tag">target zero</span></h2>
+  <div class="note">
+    {{ sb.repeat_rate.repeats_flagged }} of {{ sb.repeat_rate.submissions_considered }} submissions
+    ({{ sb.repeat_rate.rate|pct }}) match an earlier submission in a prior period,
+    worth {{ sb.repeat_rate.value_flagged|money }}.
+    Setting: repeats are <b>{{ 'counted as new work' if sb.config.count_repeats_as_new else 'counted once, at first logging' }}</b>.
+  </div>
+</div>
+
+<div class="card">
+  <h2>Source availability</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">Source</th><th class="l">Status</th></tr></thead>
+    <tbody>
+    {% for name, ok in sb.dataset.sources_ok.items() %}
+      <tr><td class="l">{{ name }}</td>
+        <td class="l"><span class="status {{ 'GREEN' if ok else 'RED' }}">{{ 'OK' if ok else 'UNAVAILABLE' }}</span></td></tr>
+    {% else %}
+      <tr><td colspan="2" class="l corr">Served from the local cache; no live pull in this session.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

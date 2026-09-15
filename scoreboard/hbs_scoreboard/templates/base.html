@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}HBS Weekly Scoreboard{% endblock %}</title>
+<style>
+  :root {
+    --bg:#f6f7f9; --card:#fff; --ink:#15181d; --muted:#6b7280; --line:#e3e6ea;
+    --green:#0f7b4f; --green-bg:#e6f5ed; --yellow:#8a6100; --yellow-bg:#fdf3dc;
+    --red:#a4272f; --red-bg:#fbeaeb; --grey:#6b7280; --grey-bg:#f0f1f3;
+    --accent:#1b4f8a;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  header { background:#fff; border-bottom:1px solid var(--line); padding:14px 20px; }
+  header h1 { margin:0; font-size:17px; letter-spacing:-.01em; }
+  header .sub { color:var(--muted); font-size:12.5px; margin-top:3px; }
+  nav a { margin-right:14px; font-size:13px; }
+  .wrap { max-width:1500px; margin:0 auto; padding:18px 20px 60px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px;
+    margin-bottom:18px; overflow:hidden; }
+  .card > h2 { margin:0; padding:11px 14px; font-size:14.5px; border-bottom:1px solid var(--line);
+    background:#fbfcfd; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .card > h2 .tag { font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.05em; padding:2px 7px; border-radius:4px; background:var(--grey-bg); color:var(--muted); }
+  .card > h2 .tag.priority { background:#e8eefb; color:var(--accent); }
+  .note { padding:9px 14px; font-size:12.5px; color:var(--muted); background:#fbfcfd;
+    border-bottom:1px solid var(--line); }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  th, td { padding:5px 7px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table.kpi-table { font-size:12.5px; table-layout:fixed; width:100%; }
+  table.kpi-table td.l.kpi { max-width:215px; overflow:hidden; text-overflow:ellipsis; }
+  table.kpi-table td.owner { max-width:108px; overflow:hidden; text-overflow:ellipsis; }
+  col.c-kpi{width:215px} col.c-own{width:108px} col.c-goal{width:92px} col.c-wk{width:72px}
+  col.c-mtd{width:84px} col.c-dol{width:72px} col.c-avg{width:62px} col.c-pct{width:70px}
+  col.c-pace{width:54px} col.c-gap{width:80px} col.c-rr{width:76px} col.c-st{width:76px}
+  th { font-size:10px; text-transform:uppercase; letter-spacing:.02em; color:var(--muted);
+    font-weight:600; background:#fbfcfd; position:sticky; top:0; }
+  td.l, th.l { text-align:left; }
+  tbody tr:hover { background:#fafbfc; }
+  tbody tr:last-child td { border-bottom:none; }
+  .kpi { font-weight:500; }
+  .owner { color:var(--muted); font-size:12px; }
+  .status { display:inline-block; padding:1.5px 8px; border-radius:4px; font-size:11px;
+    font-weight:700; letter-spacing:.03em; }
+  .GREEN  { background:var(--green-bg);  color:var(--green); }
+  .YELLOW { background:var(--yellow-bg); color:var(--yellow); }
+  .RED    { background:var(--red-bg);    color:var(--red); }
+  .MANUAL, .NO.DATA, .SET.GOAL, .muted-status { background:var(--grey-bg); color:var(--grey); }
+  .corr { color:var(--muted); font-size:11.5px; }
+  .raw { color:var(--muted); font-size:11.5px; text-decoration:line-through; }
+  .banner { border-radius:8px; padding:11px 14px; margin-bottom:12px; font-size:13px;
+    border:1px solid; }
+  .banner.error { background:var(--red-bg); border-color:#f0c4c7; color:#7d1d24; }
+  .banner.warn  { background:var(--yellow-bg); border-color:#eedaa8; color:#6d4c00; }
+  .banner.info  { background:#eef4fc; border-color:#cfe0f5; color:#1b4f8a; }
+  .banner b { display:block; margin-bottom:2px; }
+  .banner .detail { opacity:.85; font-size:12.5px; margin-top:3px; }
+  .meta { display:flex; flex-wrap:wrap; gap:18px; margin-bottom:16px; }
+  .metric { background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:9px 14px; min-width:120px; }
+  .metric .k { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .metric .v { font-size:18px; font-weight:600; margin-top:2px; }
+  .metric .s { font-size:11.5px; color:var(--muted); }
+  .bar { height:4px; background:var(--grey-bg); border-radius:3px; overflow:hidden; min-width:60px; }
+  .bar span { display:block; height:100%; background:var(--accent); }
+  tr.excluded td { color:#9aa1ab; background:#fafbfc; }
+  tr.excluded .pname { text-decoration:line-through; }
+  .pill { font-size:10.5px; padding:1px 6px; border-radius:3px; background:var(--grey-bg);
+    color:var(--muted); font-weight:600; }
+  .pill.dup { background:#fdf3dc; color:#8a6100; }
+  .pill.rep { background:#f3e8fb; color:#6b3fa0; }
+  footer { color:var(--muted); font-size:12px; padding:0 20px 30px; max-width:1500px; margin:0 auto; }
+  .scroll { overflow-x:auto; }
+  .ahead { color:var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <h1>HBS Weekly Scoreboard — Building Tune-Up</h1>
+  <div class="sub">
+    {{ sb.config.year }}-{{ '%02d'|format(sb.config.month) }} ·
+    as of {{ sb.as_of }} ·
+    weeks: <b>{{ sb.config.week_mode }}</b>
+    ({% for w in sb.config.weeks %}Wk{{ w.index }} {{ w.range_label }}{% if not loop.last %} · {% endif %}{% endfor %})
+  </div>
+  <nav style="margin-top:8px">
+    <a href="/">Dashboard</a>
+    <a href="/audit">Audit trail</a>
+    <a href="/api/scoreboard.json">JSON</a>
+    <a href="/?refresh=1">Refresh from monday</a>
+  </nav>
+</header>
+<div class="wrap">
+{% block content %}{% endblock %}
+</div>
+<footer>
+  Every figure traces to the monday items behind it — click any number to drill down.
+  Corrections keep the original visible next to the corrected value.
+  Payments and Revenue are accounting-owned and are never computed here.
+</footer>
+</body>
+</html>

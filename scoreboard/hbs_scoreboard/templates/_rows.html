@@ -1,0 +1,75 @@
+{% macro kpi_table(sb, pm) %}
+<div class="scroll">
+<table class="kpi-table">
+  <colgroup>
+    <col class="c-kpi"><col class="c-own"><col class="c-goal">
+    {% for w in sb.config.weeks %}<col class="c-wk">{% endfor %}
+    <col class="c-mtd"><col class="c-dol"><col class="c-avg"><col class="c-pct">
+    <col class="c-pace"><col class="c-gap"><col class="c-rr"><col class="c-st">
+  </colgroup>
+  <thead>
+    <tr>
+      <th class="l">Program / KPI</th>
+      <th class="l">Owner</th>
+      <th>Monthly Goal</th>
+      {% for w in sb.config.weeks %}<th>Wk{{ w.index }}<br><span style="font-weight:400">{{ w.range_label }}</span></th>{% endfor %}
+      <th>MTD Actual</th>
+      <th>$ MTD</th>
+      <th title="average HBS share per unique project">Avg $</th>
+      <th>% to Goal</th>
+      <th>Pace</th>
+      <th>Gap</th>
+      <th>Run rate<br><span style="font-weight:400">/wk left</span></th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for rm in pm.rows %}
+    <tr>
+      <td class="l kpi">
+        {% if rm.row.source == 'monday' %}
+          <a href="/drill/{{ pm.program.key }}/{{ rm.row.row }}">{{ rm.row.kpi }}</a>
+        {% else %}{{ rm.row.kpi }}{% endif %}
+        {% if rm.duplicates_removed %}<span class="pill dup" title="same-day duplicates removed">−{{ rm.duplicates_removed }} dup</span>{% endif %}
+        {% if rm.repeats_flagged %}<span class="pill rep" title="repeat submissions flagged">{{ rm.repeats_flagged }} repeat</span>{% endif %}
+      </td>
+      <td class="l owner" title="{{ rm.row.owner }}">{{ rm.row.owner }}</td>
+      <td>{% if rm.row.measure == 'dollars' %}{{ rm.goal|money }}{% else %}{{ rm.goal|number }}{% endif %}</td>
+
+      {% for c in rm.weekly %}
+      <td>
+        {% if rm.row.source != 'monday' %}<span class="corr">—</span>
+        {% else %}
+          <a href="/drill/{{ pm.program.key }}/{{ rm.row.row }}?week={{ c.week }}">
+          {% if rm.row.measure == 'dollars' %}{{ c.value|money }}{% else %}{{ c.value|number }}{% endif %}</a>
+          {% if c.raw_value is not none and c.value is not none and c.raw_value != c.value %}
+            <div class="raw" title="raw log entries before corrections">{% if rm.row.measure == 'dollars' %}{{ c.raw_value|money }}{% else %}{{ c.raw_value|number }}{% endif %}</div>
+          {% endif %}
+        {% endif %}
+      </td>
+      {% endfor %}
+
+      <td><b>{% if rm.row.measure == 'dollars' %}{{ rm.mtd|money }}{% else %}{{ rm.mtd|number }}{% endif %}</b>
+        {% if rm.raw_mtd is not none and rm.mtd is not none and rm.raw_mtd != rm.mtd %}
+          <div class="raw">{% if rm.row.measure == 'dollars' %}{{ rm.raw_mtd|money }}{% else %}{{ rm.raw_mtd|number }}{% endif %}</div>
+        {% endif %}
+      </td>
+      <td class="corr">{{ rm.dollars|money }}</td>
+      <td class="corr">{{ rm.avg_value|money }}</td>
+      <td>{{ rm.pct_to_goal|pct }}</td>
+      <td title="% of month elapsed by working days">
+        {% if rm.is_level %}<span class="corr">level</span>
+        {% else %}<span style="font-size:11.5px">{{ rm.pace_pct|pct }}</span><div class="bar"><span style="width:{{ (rm.pace_pct*100)|round|int }}%"></span></div>{% endif %}
+      </td>
+      <td>{% if rm.gap is none %}—
+        {% elif rm.gap <= 0 %}<span class="ahead" title="ahead of goal">+{% if rm.row.measure == 'dollars' %}{{ (-rm.gap)|money }}{% else %}{{ (-rm.gap)|number }}{% endif %}</span>
+        {% else %}{% if rm.row.measure == 'dollars' %}{{ rm.gap|money }}{% else %}{{ rm.gap|number }}{% endif %}{% endif %}</td>
+      <td>{% if rm.required_run_rate is not none %}{% if rm.row.measure == 'dollars' %}{{ rm.required_run_rate|money }}{% else %}{{ rm.required_run_rate|number }}{% endif %}{% else %}—{% endif %}</td>
+      <td><span class="status {{ rm.status|replace(' ','.') }}">{{ rm.status }}</span></td>
+    </tr>
+    {% if rm.note %}<tr><td colspan="{{ 12 + sb.config.weeks|length }}" class="l corr" style="padding-top:0;border-bottom:1px solid var(--line)">{{ rm.note }}</td></tr>{% endif %}
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endmacro %}
