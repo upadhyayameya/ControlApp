@@ -10,6 +10,27 @@ from hbs_scoreboard import config as configmod  # noqa: E402
 from hbs_scoreboard.models import KpiEvent, Stage  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _isolate_credentials():
+    """Keep credential env vars from leaking between tests.
+
+    load_dotenv assigns to os.environ directly, so a test that exercises it
+    can otherwise leave MONDAY_API_KEY set and quietly make a later test
+    ("refuses to run without a key") pass for the wrong reason.
+    """
+    import os
+    names = ("MONDAY_API_KEY", "MS_TENANT_ID", "MS_CLIENT_ID", "MS_CLIENT_SECRET")
+    saved = {n: os.environ.get(n) for n in names}
+    try:
+        yield
+    finally:
+        for n, v in saved.items():
+            if v is None:
+                os.environ.pop(n, None)
+            else:
+                os.environ[n] = v
+
+
 @pytest.fixture
 def cfg():
     return configmod.load()

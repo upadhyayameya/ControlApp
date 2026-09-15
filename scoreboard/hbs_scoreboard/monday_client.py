@@ -109,11 +109,19 @@ COL_ESTIMATED_CO = "lookup_mm70wevh"  # Estimated $CO on Closeout Workload
 
 
 class MondayError(RuntimeError):
-    pass
+    """Transient failure: worth retrying."""
 
 
 class MondayAuthError(MondayError):
-    pass
+    """Bad or missing credentials. Never retried."""
+
+
+class MondayQueryError(MondayError):
+    """The query itself is wrong -- a schema or validation error.
+
+    Never retried: a malformed query fails identically every time, and
+    retrying only delays the real message behind five warnings.
+    """
 
 
 class MondayClient:
@@ -162,12 +170,14 @@ class MondayClient:
                 body = r.json()
                 if body.get("errors"):
                     msg = "; ".join(e.get("message", "?") for e in body["errors"])
-                    # Complexity budget exhausted is retryable; the rest are not.
-                    if "complexity" in msg.lower() or "rate" in msg.lower():
+                    lowered = msg.lower()
+                    # Complexity/rate limits clear on their own; a bad query
+                    # does not.
+                    if "complexity" in lowered or "rate limit" in lowered:
                         raise MondayError(msg)
-                    raise MondayError(f"GraphQL error: {msg}")
+                    raise MondayQueryError(f"GraphQL error: {msg}")
                 return body["data"]
-            except MondayAuthError:
+            except (MondayAuthError, MondayQueryError):
                 raise
             except Exception as exc:              # noqa: BLE001 - retried below
                 last = exc
@@ -198,7 +208,7 @@ class MondayClient:
 
         query = f"""
         query ($boardId: ID!, $limit: Int!, $cursor: String,
-               $col: String!, $from: CompareValue!, $to: CompareValue!) {{
+               $col: ID!, $from: CompareValue!, $to: CompareValue!) {{
           boards(ids: [$boardId]) {{
             items_page(
               limit: $limit
