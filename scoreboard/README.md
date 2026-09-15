@@ -55,6 +55,35 @@ python -m hbs_scoreboard.cli upload path/to/wb.xlsx  # push to SharePoint
 
 On Windows substitute `py` for `python` throughout.
 
+### Live data
+
+Put a monday personal API token in `.env` (the CLI reads it on startup;
+anything already set in the shell wins):
+
+```
+MONDAY_API_KEY=your-token-here
+```
+
+Get the token from monday.com: click your avatar (bottom left) →
+**Developers** → **My access tokens** → copy. Then serve without `--offline`:
+
+```bash
+python -m hbs_scoreboard.cli pull      # first full pull
+python -m hbs_scoreboard.cli serve     # re-pulls every 15 min by default
+```
+
+`serve` keeps itself current: with a key set it re-pulls in the background
+(`--auto-pull MIN`, 0 to disable) and the page reloads itself
+(`--refresh-every SEC`, 0 to disable), so a bookmarked tab stays live. A pull
+that fails leaves the last good cache in place rather than emptying the
+dashboard. The header always shows when the data was actually pulled.
+
+### Windows: one-click start
+
+Double-click **`scoreboard.bat`**. It starts the server, opens
+<http://127.0.0.1:8000>, and stays open so you can read any error. The server
+must be running for that bookmark to work.
+
 ### Sharing without a server
 
 `python scripts/export_static.py build/static` renders the dashboard, every

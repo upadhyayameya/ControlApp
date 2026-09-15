@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -20,6 +21,31 @@ from .config import load as load_config
 from .monday_client import MondayClient, MondayError
 
 log = logging.getLogger("hbs_scoreboard")
+
+
+def load_dotenv(path: str | Path = ".env") -> int:
+    """Read a .env file into the environment.
+
+    The README tells people to put MONDAY_API_KEY in .env, so something has to
+    read it. Deliberately dependency-free and deliberately non-clobbering: a
+    variable already set in the real environment wins, so CI and a shell export
+    still beat the file.
+    """
+    p = Path(path)
+    if not p.exists():
+        return 0
+    loaded = 0
+    for raw in p.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and value and key not in os.environ:
+            os.environ[key] = value
+            loaded += 1
+    return loaded
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -186,13 +212,28 @@ def cmd_serve(args) -> int:
                   db, db, db)
         return 2
 
-    app = create_app(config_path=args.config, db_path=args.db, offline=args.offline)
+    from .monday_client import MondayClient
+    live = MondayClient().configured and not args.offline
+    auto = args.auto_pull if live else 0
+
+    app = create_app(config_path=args.config, db_path=args.db, offline=args.offline,
+                     auto_pull_minutes=auto, refresh_seconds=args.refresh_every)
     url = f"http://{args.host}:{args.port}"
     # Say it plainly and early: a silent start is indistinguishable from a
     # process that died, and the browser just shows connection refused.
+    if auto:
+        freshness = f"re-pulls from monday every {auto} min"
+    elif args.offline:
+        freshness = "offline - serving the cached snapshot, no monday calls"
+    else:
+        freshness = ("MONDAY_API_KEY not set - serving the cached snapshot. "
+                     "Set it in .env for live data.")
     print(f"\n  HBS scoreboard serving at  {url}\n"
-          f"  cache: {db}  ({'offline' if args.offline else 'live'})\n"
-          f"  press Ctrl+C to stop. This window stays busy while it runs.\n",
+          f"  cache: {db}\n"
+          f"  {freshness}\n"
+          + (f"  page reloads itself every {args.refresh_every}s\n"
+             if args.refresh_every else "")
+          + "  press Ctrl+C to stop. This window stays busy while it runs.\n",
           flush=True)
     try:
         app.run(host=args.host, port=args.port, debug=args.debug)
@@ -247,6 +288,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--debug", action="store_true")
     s.add_argument("--offline", action="store_true",
                    help="never call monday; serve the cache only")
+    s.add_argument("--auto-pull", type=int, default=15, metavar="MIN",
+                   help="re-pull from monday every MIN minutes (0 disables; "
+                        "ignored without MONDAY_API_KEY or with --offline)")
+    s.add_argument("--refresh-every", type=int, default=300, metavar="SEC",
+                   help="reload the page every SEC seconds (0 disables)")
     s.set_defaults(func=cmd_serve)
 
     sc = sub.add_parser("schedule", help="nightly pull + Friday 5pm ET publish")
@@ -261,6 +307,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
     _setup_logging(args.verbose)
+    n = load_dotenv()
+    if n:
+        log.debug("loaded %s variable(s) from .env", n)
     return args.func(args)
 
 

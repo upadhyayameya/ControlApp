@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
+import threading
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -37,12 +39,18 @@ def pct(v: Optional[float]) -> str:
 
 
 def create_app(config_path: Optional[str] = None, db_path: Optional[str] = None,
-               offline: bool = False) -> Flask:
+               offline: bool = False, auto_pull_minutes: int = 0,
+               refresh_seconds: int = 0) -> Flask:
     app = Flask(__name__, template_folder="templates")
     app.config["HBS_CONFIG_PATH"] = config_path
     app.config["HBS_DB_PATH"] = db_path or str(store.DEFAULT_DB)
     app.config["HBS_OFFLINE"] = offline
+    app.config["HBS_REFRESH_SECONDS"] = refresh_seconds
     app.jinja_env.filters.update(money=money, number=number, pct=pct)
+
+    @app.context_processor
+    def _inject():
+        return {"refresh_seconds": app.config["HBS_REFRESH_SECONDS"]}
 
     cache: dict = {"scoreboard": None, "built_at": None}
 
@@ -67,7 +75,15 @@ def create_app(config_path: Optional[str] = None, db_path: Optional[str] = None,
                 hist_entries = etl.build(history, cfg).entries if history else None
                 ds = etl.build(events, cfg, history=hist_entries)
                 last = store.last_pull(conn)
+                # Show when this cache was really pulled. "from cache" tells a
+                # reader nothing about whether the numbers are an hour or a
+                # week old.
                 ds.pulled_at = None
+                if last and last.get("started_at"):
+                    try:
+                        ds.pulled_at = dt.datetime.fromisoformat(last["started_at"])
+                    except ValueError:
+                        pass
                 if not events:
                     ds.add_warning(
                         "error", "NO_CACHED_DATA",
@@ -80,6 +96,39 @@ def create_app(config_path: Optional[str] = None, db_path: Optional[str] = None,
             return sb
         finally:
             conn.close()
+
+    def _auto_pull_loop(minutes: int) -> None:
+        """Pull from monday on a timer so an open tab stays current.
+
+        Failures are logged and retried at the next tick -- a pull that cannot
+        reach monday leaves the last good cache in place rather than emptying
+        the dashboard.
+        """
+        while True:
+            time.sleep(minutes * 60)
+            try:
+                cfg = load_config(app.config["HBS_CONFIG_PATH"])
+                client = MondayClient()
+                if not client.configured:
+                    log.warning("auto-pull: MONDAY_API_KEY is not set; stopping.")
+                    return
+                conn = store.connect(app.config["HBS_DB_PATH"])
+                try:
+                    ds = etl.pull(cfg, client)
+                    store.save_events(conn, [e.event for e in ds.entries], ds.pulled_at)
+                    store.record_pull(conn, f"{cfg.year}-{cfg.month:02d}",
+                                      len(ds.entries), all(ds.sources_ok.values()))
+                finally:
+                    conn.close()
+                cache["built_at"] = None          # force a rebuild on next view
+                log.info("auto-pull: refreshed %s items", len(ds.entries))
+            except Exception as exc:              # noqa: BLE001
+                log.warning("auto-pull failed, keeping the last good data: %s", exc)
+
+    if auto_pull_minutes > 0 and not offline:
+        threading.Thread(target=_auto_pull_loop, args=(auto_pull_minutes,),
+                         daemon=True, name="auto-pull").start()
+        log.info("auto-pull every %s min", auto_pull_minutes)
 
     # -- routes ---------------------------------------------------------------
     @app.route("/")

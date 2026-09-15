@@ -1,5 +1,6 @@
 """The acceptance tests from the brief. These define correctness."""
 import datetime as dt
+import os
 
 import pytest
 
@@ -181,3 +182,27 @@ def test_manual_rows_are_never_computed_from_monday(cfg):
     xc = next(c for c in sb.cross_checks if c["program_key"] == "bge_tune_up")
     assert xc["monday_closeouts_received"] == 50000
     assert "NOT the accounting" in xc["label"]
+
+
+# -- .env loading -------------------------------------------------------------
+def test_dotenv_is_read_and_never_clobbers_the_real_environment(tmp_path, monkeypatch):
+    """The README tells people to put MONDAY_API_KEY in .env, so it must be read;
+    a variable already set in the shell must still win."""
+    from hbs_scoreboard.cli import load_dotenv
+
+    env = tmp_path / ".env"
+    env.write_text('# a comment\n\nMONDAY_API_KEY="from-file"\nBLANK=\nMS_TENANT_ID=t-1\n')
+
+    monkeypatch.delenv("MONDAY_API_KEY", raising=False)
+    monkeypatch.delenv("MS_TENANT_ID", raising=False)
+    assert load_dotenv(env) == 2               # BLANK and the comment are skipped
+    assert os.environ["MONDAY_API_KEY"] == "from-file"
+
+    monkeypatch.setenv("MONDAY_API_KEY", "from-shell")
+    load_dotenv(env)
+    assert os.environ["MONDAY_API_KEY"] == "from-shell"
+
+
+def test_dotenv_missing_file_is_not_an_error(tmp_path):
+    from hbs_scoreboard.cli import load_dotenv
+    assert load_dotenv(tmp_path / "nope.env") == 0
