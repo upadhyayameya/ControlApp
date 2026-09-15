@@ -12,7 +12,7 @@ import datetime as dt
 import logging
 import time
 from typing import Optional
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from . import excel_writer, metrics, store
 from .cli import _scoreboard_from_cache
@@ -21,7 +21,25 @@ from . import etl
 from .monday_client import MondayClient, MondayError
 
 log = logging.getLogger(__name__)
-ET = ZoneInfo("America/New_York")
+
+
+def _eastern() -> ZoneInfo:
+    """America/New_York, or a clear instruction instead of a bare traceback.
+
+    Windows ships no IANA time zone database, so ZoneInfo raises there unless
+    the `tzdata` package is installed. It is declared in requirements.txt for
+    win32, but a partial install shouldn't fail with an opaque error.
+    """
+    try:
+        return ZoneInfo("America/New_York")
+    except ZoneInfoNotFoundError as exc:      # pragma: no cover - platform
+        raise RuntimeError(
+            "No IANA time zone database available, so the Friday 5pm ET "
+            "schedule cannot be resolved. On Windows: pip install tzdata"
+        ) from exc
+
+
+ET = _eastern()
 
 NIGHTLY_HOUR = 2       # 02:00 ET
 FRIDAY_HOUR = 17       # 17:00 ET, Friday

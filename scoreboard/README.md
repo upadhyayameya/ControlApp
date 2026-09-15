@@ -13,6 +13,35 @@ consistently and logged so any number traces back to the monday items behind it.
 
 ## Quick start
 
+Python 3.11+ required.
+
+### Windows
+
+Windows has no Python by default, and typing `python` opens the Microsoft
+Store stub instead of erroring. Install it, then use the `py` launcher:
+
+```bat
+winget install -e --id Python.Python.3.12
+:: close and reopen the terminal so PATH updates
+
+git clone -b claude/beautiful-fermat-wxsj5t https://github.com/upadhyayameya/ControlApp
+cd ControlApp\scoreboard
+
+py -m pip install -r requirements.txt
+py scripts\load_sample.py data\demo.sqlite
+py -m hbs_scoreboard.cli --db data\demo.sqlite serve --offline
+```
+
+Then open <http://127.0.0.1:8000>. If `winget` is unavailable, install from
+<https://www.python.org/downloads/> and tick **Add python.exe to PATH**.
+
+If the clone fails with *destination path already exists*, you already have a
+`ControlApp` folder from other work — clone into a different folder
+(`... ControlApp` → `... ControlApp-scoreboard`) or `cd` into the existing one
+and `git fetch origin claude/beautiful-fermat-wxsj5t && git checkout claude/beautiful-fermat-wxsj5t`.
+
+### macOS / Linux
+
 ```bash
 pip install -r requirements.txt
 cp .env.example .env          # add MONDAY_API_KEY
@@ -23,6 +52,15 @@ python -m hbs_scoreboard.cli serve                   # dashboard on :8000
 python -m hbs_scoreboard.cli excel path/to/wb.xlsx   # fill this week's column
 python -m hbs_scoreboard.cli upload path/to/wb.xlsx  # push to SharePoint
 ```
+
+On Windows substitute `py` for `python` throughout.
+
+### Sharing without a server
+
+`python scripts/export_static.py build/static` renders the dashboard, every
+drill-down and the audit trail to plain files that browse offline — for people
+who will not run a server. It is a snapshot, not the tool: no refresh, and the
+numbers are frozen at the last pull.
 
 No API key? Load the captured sample (real monday records, partial month) and
 explore the pipeline offline:

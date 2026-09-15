@@ -3,7 +3,14 @@ name = "hbs-scoreboard"
 version = "0.1.0"
 description = "Live weekly scoreboard for the HBS Solutions Building Tune-Up division"
 requires-python = ">=3.11"
-dependencies = ["requests>=2.31", "PyYAML>=6.0", "openpyxl>=3.1", "Flask>=3.0"]
+dependencies = [
+    "requests>=2.31",
+    "PyYAML>=6.0",
+    "openpyxl>=3.1",
+    "Flask>=3.0",
+    # Windows has no system IANA tz database; the scheduler needs one.
+    'tzdata>=2024.1; sys_platform == "win32"',
+]
 
 [project.scripts]
 hbs-scoreboard = "hbs_scoreboard.cli:main"
