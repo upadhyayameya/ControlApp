@@ -180,6 +180,55 @@ input[type="search"] { min-width: 220px; }
 .stage .open b { color: var(--ink-2); font-weight: 500; }
 .stage .delta { font-size: 11px; }
 .up { color: var(--good); } .down { color: var(--critical); } .flat { color: var(--ink-3); }
+
+
+.subtabs { display:flex; gap:4px; margin:0 0 14px; border-bottom:1px solid var(--rule); }
+.subtab { font:inherit; font-size:13px; padding:7px 13px; cursor:pointer; background:none;
+  border:none; border-bottom:2px solid transparent; color:var(--ink-2); margin-bottom:-1px; }
+.subtab:hover { color:var(--ink); }
+.subtab.on { color:var(--ink); border-bottom-color:var(--accent); font-weight:600; }
+/* ---------------- scoreboard ---------------- */
+.head-goal { display:flex; gap:28px; align-items:center; padding:18px 20px; margin-bottom:12px; flex-wrap:wrap; }
+.hg-left { min-width:200px; }
+.hg-label { font-size:12px; color:var(--ink-2); text-transform:uppercase; letter-spacing:.06em; }
+.hg-big { font-size:40px; line-height:1.05; font-weight:650; margin-top:2px; }
+.hg-sub { font-size:13px; color:var(--ink-2); margin-top:2px; }
+.hg-right { flex:1; min-width:280px; }
+.hg-track { position:relative; height:12px; border-radius:6px; background:var(--panel-2); overflow:visible; }
+.hg-fill { position:absolute; left:0; top:0; bottom:0; border-radius:6px; }
+.hg-green { background:var(--good); } .hg-yellow { background:var(--warning); }
+.hg-red { background:var(--critical); } .hg-none { background:var(--rule-strong); }
+/* the notch is where a month this far through ought to be */
+.hg-pace { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--ink); opacity:.65; }
+.hg-note { font-size:13px; color:var(--ink-2); margin-top:10px; }
+
+.kpi-picker { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; }
+.kpi-tab { font:inherit; font-size:12.5px; padding:6px 11px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--rule); background:var(--surface); color:var(--ink-2); }
+.kpi-tab:hover { border-color:var(--rule-strong); color:var(--ink); }
+.kpi-tab.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+
+table.score td.prog-name { font-weight:600; white-space:nowrap; }
+table.score .th-sub { display:block; font-weight:400; font-size:11px; color:var(--ink-3); }
+table.score .strong { font-weight:650; }
+table.score .muted, .muted { color:var(--ink-3); }
+table.score .total-row td { border-top:2px solid var(--rule-strong); font-weight:650; }
+/* a tint rather than a block of colour: the number stays the thing you read */
+.rag-green  { background:color-mix(in srgb, var(--good) 15%, transparent); }
+.rag-yellow { background:color-mix(in srgb, var(--warning) 22%, transparent); }
+.rag-red    { background:color-mix(in srgb, var(--critical) 15%, transparent); }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; }
+.dot-green { background:var(--good); } .dot-yellow { background:var(--warning); }
+.dot-red { background:var(--critical); }
+
+.rfi-band { display:flex; gap:26px; flex-wrap:wrap; padding:16px 20px; margin-bottom:10px; }
+.rfi-tile { display:flex; align-items:center; gap:9px; }
+.rfi-n { font-size:26px; font-weight:650; }
+.rfi-l { font-size:13px; color:var(--ink-2); max-width:230px; }
+ul.reasons { margin:0; padding:14px 20px 14px 34px; }
+ul.reasons li { margin-bottom:9px; line-height:1.5; }
+ul.reasons li:last-child { margin-bottom:0; }
+
 .stage .bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); }
 
 /* ---------- panels & tables ---------- */
@@ -510,19 +559,11 @@ tr.partial .flowbar::before { opacity: .07; }
   </div>
   <div class="masthead-in" style="padding-top:0">
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" aria-selected="true"  data-view="pipeline">Pipeline</button>
+      <button class="tab" role="tab" aria-selected="true"  data-view="scoreboard">Scoreboard</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="pipeline">Pipeline</button>
       <button class="tab" role="tab" aria-selected="false" data-view="workload">Workload</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="numbers">Numbers</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="mydesk">My desk</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="notes">Ask &amp; tasks</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="asap">ASAP</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="strategy">Strategy</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="todos">Team to-dos</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="goals">Missing the goal</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="phases">Audits &amp; phases</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="projects">All projects</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="digest">Weekly digest</button>
-      <button class="tab" role="tab" aria-selected="false" data-view="intel">Meetings</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="projects">Projects</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="digest">Digest</button>
     </div>
   </div>
   <div class="masthead-in" style="padding-top:0">
@@ -931,6 +972,202 @@ function periodRange(kind, now) {
 }
 const inRange = (dt, a, b) => !!dt && dt >= a && dt < b;
 const PERIOD_LABEL = { day: "today", week: "this week", month: "this month", quarter: "this quarter", year: "this year" };
+
+/* ======================= the scoreboard measurement engine =================
+   Everything numeric on this page is defined here, once, so that the boards,
+   the Monday leadership meeting and the weekly email cannot disagree.
+
+   These rules are not invented: they are the ones written on the HBS Weekly
+   Company Scoreboard, and rebuilding September from the Monthly KPIs board
+   with them reproduces that workbook cell for cell -- BGE Tune-Up
+   pre-approvals submitted $133,453 / $97,740 / $192,990, Prescriptive counts
+   42 / 9 / 3, BPTU payments $34,597 / $149,657 / $19,975.
+
+   Three of them are the reason the old numbers looked wrong:
+
+   1. WEEKS ARE FIXED, NOT SLIDING. The old periodRange made "this week"
+      Monday-to-today and "prior" the same NUMBER OF DAYS immediately before,
+      so on a Wednesday it compared Mon-Wed against Fri-Sun, and on Month it
+      compared Sep 1-21 against Aug 11-31 rather than against August. Weeks
+      here are whole Monday-to-Sunday weeks clipped at the 1st, exactly as the
+      scoreboard prints them: Wk1 9/1-9/6, Wk2 9/7-9/13, Wk3 9/14-9/20,
+      Wk4 9/21-9/30.
+
+   2. MONEY IS TOTAL INCENTIVE, NOT HBS SHARE. They differ only on
+      MDEA / Energy Tech work, but there they differ a lot: one BGE cell is
+      $133,453 against $120,866, about 9%.
+
+   3. WORK IS GROUPED BY PROGRAMME, NOT BY THE RAW UTILITY STRING. Leadership
+      reads Prescriptive / BPTU / BGE Tune-Up; the board stores "HVAC BTU",
+      "BGE" and so on. Without the mapping below, BPTU is invisible -- it sits
+      silently inside BGE. */
+
+/* Month-clipped Monday-to-Sunday weeks. The first week of a month starts on
+   the 1st however far into the week that falls, which is why Wk1 of September
+   2026 is six days (Tue 1st to Sun 6th) and Wk4 is ten (Mon 21st to Tue 30th:
+   the last week absorbs the remainder rather than leaving a stub). */
+function monthWeeks(year, month) {
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const out = [];
+  let cur = new Date(first);
+  while (cur <= last) {
+    const dow = (cur.getDay() + 6) % 7;           /* 0 = Monday */
+    const sunday = new Date(cur); sunday.setDate(cur.getDate() + (6 - dow));
+    let end = sunday > last ? new Date(last) : sunday;
+    out.push({ start: new Date(cur), end: new Date(end) });
+    cur = new Date(end); cur.setDate(cur.getDate() + 1);
+  }
+  /* A trailing stub of three days or fewer reads as a week that never
+     happened, so it joins the one before it -- Wk4 9/21-9/30, not a Wk5. */
+  if (out.length > 1) {
+    const tail = out[out.length - 1];
+    if ((tail.end - tail.start) / 86400000 < 3) {
+      out[out.length - 2].end = tail.end;
+      out.pop();
+    }
+  }
+  return out.map((w, i) => ({
+    key: `Wk${i + 1}`,
+    start: w.start,
+    endEx: new Date(w.end.getFullYear(), w.end.getMonth(), w.end.getDate() + 1),
+    label: `Wk${i + 1}`,
+    span: `${w.start.getMonth() + 1}/${w.start.getDate()}-${w.end.getMonth() + 1}/${w.end.getDate()}`,
+  }));
+}
+
+/* Which programme a KPI row belongs to. Verbatim from the scoreboard's own
+   DATA SOURCE note. The "Phase" test is what separates BPTU from BGE Tune-Up:
+   both are utility "BGE", and only the project name tells them apart. */
+function programOf(utility, projectName) {
+  const u = (utility || "").toLowerCase();
+  if (/hvac/.test(u)) return "Prescriptive";
+  if (/bge/.test(u)) return /phase/i.test(projectName || "") ? "BPTU" : "BGE Tune-Up";
+  if (/pepco|washington gas/.test(u)) return "Pepco/WGL";
+  if (/delmarva/.test(u)) return "Delmarva";
+  if (/smeco/.test(u)) return "SMECO";
+  if (/ga power|georgia/.test(u)) return "Georgia";
+  if (/dominion|trc/.test(u)) return "Virginia/CGS";
+  return "Other";
+}
+const PROGRAMS = ["Prescriptive", "BGE Tune-Up", "BPTU", "Pepco/WGL",
+  "Delmarva", "SMECO", "Georgia", "Virginia/CGS"];
+
+/* The scoreboard's KPI rows. `money` marks the ones measured in dollars;
+   the rest are counts. `group` is the Monthly KPIs board group the figure is
+   summed from -- "Payments Received" is the Closeouts Received group, which
+   is the single renaming the workbook applies. */
+const SCORE_KPIS = [
+  { key: "audits",    label: "Audits completed",        group: "Audits Performed",        money: false },
+  { key: "paSubN",    label: "PAs submitted",           group: "Preapprovals Submitted",  money: false },
+  { key: "paSub$",    label: "PAs submitted ($)",       group: "Preapprovals Submitted",  money: true  },
+  { key: "paAppN",    label: "PAs approved",            group: "Preapprovals Received",   money: false },
+  { key: "implSch$",  label: "Implementations scheduled ($)", group: "Implementations Scheduled", money: true },
+  { key: "coSubN",    label: "Closeouts submitted",     group: "Closeouts Submitted",     money: false },
+  { key: "paid$",     label: "Payments received ($)",   group: "Closeouts Received",      money: true  },
+];
+
+/* Monthly goals, straight off the Tune-Up Factory tab. The weekly target is
+   the monthly goal divided by the number of weeks in the month, which is how
+   the workbook computes it. Programmes sum to $1,061,700 of pre-approvals
+   submitted -- the $1m BTU goal. */
+const SCORE_GOALS = {
+  "Prescriptive":  { audits: 8,  paSubN: 45, "paSub$": 80000,  paAppN: 40, "implSch$": 80000,  coSubN: 48, "paid$": 80000  },
+  "BGE Tune-Up":   { audits: 40, paSubN: 40, "paSub$": 240000, paAppN: 24, "implSch$": 240000, coSubN: 25, "paid$": 240000 },
+  "BPTU":          { audits: 5,  paSubN: 4,  "paSub$": 386700, paAppN: 4,  "implSch$": 300000, coSubN: 3,  "paid$": 300000 },
+  "Pepco/WGL":     { audits: 10, paSubN: 4,  "paSub$": 240000, paAppN: 9,  "implSch$": 240000, coSubN: 5,  "paid$": 240000 },
+  "Delmarva":      { audits: 3,  paSubN: 2,  "paSub$": 60000,  paAppN: 8,  "implSch$": 200000, coSubN: 4,  "paid$": 200000 },
+  "SMECO":         { audits: 2,  paSubN: 2,  "paSub$": 5000,   paAppN: 2,  "implSch$": 5000,   coSubN: 3,  "paid$": 5000   },
+  "Georgia":       { audits: 2,  paSubN: 2,  "paSub$": 49000,  paAppN: 3,  "implSch$": 49000,  coSubN: 3,  "paid$": 49000  },
+  "Virginia/CGS":  { audits: 3,  paSubN: 3,  "paSub$": 1000,   paAppN: 4,  "implSch$": 5000,   coSubN: 5,  "paid$": 5000   },
+};
+const BTU_GOAL = 1000000;   /* the roll-up headline, per Ameya */
+
+/* Green on or above target, yellow within 15% below it, red past that --
+   the scoreboard's own legend. A KPI with no goal set returns null so the
+   board can say "no goal" rather than colour it red for free. */
+const RAG_YELLOW = 0.85;
+function rag(actual, target) {
+  if (!target) return null;
+  const r = actual / target;
+  return r >= 1 ? "green" : r >= RAG_YELLOW ? "yellow" : "red";
+}
+
+/* The comparison that replaces "+15 vs prior".
+
+   The old badge compared against a sliding block of equal length, which is
+   not a period anyone recognises. This compares like with like and says so
+   in words: a whole week against the whole week before it, and a
+   month-to-date against the SAME NUMBER OF DAYS into the month before, so
+   that on the 21st September is measured against 1-21 August rather than
+   against the whole of August (which would flatter August every time). */
+function comparePeriod(kind, now) {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const MON = ["January","February","March","April","May","June","July",
+    "August","September","October","November","December"];
+
+  if (kind === "week") {
+    const weeks = monthWeeks(d.getFullYear(), d.getMonth());
+    let i = weeks.findIndex(w => d >= w.start && d < w.endEx);
+    if (i < 0) i = weeks.length - 1;
+    const cur = weeks[i];
+    let prev;
+    if (i > 0) prev = weeks[i - 1];
+    else {
+      const pm = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+      const pw = monthWeeks(pm.getFullYear(), pm.getMonth());
+      prev = pw[pw.length - 1];
+    }
+    return { start: cur.start, end: cur.endEx, prevStart: prev.start, prevEnd: prev.endEx,
+      label: `${cur.label} (${cur.span})`, prevLabel: `${prev.label} (${prev.span})`,
+      compare: `the week before (${prev.span})` };
+  }
+
+  if (kind === "month") {
+    const start = new Date(d.getFullYear(), d.getMonth(), 1);
+    const end = new Date(d); end.setDate(end.getDate() + 1);
+    const dayOfMonth = d.getDate();
+    const prevStart = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    const prevLast = new Date(d.getFullYear(), d.getMonth(), 0).getDate();
+    const prevEnd = new Date(d.getFullYear(), d.getMonth() - 1, Math.min(dayOfMonth, prevLast) + 1);
+    return { start, end, prevStart, prevEnd,
+      label: `${MON[d.getMonth()]} so far (${dayOfMonth} days)`,
+      prevLabel: `${MON[prevStart.getMonth()]} 1-${Math.min(dayOfMonth, prevLast)}`,
+      compare: `the same ${dayOfMonth} days of ${MON[prevStart.getMonth()]}` };
+  }
+
+  if (kind === "quarter") {
+    const q = Math.floor(d.getMonth() / 3);
+    const start = new Date(d.getFullYear(), q * 3, 1);
+    const end = new Date(d); end.setDate(end.getDate() + 1);
+    const days = Math.round((end - start) / 86400000);
+    const prevStart = new Date(d.getFullYear(), (q - 1) * 3, 1);
+    const prevEnd = new Date(prevStart); prevEnd.setDate(prevEnd.getDate() + days);
+    return { start, end, prevStart, prevEnd, label: `this quarter (${days} days)`,
+      prevLabel: `first ${days} days of last quarter`,
+      compare: `the same ${days} days of last quarter` };
+  }
+
+  if (kind === "year") {
+    const start = new Date(d.getFullYear(), 0, 1);
+    const end = new Date(d); end.setDate(end.getDate() + 1);
+    const days = Math.round((end - start) / 86400000);
+    const prevStart = new Date(d.getFullYear() - 1, 0, 1);
+    const prevEnd = new Date(prevStart); prevEnd.setDate(prevEnd.getDate() + days);
+    return { start, end, prevStart, prevEnd, label: `${d.getFullYear()} so far`,
+      prevLabel: `${d.getFullYear() - 1} to the same date`,
+      compare: `the same period of ${d.getFullYear() - 1}` };
+  }
+
+  /* day: against the same weekday a week back, not against yesterday, so a
+     Monday is not judged against a Sunday. */
+  const end = new Date(d); end.setDate(end.getDate() + 1);
+  const prevStart = new Date(d); prevStart.setDate(prevStart.getDate() - 7);
+  const prevEnd = new Date(prevStart); prevEnd.setDate(prevEnd.getDate() + 1);
+  return { start: d, end, prevStart, prevEnd, label: "today",
+    prevLabel: "the same day last week", compare: "the same day last week" };
+}
+
 
 /* ========================= connector plumbing ============================= */
 let mcp = null;
@@ -1358,9 +1595,11 @@ const state = {
   phase: "",
   showDone: false,
   num: { source: "", utility: "", phase: "", engineer: "", pipelineOnly: false, target: null },
+  score: { kpi: "paSub$" },   // the scoreboard KPI on show
+  sub: { pipeline: "flow", workload: "asap" },
   type: "",
   q: "",
-  view: "pipeline",
+  view: "scoreboard",
   phaseTab: "audits",
   noteFocus: false,
   chatFocus: false,
@@ -1440,12 +1679,13 @@ function filtered(opts) {
    team would be a control that quietly does nothing. */
 const NO_PHASE = "\u0000none";
 const VIEW_FILTERS = {
+  scoreboard: [],
   pipeline: ["period", "team", "engineer", "reviewer", "utility", "type", "phase", "q", "done", "count"],
   numbers:  ["period"],
   mydesk:   ["utility", "type", "phase", "q"],
   asap:     ["team", "engineer", "reviewer", "utility", "type", "phase", "q", "count"],
   todos:    [],
-  workload: [],
+  workload: ["team", "engineer", "reviewer", "utility", "type", "phase", "q", "count"],
   goals:    [],
   phases:   ["period", "team", "engineer", "reviewer", "utility", "type", "phase", "q", "done", "count"],
   projects: ["team", "engineer", "reviewer", "utility", "type", "phase", "q", "done", "count"],
@@ -1502,7 +1742,7 @@ function ownerCell(p) {
 /* ---- pipeline view ---- */
 function renderPipeline(list) {
   const now = new Date();
-  const r = periodRange(state.period, now);
+  const r = comparePeriod(state.period, now);
   const counts = {}, prev = {}, open = {};
   for (const s of STAGES) { counts[s.key] = 0; prev[s.key] = 0; open[s.key] = 0; }
   /* Throughput counts finished work; "open now" counts only what is still live.
@@ -1529,9 +1769,11 @@ function renderPipeline(list) {
     const c = counts[s.key], pv = prev[s.key];
     const delta = c - pv;
     const dcls = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
-    const dtxt = (pv === 0 && c === 0) ? "none either period"
-               : delta === 0 ? "level with prior"
-               : `${delta > 0 ? "+" : ""}${delta} vs prior`;
+    /* "+15 vs prior" told you a direction against a window nobody could
+       name. This states the other number and what period it came from, so
+       the comparison can be checked rather than trusted. */
+    const dtxt = (pv === 0 && c === 0) ? `none in either period`
+               : `${pv} in ${r.prevLabel}`;
     return `<div class="stage">
       <span class="ord num">${String(i + 1).padStart(2, "0")}</span>
       <span class="nm">${esc(s.label)}</span>
@@ -1601,7 +1843,7 @@ function renderPipeline(list) {
   ${renderCompare(throughput)}
   <div class="section-head">
     <h2>Funnel</h2>
-    <span class="hint">Big number: milestones reached ${esc(PERIOD_LABEL[state.period])}. Bar and “open now”: where projects sit right now.</span>
+    <span class="hint">Big number: milestones reached in <b>${esc(r.label)}</b>, measured against <b>${esc(r.compare)}</b>. Bar and “open now”: where projects sit right now.</span>
   </div>
   <div class="rail">${tiles}</div>
 
@@ -3374,9 +3616,6 @@ const HBS_ROSTER = {
   "David Rodriguez":    { job: "other", title: "Operations manager" },
   "John Rizzotti":      { job: "other", title: "Sales" },
 
-  /* Has left HBS. Kept here so her remaining projects are reported as needing
-     a new owner rather than quietly vanishing, but she is never emailed. */
-  "Allee Williams":     { job: "engineer", left: true },
 };
 const onRoster   = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
 const hasLeft    = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
@@ -3392,7 +3631,18 @@ const getsDigest = n => isEngineer(n) || isAuditor(n) || !!(HBS_ROSTER[n] && HBS
    entry: the full name is kept, and he sits on the ICF side where his work is
    now. The auditor and PA-lead rows still carrying his short name on the TU
    tracker are the same person. */
-const NAME_ALIASES = { "Devashis": "Devashis Shrestha", "Devashis Shrestha": "Devashis Shrestha" };
+/* Brendan and Allee have both left. Their open work is routed to Patrick so it
+   keeps an owner on every board and in the weekly mail, and their names stop
+   appearing as people on the platform.
+
+   This is deliberately applied where OWNERSHIP is read -- projects, workload,
+   to-dos -- and not to the Monthly KPIs board, which records who actually
+   reached each milestone. Moving that would quietly credit Patrick with two
+   other people's past months and misstate his own numbers. Their history
+   stays theirs; only the live work moves. */
+const REASSIGNED_TO_PATRICK = ["Brendan Magrini", "Brendan", "Allee Williams", "Allee"];
+const NAME_ALIASES = { "Devashis": "Devashis Shrestha", "Devashis Shrestha": "Devashis Shrestha",
+  ...Object.fromEntries(REASSIGNED_TO_PATRICK.map(n => [n, "Patrick Lawson"])) };
 const NOW_ICF_SIDE = new Set(["Devashis Shrestha"]);
 const alias = n => NAME_ALIASES[String(n || "").trim()] || String(n || "").trim();
 
@@ -5188,25 +5438,280 @@ function errNote(what, err, server) {
 }
 
 /* ---- shell ---- */
+/* ---------------------------------------------------------------------------
+   Scoreboard.
+
+   The board that answers the only question the Monday meeting asks: are we on
+   pace, and if not, which programme is the reason. It is the live version of
+   the HBS Weekly Company Scoreboard, computed from the Monthly KPIs board by
+   the rules in the measurement engine above.
+
+   It replaces three boards that each answered part of this and disagreed with
+   each other -- Numbers (prior-period comparison, no goals), Missing the goal
+   (reasons, no figures) and Strategy.
+--------------------------------------------------------------------------- */
+function renderScoreboard() {
+  if (!state.kpisLoaded) {
+    return `<div class="section-head"><h2>Scoreboard</h2></div>
+      <div class="panel empty">${state.errors.kpis
+        ? `The Monthly KPIs board did not load: ${esc(fixCopy(state.errors.kpis, "monday.com"))}`
+        : "Loading the Monthly KPIs board…"}</div>`;
+  }
+
+  const now = new Date();
+  const weeks = monthWeeks(now.getFullYear(), now.getMonth());
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const monthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const dayOfMonth = now.getDate();
+  const MON = ["January","February","March","April","May","June","July",
+    "August","September","October","November","December"][now.getMonth()];
+
+  const kpi = SCORE_KPIS.find(k => k.key === state.score.kpi) || SCORE_KPIS[2];
+
+  /* Every KPI row dated inside this month, tagged with its programme. Money is
+     TOTAL INCENTIVE -- the field the scoreboard is built on. */
+  const rows = state.kpis
+    .filter(k => k.milestone === kpi.group && k.when >= monthStart && k.when < monthEnd)
+    .map(k => ({ ...k, prog: programOf(k.utility, k.name) }));
+
+  const value = set => kpi.money ? set.reduce((a, k) => a + k.incentive, 0) : set.length;
+  const fmt = v => kpi.money ? money(v) : qty(v);
+
+  /* ---- the table: programmes down, weeks across ---- */
+  const live = PROGRAMS.filter(p =>
+    SCORE_GOALS[p] && (SCORE_GOALS[p][kpi.key] || rows.some(r => r.prog === p)));
+  const weekly = p => (SCORE_GOALS[p] && SCORE_GOALS[p][kpi.key])
+    ? SCORE_GOALS[p][kpi.key] / weeks.length : 0;
+
+  const body = live.map(p => {
+    const mine = rows.filter(r => r.prog === p);
+    const goal = (SCORE_GOALS[p] && SCORE_GOALS[p][kpi.key]) || 0;
+    const mtd = value(mine);
+    const pct = goal ? mtd / goal : null;
+    /* Each week is judged against that programme's weekly target. */
+    const perWeek = weeks.map(w => ({
+      w, v: value(mine.filter(r => r.when >= w.start && r.when < w.endEx)), future: w.start > now,
+    }));
+    const cells = perWeek.map(({ w, v, future }) => {
+      const band = future ? null : rag(v, weekly(p));
+      return `<td class="n num ${band ? "rag-" + band : "rag-none"}">${future ? "" : fmt(v)}</td>`;
+    }).join("");
+    /* The row's own light follows the scoreboard: it is the LATEST week with
+       anything in it against the weekly target, not the month to date. A
+       programme can be 148% of its monthly goal and still be red, because it
+       banked everything in week one and has done nothing since -- which is
+       exactly the warning the Monday meeting needs. */
+    const withData = perWeek.filter(x => !x.future && x.v > 0);
+    const latest = withData.length ? withData[withData.length - 1] : null;
+    const band = latest ? rag(latest.v, weekly(p)) : (goal ? "red" : null);
+    return `<tr>
+      <td class="prog-name">${esc(p)}</td>
+      ${cells}
+      <td class="n num strong">${fmt(mtd)}</td>
+      <td class="n num muted">${goal ? fmt(goal) : "—"}</td>
+      <td class="n num">${pct == null ? "—" : Math.round(pct * 100) + "%"}</td>
+      <td class="n num">${latest ? fmt(latest.v) : "—"}</td>
+      <td>${band ? `<span class="dot dot-${band}"></span>` : `<span class="muted">no goal</span>`}</td>
+    </tr>`;
+  }).join("");
+
+  const totMtd = value(rows);
+  const totGoal = live.reduce((a, p) => a + ((SCORE_GOALS[p] && SCORE_GOALS[p][kpi.key]) || 0), 0);
+  const totWeek = weeks.map(w => value(rows.filter(r => r.when >= w.start && r.when < w.endEx)));
+
+  /* ---- headline: the roll-up against its goal, and whether that is on pace ----
+     Pace is the share of the month gone, so on the 21st of a 30-day month the
+     line sits at 70% of goal. Being "behind" is stated in money, not in a
+     percentage, because money is what gets acted on. */
+  const headGoal = kpi.key === "paSub$" ? BTU_GOAL : totGoal;
+  const paceShare = dayOfMonth / monthLast;
+  const paceTarget = headGoal * paceShare;
+  const gap = totMtd - paceTarget;
+  const headBand = rag(totMtd, paceTarget);
+
+  const head = `<div class="panel head-goal">
+    <div class="hg-left">
+      <div class="hg-label">${esc(kpi.label)} — all BTU programmes, ${esc(MON)}</div>
+      <div class="hg-big num">${fmt(totMtd)}</div>
+      <div class="hg-sub">of ${headGoal ? fmt(headGoal) : "no goal set"}${headGoal
+        ? ` · ${Math.round((totMtd / headGoal) * 100)}% of goal` : ""}</div>
+    </div>
+    <div class="hg-right">
+      <div class="hg-track"><span class="hg-fill hg-${headBand || "none"}"
+        style="width:${headGoal ? Math.min(100, Math.round((totMtd / headGoal) * 100)) : 0}%"></span>
+        <span class="hg-pace" style="left:${Math.round(paceShare * 100)}%"></span></div>
+      <div class="hg-note">${dayOfMonth} of ${monthLast} days gone, so pace is ${fmt(Math.round(paceTarget))}.
+        ${!headGoal ? "No goal set for this KPI."
+          : gap >= 0 ? `<b class="up">Ahead of pace by ${fmt(Math.round(gap))}.</b>`
+          : `<b class="down">Behind pace by ${fmt(Math.round(-gap))}.</b>`}</div>
+    </div>
+  </div>`;
+
+  const picker = `<div class="kpi-picker">${SCORE_KPIS.map(k =>
+    `<button class="kpi-tab${k.key === kpi.key ? " on" : ""}" data-kpi="${esc(k.key)}">${esc(k.label)}</button>`
+  ).join("")}</div>`;
+
+  const table = `<div class="panel scroller"><table class="score"><thead><tr>
+      <th>Programme</th>
+      ${weeks.map(w => `<th class="n">${esc(w.label)}<span class="th-sub">${esc(w.span)}</span></th>`).join("")}
+      <th class="n">${esc(MON)} to date</th><th class="n">Goal</th><th class="n">% of goal</th><th class="n">Latest week</th><th>Status</th>
+    </tr></thead><tbody>${body}
+    <tr class="total-row">
+      <td>All programmes</td>
+      ${totWeek.map((v, i) => `<td class="n num">${weeks[i].start > now ? "" : fmt(v)}</td>`).join("")}
+      <td class="n num strong">${fmt(totMtd)}</td>
+      <td class="n num muted">${totGoal ? fmt(totGoal) : "—"}</td>
+      <td class="n num">${totGoal ? Math.round((totMtd / totGoal) * 100) + "%" : "—"}</td>
+      <td class="n num">${(() => { const d = totWeek.map((v, i) => ({ v, f: weeks[i].start > now }))
+          .filter(x => !x.f && x.v > 0); return d.length ? fmt(d[d.length - 1].v) : "—"; })()}</td>
+      <td>${rag(totMtd, totGoal * paceShare) ? `<span class="dot dot-${rag(totMtd, totGoal * paceShare)}"></span>` : ""}</td>
+    </tr></tbody></table></div>
+    <div class="ev">Weekly cells and the Status light are coloured against that programme's weekly target (its monthly
+      goal divided by the ${weeks.length} weeks in ${esc(MON)}). Status follows the latest week with anything in it,
+      not the month to date, so a programme that banked its goal in week one and stopped still shows red.
+      Green is on or above target, amber within 15% below it, red past that.
+      Money is total incentive, not HBS share. Weeks run Monday to Sunday and are cut at the 1st, so ${esc(weeks[0].label)}
+      is ${esc(weeks[0].span)}.</div>`;
+
+  /* ---- RFI flow: the one number that is entirely HBS's own doing ---- */
+  const rfiSection = renderScoreRfi();
+
+  /* ---- why we are off pace, from the data only ---- */
+  const reasons = renderScoreReasons(rows, live, kpi, paceShare);
+
+  return `<div class="section-head"><h2>Scoreboard</h2>
+      <span class="hint">Are we on pace this month, and which programme is the reason. Rebuilt from the Monthly KPIs
+        board by the same rules as the weekly scoreboard.</span></div>
+    ${head}${picker}${table}${reasons}${rfiSection}`;
+}
+
+/* RFIs are the part of the calendar HBS controls outright, which is why they
+   sit on the scoreboard rather than buried in Workload: an RFI waiting on us
+   is a self-inflicted delay. Received-versus-answered says whether the
+   backlog is growing; the aged list says which ones are doing the damage. */
+function renderScoreRfi() {
+  if (!state.workloadLoaded) {
+    return `<div class="section-head"><h2>RFIs — our own response time</h2></div>
+      <div class="panel empty">Open Workload once to load the two workload boards, and this fills in.</div>`;
+  }
+  const rfis = state.todos.filter(t => t.rfiQueue);
+  const aged = rfis.filter(t => t.waiting != null && t.waiting > 7)
+    .sort((a, b) => (b.waiting ?? 0) - (a.waiting ?? 0));
+  const pa = aged.filter(t => /pre/i.test(t.kind || ""));
+  const co = aged.filter(t => !/pre/i.test(t.kind || ""));
+
+  const band = n => n === 0 ? "green" : n <= 2 ? "yellow" : "red";
+  const tile = (label, n) => `<div class="rfi-tile">
+    <span class="dot dot-${band(n)}"></span>
+    <span class="rfi-n num">${n}</span>
+    <span class="rfi-l">${esc(label)}</span></div>`;
+
+  return `<div class="section-head"><h2>RFIs — our own response time</h2>
+      <span class="hint">A reviewer has asked us a question and is waiting. Target is zero over seven days: unlike the
+        utility's own review time, this is entirely ours.</span></div>
+    <div class="panel rfi-band">
+      ${tile("Pre-approval RFIs waiting on us over 7 days", pa.length)}
+      ${tile("Closeout RFIs waiting on us over 7 days", co.length)}
+      ${tile("Open RFIs in total", rfis.length)}
+    </div>
+    ${!aged.length ? `<div class="panel empty">Nothing has been waiting on us more than a week.</div>` : `
+    <div class="panel scroller"><table><thead><tr>
+      <th>Project</th><th>Board</th><th class="n">Days waiting</th><th>Utility</th><th>Lead</th>
+    </tr></thead><tbody>${aged.slice(0, 20).map(t => `<tr>
+      <td><div class="proj-name">${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>` : esc(t.name)}</div></td>
+      <td>${esc(t.kind || "")}</td>
+      <td class="n num ${t.waiting >= 30 ? "down" : ""}">${t.waiting}</td>
+      <td>${esc(t.utility || "")}</td>
+      <td>${esc(t.lead || "—")}</td></tr>`).join("")}
+    </tbody></table></div>
+    ${aged.length > 20 ? `<div class="ev">Showing the 20 longest of ${aged.length}.</div>` : ""}`}`;
+}
+
+/* "Only show reasons which are data driven." Every line below is a count or a
+   sum off the boards with the arithmetic shown, so it can be checked. Nothing
+   here is inferred from notes, meetings or tone. */
+function renderScoreReasons(rows, live, kpi, paceShare) {
+  const out = [];
+  for (const p of live) {
+    const goal = (SCORE_GOALS[p] && SCORE_GOALS[p][kpi.key]) || 0;
+    if (!goal) continue;
+    const mine = rows.filter(r => r.prog === p);
+    const mtd = kpi.money ? mine.reduce((a, k) => a + k.incentive, 0) : mine.length;
+    const want = goal * paceShare;
+    if (mtd >= want) continue;
+    const short = want - mtd;
+    out.push({ p, mtd, goal, short, want,
+      pct: goal ? mtd / goal : 0, zero: mine.length === 0 });
+  }
+  out.sort((a, b) => b.short - a.short);
+  const fmt = v => kpi.money ? money(Math.round(v)) : qty(Math.round(v));
+
+  if (!out.length) {
+    return `<div class="section-head"><h2>Why we are off pace</h2></div>
+      <div class="panel empty">Every programme with a goal is at or ahead of pace on ${esc(kpi.label)}.</div>`;
+  }
+  return `<div class="section-head"><h2>Why we are off pace</h2>
+      <span class="hint">Ranked by how much of the shortfall each programme accounts for. Counts and sums only —
+        no interpretation.</span></div>
+    <div class="panel"><ul class="reasons">${out.map(r => `<li>
+      <b>${esc(r.p)}</b> is ${fmt(r.short)} behind pace on ${esc(kpi.label)} —
+      ${fmt(r.mtd)} against a goal of ${fmt(r.goal)}, ${Math.round(r.pct * 100)}% of the way with
+      ${Math.round(paceShare * 100)}% of the month gone.
+      ${r.zero ? `<span class="down">Nothing at all has been recorded this month.</span>` : ""}
+    </li>`).join("")}</ul></div>`;
+}
+
+/* Sub-tabs. Thirteen top-level boards repeated the same tables at each other
+   and still made you scroll; five boards with a couple of sub-tabs each keeps
+   every view that earned its place without stacking them into one long page. */
+function subTabs(board, tabs) {
+  const cur = state.sub[board] || tabs[0].key;
+  return `<div class="subtabs">${tabs.map(t =>
+    `<button class="subtab${t.key === cur ? " on" : ""}" data-sub-board="${esc(board)}"
+      data-sub="${esc(t.key)}">${esc(t.label)}</button>`).join("")}</div>`;
+}
+
+/* Pipeline: the flow itself, and the phase detail that used to be its own
+   board. Both honour the utility filter, which is what "filtered on the
+   utility as well" asked for on Audits & phases. */
+function renderPipelineBoard(list) {
+  const tabs = [{ key: "flow", label: "Flow" }, { key: "phases", label: "Audits & phases" }];
+  const cur = state.sub.pipeline || "flow";
+  return subTabs("pipeline", tabs) +
+    (cur === "phases" ? renderPhases(list) : renderPipeline(list));
+}
+
+/* Workload: what is on fire, what is queued, and who holds it. ASAP leads
+   because it is the one people open first. */
+function renderWorkloadBoard(list) {
+  const tabs = [{ key: "asap", label: "ASAP" }, { key: "queue", label: "Everything in the queue" },
+    { key: "todos", label: "Team to-dos" }];
+  const cur = state.sub.workload || "asap";
+  return subTabs("workload", tabs) +
+    (cur === "queue" ? renderWorkload() : cur === "todos" ? renderTodos() : renderAsap(list));
+}
+
 function render() {
   const list = filtered();
   $("#count-stamp").textContent = `${list.length} of ${state.projects.length} projects`;
   applyViewFilters();
 
   let body = "";
-  if (state.view === "pipeline") body = renderPipeline(list);
+  if (state.view === "scoreboard") body = renderScoreboard();
+  else if (state.view === "pipeline") body = renderPipelineBoard(list);
   else if (state.view === "numbers") body = renderNumbers();
   else if (state.view === "mydesk") body = renderMyDesk(list);
   else if (state.view === "notes") body = renderNotes();
   else if (state.view === "strategy") body = renderStrategy();
   else if (state.view === "asap") body = renderAsap(list);
   else if (state.view === "todos") body = renderTodos();
-  else if (state.view === "workload") body = renderWorkload();
+  else if (state.view === "workload") body = renderWorkloadBoard(list);
   else if (state.view === "goals") body = renderGoals();
   else if (state.view === "phases") body = renderPhases(list);
   else if (state.view === "projects") body = renderProjects(list);
   else if (state.view === "digest") body = renderDigest(list);
-  else body = renderIntel();
+  else body = renderScoreboard();
 
   const src = [];
   src.push(`<span>monday.com: <b>${state.projects.length}</b> projects · <b>${state.projects.filter(p => p.hasTu).length}</b> joined to the TU tracker</span>`);
@@ -5228,6 +5733,16 @@ function render() {
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); state.chatFocus = true; chatSend(chatBox.value); }
     });
   }
+  main.querySelectorAll(".subtab").forEach(b => b.addEventListener("click", () => {
+    state.sub[b.dataset.subBoard] = b.dataset.sub;
+    render();
+  }));
+
+  main.querySelectorAll(".kpi-tab").forEach(b => b.addEventListener("click", () => {
+    state.score.kpi = b.dataset.kpi;
+    render();
+  }));
+
   const numCtl = (id, key, prop) => {
     const el = main.querySelector(id);
     if (el) el.addEventListener("change", e => {
@@ -5812,8 +6327,8 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
   state.view = t.dataset.view;
   render();
-  if ((state.view === "todos" || state.view === "mydesk" || state.view === "workload" || state.view === "goals" || state.view === "digest") && mcp) loadWorkload();
-  if (state.view === "numbers" && mcp) loadKpis();
+  if ((state.view === "scoreboard" || state.view === "todos" || state.view === "workload" || state.view === "digest") && mcp) loadWorkload();
+  if ((state.view === "scoreboard" || state.view === "numbers") && mcp) loadKpis();
   if (state.view === "notes" && mcp) { loadTasks(false); loadWorkload(); }
 }));
 $("#f-eng").addEventListener("change", e => { state.engineer = e.target.value; render(); });
@@ -5828,8 +6343,8 @@ $("#refresh").addEventListener("click", () => {
   state.workloadLoaded = false; state.todos = []; state.workHistory = []; canonMap = null;
   state.kpisLoaded = false; state.kpis = [];
   boot(true).then(() => {
-    if (state.view === "todos" || state.view === "mydesk" || state.view === "workload" || state.view === "digest") loadWorkload();
-    if (state.view === "numbers") loadKpis();
+    if (state.view === "scoreboard" || state.view === "todos" || state.view === "workload" || state.view === "digest") loadWorkload();
+    if (state.view === "scoreboard" || state.view === "numbers") loadKpis();
   });
 });
 

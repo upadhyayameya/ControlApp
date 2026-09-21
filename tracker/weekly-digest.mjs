@@ -296,9 +296,6 @@ const HBS_ROSTER = {
   'David Rodriguez':    { job: 'other', title: 'Operations manager' },
   'John Rizzotti':      { job: 'other', title: 'Sales' },
 
-  /* Has left HBS. Never emailed; her remaining projects are reported to
-     management as needing a new owner rather than quietly disappearing. */
-  'Allee Williams':     { job: 'engineer', left: true },
 };
 const onRoster   = n => Object.prototype.hasOwnProperty.call(HBS_ROSTER, n);
 const hasLeft    = n => !!(HBS_ROSTER[n] && HBS_ROSTER[n].left);
@@ -321,7 +318,17 @@ const NOW_ICF_SIDE = new Set(['Devashis Shrestha', 'Devashis']);
 
 /* Names the boards spell short. Kept identical to the dashboard's map so the
    two never disagree about who a person is. */
-const NAME_ALIASES = { 'Devashis': 'Devashis Shrestha' };
+/* Brendan and Allee have both left. Their open work is routed to Patrick so it
+   keeps an owner on every board and in the weekly mail, and their names stop
+   appearing as people on the platform.
+
+   Applied where OWNERSHIP is read -- projects, workload, to-dos -- and not to
+   the Monthly KPIs board, which records who actually reached each milestone.
+   Moving that would quietly credit Patrick with two other people's past
+   months. Their history stays theirs; only the live work moves. */
+const REASSIGNED_TO_PATRICK = ['Brendan Magrini', 'Brendan', 'Allee Williams', 'Allee'];
+const NAME_ALIASES = { 'Devashis': 'Devashis Shrestha',
+  ...Object.fromEntries(REASSIGNED_TO_PATRICK.map(n => [n, 'Patrick Lawson'])) };
 const alias = n => NAME_ALIASES[String(n || '').trim()] || String(n || '').trim();
 
 /* Board labels that are placeholders, not people. Never addressed, never greeted. */
