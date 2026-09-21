@@ -1,9 +1,10 @@
-node_modules
-dist
-dist-ssr
+
 *.local
+*.log
+*.tsbuildinfo
 .DS_Store
 .vite
-*.log
-
-*.tsbuildinfo
+dist
+dist-ssr
+node_modules
+node_modules/
