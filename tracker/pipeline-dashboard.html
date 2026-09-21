@@ -182,6 +182,9 @@ input[type="search"] { min-width: 220px; }
 .up { color: var(--good); } .down { color: var(--critical); } .flat { color: var(--ink-3); }
 
 
+
+.quality { padding:14px 18px; margin-bottom:14px; line-height:1.55;
+  border-left:3px solid var(--warning); background:color-mix(in srgb, var(--warning) 9%, var(--panel)); }
 .subtabs { display:flex; gap:4px; margin:0 0 14px; border-bottom:1px solid var(--rule); }
 .subtab { font:inherit; font-size:13px; padding:7px 13px; cursor:pointer; background:none;
   border:none; border-bottom:2px solid transparent; color:var(--ink-2); margin-bottom:-1px; }
@@ -3701,6 +3704,23 @@ function renderWorkload() {
 
   const stat = (v, l, cls) => `<div class="stat ${v ? (cls || "") : "is-zero"}"><div class="v num">${v}</div><div class="l">${esc(l)}</div></div>`;
 
+  /* ---- how much of the board can actually be trusted to order work ----
+     The due date is the field everything here would naturally be ranked and
+     chased on, and on the live boards it is largely unusable. Saying so in
+     numbers is more useful than quietly ranking on it anyway: the fix is on
+     monday, not in this page, and nobody can make it without knowing. */
+  const dated = open.filter(t => t.due);
+  const undated = open.length - dated.length;
+  const pastDue = dated.filter(t => t.overdue).length;
+  const dateWarn = (undated / Math.max(1, open.length) > 0.25) || (dated.length && pastDue / dated.length > 0.9);
+  const quality = !dateWarn ? "" : `<div class="panel quality">
+    <b>Due dates on these boards cannot order the work.</b>
+    ${undated} of ${open.length} open rows carry no due date at all${
+      dated.length ? `, and ${pastDue} of the ${dated.length} that do are already past it` : ""}.
+    Everything below is therefore ranked by <b>how long it has actually sat in the queue</b>, which is derivable for
+    every row. Setting real dates on monday would let this be chased properly — until then a date here means
+    very little.</div>`;
+
   /* ---- projects already loaded, indexed by their TU id, so the history rows
      can be attributed to an engineer without a second round of fetches. ---- */
   const byTu = new Map();
@@ -3709,7 +3729,7 @@ function renderWorkload() {
 
   /* ================= 1. RFIs ================= */
   const rfiRows = [...rfis].sort((a, b) => (b.waiting ?? -1) - (a.waiting ?? -1));
-  const rfiSection = `
+  const rfiSection = quality + `
     <div class="section-head"><h2>RFIs to answer</h2>
       <span class="hint">A reviewer has come back with a question on these. They sit in the shared queue on both boards until someone picks them up — nobody's group owns them.</span></div>
     ${!rfiRows.length ? `<div class="panel empty">No outstanding RFIs on either board.</div>` : `
@@ -3863,11 +3883,17 @@ function renderWorkload() {
     </div>`;
 
   /* ================= 4. the queue itself ================= */
+  /* Ordered by how long it has genuinely sat, not by the due date.
+     On the live boards 97% of dated pre-approval rows and every dated
+     closeout row are already past their date, and two thirds of closeout rows
+     carry no date at all -- so sorting on "overdue" put a row waiting two
+     days above one waiting 137, purely because the long one had an empty
+     date cell. Days waiting is derivable for every row and cannot go stale. */
   const qRows = [...assigned].sort((a, b) =>
-    Number(b.overdue) - Number(a.overdue) || (b.waiting ?? -1) - (a.waiting ?? -1));
+    (b.waiting ?? -1) - (a.waiting ?? -1) || Number(b.overdue) - Number(a.overdue));
   const listSection = `
     <div class="section-head"><h2>Everything in the queue</h2>
-      <span class="hint">${assigned.length} item${assigned.length === 1 ? "" : "s"} sitting in someone's group, longest-waiting and overdue first.</span></div>
+      <span class="hint">${assigned.length} item${assigned.length === 1 ? "" : "s"} sitting in someone's group, longest-waiting first.</span></div>
     <div class="panel scroller tall"><table><thead><tr>
       <th>Project</th><th>Board</th><th>Owner</th><th class="n">Waiting</th>
       <th>Where it sits</th><th>Next step</th><th class="n">Due</th>
