@@ -18,9 +18,13 @@ export const SECTORS = [
 
 type State = { status: "idle" | "submitting" | "done" } | { status: "error"; message: string };
 
-export function ContactForm() {
-  const params = useSearchParams();
-  const serviceSlug = params.get("service");
+/** Reads ?service= to pre-fill the message. Wrap in <Suspense fallback={<ContactForm />}>. */
+export function ContactFormWithParams() {
+  const serviceSlug = useSearchParams().get("service");
+  return <ContactForm key={serviceSlug ?? ""} serviceSlug={serviceSlug} />;
+}
+
+export function ContactForm({ serviceSlug = null }: { serviceSlug?: string | null }) {
   const service = services.find((s) => s.slug === serviceSlug);
   const [state, setState] = useState<State>({ status: "idle" });
 

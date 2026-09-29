@@ -85,6 +85,7 @@ export function TrackerView({ items }: { items: TrackerItem[] }) {
         {regime ? ` for ${regime}` : ""}
       </p>
 
+      <h2 className="sr-only">Milestones</h2>
       {view === "timeline" ? (
         <ol className="relative mt-8 border-l border-line pl-8">
           {shown.map((m) => (

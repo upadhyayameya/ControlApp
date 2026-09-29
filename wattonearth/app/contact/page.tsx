@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ContactForm } from "@/components/forms/ContactForm";
+import { ContactForm, ContactFormWithParams } from "@/components/forms/ContactForm";
 import { Container, SectionHeading } from "@/components/ui/primitives";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -28,8 +28,9 @@ export default function ContactPage() {
             </a>
           </p>
         </div>
-        <Suspense fallback={null}>
-          <ContactForm />
+        {/* Server-rendered form as the fallback avoids layout shift; the client version adds ?service= pre-fill. */}
+        <Suspense fallback={<ContactForm />}>
+          <ContactFormWithParams />
         </Suspense>
       </div>
     </Container>

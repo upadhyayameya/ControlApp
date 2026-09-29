@@ -22,7 +22,7 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
     <Link
       href={href}
       scroll={false}
-      aria-pressed={active}
+      aria-current={active ? "true" : undefined}
       className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
         active ? "border-fg bg-fg text-bg" : "border-line text-muted hover:border-fg hover:text-fg"
       }`}
