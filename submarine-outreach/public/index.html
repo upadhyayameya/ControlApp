@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Submarine Outreach</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="logo">◉</span> Submarine<br><small>US B2B Outreach</small></div>
+      <nav>
+        <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+        <a href="#/discover" data-nav="discover">Find businesses</a>
+        <a href="#/leads" data-nav="leads">Leads</a>
+        <a href="#/campaigns" data-nav="campaigns">Campaigns</a>
+        <a href="#/inbox" data-nav="inbox">Inbox <span id="inbox-badge" class="badge hidden"></span></a>
+        <a href="#/outbox" data-nav="outbox">Sent</a>
+        <a href="#/settings" data-nav="settings">Settings</a>
+      </nav>
+      <div id="mode-pill" class="mode-pill"></div>
+    </aside>
+    <main id="view"></main>
+  </div>
+  <div id="drawer" class="drawer hidden"></div>
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
