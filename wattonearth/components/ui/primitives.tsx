@@ -85,13 +85,16 @@ export function Badge({
   const tones = {
     neutral: "border-line text-muted",
     accent: "border-accent/40 text-accent",
-    good: "border-good/40 text-good",
-    typical: "border-typical/40 text-typical",
-    poor: "border-poor/40 text-poor",
+    good: "border-line text-fg",
+    typical: "border-line text-fg",
+    poor: "border-line text-fg",
     warn: "border-warn-fg/30 bg-warn-bg text-warn-fg",
   };
+  // Status tones pair a coloured dot with normal text (status colours are not text-safe).
+  const dot = { good: "bg-good", typical: "bg-typical", poor: "bg-poor" } as Record<string, string>;
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${tones[tone]}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${tones[tone]}`}>
+      {dot[tone] && <span aria-hidden="true" className={`h-2 w-2 rounded-full ${dot[tone]}`} />}
       {children}
     </span>
   );

@@ -21,12 +21,14 @@
   --accent-soft: #efe4d0;
   --logo-stroke: #9b7a4a;
   --logo-bolt: #7a5a2e;
-  --good: #2f6b3d;
-  --typical: #8a6412;
-  --poor: #a23b2a;
+  --good: #2e7d44;
+  --typical: #b58500;
+  --poor: #c62828;
   --warn-bg: #fff4d6;
   --warn-fg: #5a4000;
   --focus: #1d5fd1;
+  /* Status colours (good/typical/poor) validated with the dataviz palette checker;
+     they are graphic colours — always pair them with a text label. */
 }
 
 .dark {
@@ -41,9 +43,9 @@
   --accent-soft: #2a241a;
   --logo-stroke: #e9dcc2;
   --logo-bolt: #dcc6a0;
-  --good: #7cc48c;
-  --typical: #e0b75a;
-  --poor: #ef8a78;
+  --good: #36a17a;
+  --typical: #d0901c;
+  --poor: #e5534b;
   --warn-bg: #3a2e0a;
   --warn-fg: #ffe7a3;
   --focus: #8fb6ff;
