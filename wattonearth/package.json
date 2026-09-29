@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "assumptions": "tsx scripts/list-unverified.ts",
+    "news:fetch": "tsx scripts/fetch-news.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",
