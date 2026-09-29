@@ -89,7 +89,7 @@ Return only the email body text (no subject line, no signature block beyond the 
     const seg = SEGMENT_BY_KEY[business?.segment];
     const isFollowUp = stepIndex > 0;
     const catalogText = catalog.length
-      ? catalog.map((p) => `[${p.id}] ${p.name} — ${p.description || ''}${p.price_note ? ` (${p.price_note})` : ''}${p.brochure ? ` | brochure: ${p.brochure.url}` : ''}`).join('\n')
+      ? catalog.map((p) => `[${p.id}] ${p.name} — ${p.description || ''}${p.price_note ? ` (${p.price_note})` : ''}${p.brochure?.url ? ` | brochure: ${p.brochure.url}` : ''}`).join('\n')
       : '(no catalog)';
     const earlier = history.length
       ? '\nEARLIER EMAILS IN THIS THREAD\n' + history.map((m) => `${m.direction === 'in' ? 'THEM' : 'US'}: ${m.body}`).join('\n---\n')
@@ -123,7 +123,7 @@ ${seg?.pitch || 'premium personalised metal pens at factory-direct prices'}
 
 OUR CATALOG (choose from these only; ids in brackets)
 ${catalogText}
-${brochure ? `\nDEFAULT BROCHURE LINK: ${brochure.url}` : ''}
+${brochure ? (brochure.url ? `\nDEFAULT BROCHURE LINK: ${brochure.url}` : '\nOUR CATALOG PDF WILL BE ATTACHED to this email — mention it briefly instead of a link.') : ''}
 
 THIS EMAIL
 ${isFollowUp

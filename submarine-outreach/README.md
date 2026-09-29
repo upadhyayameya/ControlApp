@@ -11,6 +11,37 @@ Find businesses ──► Read their website ──► Write an email for them �
   search, CSV, URLs)                          that suit them, brochure)      each one     hours)      follow-ups)
 ```
 
+## Run it on your computer
+
+You don't need to use the terminal.
+
+1. **Install Node.js (one time).** Go to [nodejs.org](https://nodejs.org/en/download), download the **LTS** version and install it like any other app.
+2. **Download the portal.** [Download this ZIP](https://github.com/upadhyayameya/ControlApp/archive/refs/heads/claude/festive-dijkstra-byvjxy.zip) and unzip it. Once this is merged, use the GitHub page → **Code → Download ZIP** instead. Open the `submarine-outreach` folder inside.
+3. **Start it by double-clicking:**
+   - **Mac:** `Start Submarine Outreach (Mac).command`. The first time, macOS may say it's from an unidentified developer. If so, right-click the file, choose **Open**, then **Open** again.
+   - **Windows:** `Start Submarine Outreach (Windows).bat`. If Windows SmartScreen appears, click **More info → Run anyway**.
+
+   The first start installs what it needs, which takes about a minute. Your browser then opens at **http://localhost:3000**. **Keep that small window open** while you use the portal; close it to stop.
+4. **In the portal, go to Settings → Connections:**
+   - Click **Use Gmail / Google Workspace** (or Outlook). Enter your email address and an **app password**. For Google, go to Google Account → Security → 2-Step Verification → App passwords. Then click **Test email login**.
+   - Paste your **Claude API key** (from console.anthropic.com) so each email is written for its business.
+   - Optionally, paste a **Google Places API key** for the nationwide business search.
+   - Further down, fill in your name, title, phone, postal address and what you offer as samples.
+5. **Pens & brochures:** upload your brochure PDFs and check the pen list.
+6. **Find businesses:** import a CSV, paste websites, or run a search. Then **Campaigns → New campaign → Enroll**.
+7. **Review emails:** read, edit and approve each email. When you're happy, switch **Settings → Mode** to **LIVE**.
+
+Things to know when it runs on your own computer:
+
+- Emails are only sent, and replies only checked, **while the portal is running**. Approved emails wait until you start it again, and still go out only during the recipient's business hours.
+- The people you email can't open links to your computer. So:
+  - Brochures are **attached** to the email, unless you add a Google Drive or Dropbox share link to the brochure on the Pens & brochures page.
+  - People opt out by **replying "unsubscribe"**. The portal catches that reply and never emails them again. The US CAN-SPAM Act allows a reply address as the opt-out method.
+- Your data is in `data/outreach.db` inside the folder. Back it up now and then, and keep it when you download a newer version.
+- The portal only opens on this computer; others on your Wi-Fi can't reach it.
+
+To move it online later, see *Quick start* below and set `PORTAL_PASSWORD` and `PUBLIC_URL`.
+
 ## No mass mailing: every email is personal and approved by you
 
 - **Research first.** The crawler saves what each business says about itself: its site title, description, and homepage and about-page text.
@@ -40,7 +71,7 @@ On the **Pens & brochures** page you manage what emails can offer:
 By default, first emails **link** to the brochure rather than attaching it. Attachments in first-contact emails often go to spam or get stripped by company filters. You can tick "Attach PDF" on any email in Review, or on a reply in the Inbox, for example when someone asks for the catalog.
 
 
-## Quick start
+## Quick start (developers / servers)
 
 Requires Node.js 22.5 or newer. There's no build step and no database server, because it uses the SQLite built into Node.
 
@@ -90,16 +121,18 @@ Try the whole flow safely first, then switch to Live in **Settings**.
 - **Hunter.io** (optional, `HUNTER_API_KEY`) adds named contacts and headcount.
 - **CSV import** accepts any list you are allowed to use, such as trade-show attendee lists, ASI/PPAI distributor directories, or data-vendor exports like Apollo or ZoomInfo. The columns are detected automatically.
 
-## Connections (`.env`)
+## Connections (Settings page or `.env`)
+
+Everything below except `PORTAL_PASSWORD` can also be entered on **Settings → Connections**. Values saved there are stored in the local database and override `.env`.
 
 | Variable | Needed for |
 |---|---|
 | `GOOGLE_PLACES_API_KEY` | Sweep and targeted search. In Google Cloud, enable **Places API (New)**. Each search is billed, so use the daily cap. |
 | `SMTP_HOST/PORT/USER/PASS` | Sending. For Google Workspace, use `smtp.gmail.com:465` with an App Password. |
 | `IMAP_HOST/PORT/USER/PASS` | Receiving replies. For Google Workspace, use `imap.gmail.com:993`. User and password default to the SMTP ones. |
-| `PUBLIC_URL` | Unsubscribe links. Use your deployed **https** URL. |
-| `PORTAL_PASSWORD` | Login to the portal. Set it before putting the portal on the internet. |
-| `ANTHROPIC_API_KEY` | Optional AI buttons: draft sequences, draft replies, and triage replies. |
+| `PUBLIC_URL` | Only when the portal is hosted online. Use its **https** address; it enables unsubscribe and brochure links. Leave it unset on your own computer. |
+| `PORTAL_PASSWORD` | Login to the portal. Required before putting it online. Also set `HOST=0.0.0.0`; without a password it only listens on this computer. |
+| `ANTHROPIC_API_KEY` | Writing each email for its business, reply drafts and reply triage. Recommended. |
 
 ## Compliance and deliverability (please read)
 

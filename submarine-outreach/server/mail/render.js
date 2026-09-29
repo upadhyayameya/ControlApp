@@ -71,7 +71,9 @@ export function complianceFooter({ settings, unsubscribeUrl }) {
     signatureBlock(settings),
     '',
     [settings.company_name, settings.physical_address].filter(Boolean).join(' · '),
-    `Not the right fit? Just reply "no thanks" and I won't follow up, or unsubscribe here: ${unsubscribeUrl}`,
+    unsubscribeUrl
+      ? `Not the right fit? Just reply "no thanks" and I won't follow up, or unsubscribe here: ${unsubscribeUrl}`
+      : `Not the right fit? Just reply "no thanks" or "unsubscribe" and I won't email you again.`,
   ].join('\n');
 }
 

@@ -80,3 +80,53 @@ export function envConfig(env = process.env) {
     anthropicModel: env.ANTHROPIC_MODEL || 'claude-sonnet-5-5',
   };
 }
+
+/** True when recipients can reach this address (not localhost / a private machine name). */
+export function isPublicUrl(url) {
+  return /^https?:\/\//i.test(url || '') && !/^https?:\/\/(localhost|127\.|0\.0\.0\.0|\[::1\]|[^/]+\.local\b)/i.test(url);
+}
+
+// Connection details you can enter on the Settings page instead of in .env (handy when running the
+// portal on your own computer). Stored in the local database; values set here override .env.
+export const CONNECTION_FIELDS = {
+  smtp_host: { path: ['smtp', 'host'] },
+  smtp_port: { path: ['smtp', 'port'], number: true },
+  smtp_user: { path: ['smtp', 'user'] },
+  smtp_pass: { path: ['smtp', 'pass'], secret: true },
+  imap_host: { path: ['imap', 'host'] },
+  imap_port: { path: ['imap', 'port'], number: true },
+  imap_user: { path: ['imap', 'user'] },
+  imap_pass: { path: ['imap', 'pass'], secret: true },
+  google_places_key: { path: ['googlePlacesKey'], secret: true },
+  hunter_key: { path: ['hunterKey'], secret: true },
+  anthropic_key: { path: ['anthropicKey'], secret: true },
+  public_url: { path: ['publicUrl'] },
+};
+
+/** Re-apply saved connection details on top of the .env baseline, mutating `config` in place. */
+export function applyConnections(config, settings) {
+  config.envBase ??= structuredClone({ smtp: config.smtp, imap: config.imap, googlePlacesKey: config.googlePlacesKey, hunterKey: config.hunterKey, anthropicKey: config.anthropicKey, publicUrl: config.publicUrl });
+  for (const [key, f] of Object.entries(CONNECTION_FIELDS)) {
+    const saved = settings.get(`conn_${key}`);
+    const base = f.path.reduce((o, k) => o?.[k], config.envBase);
+    let value = saved != null && saved !== '' ? saved : base;
+    if (f.number) value = Number(value) || base;
+    if (key === 'public_url' && value) value = String(value).replace(/\/$/, '');
+    const parent = f.path.slice(0, -1).reduce((o, k) => o[k], config);
+    parent[f.path.at(-1)] = value;
+  }
+  // IMAP login defaults to the SMTP login (same mailbox) unless set separately.
+  if (!settings.get('conn_imap_user') && !config.envBase.imap.user) config.imap.user = config.smtp.user;
+  if (!settings.get('conn_imap_pass') && !config.envBase.imap.pass) config.imap.pass = config.smtp.pass;
+  return config;
+}
+
+/** What the Settings page may show: plain values, and only whether each secret is set. */
+export function describeConnections(config) {
+  const out = {};
+  for (const [key, f] of Object.entries(CONNECTION_FIELDS)) {
+    const v = f.path.reduce((o, k) => o?.[k], config);
+    out[key] = f.secret ? { set: Boolean(v) } : { value: key === 'public_url' && !isPublicUrl(v) ? '' : v ?? '' };
+  }
+  return out;
+}

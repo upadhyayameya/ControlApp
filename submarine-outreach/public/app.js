@@ -98,12 +98,12 @@ async function dashboard() {
   const tier = (t) => s.tiers.find((x) => x.tier === t) || { businesses: 0, with_email: 0 };
   const sweepTotals = s.sweep.segments.reduce((a, x) => ({ done: a.done + x.done + x.failed, all: a.all + x.done + x.failed + x.pending }), { done: 0, all: 0 });
   const setup = [];
-  if (!META.integrations.places) setup.push('Add <b>GOOGLE_PLACES_API_KEY</b> to discover businesses nationwide (or import a CSV).');
-  if (!META.integrations.smtp) setup.push('Add <b>SMTP_*</b> settings so emails can actually be sent.');
-  if (!META.integrations.imap) setup.push('Add <b>IMAP_*</b> settings so replies land in the Inbox.');
+  if (!META.integrations.smtp) setup.push('Connect your mailbox (Gmail or Outlook) so emails can be sent and replies checked.');
+  if (!META.integrations.ai) setup.push('Add a Claude API key so each email is written for its business.');
+  if (!META.integrations.places) setup.push('Optional: add a Google Places key for the nationwide business search — or import a CSV / paste websites.');
   view.innerHTML = `
     <h1>Dashboard</h1><p class="sub">Small &amp; mid-size US businesses first; large ones unlock later in Settings.</p>
-    ${setup.length ? `<div class="callout"><b>Setup:</b><ul style="margin:6px 0 0 18px;padding:0">${setup.map((x) => `<li>${x}</li>`).join('')}</ul><span class="small-text muted">See README / .env.example.</span></div>` : ''}
+    ${setup.length ? `<div class="callout"><b>Setup:</b><ul style="margin:6px 0 0 18px;padding:0">${setup.map((x) => `<li>${x}</li>`).join('')}</ul><a class="btn" href="#/settings" style="margin-top:8px">Open Settings → Connections</a></div>` : ''}
     <div class="grid g4">
       ${[['Emails to review', s.toReview], ['Needs reply', s.needsReply], ['Sent (24h)', `${s.sentToday} / ${s.dailyCap}`], ['Businesses found', s.businesses], ['Active emails', s.contacts],
         ['In sequences', s.activeEnrollments], ['Total sent', s.sentTotal], ['Conversations w/ replies', s.replies]]
@@ -506,10 +506,13 @@ async function catalog() {
     <p class="sub">What each email can offer. The writer picks the 2–3 pens that suit each business (using “Best for”) and links the matching brochure.
       The starting list comes from Submarine's public range — check the wording and add prices or minimums you're happy to share.</p>
     <div class="card"><h2>Brochures</h2>
-      <p class="muted small-text">PDFs get a shareable link (${esc(location.origin)}/b/…) that emails can include. Set PUBLIC_URL so the links work from outside.</p>
+      <p class="muted small-text">Emails include a link to the brochure when there is one people can open — paste a Google Drive / Dropbox / website link below.
+        Without a link, the PDF is attached to the email instead.</p>
       <div class="row"><input id="br-title" placeholder="Title, e.g. Corporate gifting catalog 2026" style="flex:1"><input type="file" id="br-file" accept="application/pdf,image/*"><button class="primary" id="br-up">Upload</button></div>
-      <table style="margin-top:10px">${brochures.map((b) => `<tr><td><b>${esc(b.title)}</b><div class="small-text muted">${esc(b.filename)} · ${Math.round(b.size / 1024)} KB</div></td>
-        <td><a href="${esc(b.url)}" target="_blank">open</a></td><td><button class="danger" data-delbr="${b.id}">Delete</button></td></tr>`).join('') || '<tr><td class="muted">No brochures yet.</td></tr>'}</table>
+      <table style="margin-top:10px">${brochures.map((b) => `<tr><td><b>${esc(b.title)}</b><div class="small-text muted">${esc(b.filename)} · ${Math.round(b.size / 1024)} KB · <a href="${esc(b.open_path)}" target="_blank">open</a></div></td>
+        <td style="min-width:320px"><div class="row"><input class="br-link" data-id="${b.id}" value="${esc(b.public_url || '')}" placeholder="Share link (optional), e.g. https://drive.google.com/…" style="flex:1"><button data-savelink="${b.id}">Save link</button></div>
+          <div class="small-text muted">${b.url ? 'Emails link to: ' + esc(b.url) : 'No public link — this PDF will be attached to emails.'}</div></td>
+        <td><button class="danger" data-delbr="${b.id}">Delete</button></td></tr>`).join('') || '<tr><td class="muted">No brochures yet.</td></tr>'}</table>
     </div>
     <div class="row" style="margin:20px 0 8px"><h2 style="margin:0">Pen options</h2><span class="spacer"></span><button id="p-add">+ Add pen</button></div>
     ${[...products, { id: 0, name: '', description: '', best_for: [], price_note: '', link: '', brochure_id: null, active: 1 }].map((p) => `
@@ -538,6 +541,8 @@ async function catalog() {
     const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
     act(e.target, () => api('/brochures', { body: { title: $('#br-title').value || file.name.replace(/\.[^.]+$/, ''), filename: file.name, mime: file.type || 'application/pdf', data } }), 'Brochure uploaded').then((r) => r && catalog());
   };
+  $$('[data-savelink]').forEach((b) => (b.onclick = () => act(b, () => api('/brochures/' + b.dataset.savelink, { method: 'PUT',
+    body: { public_url: $(`.br-link[data-id="${b.dataset.savelink}"]`).value } }), 'Link saved').then(catalog)));
   $$('[data-delbr]').forEach((b) => (b.onclick = () => confirm('Delete this brochure? Links in emails already sent will stop working.') &&
     act(b, () => api('/brochures/' + b.dataset.delbr, { method: 'DELETE' })).then(catalog)));
 }
@@ -585,7 +590,7 @@ async function renderThread(id) {
       ${business ? `<button id="mk-int">Mark interested</button><button id="mk-cust">Mark customer</button>` : ''}</div>`;
   api('/catalog').then(({ brochures }) => {
     $('#r-att').innerHTML = brochures.length ? 'Attach: ' + brochures.map((b) => `<label style="margin:0;font-weight:400;color:inherit"><input type="checkbox" value="${b.id}" style="width:auto"> ${esc(b.title)}</label>`).join(' ')
-      + ` <span class="muted">or paste a link: ${brochures.map((b) => `<a href="${esc(b.url)}" target="_blank">${esc(b.title)}</a>`).join(', ')}</span>` : '';
+      + (brochures.some((b) => b.url) ? ` <span class="muted">or paste a link: ${brochures.filter((b) => b.url).map((b) => `<a href="${esc(b.url)}" target="_blank">${esc(b.title)}</a>`).join(', ')}</span>` : '') : '';
   });
   $('#t-status').onchange = (e) => act(null, () => api('/threads/' + id, { method: 'PATCH', body: { status: e.target.value } }), 'Updated');
   $('#t-lead') && ($('#t-lead').onclick = (e) => { e.preventDefault(); openLead(business.id); });
@@ -616,13 +621,40 @@ async function outbox() {
 
 // ---------------- Settings ----------------
 async function settings() {
-  const [{ settings: s, live, env }, sup] = await Promise.all([api('/settings'), api('/suppressions')]);
+  const [{ settings: s, live }, sup, conn] = await Promise.all([api('/settings'), api('/suppressions'), api('/connections')]);
+  const cf = conn.fields;
+  const cin = (k, label, help = '', ph = '') => `<label>${label}</label>${cf[k].set !== undefined
+    ? `<input type="password" name="${k}" autocomplete="new-password" placeholder="${cf[k].set ? '•••••••• saved — type to replace' : esc(ph)}">`
+    : `<input name="${k}" value="${esc(cf[k].value)}" placeholder="${esc(ph)}">`}${help ? `<div class="small-text muted">${help}</div>` : ''}`;
+  const connectionsCard = `
+    <div class="card" style="margin-bottom:16px"><div class="row"><h2 style="margin:0">Connections</h2><span class="spacer"></span>
+      ${[['Email sending', META.integrations.smtp], ['Reply checking', META.integrations.imap], ['AI writing', META.integrations.ai], ['Nationwide search', META.integrations.places]]
+        .map(([n, ok]) => `<span class="chip ${ok ? 'sent' : ''}">${ok ? '✓' : '○'} ${n}</span>`).join(' ')}</div>
+      <p class="muted small-text">Saved on this computer only. Passwords are never shown again.</p>
+      <form id="conn"><div class="grid g2">
+        <div><h3>Your mailbox</h3>
+          <div class="row"><button type="button" data-preset="gmail">Use Gmail / Google Workspace</button><button type="button" data-preset="outlook">Use Outlook / Microsoft 365</button></div>
+          <div class="row"><div style="flex:2">${cin('smtp_host', 'Outgoing server (SMTP)', '', 'smtp.gmail.com')}</div><div style="flex:1">${cin('smtp_port', 'Port', '', '465')}</div></div>
+          ${cin('smtp_user', 'Email address', '', 'you@yourdomain.com')}
+          ${cin('smtp_pass', 'App password', 'Gmail: Google Account → Security → 2-Step Verification → App passwords. Not your normal password.')}
+          <div class="row"><div style="flex:2">${cin('imap_host', 'Incoming server (IMAP) for replies', '', 'imap.gmail.com')}</div><div style="flex:1">${cin('imap_port', 'Port', '', '993')}</div></div>
+          <div class="small-text muted">Replies are read with the same email address and app password.</div>
+          <br><button type="button" id="test-smtp" ${META.integrations.smtp ? '' : 'disabled'}>Test email login</button>
+        </div>
+        <div><h3>Keys</h3>
+          ${cin('anthropic_key', 'Claude API key — writes each email for its business', 'From console.anthropic.com → API keys. Recommended.')}
+          ${cin('google_places_key', 'Google Places API key — nationwide business search', 'Google Cloud → enable “Places API (New)” → create key. Searches are billed by Google.')}
+          ${cin('hunter_key', 'Hunter.io key (optional) — extra named contacts')}
+          ${cin('public_url', 'Public web address (only if you host the portal online)', conn.publicReachable ? 'Links in emails point here.' : 'Leave empty on your own computer: brochures are attached and people unsubscribe by replying.', 'https://…')}
+        </div>
+      </div><br><button class="primary">Save connections</button></form>
+    </div>`;
   const field = (k, label, type = 'text', help = '') => `<label>${label}</label>${type === 'textarea'
     ? `<textarea name="${k}" style="min-height:110px">${esc(s[k])}</textarea>`
     : `<input name="${k}" type="${type}" value="${esc(s[k])}">`}${help ? `<div class="small-text muted">${help}</div>` : ''}`;
-  const ints = META.integrations;
   view.innerHTML = `
-    <h1>Settings</h1><p class="sub">Secrets (passwords, API keys) are set as environment variables — see <code>.env.example</code>.</p>
+    <h1>Settings</h1><p class="sub">Connect your mailbox and keys, then fill in how you sign your emails.</p>
+    ${connectionsCard}
     <form id="settings"><div class="grid g2">
       <div class="card"><h2>Sender &amp; compliance</h2>
         ${field('company_name', 'Company name')}${field('sender_name', 'Your full name', 'text', 'Shown as the From name and signed at the bottom of each email.')}
@@ -651,11 +683,6 @@ async function settings() {
         <h2 style="margin-top:20px">Discovery</h2>
         ${field('sweep_daily_limit', 'Max Places searches per day', 'number', 'Each search returns up to 60 businesses. Watch your Google Cloud billing.')}
         ${field('crawl_concurrency', 'Websites crawled in parallel', 'number')}
-        <h2 style="margin-top:20px">Connections</h2>
-        <table class="small-text">${[['Google Places', ints.places], ['Hunter.io (optional)', ints.hunter], ['SMTP sending', ints.smtp, env.SMTP_USER], ['IMAP replies', ints.imap, env.IMAP_USER], ['Claude AI drafting (optional)', ints.ai, env.ANTHROPIC_MODEL], ['Portal password', env.PORTAL_PASSWORD]]
-          .map(([n, ok, extra]) => `<tr><td>${n}</td><td>${ok ? '<span class="chip sent">connected</span>' : '<span class="chip">not set</span>'} <span class="muted">${ok && extra ? esc(extra) : ''}</span></td></tr>`).join('')}
-          <tr><td>Public URL</td><td>${esc(env.PUBLIC_URL)}</td></tr></table>
-        <button type="button" id="test-smtp" ${ints.smtp ? '' : 'disabled'}>Test SMTP login</button>
       </div>
     </div><br><button class="primary">Save settings</button></form>
     <div class="card" style="margin-top:16px"><h2>Suppression list (${num(sup.length)})</h2>
@@ -669,7 +696,19 @@ async function settings() {
     await refreshChrome();
     settings();
   };
-  $('#test-smtp').onclick = (e) => act(e.target, () => api('/settings/test-smtp', { body: {} }), 'SMTP login OK');
+  $('#test-smtp').onclick = (e) => act(e.target, () => api('/settings/test-smtp', { body: {} }), 'Email login works');
+  const presets = { gmail: ['smtp.gmail.com', 465, 'imap.gmail.com', 993], outlook: ['smtp.office365.com', 587, 'outlook.office365.com', 993] };
+  $$('[data-preset]').forEach((b) => (b.onclick = () => {
+    const [sh, sp, ih, ip] = presets[b.dataset.preset];
+    const f = $('#conn');
+    f.smtp_host.value = sh; f.smtp_port.value = sp; f.imap_host.value = ih; f.imap_port.value = ip;
+    f.smtp_user.focus();
+  }));
+  $('#conn').onsubmit = async (e) => {
+    e.preventDefault();
+    const r = await act(e.submitter, () => api('/connections', { method: 'PUT', body: Object.fromEntries(new FormData(e.target)) }), 'Connections saved');
+    if (r) { await refreshChrome(); settings(); }
+  };
   $('#sup').onsubmit = (e) => { e.preventDefault(); act(e.submitter, () => api('/suppressions', { body: Object.fromEntries(new FormData(e.target)) }), 'Added').then(settings); };
   $$('[data-unsup]').forEach((b) => (b.onclick = () => confirm('Remove from suppression list? Only do this if they asked to hear from you again.') &&
     act(b, () => api('/suppressions/' + encodeURIComponent(b.dataset.unsup), { method: 'DELETE' })).then(settings)));

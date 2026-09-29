@@ -174,6 +174,7 @@ const ADDED_COLUMNS = {
     draft_products: 'TEXT', draft_attachments: 'TEXT',
   },
   messages: { attachments: 'TEXT' },
+  brochures: { public_url: 'TEXT' },
 };
 
 function migrate(db) {

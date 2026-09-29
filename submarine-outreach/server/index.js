@@ -44,8 +44,10 @@ every(20000, () => outreach.tick());
 every(120000, () => inbox.poll());
 setTimeout(() => inbox.poll().catch(() => {}), 3000);
 
-app.listen(config.port, () => {
+// Without a password the portal only listens on this computer, so others on your Wi-Fi can't open it.
+const host = process.env.HOST || (config.portalPassword ? '0.0.0.0' : '127.0.0.1');
+app.listen(config.port, host, () => {
   log.info(`Submarine Outreach portal on http://localhost:${config.port}`);
   log.info(`Send mode: ${settings.get('send_mode')}${settings.get('send_mode') === 'dry_run' ? ' (emails are recorded, not sent — switch in Settings)' : ''}`);
-  if (!config.portalPassword) log.info('PORTAL_PASSWORD not set: the portal has no login. Set it before exposing this server.');
+  if (!config.portalPassword) log.info('No PORTAL_PASSWORD: open only from this computer. Set one (and HOST=0.0.0.0) before exposing it.');
 });

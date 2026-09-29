@@ -3,7 +3,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { openDb, tx } from './db.js';
-import { makeSettings, DEFAULT_SETTINGS } from './settings.js';
+import { makeSettings, DEFAULT_SETTINGS, applyConnections, describeConnections, CONNECTION_FIELDS, isPublicUrl } from './settings.js';
 import { makeLeads } from './leads.js';
 import { makeSender } from './mail/sender.js';
 import { makeOutreach } from './mail/outreach.js';
@@ -19,7 +19,7 @@ import { STATES, normalizeState } from './data/geo.js';
 import { STARTER_STEPS } from './templates.js';
 
 const PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
-const EDITABLE_SETTINGS = Object.keys(DEFAULT_SETTINGS).filter((k) => k !== 'sweep_running');
+const EDITABLE_SETTINGS = Object.keys(DEFAULT_SETTINGS).filter((k) => k !== 'sweep_running' && k !== 'app_secret');
 
 export function createApp(config, { log = console, transportFactory } = {}) {
   const db = openDb(config.dbFile);
@@ -30,6 +30,7 @@ export function createApp(config, { log = console, transportFactory } = {}) {
     if (!s) { s = randomBytes(32).toString('hex'); settings.set('app_secret', s); }
     config.secret = s;
   }
+  applyConnections(config, settings);
   const leads = makeLeads(db, config);
   const sender = makeSender({ db, settings, config, leads, ...(transportFactory ? { transportFactory } : {}) });
   const ai = makeAi({ config, settings });
@@ -368,6 +369,7 @@ export function createApp(config, { log = console, transportFactory } = {}) {
   app.post('/api/products', wrap((req, res) => res.json({ id: catalog.saveProduct(req.body) })));
   app.delete('/api/products/:id', wrap((req, res) => { catalog.deleteProduct(req.params.id); res.json({ ok: true }); }));
   app.post('/api/brochures', wrap((req, res) => res.json(catalog.addBrochure(req.body))));
+  app.put('/api/brochures/:id', wrap((req, res) => { catalog.setBrochureLink(req.params.id, req.body.public_url); res.json({ ok: true }); }));
   app.delete('/api/brochures/:id', wrap((req, res) => { catalog.deleteBrochure(req.params.id); res.json({ ok: true }); }));
 
   // ---------- Review queue: every email is checked by a person before it is sent ----------
@@ -498,8 +500,22 @@ export function createApp(config, { log = console, transportFactory } = {}) {
     }
     res.json({ ok: true });
   }));
+  app.get('/api/connections', (req, res) => res.json({ fields: describeConnections(config), publicReachable: isPublicUrl(config.publicUrl) }));
+  app.put('/api/connections', wrap((req, res) => {
+    for (const [key, f] of Object.entries(CONNECTION_FIELDS)) {
+      if (!(key in (req.body || {}))) continue;
+      const v = String(req.body[key] ?? '').trim();
+      if (f.secret && v === '') continue; // blank password box = keep what's saved
+      if (key === 'public_url' && v && !/^https?:\/\//i.test(v)) throw new Error('Public URL must start with https://');
+      settings.set(`conn_${key}`, v);
+    }
+    for (const key of [].concat(req.body?.clear || [])) if (CONNECTION_FIELDS[key]) settings.set(`conn_${key}`, '');
+    applyConnections(config, settings);
+    sender.reset();
+    res.json({ fields: describeConnections(config), publicReachable: isPublicUrl(config.publicUrl) });
+  }));
   app.post('/api/settings/test-smtp', wrap(async (req, res) => {
-    if (!sender.smtpConfigured()) throw new Error('SMTP env vars not set');
+    if (!sender.smtpConfigured()) throw new Error('Enter your email server details first');
     await sender.verify();
     res.json({ ok: true });
   }));

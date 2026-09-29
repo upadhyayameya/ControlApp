@@ -18,12 +18,16 @@ export function makeOutreach({ db, settings, sender, catalog, ai = null, log = c
   /** Render a campaign step for one contact (used for previews, and for drafts when AI is off). */
   function renderStep(step, contact, business, products = catalog.productsFor(business?.segment)) {
     const brochure = catalog.brochureFor(products);
+    const url = brochure ? catalog.brochureUrl(brochure) : null;
     const vars = mergeVars({
       contact, business, segment: SEGMENT_BY_KEY[business?.segment], settings: settings.all(),
-      products: catalog.productLines(products), brochureUrl: brochure ? catalog.brochureUrl(brochure) : '',
+      products: catalog.productLines(products), brochureUrl: url || '',
     });
-    let body = renderTemplate(step.body, vars);
-    if (!brochure) body = body.replace(/^.*(catalog|brochure)[^\n]*:\s*$\n?/gim, ''); // drop an empty "catalog here:" line
+    // The line holding {{brochure_link}}: kept with a link, reworded when the PDF will be attached, dropped with no brochure.
+    const linkLine = /^[^\n]*\{\{\s*brochure_link[^}]*\}\}[^\n]*$/gim;
+    let template = step.body;
+    if (!url) template = template.replace(linkLine, brochure ? "I've attached our catalog so you can see the full range." : '');
+    const body = renderTemplate(template, vars);
     return { subject: renderTemplate(step.subject, vars), body: body.replace(/\n{3,}/g, '\n\n') };
   }
 
@@ -111,9 +115,11 @@ export function makeOutreach({ db, settings, sender, catalog, ai = null, log = c
         note = `AI draft failed, showing the template instead: ${err.message}`;
       }
     }
+    // Attach PDFs when you prefer attachments, or when there's no link recipients could open.
+    const mainBrochure = catalog.brochureFor(chosen);
     const attach = settings.get('brochure_mode') === 'attach'
       ? [...new Set(chosen.map((p) => p.brochure?.id).filter(Boolean))].slice(0, 2)
-      : [];
+      : mainBrochure && !catalog.brochureUrl(mainBrochure) ? [mainBrochure.id] : [];
     if (enr.thread_id) subject = ctx.subject; // follow-ups stay in the same thread
     const state = settings.bool('require_approval') ? 'ready' : 'approved';
     db.prepare(`UPDATE enrollments SET draft_subject = ?, draft_body = ?, draft_state = ?, draft_note = ?, draft_hint = ?,

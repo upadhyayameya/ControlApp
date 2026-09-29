@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { randomUUID } from 'node:crypto';
 import { complianceFooter, unsubscribeToken } from './render.js';
+import { isPublicUrl } from '../settings.js';
 
 export function makeSender({ db, settings, config, leads, transportFactory = nodemailer.createTransport }) {
   let transport = null;
@@ -22,8 +23,8 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
     if (!s.from_email) missing.push('From email');
     if (!s.sender_name) missing.push('Sender name');
     if (!s.physical_address) missing.push('Physical mailing address (required by CAN-SPAM)');
-    if (!config.publicUrl.startsWith('https://') && !/localhost|127\.0\.0\.1/.test(config.publicUrl)) {
-      missing.push('PUBLIC_URL should be https so unsubscribe links work');
+    if (isPublicUrl(config.publicUrl) && !config.publicUrl.startsWith('https://')) {
+      missing.push('Public URL should start with https:// so unsubscribe and brochure links work');
     }
     return { ready: missing.length === 0, missing };
   }
@@ -43,7 +44,9 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
       if (!r.ready) throw new Error(`Live sending not configured: ${r.missing.join(', ')}`);
     }
     const fromEmail = s.from_email || config.smtp.user || 'outreach@localhost';
-    const unsubscribeUrl = `${config.publicUrl}/u/${unsubscribeToken(contact.id, config.secret)}`;
+    // On a home computer recipients can't reach the portal, so opt-out is by reply (allowed by CAN-SPAM).
+    const unsubscribeUrl = isPublicUrl(config.publicUrl) ? `${config.publicUrl}/u/${unsubscribeToken(contact.id, config.secret)}` : null;
+    const replyAddress = s.reply_to || s.from_email || config.smtp.user;
     const text = `${body.trim()}\n${complianceFooter({ settings: s, unsubscribeUrl })}\n`;
     const messageId = `<${randomUUID()}@${fromEmail.split('@')[1] || 'localhost'}>`;
 
@@ -61,10 +64,12 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
           inReplyTo: inReplyTo || undefined,
           references: references.length ? references : undefined,
           attachments: attachments.length ? attachments : undefined,
-          headers: {
-            'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:${s.reply_to || fromEmail}?subject=unsubscribe>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-          },
+          headers: unsubscribeUrl
+            ? {
+              'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:${replyAddress}?subject=unsubscribe>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            }
+            : { 'List-Unsubscribe': `<mailto:${replyAddress}?subject=unsubscribe>` },
         });
         status = 'sent';
       } catch (err) {
@@ -97,5 +102,5 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
     return { threadId, messageId, status };
   }
 
-  return { send, liveReadiness, smtpConfigured, verify: () => getTransport().verify() };
+  return { send, liveReadiness, smtpConfigured, verify: () => getTransport().verify(), reset: () => { transport = null; } };
 }

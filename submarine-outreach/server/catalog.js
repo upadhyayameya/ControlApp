@@ -1,5 +1,6 @@
 // Pen options and brochures that get matched to each business and shown in its email.
 import { randomBytes } from 'node:crypto';
+import { isPublicUrl } from './settings.js';
 
 // Starting catalog from Submarine's public range. No prices are invented — fill them in on the Catalog page.
 const STARTER_PRODUCTS = [
@@ -56,20 +57,36 @@ export function makeCatalog(db, config) {
     STARTER_PRODUCTS.forEach((p, i) => ins.run(p.name, p.description, p.best_for, i));
   }
 
-  const brochureUrl = (b) => (b ? `${config.publicUrl}/b/${b.token}` : null);
-  const BROCHURE_COLS = 'id, token, title, filename, mime, size, created_at';
+  /**
+   * The link recipients can open: your own share link (Google Drive, Dropbox, your website) if set,
+   * else the portal's /b/ link when the portal is publicly reachable, else null (the PDF gets attached).
+   */
+  const brochureUrl = (b) => {
+    if (!b) return null;
+    if (b.public_url) return b.public_url;
+    return isPublicUrl(config.publicUrl) ? `${config.publicUrl}/b/${b.token}` : null;
+  };
+  const BROCHURE_COLS = 'id, token, title, filename, mime, size, public_url, created_at';
 
   function listBrochures() {
-    return db.prepare(`SELECT ${BROCHURE_COLS} FROM brochures ORDER BY id DESC`).all().map((b) => ({ ...b, url: brochureUrl(b) }));
+    return db.prepare(`SELECT ${BROCHURE_COLS} FROM brochures ORDER BY id DESC`).all()
+      .map((b) => ({ ...b, url: brochureUrl(b), open_path: `/b/${b.token}` }));
   }
 
-  function addBrochure({ title, filename, mime, data }) {
+  function setBrochureLink(id, url) {
+    const v = String(url || '').trim();
+    if (v && !/^https?:\/\//i.test(v)) throw new Error('link must start with https://');
+    db.prepare('UPDATE brochures SET public_url = ? WHERE id = ?').run(v || null, Number(id));
+  }
+
+  function addBrochure({ title, filename, mime, data, public_url }) {
     const buf = Buffer.from(String(data || ''), 'base64');
     if (!buf.length) throw new Error('empty file');
     if (buf.length > 15 * 1024 * 1024) throw new Error('brochure must be under 15 MB');
     const safeName = String(filename || 'brochure.pdf').replace(/[^\w.\- ]+/g, '_').slice(0, 120);
     const info = db.prepare('INSERT INTO brochures(token, title, filename, mime, size, data) VALUES (?,?,?,?,?,?)')
       .run(randomBytes(12).toString('base64url'), String(title || safeName), safeName, String(mime || 'application/pdf'), buf.length, buf);
+    if (public_url) setBrochureLink(Number(info.lastInsertRowid), public_url);
     return listBrochures().find((b) => b.id === Number(info.lastInsertRowid));
   }
 
@@ -115,7 +132,7 @@ export function makeCatalog(db, config) {
   }
 
   return {
-    listBrochures, addBrochure, getBrochureByToken, getBrochures, brochureUrl,
+    listBrochures, addBrochure, setBrochureLink, getBrochureByToken, getBrochures, brochureUrl,
     deleteBrochure: (id) => db.prepare('DELETE FROM brochures WHERE id = ?').run(Number(id)),
     listProducts, saveProduct, productsFor, productLines, brochureFor,
     deleteProduct: (id) => db.prepare('DELETE FROM products WHERE id = ?').run(Number(id)),

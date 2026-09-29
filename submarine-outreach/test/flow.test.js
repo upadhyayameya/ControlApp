@@ -7,9 +7,9 @@ import { crawlForEmails } from '../server/sourcing/crawler.js';
 const quiet = { info() {}, warn() {} };
 const WED_11AM_ET = new Date('2026-09-30T15:00:00Z');
 
-function setup({ live = false } = {}) {
+function setup({ live = false, publicUrl = 'https://portal.submarine.test' } = {}) {
   const sent = [];
-  const config = { ...envConfig({}), dbFile: ':memory:', secret: 'test-secret' };
+  const config = { ...envConfig({}), dbFile: ':memory:', secret: 'test-secret', publicUrl };
   if (live) Object.assign(config.smtp, { host: 'smtp.test', user: 'me@submarine.test', pass: 'x' });
   const ctx = createApp(config, {
     log: quiet,
@@ -223,7 +223,7 @@ test('HTTP: unsubscribe link, login gate, leads API', async () => {
     // Brochure upload is behind login; its share link is public so recipients can open it.
     const up = await fetch(base + '/api/brochures', { method: 'POST', headers: { 'content-type': 'application/json', cookie },
       body: JSON.stringify({ title: 'Catalog', filename: 'cat.pdf', mime: 'application/pdf', data: Buffer.from('%PDF-1.4 hi').toString('base64') }) }).then((r) => r.json());
-    const pdf = await fetch(base + new URL(up.url).pathname);
+    const pdf = await fetch(base + up.open_path);
     assert.equal(pdf.headers.get('content-type'), 'application/pdf');
     assert.equal(await pdf.text(), '%PDF-1.4 hi');
     assert.equal((await fetch(base + '/b/nope')).status, 404);
@@ -263,4 +263,59 @@ test('template drafts list suitable pens + brochure link; attached brochures are
   assert.equal(db.prepare('SELECT attachments FROM messages').get().attachments, 'submarine-catalog.pdf');
   settings.set('min_gap_seconds', 60);
   assert.ok(Number(settings.get('next_send_after')) >= WED_11AM_ET.getTime(), 'randomised spacing recorded');
+});
+
+test('on a home computer (localhost): opt-out by reply, brochures attached, keys entered in the portal', async () => {
+  const { leads, outreach, db, settings, catalog, sent, config, app } = setup({ live: true, publicUrl: 'http://localhost:3000' });
+  settings.set('from_email', 'ameya@submarine.test');
+  settings.set('sender_name', 'Ameya Upadhyay');
+  settings.set('physical_address', 'Andheri East, Mumbai 400069, India');
+  settings.set('send_mode', 'live');
+  const b = catalog.addBrochure({ title: 'Catalog', filename: 'catalog.pdf', data: Buffer.from('%PDF-1.4 x').toString('base64') });
+  assert.equal(b.url, null, 'no link recipients could open');
+  leads.importRows([{ company: 'Bean There Roasters', email: 'hello@beanthere.test', state: 'NY', segment: 'coffee' }]);
+  const cid = Number(db.prepare("INSERT INTO campaigns(name, status) VALUES ('c', 'active')").run().lastInsertRowid);
+  const { STARTER_STEPS } = await import('../server/templates.js');
+  STARTER_STEPS.forEach((st, i) => db.prepare('INSERT INTO campaign_steps(campaign_id, step_no, delay_days, subject, body) VALUES (?,?,?,?,?)').run(cid, i, st.delay_days, st.subject, st.body));
+  outreach.enroll(cid, {});
+  await outreach.prepareDrafts(5);
+  const e = db.prepare('SELECT * FROM enrollments').get();
+  assert.match(e.draft_body, /I've attached our catalog/);
+  assert.doesNotMatch(e.draft_body, /localhost/);
+  assert.deepEqual(JSON.parse(e.draft_attachments), [b.id]);
+  outreach.approve(e.id);
+  assert.equal((await outreach.tick(WED_11AM_ET)).sent, true);
+  const m = sent[0];
+  assert.equal(m.attachments[0].filename, 'catalog.pdf');
+  assert.doesNotMatch(m.text, /localhost|\/u\//);
+  assert.match(m.text, /reply "no thanks" or "unsubscribe"/);
+  assert.equal(m.headers['List-Unsubscribe'], '<mailto:ameya@submarine.test?subject=unsubscribe>');
+  assert.equal(m.headers['List-Unsubscribe-Post'], undefined);
+
+  // A Google Drive link set on the brochure is used instead of attaching.
+  catalog.setBrochureLink(b.id, 'https://drive.example/catalog');
+  assert.equal(catalog.listBrochures()[0].url, 'https://drive.example/catalog');
+
+  // Connection details entered on the Settings page take effect immediately; passwords are never sent back.
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const put = (body) => fetch(base + '/api/connections', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json());
+    let r = await put({ smtp_host: 'smtp.gmail.com', smtp_port: '465', smtp_user: 'me@gmail.test', smtp_pass: 'app-pass', anthropic_key: 'sk-test' });
+    assert.equal(config.smtp.host, 'smtp.gmail.com');
+    assert.equal(config.smtp.port, 465);
+    assert.equal(config.imap.user, 'me@gmail.test', 'IMAP login defaults to the SMTP login');
+    assert.equal(config.anthropicKey, 'sk-test');
+    assert.deepEqual(r.fields.smtp_pass, { set: true });
+    assert.ok(!JSON.stringify(r).includes('app-pass'));
+    r = await put({ smtp_pass: '' });
+    assert.equal(config.smtp.pass, 'app-pass', 'blank password box keeps the saved one');
+    r = await put({ clear: ['anthropic_key'] });
+    assert.equal(config.anthropicKey, '');
+    const meta = await fetch(base + '/api/meta').then((x) => x.json());
+    assert.equal(meta.integrations.smtp, true);
+    assert.equal(meta.integrations.ai, false);
+  } finally {
+    server.close();
+  }
 });
