@@ -36,8 +36,8 @@ export function Header() {
       </a>
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         <Link href="/" className="flex items-center" aria-label="Watt on Earth — home">
-          <Logo animated size={30} title="" withWordmark className="hidden sm:inline-flex" />
-          <Logo animated size={30} title="" className="sm:hidden" />
+          <Logo size={30} title="" withWordmark className="hidden sm:inline-flex" />
+          <Logo size={30} title="" className="sm:hidden" />
         </Link>
 
         <nav aria-label="Main" className="hidden lg:block">
