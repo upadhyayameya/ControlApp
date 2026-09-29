@@ -51,7 +51,7 @@ const tierChip = (t) => `<span class="chip ${t}">${t}</span>`;
 const chip = (s) => (s ? `<span class="chip ${esc(s)}">${esc(String(s).replace(/_/g, ' '))}</span>` : '');
 
 // ---------------- Router ----------------
-const routes = { dashboard, discover, leads, campaigns, inbox, outbox, settings };
+const routes = { dashboard, discover, leads, campaigns, review, catalog, inbox, outbox, settings };
 async function route() {
   const [name, arg] = location.hash.replace(/^#\/?/, '').split('/');
   const page = routes[name] ? name : 'dashboard';
@@ -72,6 +72,9 @@ async function refreshChrome() {
   const b = $('#inbox-badge');
   b.textContent = threads.length;
   b.classList.toggle('hidden', !threads.length);
+  const rb = $('#review-badge');
+  rb.textContent = META.reviewCount;
+  rb.classList.toggle('hidden', !META.reviewCount);
 }
 
 function renderLogin() {
@@ -102,8 +105,8 @@ async function dashboard() {
     <h1>Dashboard</h1><p class="sub">Small &amp; mid-size US businesses first; large ones unlock later in Settings.</p>
     ${setup.length ? `<div class="callout"><b>Setup:</b><ul style="margin:6px 0 0 18px;padding:0">${setup.map((x) => `<li>${x}</li>`).join('')}</ul><span class="small-text muted">See README / .env.example.</span></div>` : ''}
     <div class="grid g4">
-      ${[['Businesses found', s.businesses], ['Active emails', s.contacts], ['Sent (24h)', `${s.sentToday} / ${s.dailyCap}`], ['Needs reply', s.needsReply],
-        ['In sequences', s.activeEnrollments], ['Total sent', s.sentTotal], ['Conversations w/ replies', s.replies], ['Websites to crawl', s.pendingCrawl]]
+      ${[['Emails to review', s.toReview], ['Needs reply', s.needsReply], ['Sent (24h)', `${s.sentToday} / ${s.dailyCap}`], ['Businesses found', s.businesses], ['Active emails', s.contacts],
+        ['In sequences', s.activeEnrollments], ['Total sent', s.sentTotal], ['Conversations w/ replies', s.replies]]
         .map(([l, n]) => `<div class="card stat"><div class="n">${typeof n === 'number' ? num(n) : n}</div><div class="l">${l}</div></div>`).join('')}
     </div>
     <div class="grid g2" style="margin-top:16px">
@@ -125,9 +128,10 @@ async function dashboard() {
     <div class="card" style="margin-top:16px"><h2>Getting to your first reply</h2>
       <ol style="margin:0;padding-left:18px;line-height:1.9">
         <li><a href="#/discover">Find businesses</a> — start the nationwide sweep, run a targeted search, or import a CSV.</li>
-        <li>The crawler visits each website and collects publicly listed business emails (smallest businesses first).</li>
-        <li><a href="#/campaigns">Create a campaign</a> — pick a segment, edit or AI-draft the sequence, preview, enroll leads.</li>
-        <li>Review in Dry-run, then switch to Live in <a href="#/settings">Settings</a>.</li>
+        <li>The crawler reads each website — what they sell, who they serve — and collects publicly listed business emails.</li>
+        <li>Add your pens and brochures in <a href="#/catalog">Pens &amp; brochures</a>, then <a href="#/campaigns">create a campaign</a> and enroll leads.</li>
+        <li>Each email is written for that one business, recommending the pens that suit it. Read, edit and approve each one in <a href="#/review">Review emails</a>.</li>
+        <li>Try it in Dry-run first, then switch to Live in <a href="#/settings">Settings</a>.</li>
         <li>Replies land in the <a href="#/inbox">Inbox</a> and stop the sequence automatically; answer them there.</li>
       </ol></div>`;
   $$('[data-status]').forEach((a) => (a.onclick = () => { leadsState.status = a.dataset.status; }));
@@ -207,7 +211,7 @@ const leadsState = { q: '', state: '', tier: '', segment: '', status: '', has_em
 async function leads() {
   const qs = new URLSearchParams(Object.entries(leadsState).filter(([, v]) => v !== '' && v != null)).toString();
   const [data, camps] = await Promise.all([api('/leads?' + qs + '&limit=100'), api('/campaigns')]);
-  const statuses = ['new', 'enriched', 'no_email', 'no_website', 'contacted', 'replied', 'interested', 'not_interested', 'customer', 'do_not_contact'];
+  const statuses = ['new', 'enriched', 'no_email', 'no_website', 'contacted', 'replied', 'interested', 'not_interested', 'not_a_fit', 'customer', 'do_not_contact'];
   view.innerHTML = `
     <div class="row"><h1>Leads</h1><span class="spacer"></span>
       <button id="add-lead">+ Add lead</button><a class="btn" href="/api/leads/export.csv?${qs}">Export CSV</a></div>
@@ -298,7 +302,7 @@ function openAddLead() {
 
 async function openLead(id) {
   const { business: b, contacts, threads, enrollments } = await api('/leads/' + id);
-  const statuses = ['new', 'enriched', 'no_email', 'no_website', 'contacted', 'replied', 'interested', 'not_interested', 'customer', 'do_not_contact'];
+  const statuses = ['new', 'enriched', 'no_email', 'no_website', 'contacted', 'replied', 'interested', 'not_interested', 'not_a_fit', 'customer', 'do_not_contact'];
   const d = openDrawer(`
     <h1>${esc(b.name)}</h1>
     <p class="muted">${esc([b.address || [b.city, b.state].filter(Boolean).join(', ')].join(''))}${b.phone ? ' · ' + esc(b.phone) : ''}</p>
@@ -387,7 +391,10 @@ async function campaignDetail(id) {
       <div>
         <div class="card"><div class="row"><h2 style="margin:0">Sequence</h2><span class="spacer"></span>
           ${META.integrations.ai ? '<button id="ai-seq">✨ Draft with AI</button>' : ''}<button id="add-step">+ Step</button><button class="primary" id="save">Save</button></div>
-          <p class="muted small-text">Merge fields: {{first_name|there}} {{company}} {{city}} {{state}} {{pitch}} {{segment}} {{sender_name}} — “|text” is the fallback. Footer with your address + unsubscribe link is added automatically.</p>
+          <p class="muted small-text">${META.integrations.ai
+            ? '<b>Each business gets its own email</b>, written from its website and recommending the pens from your catalog that suit it. These steps are the brief. Every email waits in <a href="#/review">Review</a> for you.'
+            : 'Without an AI key these templates are filled in per business (you can still edit each one in <a href="#/review">Review</a>).'}
+            Fields: {{first_name|there}} {{company}} {{city}} {{products}} {{brochure_link}} {{sample_offer}} {{sender_first_name}}. Your signature, address and opt-out line are added automatically.</p>
           <div id="steps"></div></div>
       </div>
       <div>
@@ -406,7 +413,7 @@ async function campaignDetail(id) {
     const rows = await api(`/campaigns/${id}/enrollments`);
     $('#enrolled').innerHTML = `<table><tr><th>Business</th><th>Email</th><th>Status</th><th>Next</th></tr>${rows.map((r) => `<tr>
       <td>${esc(r.business)} <span class="small-text muted">${r.state || ''}</span></td><td class="small-text">${esc(r.email)}</td>
-      <td>${chip(r.status)} <span class="small-text muted">step ${r.current_step + (r.status === 'active' ? 1 : 0)}</span>${r.last_error ? `<div class="small-text muted">${esc(r.last_error)}</div>` : ''}</td>
+      <td>${r.status === 'active' && r.draft_state === 'ready' ? '<span class="chip needs_reply">to review</span>' : r.status === 'active' && r.draft_state === 'approved' ? '<span class="chip sent">approved</span>' : chip(r.status)} <span class="small-text muted">email ${r.current_step + (r.status === 'active' ? 1 : 0)}</span>${r.last_error ? `<div class="small-text muted">${esc(r.last_error)}</div>` : ''}</td>
       <td class="small-text">${r.status === 'active' ? fmtDate(r.next_send_at) : ''}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nobody enrolled yet.</td></tr>'}</table>`;
   };
   const refreshPreview = async () => {
@@ -433,6 +440,106 @@ async function campaignDetail(id) {
   $('#activate') && ($('#activate').onclick = setStatus('active'));
   $('#pause') && ($('#pause').onclick = setStatus('paused'));
   $('#del').onclick = (e) => confirm('Delete this campaign and its enrollments?') && act(e.target, () => api('/campaigns/' + id, { method: 'DELETE' })).then(() => (location.hash = '#/campaigns'));
+}
+
+// ---------------- Review: a person reads every email before it goes out ----------------
+async function review() {
+  const [rows, cat] = await Promise.all([api('/review'), api('/catalog')]);
+  const products = new Map(cat.products.map((p) => [p.id, p]));
+  const fitChip = (f) => (f ? `<span class="chip ${f >= 4 ? 'sent' : f <= 2 ? 'failed' : ''}">fit ${f}/5</span>` : '');
+  view.innerHTML = `
+    <div class="row"><h1>Review emails</h1><span class="spacer"></span><button id="prep">Write next drafts now</button></div>
+    <p class="sub">${rows.length} email${rows.length === 1 ? '' : 's'} waiting. Each one was written for that business — check it reads like you, fix anything, then approve.
+      Approved emails go out during the recipient's business hours.</p>
+    ${!META.integrations.ai ? '<div class="callout">AI is off, so these are your campaign template filled in per business. Add <b>ANTHROPIC_API_KEY</b> to have each email written individually from the business\'s website.</div>' : ''}
+    ${cat.brochures.length ? '' : '<div class="callout">No brochure uploaded yet — add one in <a href="#/catalog">Pens &amp; brochures</a> so emails can include your catalog.</div>'}
+    ${rows.map((r) => `
+      <div class="card review-card" data-id="${r.id}" style="margin-bottom:16px">
+        <div class="grid g2">
+          <div>
+            <div class="row"><h2 style="margin:0">${esc(r.business)}</h2>${tierChip(r.size_tier)} ${fitChip(r.fit_score)}</div>
+            <p class="small-text muted" style="margin:4px 0">${esc(segLabel(r.segment))} · ${esc([r.city, r.state].filter(Boolean).join(', '))}${r.employees ? ` · ~${num(r.employees)} staff` : ''}
+              ${r.website ? ` · <a href="${esc(r.website)}" target="_blank" rel="noopener">website ↗</a>` : ''}</p>
+            <p class="small-text">To: <b>${esc(r.contact_name ? `${r.contact_name} <${r.email}>` : r.email)}</b>${r.contact_title ? ` · ${esc(r.contact_title)}` : ''}
+              <span class="muted">· found via ${esc(r.contact_source || '')}</span></p>
+            <p class="small-text muted">${esc(r.campaign)} · email ${r.current_step + 1}${r.thread_id ? ' (follow-up in the same thread)' : ''} · due ${fmtDate(r.next_send_at)}</p>
+            ${r.fit_reason ? `<p class="small-text"><b>Why they fit:</b> ${esc(r.fit_reason)}</p>` : ''}
+            ${r.draft_products.length ? `<p class="small-text"><b>Pens suggested:</b> ${r.draft_products.map((id) => products.get(id)?.name).filter(Boolean).map(esc).join(', ')}</p>` : ''}
+            <details><summary class="small-text">What their website says</summary><pre class="preview small-text" style="max-height:220px;overflow:auto">${esc(r.site_summary || 'No website text collected.')}</pre></details>
+            ${r.draft_note ? `<p class="small-text muted">${esc(r.draft_note)}</p>` : ''}
+          </div>
+          <div>
+            <label>Subject</label><input class="rv-subject" value="${esc(r.draft_subject)}" ${r.thread_id ? 'disabled title="Follow-ups keep the original subject"' : ''}>
+            <label>Email</label><textarea class="rv-body" style="min-height:260px">${esc(r.draft_body)}</textarea>
+            <div class="small-text muted">Your signature, address and a polite opt-out line are added below this.</div>
+            ${cat.brochures.length ? `<div class="row small-text" style="margin-top:6px">Attach PDF: ${cat.brochures.map((b) => `<label style="margin:0;font-weight:400;color:inherit"><input type="checkbox" class="rv-att" value="${b.id}" ${r.draft_attachments.includes(b.id) ? 'checked' : ''} style="width:auto"> ${esc(b.title)}</label>`).join(' ')}</div>` : ''}
+            <div class="row" style="margin-top:10px">
+              <button class="primary rv-approve">Approve</button>
+              ${META.integrations.ai ? '<input class="rv-hint" placeholder="e.g. mention their wedding line, offer 10 samples" style="flex:1;min-width:160px"><button class="rv-regen">Rewrite</button>' : ''}
+            </div>
+            <div class="row" style="margin-top:6px"><button class="rv-skip">Skip for now</button><button class="danger rv-nofit">Not a fit</button></div>
+          </div>
+        </div>
+      </div>`).join('') || '<div class="card muted">Nothing to review. Drafts appear here as campaign emails come due (about a day ahead).</div>'}`;
+  $('#prep').onclick = (e) => act(e.target, () => api('/review/prepare', { body: {} }), (r) => `Wrote ${r.drafted} draft(s)`).then(() => { refreshChrome(); review(); });
+  $$('.review-card').forEach((card) => {
+    const id = card.dataset.id;
+    const done = () => { card.remove(); refreshChrome(); };
+    $('.rv-approve', card).onclick = (e) => act(e.target, () => api(`/review/${id}/approve`, { body: {
+      subject: $('.rv-subject', card).value, body: $('.rv-body', card).value, attachments: $$('.rv-att:checked', card).map((c) => Number(c.value)),
+    } }), 'Approved — it will go out in their business hours').then((r) => r && done());
+    $('.rv-regen', card) && ($('.rv-regen', card).onclick = (e) => act(e.target, () => api(`/review/${id}/regenerate`, { body: { hint: $('.rv-hint', card).value } }), 'Rewritten').then((r) => {
+      if (r) { $('.rv-body', card).value = r.draft_body; if (!r.thread_id) $('.rv-subject', card).value = r.draft_subject; }
+    }));
+    $('.rv-skip', card).onclick = (e) => act(e.target, () => api(`/review/${id}/skip`, { body: {} }), 'Skipped').then(done);
+    $('.rv-nofit', card).onclick = (e) => act(e.target, () => api(`/review/${id}/skip`, { body: { not_a_fit: true } }), 'Marked not a fit — they will not be contacted').then(done);
+  });
+}
+
+// ---------------- Catalog: pens and brochures ----------------
+async function catalog() {
+  const { products, brochures } = await api('/catalog');
+  const brochureOptions = (sel) => `<option value="">— none —</option>` + brochures.map((b) => `<option value="${b.id}" ${b.id === sel ? 'selected' : ''}>${esc(b.title)}</option>`).join('');
+  const segChecks = (sel) => META.segments.map((g) => `<label style="margin:0 8px 0 0;font-weight:400;color:inherit;display:inline-block"><input type="checkbox" class="p-seg" value="${g.key}" ${sel.includes(g.key) ? 'checked' : ''} style="width:auto"> ${esc(g.label)}</label>`).join('');
+  view.innerHTML = `
+    <h1>Pens &amp; brochures</h1>
+    <p class="sub">What each email can offer. The writer picks the 2–3 pens that suit each business (using “Best for”) and links the matching brochure.
+      The starting list comes from Submarine's public range — check the wording and add prices or minimums you're happy to share.</p>
+    <div class="card"><h2>Brochures</h2>
+      <p class="muted small-text">PDFs get a shareable link (${esc(location.origin)}/b/…) that emails can include. Set PUBLIC_URL so the links work from outside.</p>
+      <div class="row"><input id="br-title" placeholder="Title, e.g. Corporate gifting catalog 2026" style="flex:1"><input type="file" id="br-file" accept="application/pdf,image/*"><button class="primary" id="br-up">Upload</button></div>
+      <table style="margin-top:10px">${brochures.map((b) => `<tr><td><b>${esc(b.title)}</b><div class="small-text muted">${esc(b.filename)} · ${Math.round(b.size / 1024)} KB</div></td>
+        <td><a href="${esc(b.url)}" target="_blank">open</a></td><td><button class="danger" data-delbr="${b.id}">Delete</button></td></tr>`).join('') || '<tr><td class="muted">No brochures yet.</td></tr>'}</table>
+    </div>
+    <div class="row" style="margin:20px 0 8px"><h2 style="margin:0">Pen options</h2><span class="spacer"></span><button id="p-add">+ Add pen</button></div>
+    ${[...products, { id: 0, name: '', description: '', best_for: [], price_note: '', link: '', brochure_id: null, active: 1 }].map((p) => `
+      <div class="card product ${p.id ? '' : 'hidden new-product'}" data-id="${p.id}" style="margin-bottom:12px">
+        <div class="row"><input class="p-name" value="${esc(p.name)}" placeholder="Name" style="flex:1;font-weight:600">
+          <label style="margin:0;font-weight:400;color:inherit"><input type="checkbox" class="p-active" ${p.active ? 'checked' : ''} style="width:auto"> offer in emails</label></div>
+        <label>Description (one or two plain sentences)</label><input class="p-desc" value="${esc(p.description || '')}">
+        <div class="row"><div style="flex:1"><label>Price / minimum note (optional)</label><input class="p-price" value="${esc(p.price_note || '')}" placeholder="e.g. from $2.10 each at 250 units"></div>
+          <div style="flex:1"><label>Product page link (optional)</label><input class="p-link" value="${esc(p.link || '')}"></div>
+          <div style="flex:1"><label>Brochure</label><select class="p-brochure">${brochureOptions(p.brochure_id)}</select></div></div>
+        <label>Best for</label><div class="small-text">${segChecks(p.best_for)}</div>
+        <div class="row" style="margin-top:10px"><button class="primary p-save">Save</button>${p.id ? '<button class="danger p-del">Delete</button>' : ''}</div>
+      </div>`).join('')}`;
+  $('#p-add').onclick = () => { $('.new-product').classList.remove('hidden'); $('.new-product .p-name').focus(); };
+  $$('.product').forEach((card) => {
+    $('.p-save', card).onclick = (e) => act(e.target, () => api('/products', { body: {
+      id: Number(card.dataset.id) || undefined, name: $('.p-name', card).value, description: $('.p-desc', card).value,
+      price_note: $('.p-price', card).value, link: $('.p-link', card).value, brochure_id: $('.p-brochure', card).value || null,
+      active: $('.p-active', card).checked, best_for: $$('.p-seg:checked', card).map((c) => c.value),
+    } }), 'Saved').then((r) => r && !Number(card.dataset.id) && catalog());
+    $('.p-del', card) && ($('.p-del', card).onclick = (e) => confirm('Delete this pen?') && act(e.target, () => api('/products/' + card.dataset.id, { method: 'DELETE' })).then(catalog));
+  });
+  $('#br-up').onclick = async (e) => {
+    const file = $('#br-file').files[0];
+    if (!file) return toast('Choose a PDF first', true);
+    const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+    act(e.target, () => api('/brochures', { body: { title: $('#br-title').value || file.name.replace(/\.[^.]+$/, ''), filename: file.name, mime: file.type || 'application/pdf', data } }), 'Brochure uploaded').then((r) => r && catalog());
+  };
+  $$('[data-delbr]').forEach((b) => (b.onclick = () => confirm('Delete this brochure? Links in emails already sent will stop working.') &&
+    act(b, () => api('/brochures/' + b.dataset.delbr, { method: 'DELETE' })).then(catalog)));
 }
 
 // ---------------- Inbox ----------------
@@ -471,10 +578,15 @@ async function renderThread(id) {
     <h3>Reply</h3>
     ${META.integrations.ai ? `<div class="row" style="margin-bottom:6px"><input id="ai-hint" placeholder="Optional guidance for AI (e.g. offer 10 free samples, MOQ 250)" style="flex:1"><button id="ai-reply">✨ Draft reply</button></div>` : ''}
     <textarea id="r-body" style="min-height:200px" placeholder="Write your reply…"></textarea>
+    <div id="r-att" class="row small-text" style="margin-top:6px"></div>
     <div class="row" style="margin-top:8px"><button class="primary" id="r-send" ${contact && ['active', 'replied'].includes(contact.status) ? '' : 'disabled'}>${META.sendMode === 'live' ? 'Send reply' : 'Send reply (dry-run)'}</button>
       ${contact && !['active', 'replied'].includes(contact.status) ? `<span class="small-text muted">Contact is ${esc(contact.status)} — cannot email.</span>` : ''}
       <span class="spacer"></span>
       ${business ? `<button id="mk-int">Mark interested</button><button id="mk-cust">Mark customer</button>` : ''}</div>`;
+  api('/catalog').then(({ brochures }) => {
+    $('#r-att').innerHTML = brochures.length ? 'Attach: ' + brochures.map((b) => `<label style="margin:0;font-weight:400;color:inherit"><input type="checkbox" value="${b.id}" style="width:auto"> ${esc(b.title)}</label>`).join(' ')
+      + ` <span class="muted">or paste a link: ${brochures.map((b) => `<a href="${esc(b.url)}" target="_blank">${esc(b.title)}</a>`).join(', ')}</span>` : '';
+  });
   $('#t-status').onchange = (e) => act(null, () => api('/threads/' + id, { method: 'PATCH', body: { status: e.target.value } }), 'Updated');
   $('#t-lead') && ($('#t-lead').onclick = (e) => { e.preventDefault(); openLead(business.id); });
   $('#ai-reply') && ($('#ai-reply').onclick = async (e) => {
@@ -483,7 +595,7 @@ async function renderThread(id) {
   });
   $('#r-send').onclick = async (e) => {
     if (!$('#r-body').value.trim()) return toast('Write a reply first', true);
-    const r = await act(e.target, () => api(`/threads/${id}/reply`, { body: { body: $('#r-body').value } }), (r) => (r.status === 'sent' ? 'Reply sent' : 'Reply recorded (dry-run)'));
+    const r = await act(e.target, () => api(`/threads/${id}/reply`, { body: { body: $('#r-body').value, attachments: $$('#r-att input:checked').map((c) => Number(c.value)) } }), (r) => (r.status === 'sent' ? 'Reply sent' : 'Reply recorded (dry-run)'));
     if (r) inbox(id);
   };
   const mark = (status) => (e) => act(e.target, () => api('/leads/' + business.id, { method: 'PATCH', body: { status } }), `Marked ${status}`);
@@ -513,7 +625,10 @@ async function settings() {
     <h1>Settings</h1><p class="sub">Secrets (passwords, API keys) are set as environment variables — see <code>.env.example</code>.</p>
     <form id="settings"><div class="grid g2">
       <div class="card"><h2>Sender &amp; compliance</h2>
-        ${field('company_name', 'Company name')}${field('sender_name', 'Sender name', 'text', 'Shown as the From name and in {{sender_name}}.')}
+        ${field('company_name', 'Company name')}${field('sender_name', 'Your full name', 'text', 'Shown as the From name and signed at the bottom of each email.')}
+        <div class="row"><div style="flex:1">${field('sender_title', 'Your title')}</div><div style="flex:1">${field('sender_phone', 'Phone (optional)')}</div></div>
+        ${field('signature', 'Custom signature (optional)', 'textarea', 'Leave empty to use name, title, company, phone and website.')}
+        ${field('sample_offer', 'What you offer to send', 'text', 'e.g. "5 sample pens and a printed catalog by mail, no charge".')}
         ${field('from_email', 'From email', 'email', 'Must be an address your SMTP account is allowed to send as.')}
         ${field('reply_to', 'Reply-to (optional)', 'email')}
         ${field('physical_address', 'Physical mailing address', 'text', 'Required by US CAN-SPAM in every commercial email.')}
@@ -521,10 +636,14 @@ async function settings() {
         ${field('company_profile', 'Company profile (used by AI drafting)', 'textarea')}
       </div>
       <div class="card"><h2>Sending</h2>
+        <label>Human review</label><select name="require_approval"><option value="true" ${s.require_approval === 'true' ? 'selected' : ''}>Every email waits for my approval (recommended)</option>
+          <option value="false" ${s.require_approval !== 'true' ? 'selected' : ''}>Send drafts without review</option></select>
+        <label>Brochures in first emails</label><select name="brochure_mode"><option value="link" ${s.brochure_mode !== 'attach' ? 'selected' : ''}>Link to the brochure (better inbox delivery)</option>
+          <option value="attach" ${s.brochure_mode === 'attach' ? 'selected' : ''}>Attach the PDF</option></select>
         <label>Mode</label><select name="send_mode"><option value="dry_run" ${s.send_mode === 'dry_run' ? 'selected' : ''}>Dry-run — record only, don't send</option>
           <option value="live" ${s.send_mode === 'live' ? 'selected' : ''}>LIVE — send real email</option></select>
         ${live.ready ? '<div class="callout ok small-text" style="margin-top:8px">Ready for live sending.</div>' : `<div class="callout small-text" style="margin-top:8px"><b>Before going live:</b><ul style="margin:4px 0 0 16px;padding:0">${live.missing.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>`}
-        ${field('daily_cap', 'Daily send cap (campaign emails / 24h)', 'number', 'Start around 30–50 per mailbox and raise slowly to protect deliverability.')}
+        ${field('daily_cap', 'Daily send cap (campaign emails / 24h)', 'number', 'Start around 15–20 a day — that is what one person can personally review and follow up well.')}
         ${field('min_gap_seconds', 'Minimum seconds between sends', 'number')}
         <div class="row"><div>${field('business_hours_start', 'Local send window from (hour)', 'number')}</div><div>${field('business_hours_end', 'to (hour)', 'number')}</div></div>
         <label>Weekdays only</label><select name="weekdays_only"><option value="true" ${s.weekdays_only === 'true' ? 'selected' : ''}>Yes</option><option value="false" ${s.weekdays_only !== 'true' ? 'selected' : ''}>No</option></select>

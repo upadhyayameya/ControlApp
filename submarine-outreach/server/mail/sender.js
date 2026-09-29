@@ -32,7 +32,7 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
    * Send (or dry-run) one email to a contact and record it in the thread.
    * Throws on suppression or configuration problems.
    */
-  async function send({ contact, subject, body, threadId = null, campaignId = null, stepNo = null, inReplyTo = null, references = [] }) {
+  async function send({ contact, subject, body, threadId = null, campaignId = null, stepNo = null, inReplyTo = null, references = [], attachments = [] }) {
     if (!contact) throw new Error('contact required');
     if (contact.status !== 'active' && contact.status !== 'replied') throw new Error(`contact is ${contact.status}`);
     if (leads.isSuppressed(contact.email)) throw new Error('address is on the suppression list');
@@ -60,6 +60,7 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
           messageId,
           inReplyTo: inReplyTo || undefined,
           references: references.length ? references : undefined,
+          attachments: attachments.length ? attachments : undefined,
           headers: {
             'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:${s.reply_to || fromEmail}?subject=unsubscribe>`,
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
@@ -79,9 +80,10 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
           .run(contact.id, contact.business_id, subject, 'waiting');
         threadId = Number(info.lastInsertRowid);
       }
-      db.prepare(`INSERT INTO messages(thread_id, direction, message_id, in_reply_to, from_addr, to_addr, subject, body, status, error, campaign_id, step_no)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .run(threadId, 'out', messageId, inReplyTo, fromEmail, contact.email, subject, text, status, error, campaignId, stepNo);
+      db.prepare(`INSERT INTO messages(thread_id, direction, message_id, in_reply_to, from_addr, to_addr, subject, body, status, error, campaign_id, step_no, attachments)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .run(threadId, 'out', messageId, inReplyTo, fromEmail, contact.email, subject, text, status, error, campaignId, stepNo,
+          attachments.length ? attachments.map((a) => a.filename).join(', ') : null);
       if (status !== 'failed') {
         db.prepare("UPDATE threads SET last_message_at = datetime('now'), status = 'waiting', unread = 0 WHERE id = ?").run(threadId);
         db.prepare("UPDATE businesses SET status = 'contacted' WHERE id = ? AND status IN ('new','enriched','no_email')").run(contact.business_id);

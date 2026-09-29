@@ -3,6 +3,11 @@
 export const DEFAULT_SETTINGS = {
   company_name: 'Submarine Pens',
   sender_name: '',
+  sender_title: 'US Partnerships',
+  sender_phone: '',
+  signature: '', // optional custom signature block; built from name/title/phone/website when empty
+  sample_offer: 'a few sample pens by mail, no charge',
+  brochure_mode: 'link', // link | attach — links avoid spam filters on first contact; attach per email in Review
   from_email: '',
   reply_to: '',
   physical_address: '',
@@ -14,7 +19,8 @@ export const DEFAULT_SETTINGS = {
     'and space-themed designs. Offers custom logo imprint/engraving, gift packaging and factory-direct wholesale pricing ' +
     'with export experience to the US, UK, EU, Canada, Australia and Brazil.',
   send_mode: 'dry_run', // dry_run | live
-  daily_cap: '40',
+  require_approval: 'true', // every email waits in the Review queue until a person approves it
+  daily_cap: '20',
   min_gap_seconds: '90',
   business_hours_start: '9',
   business_hours_end: '16',

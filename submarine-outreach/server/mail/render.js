@@ -14,8 +14,12 @@ export function firstName(name) {
   return /^[A-Za-z][A-Za-z'-]+$/.test(first) ? first[0].toUpperCase() + first.slice(1) : '';
 }
 
-export function mergeVars({ contact, business, segment, settings }) {
+export function mergeVars({ contact, business, segment, settings, products = '', brochureUrl = '' }) {
   return {
+    products,
+    brochure_link: brochureUrl,
+    sample_offer: settings.sample_offer || 'a few sample pens',
+    sender_first_name: firstName(settings.sender_name),
     first_name: firstName(contact?.name),
     contact_name: contact?.name || '',
     title: contact?.title || '',
@@ -47,15 +51,28 @@ export function verifyUnsubscribeToken(token, secret) {
   return a.length === b.length && timingSafeEqual(a, b) ? contactId : null;
 }
 
-/** CAN-SPAM footer: identifies the sender, gives a physical postal address and a working opt-out. */
+/** The sender's signature block: custom text, or built from name, title, company, phone and website. */
+export function signatureBlock(settings) {
+  if (settings.signature && settings.signature.trim()) return settings.signature.trim();
+  return [
+    settings.sender_name,
+    [settings.sender_title, settings.company_name].filter(Boolean).join(', '),
+    settings.sender_phone,
+    settings.website ? settings.website.replace(/^https?:\/\//, '').replace(/\/$/, '') : '',
+  ].filter(Boolean).join('\n');
+}
+
+/**
+ * Signature plus CAN-SPAM essentials (postal address and a working opt-out), worded like a person would.
+ */
 export function complianceFooter({ settings, unsubscribeUrl }) {
   return [
     '',
-    '--',
-    [settings.sender_name, settings.company_name].filter(Boolean).join(' · '),
-    settings.physical_address,
-    `Not relevant for you? Unsubscribe here: ${unsubscribeUrl} (or just reply "unsubscribe").`,
-  ].filter((l) => l !== undefined && l !== null).join('\n');
+    signatureBlock(settings),
+    '',
+    [settings.company_name, settings.physical_address].filter(Boolean).join(' · '),
+    `Not the right fit? Just reply "no thanks" and I won't follow up, or unsubscribe here: ${unsubscribeUrl}`,
+  ].join('\n');
 }
 
 /** Is `date` inside business hours in the recipient's timezone? */

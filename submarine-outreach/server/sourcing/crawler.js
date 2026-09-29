@@ -7,6 +7,32 @@ const MAX_BYTES = 1_500_000;
 const CONTACT_LINK = /(contact|about|team|staff|people|wholesale|corporate|trade|b2b|gift|locations?|store-info|visit)/i;
 const FALLBACK_PATHS = ['/contact', '/contact-us', '/about', '/about-us', '/wholesale'];
 
+const ENTITIES = { amp: '&', nbsp: ' ', quot: '"', apos: "'", '#39': "'", rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"', ndash: '-', mdash: '-', hellip: '...' };
+const decodeEntities = (s) => s.replace(/&(#?\w+);/g, (m, e) => ENTITIES[e.toLowerCase()] ?? (/^#\d+$/.test(e) ? String.fromCharCode(Number(e.slice(1))) : m));
+
+/** Title, meta description and a readable text excerpt — what the business says about itself. */
+export function summarizePage(html, maxText = 1200) {
+  const pick = (re) => decodeEntities((re.exec(html)?.[1] || '').replace(/\s+/g, ' ').trim());
+  const title = pick(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  const description =
+    pick(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["']/i) ||
+    pick(/<meta[^>]+content=["']([^"']*)["'][^>]*name=["']description["']/i) ||
+    pick(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']*)["']/i);
+  const text = decodeEntities(
+    html
+      .replace(/<(script|style|noscript|svg|template|iframe|nav|footer|header|form)\b[\s\S]*?<\/\1>/gi, ' ')
+      .replace(/<!--[\s\S]*?-->/g, ' ')
+      .replace(/<(br|p|div|li|h[1-6]|section|article|tr)\b[^>]*>/gi, '\n')
+      .replace(/<[^>]+>/g, ' '),
+  )
+    .split('\n')
+    .map((l) => l.replace(/\s+/g, ' ').trim())
+    .filter((l) => l.length > 25 && !/cookie|javascript|©|all rights reserved|privacy policy/i.test(l))
+    .join('\n')
+    .slice(0, maxText);
+  return { title, description, text };
+}
+
 export function normalizeWebsite(url) {
   if (!url) return null;
   let u = String(url).trim();
@@ -82,6 +108,7 @@ export async function crawlForEmails(website, { fetchImpl = fetch, maxPages = 5,
   const emails = new Map();
   let origin = site.origin;
   let pagesFetched = 0;
+  const summaryParts = [];
 
   while (queue.length && pagesFetched < maxPages) {
     const path = queue.shift();
@@ -98,6 +125,11 @@ export async function crawlForEmails(website, { fetchImpl = fetch, maxPages = 5,
     pagesFetched++;
     if (path === '/') {
       try { origin = new URL(page.url).origin; } catch { /* keep */ }
+    }
+    if (path === '/' || (summaryParts.length < 2 && /about|story|who-we-are|our-/i.test(path))) {
+      const sm = summarizePage(page.text, path === '/' ? 1200 : 900);
+      if (path === '/') summaryParts.push([sm.title && `Site title: ${sm.title}`, sm.description && `Description: ${sm.description}`, sm.text && `Homepage text:\n${sm.text}`].filter(Boolean).join('\n'));
+      else if (sm.text) summaryParts.push(`About page (${path}):\n${sm.text}`);
     }
     for (const e of extractEmails(page.text)) {
       if (!emails.has(e)) emails.set(e, { email: e, page: path });
@@ -116,5 +148,5 @@ export async function crawlForEmails(website, { fetchImpl = fetch, maxPages = 5,
     results.push({ email, page, confidence: scoreEmail(email, site.domain), mx_ok: domainMx.get(domain) });
   }
   results.sort((a, b) => b.confidence - a.confidence);
-  return { domain: site.domain, pagesFetched, emails: results.filter((r) => r.mx_ok) };
+  return { domain: site.domain, pagesFetched, emails: results.filter((r) => r.mx_ok), summary: summaryParts.join('\n\n').slice(0, 3000) };
 }

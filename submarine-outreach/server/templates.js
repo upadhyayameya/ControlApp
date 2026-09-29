@@ -1,38 +1,33 @@
-// Starter sequence used when a campaign is created without AI. Edit freely in the portal.
+// Starter sequence: one introduction and one gentle follow-up — no more.
+// With AI enabled each step is only the brief: every business gets its own email, written from its
+// website, recommending the pens from the Catalog that suit it. Without AI these templates are filled in.
 export const STARTER_STEPS = [
   {
     delay_days: 0,
-    subject: 'Custom metal pens for {{company}}',
+    subject: 'Pens for {{company}}',
     body: `Hi {{first_name|there}},
 
-I'm {{sender_name}} with Submarine Pens — we've manufactured metal pens in Mumbai since 1995 and now supply businesses across the US.
+I'm {{sender_first_name}} from Submarine Pens — we've been making metal pens in Mumbai since 1995 and now work with businesses across the US.
 
-I thought of {{company}} because we offer {{pitch}}.
+I had a look at {{company}} and thought a few of our pens might suit you:
+{{products}}
 
-Would it help if I sent a small sample kit so you can feel the quality before deciding anything?
+I've put our catalog here: {{brochure_link}}
 
-Best,
-{{sender_name}}`,
-  },
-  {
-    delay_days: 4,
-    subject: 'Re:',
-    body: `Hi {{first_name|there}},
-
-Quick follow-up — happy to send a few samples (including our coffee-scented and space-themed pens) to {{company}} in {{city|your city}}, no obligation.
-
-Should I send them to your attention?
-
-{{sender_name}}`,
-  },
-  {
-    delay_days: 7,
-    subject: 'Re:',
-    body: `Hi {{first_name|there}},
-
-I'll close the loop here so I don't crowd your inbox. If custom or wholesale pens ever come up for {{company}}, just reply to this email and I'll get you pricing and samples the same week.
+Would it be useful if I sent you {{sample_offer}}? Happy to pick them to match what you carry.
 
 Thanks,
-{{sender_name}}`,
+{{sender_first_name}}`,
+  },
+  {
+    delay_days: 6,
+    subject: 'Re:',
+    body: `Hi {{first_name|there}},
+
+Just following up in case my note got buried. I'd be glad to send {{company}} {{sample_offer}} so you can see the quality in person — no obligation at all.
+
+Would that be helpful?
+
+{{sender_first_name}}`,
   },
 ];

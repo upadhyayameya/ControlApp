@@ -99,6 +99,7 @@ export function makeLeads(db, config) {
     let error = null;
     try {
       const res = await crawlForEmails(b.website, fetchImpl ? { fetchImpl } : {});
+      if (res.summary) db.prepare('UPDATE businesses SET site_summary = ? WHERE id = ?').run(res.summary, b.id);
       for (const e of res.emails.slice(0, 5)) {
         if (addContact(b.id, { email: e.email, source: `website${e.page}`, confidence: e.confidence, mx_ok: e.mx_ok }).created) added++;
       }

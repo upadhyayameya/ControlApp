@@ -34,7 +34,10 @@ every(5000, async () => {
   await Promise.all(batch.map((b) => leads.enrich(b.id).catch((e) => log.warn(`[crawl] ${b.id}: ${e.message}`))));
 });
 
-// Sequenced sending with daily cap, spacing and recipient-local business hours.
+// Write each due email individually (AI + website research), ready for review.
+every(15000, () => outreach.prepareDrafts(3));
+
+// Sends approved emails only, with daily cap, spacing and recipient-local business hours.
 every(20000, () => outreach.tick());
 
 // Reply capture.

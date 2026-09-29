@@ -9,6 +9,7 @@ import { makeSender } from './mail/sender.js';
 import { makeOutreach } from './mail/outreach.js';
 import { makeInbox } from './mail/inbox.js';
 import { makeAi } from './ai.js';
+import { makeCatalog } from './catalog.js';
 import { verifyUnsubscribeToken } from './mail/render.js';
 import { parseCsv, toCsv } from './sourcing/csv.js';
 import { searchPlaces } from './sourcing/places.js';
@@ -31,8 +32,9 @@ export function createApp(config, { log = console, transportFactory } = {}) {
   }
   const leads = makeLeads(db, config);
   const sender = makeSender({ db, settings, config, leads, ...(transportFactory ? { transportFactory } : {}) });
-  const outreach = makeOutreach({ db, settings, sender, log });
   const ai = makeAi({ config, settings });
+  const catalog = makeCatalog(db, config);
+  const outreach = makeOutreach({ db, settings, sender, catalog, ai, log });
   const inbox = makeInbox({
     db, settings, config, leads, log,
     onReply: (threadId) => {
@@ -50,7 +52,7 @@ export function createApp(config, { log = console, transportFactory } = {}) {
 
   const app = express();
   app.disable('x-powered-by');
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: '25mb' }));
   app.use(express.urlencoded({ extended: false }));
 
   // ---------- Unsubscribe (public, no login) ----------
@@ -69,6 +71,16 @@ export function createApp(config, { log = console, transportFactory } = {}) {
     leads.suppress(c.email, 'unsubscribe link');
     db.prepare("UPDATE threads SET status = 'closed', classification = 'unsubscribe' WHERE contact_id = ?").run(c.id);
     res.send(page('Unsubscribed', `<h2>You're unsubscribed.</h2><p>${escapeHtml(c.email)} will not receive further emails from us.</p>`));
+  });
+
+  // ---------- Brochures (public, so recipients can open the link in an email) ----------
+  app.get('/b/:token', (req, res) => {
+    const b = catalog.getBrochureByToken(req.params.token);
+    if (!b) return res.status(404).send(page('Not found', '<h2>This brochure is no longer available.</h2>'));
+    res.setHeader('Content-Type', b.mime);
+    res.setHeader('Content-Disposition', `inline; filename="${b.filename.replace(/"/g, '')}"`);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(Buffer.from(b.data));
   });
 
   // ---------- Auth ----------
@@ -107,6 +119,8 @@ export function createApp(config, { log = console, transportFactory } = {}) {
     },
     sendMode: settings.get('send_mode'),
     senderName: settings.get('sender_name'),
+    requireApproval: settings.bool('require_approval'),
+    reviewCount: db.prepare("SELECT COUNT(*) AS n FROM enrollments WHERE status = 'active' AND draft_state = 'ready'").get().n,
   }));
 
   app.get('/api/stats', (req, res) => {
@@ -127,6 +141,7 @@ export function createApp(config, { log = console, transportFactory } = {}) {
       replies: one("SELECT COUNT(DISTINCT thread_id) AS n FROM messages WHERE direction = 'in'").n,
       needsReply: one("SELECT COUNT(*) AS n FROM threads WHERE status = 'needs_reply'").n,
       activeEnrollments: one("SELECT COUNT(*) AS n FROM enrollments WHERE status = 'active'").n,
+      toReview: one("SELECT COUNT(*) AS n FROM enrollments WHERE status = 'active' AND draft_state = 'ready'").n,
       suppressed: one('SELECT COUNT(*) AS n FROM suppressions').n,
       tiers, statuses, byState, bySegment,
       sweep: { running: settings.bool('sweep_running'), ...sweepStatus(db) },
@@ -348,6 +363,36 @@ export function createApp(config, { log = console, transportFactory } = {}) {
     res.json({ to: contact?.email || 'buyer@example-gift.co', steps: steps.map((s) => outreach.renderStep(s, contact || { name: 'Jamie Rivera' }, business)) });
   }));
 
+  // ---------- Catalog: pen options and brochures ----------
+  app.get('/api/catalog', (req, res) => res.json({ products: catalog.listProducts(), brochures: catalog.listBrochures() }));
+  app.post('/api/products', wrap((req, res) => res.json({ id: catalog.saveProduct(req.body) })));
+  app.delete('/api/products/:id', wrap((req, res) => { catalog.deleteProduct(req.params.id); res.json({ ok: true }); }));
+  app.post('/api/brochures', wrap((req, res) => res.json(catalog.addBrochure(req.body))));
+  app.delete('/api/brochures/:id', wrap((req, res) => { catalog.deleteBrochure(req.params.id); res.json({ ok: true }); }));
+
+  // ---------- Review queue: every email is checked by a person before it is sent ----------
+  app.get('/api/review', (req, res) => {
+    res.json(db.prepare(`SELECT e.id, e.campaign_id, e.current_step, e.next_send_at, e.draft_subject, e.draft_body, e.draft_note, e.draft_hint,
+        e.draft_products, e.draft_attachments,
+        e.thread_id, k.name AS campaign, c.email, c.name AS contact_name, c.title AS contact_title, c.source AS contact_source,
+        b.id AS business_id, b.name AS business, b.website, b.city, b.state, b.size_tier, b.segment, b.employees,
+        b.site_summary, b.fit_score, b.fit_reason, b.phone
+      FROM enrollments e JOIN campaigns k ON k.id = e.campaign_id JOIN contacts c ON c.id = e.contact_id
+      JOIN businesses b ON b.id = c.business_id
+      WHERE e.status = 'active' AND e.draft_state = 'ready'
+      ORDER BY CASE b.size_tier WHEN 'small' THEN 0 WHEN 'mid' THEN 1 ELSE 2 END, COALESCE(b.fit_score, 3) DESC, e.next_send_at
+      LIMIT 100`).all().map((r) => ({
+      ...r, draft_products: JSON.parse(r.draft_products || '[]'), draft_attachments: JSON.parse(r.draft_attachments || '[]'),
+    })));
+  });
+  app.post('/api/review/:id/approve', wrap((req, res) => res.json(outreach.approve(Number(req.params.id), req.body))));
+  app.post('/api/review/:id/regenerate', wrap(async (req, res) => res.json(await outreach.draftFor(Number(req.params.id), String(req.body.hint || '')))));
+  app.post('/api/review/:id/skip', wrap((req, res) => {
+    outreach.skip(Number(req.params.id), { notAFit: Boolean(req.body.not_a_fit) });
+    res.json({ ok: true });
+  }));
+  app.post('/api/review/prepare', wrap(async (req, res) => res.json({ drafted: await outreach.prepareDrafts(10) })));
+
   // ---------- AI ----------
   app.post('/api/ai/sequence', wrap(async (req, res) => res.json({ steps: await ai.draftSequence(req.body) })));
   app.post('/api/ai/reply', wrap(async (req, res) => {
@@ -402,7 +447,9 @@ export function createApp(config, { log = console, transportFactory } = {}) {
     const references = prior.map((m) => m.message_id).filter(Boolean);
     const base = (prior[0]?.subject || t.subject || '').replace(/^re:\s*/i, '');
     if (!contact) throw new Error('thread has no contact');
-    const r = await sender.send({ contact, subject: req.body.subject || `Re: ${base}`, body: String(req.body.body || ''), threadId: t.id, inReplyTo: references.at(-1), references });
+    const attachments = catalog.getBrochures(req.body.attachments || [])
+      .map((b) => ({ filename: b.filename, content: Buffer.from(b.data), contentType: b.mime }));
+    const r = await sender.send({ contact, subject: req.body.subject || `Re: ${base}`, body: String(req.body.body || ''), threadId: t.id, inReplyTo: references.at(-1), references, attachments });
     res.json(r);
   }));
   app.post('/api/compose', wrap(async (req, res) => {
@@ -460,7 +507,7 @@ export function createApp(config, { log = console, transportFactory } = {}) {
   app.use(express.static(PUBLIC_DIR));
   app.get(/^\/(?!api\/).*/, (req, res) => res.sendFile(join(PUBLIC_DIR, 'index.html')));
 
-  return { app, db, settings, leads, sender, outreach, inbox, ai };
+  return { app, db, settings, leads, sender, outreach, inbox, ai, catalog };
 }
 
 function escapeHtml(s) {

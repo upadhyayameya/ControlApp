@@ -25,12 +25,20 @@ export function makeAi({ config, settings, fetchImpl = fetch }) {
 
   const baseSystem = () => {
     const s = settings.all();
-    return `You write B2B sales emails for ${s.company_name}.
+    return `You write B2B emails for ${s.company_name}, one person to one business.
 Company profile: ${s.company_profile}
-Sender: ${s.sender_name || 'the business development lead'}. Website: ${s.website}.
-Style: plain text, warm, specific, under 130 words, no hype, no fake claims, no invented prices or certifications,
-one clear low-friction call to action (e.g. "want me to send a sample kit?"). US English. Never include an
-unsubscribe line or postal address — the system appends a compliant footer automatically.`;
+Sender: ${s.sender_name || 'the business development lead'}${s.sender_title ? `, ${s.sender_title}` : ''}. Website: ${s.website}.
+Sample offer the sender can make: ${s.sample_offer || 'a few sample pens'}.
+
+Write like a real person typing a thoughtful note, not marketing copy:
+- Plain text, short paragraphs, contractions, natural rhythm; under 150 words for an intro.
+- No "I hope this email finds you well", no "I came across your amazing...", no hype words
+  (revolutionary, game-changing, synergy), no exclamation marks in a row, no emojis, no ALL CAPS.
+- No invented prices, certifications, clients or facts. If something isn't known, don't claim it.
+- One easy, specific ask (e.g. "Would it be useful if I mailed you a few samples?").
+- End with a simple sign-off and the sender's first name only. Never add a signature block,
+  unsubscribe line or postal address — the system adds those automatically.
+US English.`;
   };
 
   /** Draft a multi-step sequence for a segment using merge fields. */
@@ -72,6 +80,77 @@ Return only the email body text (no subject line, no signature block beyond the 
     );
   }
 
+  /**
+   * Write one email for one business. It must feel personally written: grounded in what the business
+   * actually does (from its website), recommending the 2–3 pens from our catalog that suit it, with a
+   * link to the brochure. Returns a fit score so poor matches can be skipped at review time.
+   */
+  async function draftPersonal({ business, contact, step, stepIndex, history = [], hint = '', catalog = [], brochure = null }) {
+    const seg = SEGMENT_BY_KEY[business?.segment];
+    const isFollowUp = stepIndex > 0;
+    const catalogText = catalog.length
+      ? catalog.map((p) => `[${p.id}] ${p.name} — ${p.description || ''}${p.price_note ? ` (${p.price_note})` : ''}${p.brochure ? ` | brochure: ${p.brochure.url}` : ''}`).join('\n')
+      : '(no catalog)';
+    const earlier = history.length
+      ? '\nEARLIER EMAILS IN THIS THREAD\n' + history.map((m) => `${m.direction === 'in' ? 'THEM' : 'US'}: ${m.body}`).join('\n---\n')
+      : '';
+    const text = await complete(
+      `${baseSystem()}
+
+Personalisation rules (most important):
+- This email is for ONE business. The first lines must show you actually looked at them: refer to something
+  concrete and true from the research (what they sell, who their customers are, their specialty, their town).
+- Pick the 2–3 pens from OUR CATALOG that genuinely suit this business and say in a few words why each one
+  suits THEM (e.g. a coffee roaster → coffee-scented pens for their retail shelf or as branded merch).
+  Mention them naturally in a sentence or a short dash list — not a sales sheet.
+- If a brochure link is provided, include it once, casually (e.g. "I've put our catalog here: <link>").
+- Only use facts present in the research. If the research is thin, stay honest and general about their
+  type of business rather than guessing.
+- Greet by first name only if a real person's name is given; otherwise "Hi there" or "Hi <business> team".
+- Optionally a short P.S. with one more specific, relevant thought.`,
+      `BUSINESS
+Name: ${business?.name || ''}
+Location: ${[business?.city, business?.state].filter(Boolean).join(', ') || 'USA'}
+Type: ${seg?.label || business?.category || 'unknown'}${business?.employees ? `\nEmployees: ~${business.employees}` : ''}
+Website: ${business?.website || 'n/a'}
+Contact: ${contact?.name || '(no name)'}${contact?.title ? ` — ${contact.title}` : ''} <${contact?.email || ''}>
+
+RESEARCH (their public website; may be empty or noisy)
+${business?.site_summary || '(none)'}
+
+WHY SUBMARINE COULD FIT THIS TYPE OF BUSINESS
+${seg?.pitch || 'premium personalised metal pens at factory-direct prices'}
+
+OUR CATALOG (choose from these only; ids in brackets)
+${catalogText}
+${brochure ? `\nDEFAULT BROCHURE LINK: ${brochure.url}` : ''}
+
+THIS EMAIL
+${isFollowUp
+    ? `A short, friendly follow-up (email ${stepIndex + 1}) in the same thread — under 80 words. Add one new, useful angle
+(e.g. a different pen from the catalog that suits them, or offer to mail samples). No guilt-tripping, no "just bumping this".`
+    : 'The first introduction email.'}
+Brief from the rep's campaign (use as intent, not wording):
+${step?.body || ''}
+${earlier}
+${hint ? `\nREP'S INSTRUCTIONS FOR THIS ONE: ${hint}` : ''}
+
+Also judge fit honestly: 5 = obvious buyer/reseller of custom or retail pens, 1 = no plausible reason to contact.
+Return ONLY JSON:
+{"subject":"specific to them, under 8 words, lower-key, no clickbait","body":"...","product_ids":[ids you mentioned],"fit":1-5,"fit_reason":"one sentence"}`,
+      1800,
+    );
+    const json = parseJson(text);
+    const known = new Set(catalog.map((p) => p.id));
+    return {
+      subject: String(json.subject || '').trim(),
+      body: String(json.body || '').trim(),
+      product_ids: (Array.isArray(json.product_ids) ? json.product_ids : []).map(Number).filter((id) => known.has(id)),
+      fit: Math.max(1, Math.min(5, Number(json.fit) || 3)),
+      fit_reason: String(json.fit_reason || '').trim(),
+    };
+  }
+
   /** Classify a human reply for triage. */
   async function classify(text) {
     const out = await complete(
@@ -83,5 +162,5 @@ Return only the email body text (no subject line, no signature block beyond the 
     return word === 'interested' && /not/.test(out.toLowerCase()) ? 'not_interested' : word || 'reply';
   }
 
-  return { enabled, draftSequence, draftReply, classify };
+  return { enabled, draftSequence, draftReply, draftPersonal, classify };
 }
