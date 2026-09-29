@@ -1,0 +1,15 @@
+# Watt on Earth — Energy & Carbon Check template
+# One row per month, 12 consecutive months. month = YYYY-MM. kwh = grid units billed. amount_inr = total bill in rupees (optional).
+month,kwh,amount_inr
+2024-04,,
+2024-05,,
+2024-06,,
+2024-07,,
+2024-08,,
+2024-09,,
+2024-10,,
+2024-11,,
+2024-12,,
+2025-01,,
+2025-02,,
+2025-03,,

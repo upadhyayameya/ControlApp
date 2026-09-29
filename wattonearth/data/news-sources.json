@@ -1,0 +1,54 @@
+{
+  "$comment": "RSS sources for scripts/fetch-news.ts. Add a source by appending to `sources`. Set `enabled: false` to pause one. Feed URLs marked verified:false have not been confirmed to work — check them once (see README → News automation).",
+  "lookbackDays": 7,
+  "maxItems": 15,
+  "keywords": [
+    "CCTS",
+    "carbon credit",
+    "carbon market",
+    "CBAM",
+    "carbon border",
+    "BRSR",
+    "BEE",
+    "Bureau of Energy Efficiency",
+    "energy efficiency",
+    "ECBC",
+    "ECSBC",
+    "energy conservation",
+    "GEI",
+    "emission intensity",
+    "PAT scheme"
+  ],
+  "sources": [
+    {
+      "name": "ETEnergyWorld",
+      "url": "https://energy.economictimes.indiatimes.com/rss/topstories",
+      "enabled": true,
+      "verified": false
+    },
+    {
+      "name": "Mongabay-India",
+      "url": "https://india.mongabay.com/feed/",
+      "enabled": true,
+      "verified": false
+    },
+    {
+      "name": "Carbon Brief",
+      "url": "https://www.carbonbrief.org/feed/",
+      "enabled": true,
+      "verified": false
+    },
+    {
+      "name": "Down To Earth",
+      "url": "https://www.downtoearth.org.in/rss/energy",
+      "enabled": true,
+      "verified": false
+    },
+    {
+      "name": "ICAP",
+      "url": "https://icapcarbonaction.com/en/rss.xml",
+      "enabled": true,
+      "verified": false
+    }
+  ]
+}
