@@ -207,6 +207,34 @@ export function step(world: SimWorld): { snapshot: SimSnapshot; trend: TrendSamp
   for (const f of idx.fcus) nodeStates[f.id] = fcuState(world, f, zoneCall)
   for (const s of idx.sensors) nodeStates[s.id] = { running: true, outputs: {}, kw: 0, therms: 0 }
 
+  // VFD speed: a VFD reports the speed of the fan or pump it drives. Its speed
+  // tracks that unit's airflow/flow fraction (clamped to the drive's minimum),
+  // and pins to 100% when a failed-VFD fault is injected on the driven unit.
+  for (const vfd of idx.vfds) {
+    const driven = vfdDrivenNode(world, vfd.id)
+    const minSpeed = (vfd.nameplate.minSpeedPct ?? 20) / 100
+    let speed = 0
+    if (driven) {
+      const failed = faultsForNode(world.config, driven.id).some((f) => f.kind === 'failed-vfd')
+      if (driven.category === 'ahu' || driven.category === 'rtu') {
+        const r = ahuResults[driven.id]
+        if (r?.running) speed = failed ? 1 : clamp(r.designCfm > 0 ? r.totalCfm / r.designCfm : 0, minSpeed, 1)
+      } else {
+        const st = nodeStates[driven.id]
+        if (st?.running) speed = failed ? 1 : clamp((st.outputs.loadPct ?? 0) / 100, minSpeed, 1)
+      }
+    }
+    const speedPct = round1(speed * 100)
+    nodeStates[vfd.id] = {
+      running: speed > 0,
+      outputs: { speedPct, hz: round1(speed * 60), drives: driven ? 1 : 0 },
+      kw: 0,
+      therms: 0,
+    }
+    trendValues[`${vfd.id}.speedPct`] = speedPct
+    trendValues[`${vfd.id}.hz`] = round1(speed * 60)
+  }
+
   // --- 7. Totals -----------------------------------------------------------
   let kw = 0
   let thermsPerHr = 0
@@ -832,6 +860,18 @@ function attachedVfd(world: SimWorld, nodeId: string): boolean {
       (a?.category === 'vfd' && c.target === nodeId) || (b?.category === 'vfd' && c.source === nodeId)
     )
   })
+}
+
+/** The fan/pump a VFD drives, via its electrical connection. */
+function vfdDrivenNode(world: SimWorld, vfdId: string): EquipmentNode | undefined {
+  for (const c of world.config.connections) {
+    if (c.kind !== 'electrical') continue
+    const other = c.source === vfdId ? c.target : c.target === vfdId ? c.source : undefined
+    if (!other) continue
+    const node = world.index.byId[other]
+    if (node && node.category !== 'vfd') return node
+  }
+  return undefined
 }
 
 function nearestZone(world: SimWorld, node: EquipmentNode): string | undefined {

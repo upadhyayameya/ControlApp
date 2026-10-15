@@ -145,6 +145,8 @@ function labelForKey(key: string, config: SystemConfig): string {
     sensedOatF: 'OAT (sensed)',
     kw: 'kW',
     costPerHr: '$/hr',
+    speedPct: 'Speed %',
+    hz: 'Speed Hz',
   }
   const fl = fieldLabel[field] ?? field
   if (prefix === 'plant' || prefix === 'weather' || prefix === 'building') return `${cap(prefix)} ${fl}`

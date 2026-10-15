@@ -99,6 +99,8 @@ function liveBadge(node: EquipmentNode, state?: { outputs: Record<string, number
     case 'wshp':
     case 'fcu':
       return state.running ? `${fmt(o.loadPct)}% · ${fmt(state.kw)}kW` : 'off'
+    case 'vfd':
+      return state.running ? `${fmt(o.speedPct)}% · ${fmt(o.hz)} Hz` : (o.drives ? 'stopped' : 'not wired')
     default:
       return ''
   }

@@ -402,6 +402,24 @@ export function explainWhyNotRunning(world: SimWorld, snap: SimSnapshot, nodeId:
       chain.push(faultCheck(faults))
       break
     }
+    case 'vfd': {
+      // A VFD follows the fan/pump it is wired to.
+      const driven = world.config.connections
+        .filter((c) => c.kind === 'electrical' && (c.source === nodeId || c.target === nodeId))
+        .map((c) => world.index.byId[c.source === nodeId ? c.target : c.source])
+        .find((n) => n && n.category !== 'vfd')
+      chain.push({
+        label: 'Wired to a fan or pump',
+        ok: !!driven,
+        detail: driven ? `Driving ${driven.name}.` : 'This VFD’s motor output is not wired to any fan or pump, so it has nothing to drive. Connect its Motor port to a unit’s Power port.',
+      })
+      if (driven) {
+        const drivenRunning = !!snap.nodeStates[driven.id]?.running
+        chain.push({ label: `${driven.name} is running`, ok: drivenRunning, detail: drivenRunning ? `${driven.name} is running, so the drive is modulating its speed.` : `${driven.name} is off right now, so the drive output is at 0%.` })
+      }
+      chain.push(faultCheck(faults))
+      break
+    }
     default: {
       const call = anyCooling || anyHeating
       chain.push({ label: 'Conditioning call present', ok: call, detail: call ? 'There is an active call this unit could answer.' : 'No active heating or cooling call.' })

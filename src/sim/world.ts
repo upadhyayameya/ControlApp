@@ -25,6 +25,7 @@ export interface TopologyIndex {
   wshps: EquipmentNode[]
   fcus: EquipmentNode[]
   sensors: EquipmentNode[]
+  vfds: EquipmentNode[]
   /** vavId → zoneId it discharges into (air connection). */
   vavZone: Record<string, string>
   /** vavId → ahuId feeding its inlet (air connection). */
@@ -74,6 +75,7 @@ export function buildIndex(config: SystemConfig): TopologyIndex {
   const wshps = pick((n) => n.category === 'wshp')
   const fcus = pick((n) => n.category === 'fcu')
   const sensors = pick((n) => n.category === 'sensor')
+  const vfds = pick((n) => n.category === 'vfd')
 
   const portMedium = (nodeId: string, portId: string) =>
     byId[nodeId]?.ports.find((p) => p.id === portId)?.medium
@@ -143,6 +145,7 @@ export function buildIndex(config: SystemConfig): TopologyIndex {
     wshps,
     fcus,
     sensors,
+    vfds,
     vavZone,
     vavAhu,
     ahuVavs,
