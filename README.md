@@ -147,3 +147,11 @@ Lumped-parameter by design. Energy figures are directionally correct for compari
 change against a baseline, not for utility-grade savings claims. Plant hydraulics are
 represented by loop supply temperatures rather than a full flow network — enough to
 teach reset, staging, and coil starvation, which is the point.
+
+---
+
+## Also in this repository
+
+- [`fitness-portal/`](fitness-portal/) — a separate, self-contained personal fitness
+  portal (weight, daily tasks, training log, measurements, photos, notes, recipes).
+  Its own `package.json`; see [`fitness-portal/README.md`](fitness-portal/README.md).
