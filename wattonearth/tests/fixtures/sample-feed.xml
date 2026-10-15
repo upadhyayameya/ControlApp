@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test fixture for scripts/fetch-news.ts. Fictional items; dates are regenerated relative to when the file was made. -->
+<rss version="2.0"><channel><title>Fixture feed</title><link>https://example.com</link><description>Fixture</description>
+<item><title>Fixture: BEE publishes a consultation on CCTS procedures</title><link>https://example.com/news/ccts-consultation?utm_source=rss</link><pubDate>Mon, 28 Sep 2026 08:00:00 GMT</pubDate><description>Fictional fixture item about the Carbon Credit Trading Scheme for testing.</description></item>
+<item><title>Fixture: duplicate of the consultation item</title><link>https://www.example.com/news/ccts-consultation/</link><pubDate>Mon, 28 Sep 2026 08:00:00 GMT</pubDate><description>Same URL, different tracking — should be removed as a duplicate. CCTS.</description></item>
+<item><title>Fixture: EU publishes CBAM default values update</title><link>https://example.com/news/cbam-defaults</link><pubDate>Sat, 26 Sep 2026 08:00:00 GMT</pubDate><description>Fictional fixture item about CBAM default values.</description></item>
+<item><title>Fixture: cricket scores</title><link>https://example.com/news/cricket</link><pubDate>Sat, 26 Sep 2026 08:00:00 GMT</pubDate><description>Nothing to do with energy — should be filtered out.</description></item>
+<item><title>Fixture: old energy efficiency story</title><link>https://example.com/news/old</link><pubDate>Wed, 09 Sep 2026 08:00:00 GMT</pubDate><description>Energy efficiency, but older than 7 days — should be filtered out.</description></item>
+</channel></rss>

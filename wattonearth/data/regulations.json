@@ -1,0 +1,101 @@
+[
+  {
+    "id": "ccts-targets-notified",
+    "regime": "CCTS",
+    "milestone": "GHG emission-intensity targets notified for obligated entities (first sectors)",
+    "date": "2026-01-01",
+    "dateStatus": "tbc",
+    "appliesTo": "Obligated entities in sectors notified under the CCTS compliance mechanism",
+    "officialSourceUrl": "https://beeindia.gov.in/",
+    "notes": "PLACEHOLDER date used only for ordering. Replace with the eGazette notification date and link.",
+    "lastVerified": null
+  },
+  {
+    "id": "ccts-first-compliance-year",
+    "regime": "CCTS",
+    "milestone": "First compliance year begins for obligated entities",
+    "date": "2026-04-01",
+    "dateStatus": "tbc",
+    "appliesTo": "Obligated entities in notified sectors",
+    "officialSourceUrl": "https://beeindia.gov.in/",
+    "notes": "PLACEHOLDER date. Confirm from BEE / eGazette. Once confirmed, set dateStatus to \"confirmed\" — the home-page countdown reads the next confirmed CCTS milestone.",
+    "lastVerified": null
+  },
+  {
+    "id": "ccts-trading-launch",
+    "regime": "CCTS",
+    "milestone": "Carbon Credit Certificate trading begins on power exchanges",
+    "date": "2026-10-01",
+    "dateStatus": "tbc",
+    "appliesTo": "Obligated entities and registered offset-project participants",
+    "officialSourceUrl": "https://beeindia.gov.in/",
+    "notes": "PLACEHOLDER date. Confirm from BEE / CERC notifications.",
+    "lastVerified": null
+  },
+  {
+    "id": "ccts-first-mrv-report",
+    "regime": "CCTS",
+    "milestone": "First verified emissions report due for the initial compliance year",
+    "date": "2027-06-30",
+    "dateStatus": "tbc",
+    "appliesTo": "Obligated entities in notified sectors",
+    "officialSourceUrl": "https://beeindia.gov.in/",
+    "notes": "PLACEHOLDER date. Confirm the MRV submission deadline from the detailed procedure.",
+    "lastVerified": null
+  },
+  {
+    "id": "cbam-definitive-period",
+    "regime": "CBAM",
+    "milestone": "CBAM definitive period — EU importers must hold CBAM certificates",
+    "date": "2026-01-01",
+    "dateStatus": "tbc",
+    "appliesTo": "EU importers of CBAM goods (iron & steel, aluminium, cement, fertilisers, hydrogen, electricity) and their non-EU suppliers",
+    "officialSourceUrl": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+    "notes": "PLACEHOLDER — confirm the start date and any simplification amendments on the European Commission CBAM page.",
+    "lastVerified": null
+  },
+  {
+    "id": "cbam-first-annual-declaration",
+    "regime": "CBAM",
+    "milestone": "First annual CBAM declaration due (covering the first definitive year)",
+    "date": "2027-09-30",
+    "dateStatus": "tbc",
+    "appliesTo": "Authorised CBAM declarants in the EU; Indian exporters supply embedded-emissions data",
+    "officialSourceUrl": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+    "notes": "PLACEHOLDER date. Confirm against the current CBAM Regulation and implementing acts.",
+    "lastVerified": null
+  },
+  {
+    "id": "brsr-core-value-chain",
+    "regime": "BRSR",
+    "milestone": "BRSR Core value-chain ESG disclosures begin (largest listed entities)",
+    "date": "2026-04-01",
+    "dateStatus": "tbc",
+    "appliesTo": "Top listed entities by market capitalisation; their significant value-chain partners are asked for data",
+    "officialSourceUrl": "https://www.sebi.gov.in/",
+    "notes": "PLACEHOLDER date. Confirm the financial year and thresholds from the latest SEBI circular.",
+    "lastVerified": null
+  },
+  {
+    "id": "brsr-core-assurance",
+    "regime": "BRSR",
+    "milestone": "Next phase of reasonable assurance on BRSR Core",
+    "date": "2027-04-01",
+    "dateStatus": "tbc",
+    "appliesTo": "Listed entities in the next market-capitalisation tranche",
+    "officialSourceUrl": "https://www.sebi.gov.in/",
+    "notes": "PLACEHOLDER date. Confirm the glide path from the latest SEBI circular.",
+    "lastVerified": null
+  },
+  {
+    "id": "ecbc-ecsbc-adoption",
+    "regime": "ECBC",
+    "milestone": "Energy Conservation and Sustainable Building Code (ECSBC) — state adoption",
+    "date": "2026-12-31",
+    "dateStatus": "tbc",
+    "appliesTo": "New commercial buildings above the connected-load / contract-demand threshold in adopting states",
+    "officialSourceUrl": "https://beeindia.gov.in/",
+    "notes": "PLACEHOLDER. Adoption and enforcement dates differ by state — consider one entry per state once confirmed.",
+    "lastVerified": null
+  }
+]

@@ -1,0 +1,33 @@
+# Lint, type-check, test and build the Watt on Earth site on every PR that touches it.
+name: wattonearth CI
+
+on:
+  pull_request:
+    paths:
+      - "wattonearth/**"
+      - ".github/workflows/wattonearth-ci.yml"
+      - ".github/workflows/weekly-news.yml"
+  push:
+    branches: [main]
+    paths:
+      - "wattonearth/**"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: wattonearth
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: wattonearth/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
