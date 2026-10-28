@@ -97,7 +97,7 @@ export function makeOutreach({ db, settings, sender, catalog, ai = null, log = c
     let subject = templated.subject;
     let body = templated.body;
     let chosen = suggested;
-    let note = ai?.enabled() ? null : 'Filled-in template — add an ANTHROPIC_API_KEY to have each email written individually';
+    let note = ai?.enabled() ? null : 'Filled-in template — add a Claude API key in Settings → Connections to have each email written individually';
     if (ai?.enabled()) {
       try {
         const all = catalog.listProducts({ activeOnly: true });

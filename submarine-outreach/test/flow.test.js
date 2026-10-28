@@ -5,7 +5,15 @@ import { envConfig } from '../server/settings.js';
 import { crawlForEmails } from '../server/sourcing/crawler.js';
 
 const quiet = { info() {}, warn() {} };
-const WED_11AM_ET = new Date('2026-09-30T15:00:00Z');
+// The next Wednesday 15:00 UTC (11:00 New York) after today, so sends are always "later" than
+// the real clock the database stamps messages with.
+const WED_11AM_ET = (() => {
+  const d = new Date();
+  d.setUTCHours(15, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() + (((3 - d.getUTCDay() + 7) % 7) || 7));
+  return d;
+})();
+const WED_NIGHT_ET = new Date(WED_11AM_ET.getTime() - 12 * 3600_000); // 23:00 the night before
 
 function setup({ live = false, publicUrl = 'https://portal.submarine.test' } = {}) {
   const sent = [];
@@ -99,7 +107,7 @@ test('import → enroll (small first, large held back) → review → send → f
 
   // Outside business hours nothing goes out.
   await draftAndApproveAll(outreach, db);
-  r = await outreach.tick(new Date('2026-09-30T03:00:00Z'));
+  r = await outreach.tick(WED_NIGHT_ET);
   assert.equal(r.sent, false);
 
   // Follow-up threads onto the first message.

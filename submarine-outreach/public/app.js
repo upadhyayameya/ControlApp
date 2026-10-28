@@ -451,7 +451,7 @@ async function review() {
     <div class="row"><h1>Review emails</h1><span class="spacer"></span><button id="prep">Write next drafts now</button></div>
     <p class="sub">${rows.length} email${rows.length === 1 ? '' : 's'} waiting. Each one was written for that business — check it reads like you, fix anything, then approve.
       Approved emails go out during the recipient's business hours.</p>
-    ${!META.integrations.ai ? '<div class="callout">AI is off, so these are your campaign template filled in per business. Add <b>ANTHROPIC_API_KEY</b> to have each email written individually from the business\'s website.</div>' : ''}
+    ${!META.integrations.ai ? '<div class="callout">AI writing is off, so these are your campaign template filled in for each business. Paste a Claude API key in <a href="#/settings">Settings → Connections</a> to have each email written from the business\'s own website.</div>' : ''}
     ${cat.brochures.length ? '' : '<div class="callout">No brochure uploaded yet — add one in <a href="#/catalog">Pens &amp; brochures</a> so emails can include your catalog.</div>'}
     ${rows.map((r) => `
       <div class="card review-card" data-id="${r.id}" style="margin-bottom:16px">
