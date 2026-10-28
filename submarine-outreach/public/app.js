@@ -556,7 +556,7 @@ async function inbox(threadId) {
     <div class="row"><h1>Inbox</h1><span class="spacer"></span>
       <select id="i-filter">${[['needs_reply', 'Needs reply'], ['replies', 'All with replies'], ['waiting', 'Waiting on them'], ['closed', 'Closed'], ['all', 'Everything']]
         .map(([v, l]) => `<option value="${v}" ${v === inboxFilter ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <button id="poll" ${META.integrations.imap ? '' : 'disabled title="Set IMAP_* env vars"'}>Check mail now</button></div>
+      <button id="poll" ${META.integrations.imap ? '' : 'disabled title="Connect your mailbox in Settings first"'}>Check mail now</button></div>
     <p class="sub">Replies to outreach are matched automatically; unsubscribes and bounces are suppressed for you.</p>
     <div class="inbox"><div class="card thread-list" style="padding:0">${threads.map((t) => `
       <div class="thread-item ${t.unread ? 'unread' : ''} ${Number(threadId) === t.id ? 'sel' : ''}" data-id="${t.id}">

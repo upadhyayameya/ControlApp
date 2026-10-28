@@ -19,7 +19,7 @@ export function makeSender({ db, settings, config, leads, transportFactory = nod
   function liveReadiness() {
     const s = settings.all();
     const missing = [];
-    if (!smtpConfigured()) missing.push('SMTP_HOST / SMTP_USER / SMTP_PASS env vars');
+    if (!smtpConfigured()) missing.push('Your mailbox (Settings → Connections)');
     if (!s.from_email) missing.push('From email');
     if (!s.sender_name) missing.push('Sender name');
     if (!s.physical_address) missing.push('Physical mailing address (required by CAN-SPAM)');
