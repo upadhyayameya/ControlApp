@@ -588,11 +588,12 @@ const senderOf = (m) => emailIn(m?.sender || m?.from || m?.fromAddress || '');
 const isoOf = (v) => { const d = new Date(typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : v); return isNaN(d) ? new Date().toISOString() : d.toISOString(); };
 const runId = () => new Date().toISOString().replace(/[:.]/g, '-');
 async function gmail(tool, input) { const r = await mcp.callTool(GMAIL, tool, input, { cache: false }); return r.payload ?? {}; }
-async function readBody(m) {
+// Search results carry id, sender and subject only; date, link and body come from get_message.
+async function readMsg(m, format = 'PLAIN_TEXT') {
   try {
-    const p = await gmail('get_message', { messageId: m.id, messageFormat: 'PLAIN_TEXT' });
-    return String(p.plaintextBody || p.plaintext_body || p.body || p.snippet || m.snippet || '');
-  } catch { return String(m.snippet || ''); }
+    const p = await gmail('get_message', { messageId: m.id, messageFormat: format });
+    return { text: String(p.plaintextBody || p.plaintext_body || p.body || p.snippet || m.snippet || ''), date: p.date || p.internalDate || null, url: p.viewUrl || null, subject: p.subject || m.subject || '' };
+  } catch { return { text: String(m.snippet || ''), date: null, url: null, subject: m.subject || '' }; }
 }
 function stripQuoted(text) {
   const out = [];
@@ -635,8 +636,9 @@ async function inboxSync(manual = false) {
       const p = await gmail('search_threads', { query: `in:sent to:${l.email} newer_than:45d`, pageSize: 3 });
       const t = threadsOf(p)[0]; if (!t) continue;
       const ms = msgsOf(t);
-      const m = ms.find((x) => (x.labelIds || x.label_ids || []).includes('SENT')) || ms[0] || {};
-      await db.collection('leads').doc(l.id).update({ status: 'sent', sent_at: isoOf(m.date || Date.now()), sent_message_id: m.id || null, gmail_thread_id: t.id || null, last_subject: m.subject || l.last_subject || '' });
+      const m = ms.find((x) => senderOf(x) && senderOf(x) !== l.email.toLowerCase()) || ms[0] || {};
+      const meta = m.id ? await readMsg(m, 'METADATA_ONLY') : {};
+      await db.collection('leads').doc(l.id).update({ status: 'sent', sent_at: isoOf(meta.date || Date.now()), sent_message_id: m.id || null, gmail_thread_id: t.id || m.threadId || null, gmail_url: meta.url || null, last_subject: m.subject || l.last_subject || '' });
       const dr = S.drafts.find((d) => d.lead_id === l.id && d.status === 'in_gmail' && d.kind !== 'reply');
       if (dr) await db.collection('drafts').doc(dr.id).update({ status: 'sent' });
       counts.sends++;
@@ -651,11 +653,12 @@ async function inboxSync(manual = false) {
         const from = senderOf(m); const lead = byEmail[from];
         if (!lead || !m.id || known.has(m.id)) continue;
         known.add(m.id);
-        const body = stripQuoted(await readBody(m));
-        const subject = String(m.subject || lead.last_subject || '');
+        const full = await readMsg(m);
+        const body = stripQuoted(full.text);
+        const subject = String(full.subject || lead.last_subject || '');
         const a = await analyzeReply(lead, body, subject);
         const cls = ['interested', 'question', 'not_interested', 'unsubscribe', 'auto_reply', 'other'].includes(a?.classification) ? a.classification : 'other';
-        await db.collection('replies').doc(m.id).set({ lead_id: lead.id, message_id: m.id, gmail_thread_id: t.id || null, from, date: isoOf(m.date), subject, body, summary: String(a?.summary || '').slice(0, 300), classification: cls, seen: false, gmail_url: m.viewUrl || t.viewUrl || null });
+        await db.collection('replies').doc(m.id).set({ lead_id: lead.id, message_id: m.id, gmail_thread_id: t.id || m.threadId || null, from, date: isoOf(full.date || Date.now()), subject, body, summary: String(a?.summary || '').slice(0, 300), classification: cls, seen: false, gmail_url: full.url || null });
         counts.replies++;
         if (cls === 'unsubscribe') {
           await db.collection('suppressions').doc(from).set({ reason: 'asked to unsubscribe', created_at: new Date().toISOString() });
@@ -675,11 +678,12 @@ async function inboxSync(manual = false) {
       const p = await gmail('search_threads', { query: 'from:(mailer-daemon OR postmaster) newer_than:7d', pageSize: 10 });
       for (const t of threadsOf(p)) for (const m of msgsOf(t)) {
         if (!m.id || known.has(m.id)) continue;
-        const text = (await readBody(m)).toLowerCase();
+        const bounced = await readMsg(m);
+        const text = bounced.text.toLowerCase();
         const lead = outgoing.find((l) => text.includes(l.email.toLowerCase()));
         if (!lead) continue;
         known.add(m.id);
-        await db.collection('replies').doc(m.id).set({ lead_id: lead.id, message_id: m.id, from: senderOf(m), date: isoOf(m.date), subject: m.subject || 'Delivery failed', body: '', summary: `Email to ${lead.email} bounced.`, classification: 'bounce', seen: false });
+        await db.collection('replies').doc(m.id).set({ lead_id: lead.id, message_id: m.id, from: senderOf(m), date: isoOf(bounced.date || Date.now()), gmail_url: bounced.url || null, subject: m.subject || 'Delivery failed', body: '', summary: `Email to ${lead.email} bounced.`, classification: 'bounce', seen: false });
         await db.collection('suppressions').doc(lead.email.toLowerCase()).set({ reason: 'bounced', created_at: new Date().toISOString() });
         await db.collection('leads').doc(lead.id).update({ status: 'bounced' });
         counts.bounces++;
