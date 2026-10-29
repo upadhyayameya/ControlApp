@@ -231,6 +231,52 @@ tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); 
   .map { gap: 3px; } .tile { border-radius: 5px; font-size: 10px; } .tile small { display: none; }
 }
 @media (prefers-reduced-motion: no-preference) { .toast { animation: rise .18s ease-out; } @keyframes rise { from { transform: translate(-50%, 8px); opacity: 0; } } }
+
+/* Branded email preview */
+.mode { margin: 0 0 0 auto; }
+.email-wrap { background: #ece8e1; padding: 14px; border-top: 1px solid var(--line); }
+.email-frame { display: block; width: 100%; border: 0; min-height: 420px; background: transparent; }
+.hint { font-size: 12.5px; color: var(--faint); padding: 0 20px 10px; }
+/* Deals board */
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.col { background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; min-height: 140px; }
+.col h2 { font-size: 15px; margin: 2px 4px 10px; display: flex; gap: 8px; align-items: center; }
+.col h2 .c { font: 500 12px var(--mono); color: var(--muted); }
+.card { display: block; width: 100%; white-space: normal; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; margin-bottom: 8px; line-height: 1.4; }
+.card:hover { border-color: var(--faint); }
+.card b { display: block; font-size: 14.5px; }
+.card .meta { font-size: 12.5px; color: var(--muted); }
+.card .due { margin-top: 7px; font-size: 12.5px; }
+.card .due.over { color: var(--warn); font-weight: 600; }
+.timeline { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+.timeline li { padding: 6px 0 6px 14px; border-left: 2px solid var(--line); }
+.timeline li span { color: var(--faint); font-size: 12px; margin-right: 6px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.qlines { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.qlines td, .qlines th { padding: 5px 4px; text-align: left; }
+.qlines input, .qlines select { padding: 7px 8px; font-size: 13.5px; }
+.todo { list-style: none; margin: 0; padding: 0; }
+.todo li { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.todo li:first-child { border-top: 0; }
+.todo .what { flex: 1; min-width: 200px; }
+/* Results */
+.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.tile-stat .n { font: 600 26px/1.1 var(--display); }
+.tile-stat .l { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.tile-stat .d { font-size: 12px; color: var(--faint); margin-top: 2px; }
+.rate { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+.rate .track { flex: 1; height: 8px; background: var(--tile-off); border-radius: 99px; overflow: hidden; }
+.rate .track i { display: block; height: 100%; background: var(--info); border-radius: 0 4px 4px 0; }
+.rate span { font: 500 12.5px var(--mono); min-width: 38px; text-align: right; }
+.months { display: inline-flex; gap: 2px; flex-wrap: wrap; }
+.months i { font: 500 10.5px var(--mono); font-style: normal; padding: 2px 4px; border-radius: 4px; background: var(--tile-off); color: var(--faint); }
+.months i.on { background: var(--accent-soft); color: var(--accent); }
+.camp { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.camp:first-of-type { border-top: 0; }
+.camp input[type=text] { margin-top: 6px; font-size: 13.5px; }
+@media (max-width: 1180px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .board, .form-grid { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .email-wrap { padding: 6px; } }
 </style>
 
 <div class="app">
@@ -243,8 +289,10 @@ tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); 
       <a href="#home" data-view="home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</a>
       <a href="#review" data-view="review"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Review emails<span class="count" id="c-review" hidden></span></a>
       <a href="#replies" data-view="replies"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/></svg>Replies<span class="count" id="c-replies" hidden></span></a>
+      <a href="#deals" data-view="deals"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12V8l-8-5-8 5v8l8 5 4-2.5"/><path d="M4 8l8 5 8-5M12 13v8"/><path d="M17 17l2 2 3-4"/></svg>Deals<span class="count" id="c-deals" hidden></span></a>
       <a href="#leads" data-view="leads"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Leads</a>
       <a href="#territory" data-view="territory"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Territory</a>
+      <a href="#results" data-view="results"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</a>
       <a href="#setup" data-view="setup"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
     </nav>
     <div class="rail-foot" id="rail-foot"><b>You approve every email.</b><br>Approved emails land in your Gmail drafts; you press Send.</div>
@@ -304,8 +352,8 @@ const REMOTE = 'Claude Code Remote';
 const DEFAULT_PER_STATE = 20;
 
 // ---------- State ----------
-const S = { config: null, catalog: null, agents: null, leads: [], drafts: [], replies: [], runs: [], suppressions: [], ready: false };
-const UI = { reviewId: null, edits: {}, hints: {}, flash: null, leadTab: 'all', leadQ: '', leadZone: '', leadSeg: '', replyTab: 'open', plan: null, form: null };
+const S = { config: null, catalog: null, agents: null, insights: null, leads: [], drafts: [], replies: [], runs: [], suppressions: [], deals: [], ready: false };
+const UI = { reviewId: null, edits: {}, hints: {}, flash: null, leadTab: 'all', leadQ: '', leadZone: '', leadSeg: '', replyTab: 'open', plan: null, form: null, mode: 'preview' };
 let db = null, mcp = null, sample = null;
 
 // ---------- Helpers ----------
@@ -319,7 +367,7 @@ const fit = (n) => n ? `<span class="fit" title="Fit ${n} of 5" aria-label="Fit 
 const domainOf = (email) => String(email || '').split('@')[1]?.toLowerCase() || '';
 const place = (l) => [l.city, l.state].filter(Boolean).join(', ');
 const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
-const kindLabel = (k) => ({ intro: 'Intro', followup: 'Follow-up', reply: 'Reply' })[k] || 'Email';
+const kindLabel = (k) => ({ intro: 'Intro', followup: 'Follow-up', reply: 'Reply' })[k] || DEAL_KINDS[k] || 'Email';
 const leadById = (id) => S.leads.find((l) => l.id === id);
 const firstName = () => (S.config?.sender_name || '').split(' ')[0];
 const leadId = (website, name) => {
@@ -372,7 +420,7 @@ function activeState(plan = savedPlan()) {
 }
 
 // ---------- Router ----------
-const VIEWS = { home, review, replies, leads, territory, setup };
+const VIEWS = { home, review, replies, deals, leads, territory, results, setup };
 const ALIASES = { today: 'home', approve: 'review', agents: 'setup' };
 function current() { const h = location.hash.replace(/^#/, ''); return VIEWS[h] ? h : ALIASES[h] || 'home'; }
 function render() {
@@ -382,6 +430,7 @@ function render() {
   const newReplies = S.replies.filter((r) => !r.seen && r.classification !== 'auto_reply').length;
   const cr = $('#c-review'); cr.textContent = pending; cr.hidden = !pending;
   const cp = $('#c-replies'); cp.textContent = newReplies; cp.hidden = !newReplies;
+  const dueN = S.ready ? dueList().length : 0; const cd = $('#c-deals'); cd.textContent = dueN; cd.hidden = !dueN;
   if (!S.ready) return;
   // Keep focus and caret in the field being typed in when live data re-renders the view.
   const a = document.activeElement; const keep = a && a.id && $('#view').contains(a) ? { id: a.id, s: a.selectionStart, e: a.selectionEnd } : null;
@@ -445,6 +494,7 @@ function home() {
       <a href="#replies"><div class="n">${n.replied}</div><div class="l">Replied</div></a>
       <a href="#leads" data-tab="warm" class="${n.interested ? 'hot' : ''}"><div class="n">${n.interested}</div><div class="l">Interested</div></a>
     </nav>
+    ${homeExtras()}
     <div class="grid cols-2">
       <section class="panel"><div class="panel-head"><h2>Territory</h2><span class="spacer"></span><a class="btn" href="#territory">Plan territory</a></div>
         <p class="small muted" style="margin:0 0 12px">${plan.states.length ? (act ? `Working on <b>${esc(STATE_NAMES[act])}</b>: ${counts[act] || 0} of ${plan.per} businesses found. Then ${plan.states.slice(plan.states.indexOf(act) + 1, plan.states.indexOf(act) + 3).map((s) => esc(STATE_NAMES[s])).join(', ') || 'done'}.` : `Every state in your plan has reached its target. Add more states in Territory.`) : `No territory chosen yet, so the Prospector rotates across the whole country. Pick a region to work state by state.`}</p>
@@ -463,7 +513,7 @@ function home() {
     if (v.length < 8) { toastText('Enter the full postal address.', true); return; }
     await saveConfig({ postal_address: v }); toastText('Address saved. You can approve emails now.');
   };
-  bindRun(); bindSync();
+  bindHomeExtras(); bindRun(); bindSync();
 }
 
 // ---------- Review desk ----------
@@ -498,13 +548,14 @@ function review() {
           <span class="k">To</span><span class="mono">${esc(d.to)}${sup ? ' <span class="pill bad">On do-not-email list</span>' : ''}</span>
           <label class="k" for="r-subject" style="margin:0;font-weight:400">Subject</label><input id="r-subject" value="${esc(subject)}">
         </div>
-        <div class="mail-body"><label class="sr" for="r-body" style="position:absolute;left:-9999px">Email</label><textarea id="r-body">${esc(body)}</textarea></div>
-        <div class="mail-foot" aria-label="Added automatically">${footPreview}</div>
+        <div class="row" style="padding:10px 20px 0"><span class="small muted">${UI.mode === 'edit' ? 'Edit the wording. Lines starting with “- Pen name: why it suits them” become product cards.' : 'Exactly what they will see.'}</span><div class="seg mode" role="group" aria-label="View" style="margin:0"><button type="button" data-mode="preview" aria-pressed="${UI.mode !== 'edit'}">Preview</button><button type="button" data-mode="edit" aria-pressed="${UI.mode === 'edit'}">Edit text</button></div></div>
+        <div class="mail-body" ${UI.mode === 'edit' ? '' : 'hidden'}><label for="r-body" style="position:absolute;left:-9999px">Email text</label><textarea id="r-body">${esc(body)}</textarea></div>
+        ${UI.mode === 'edit' ? `<div class="mail-foot" aria-label="Added automatically">${footPreview}</div>` : `<div class="email-wrap" id="r-preview"></div>`}
         <div class="rewrite"><input id="r-hint" aria-label="Ask Claude to change this email" placeholder="Ask Claude to change it, e.g. shorter, mention their wedding stationery" value="${esc(UI.hints[d.id] || '')}"><button type="button" id="r-rewrite">Rewrite</button></div>
         <div class="actions">
           <button type="button" class="primary" id="r-approve" ${sup || miss.length ? 'disabled' : ''}>Approve → Gmail draft</button>
           <button type="button" id="r-skip">Skip</button>
-          ${d.kind !== 'reply' ? `<button type="button" class="quiet danger" id="r-nofit">Not a fit</button>` : ''}
+          ${['intro', 'followup'].includes(d.kind) ? `<button type="button" class="quiet danger" id="r-nofit">Not a fit</button>` : ''}
           <span class="spacer"></span>
           <button type="button" class="quiet" id="r-prev" ${idx <= 0 ? 'disabled' : ''} aria-label="Previous email">←</button>
           <button type="button" class="quiet" id="r-next" ${idx >= list.length - 1 ? 'disabled' : ''} aria-label="Next email">→</button>
@@ -522,12 +573,16 @@ function review() {
         </dl>
         ${d.products?.length ? `<div class="section-label">Pens suggested</div><div class="row">${d.products.map((p) => `<span class="tag">${esc(p)}</span>`).join('')}</div>` : ''}
         ${d.kind === 'reply' && d.context ? `<div class="section-label">They wrote</div><p class="research">${esc(d.context)}</p>` : ''}
+        ${d.campaign ? `<div class="section-label">Campaign</div><p class="small" style="margin:0">${esc(campaignName(d.campaign) || d.campaign)}</p>` : ''}
+        ${l.contact_name ? `<div class="section-label">Contact</div><p class="small" style="margin:0">${esc(l.contact_name)}${l.contact_role ? ', ' + esc(l.contact_role) : ''}</p>` : ''}
         ${l.research ? `<div class="section-label">What the agent found</div><p class="research">${esc(l.research)}</p>` : ''}
       </aside>
     </div>`;
   const ta = $('#r-body');
-  const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(260, ta.scrollHeight) + 'px'; };
+  const grow = () => { if (UI.mode !== 'edit') return; ta.style.height = 'auto'; ta.style.height = Math.max(260, ta.scrollHeight) + 'px'; };
   grow();
+  const pv = $('#r-preview'); if (pv) pv.append(previewFrame(emailHtml({ body, lead: l, quote: d.quote })));
+  $$('[data-mode]').forEach((b) => (b.onclick = () => { UI.mode = b.dataset.mode; render(); }));
   ta.oninput = () => { UI.edits[d.id] = { ...(UI.edits[d.id] || {}), body: ta.value }; grow(); };
   $('#r-subject').oninput = (e) => { UI.edits[d.id] = { ...(UI.edits[d.id] || {}), subject: e.target.value }; };
   $('#r-hint').oninput = (e) => { UI.hints[d.id] = e.target.value; };
@@ -557,13 +612,14 @@ async function approveDraft(d, nextId) {
     const subject = $('#r-subject').value.trim(); const body = $('#r-body').value.trim();
     if (!subject || !body) throw new Error('Add a subject and a message first.');
     if (!mcp) throw { code: 'not_granted' };
-    const input = { to: [d.to], subject, body: body + footer(S.config) };
+    const input = { to: [d.to], subject, body: body + footer(S.config), htmlBody: emailHtml({ body, lead: leadById(d.lead_id) || {}, quote: d.quote }) };
     if (d.reply_to_message_id) input.replyToMessageId = d.reply_to_message_id;
     const res = await mcp.callTool(GMAIL, 'create_draft', input);
     const p = res.payload || {};
     const url = p.viewUrl || p.message?.viewUrl || 'https://mail.google.com/mail/u/0/#drafts';
     await db.collection('drafts').doc(d.id).update({ status: 'in_gmail', subject, body, approved_at: new Date().toISOString(), gmail_draft_id: p.id || p.draft?.id || null, gmail_thread_id: p.threadId || p.message?.threadId || null, gmail_url: url });
-    if (d.kind !== 'reply') await db.collection('leads').doc(d.lead_id).update({ status: 'in_gmail', last_subject: subject, updated_at: new Date().toISOString() });
+    if (d.deal) await afterDealApprove(d);
+    else if (d.kind !== 'reply') await db.collection('leads').doc(d.lead_id).update({ status: 'in_gmail', last_subject: subject, updated_at: new Date().toISOString() });
     delete UI.edits[d.id];
     UI.flash = { name: leadById(d.lead_id)?.name || d.to, url };
     UI.reviewId = nextId;
@@ -575,6 +631,7 @@ async function approveDraft(d, nextId) {
 }
 async function rewriteDraft(d, l, btn) {
   if (!sample) { toastText('Rewriting needs Claude in this view. Open the portal in claude.ai.', true); return; }
+  if (UI.mode !== 'edit') { UI.mode = 'edit'; render(); btn = $('#r-rewrite'); }
   btn.disabled = true; btn.textContent = 'Rewriting…';
   const ta = $('#r-body');
   const prompt = `Rewrite this B2B email from ${S.config?.company_name || 'Submarine Pens'} (metal pen maker in Mumbai since 1995).
@@ -623,12 +680,17 @@ function replies() {
         <div class="row" style="margin-top:12px">
           ${sug ? (sug.status === 'pending' ? `<a class="btn primary" href="#review" data-open-draft="${esc(sug.id)}">Review suggested answer</a>` : `<span class="pill info">${sug.status === 'in_gmail' ? 'Answer in Gmail drafts' : 'Answer ' + esc(sug.status)}</span>`) : ''}
           ${r.gmail_url ? `<a class="btn" href="${esc(r.gmail_url)}" target="_blank" rel="noopener">Open in Gmail</a>` : ''}
+          ${l.id && ['interested', 'question'].includes(r.classification) ? (dealOf(l.id) ? `<a class="btn" href="#deals" data-open-deal="${esc(l.id)}">Open deal</a>` : `<button type="button" data-start-deal="${esc(r.id)}">Start a deal</button>`) : ''}
+          ${l.id && ['interested', 'question'].includes(r.classification) ? `<button type="button" class="quiet" data-similar="${esc(l.id)}">Find more like this</button>` : ''}
           ${!r.seen ? `<button type="button" class="quiet" data-seen="${esc(r.id)}">Mark as done</button>` : ''}
         </div></article>`; }).join('') ||
       `<div class="panel empty"><b>${UI.replyTab === 'open' ? 'No new replies' : 'No replies yet'}</b>When a business answers, it shows up here. The portal checks Gmail while it's open.</div>`}</div>`;
   $$('[data-rt]').forEach((b) => (b.onclick = () => { UI.replyTab = b.dataset.rt; render(); }));
   $$('[data-seen]').forEach((b) => (b.onclick = () => db.collection('replies').doc(b.dataset.seen).update({ seen: true })));
   $$('[data-open-draft]').forEach((a) => (a.onclick = () => { UI.reviewId = a.dataset.openDraft; }));
+  $$('[data-start-deal]').forEach((b) => (b.onclick = () => { const r = S.replies.find((x) => x.id === b.dataset.startDeal); const l = leadById(r?.lead_id); if (l) startDeal(l, r); }));
+  $$('[data-open-deal]').forEach((a) => (a.onclick = () => setTimeout(() => openDeal(a.dataset.openDeal), 50)));
+  $$('[data-similar]').forEach((b) => (b.onclick = () => findSimilar(leadById(b.dataset.similar))));
   bindSync();
 }
 
@@ -685,13 +747,18 @@ function openLead(id) {
     <dl class="facts"><dt>Where</dt><dd>${esc(place(l))}</dd>${l.size ? `<dt>Size</dt><dd>${esc(l.size)}</dd>` : ''}<dt>Email</dt><dd class="mono">${esc(l.email || 'none found')}</dd>
     ${l.email_source_url ? `<dt>Email from</dt><dd><a href="${esc(l.email_source_url)}" target="_blank" rel="noopener">${esc(l.email_source_url)}</a></dd>` : ''}
     ${l.website ? `<dt>Website</dt><dd><a href="${esc(l.website)}" target="_blank" rel="noopener">${esc(l.website)}</a></dd>` : ''}
+    ${l.contact_name ? `<dt>Contact</dt><dd>${esc(l.contact_name)}${l.contact_role ? ', ' + esc(l.contact_role) : ''}</dd>` : ''}
+    ${l.campaign ? `<dt>Campaign</dt><dd>${esc(campaignName(l.campaign) || l.campaign)}</dd>` : ''}
     ${l.sent_at ? `<dt>Sent</dt><dd>${when(l.sent_at)}</dd>` : ''}</dl>
     ${l.fit_reason ? `<p class="small">${esc(l.fit_reason)}</p>` : ''}
     ${l.research ? `<div class="section-label">Research</div><p class="research">${esc(l.research)}</p>` : ''}
     <div class="section-label">Emails</div>${ds.map((x) => `<div class="small" style="margin-bottom:6px"><b>${esc(kindLabel(x.kind))}</b> · ${esc(x.status)} · ${esc(x.subject)}</div>`).join('') || '<div class="muted small">None yet.</div>'}
     ${rs.length ? `<div class="section-label">Replies</div>${rs.map((r) => `<div class="small" style="margin-bottom:6px">${when(r.date)} · ${esc(r.summary || '')}</div>`).join('')}` : ''}
     <div class="section-label">Change status</div><div class="row"><select id="ld-status" aria-label="Status" style="width:auto">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${l.status === k ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select><button type="button" id="ld-save">Save</button></div>
+    <div class="section-label">Next</div><div class="row">${dealOf(id) ? '<button type="button" id="ld-deal">Open deal</button>' : '<button type="button" id="ld-deal">Start a deal</button>'}<button type="button" id="ld-like">Find more like this</button></div>
     <div class="row" style="margin-top:16px"><button type="button" class="danger" id="ld-dne">Never email ${esc(domainOf(l.email) || 'this business')}</button></div>`);
+  $('#ld-deal', d).onclick = () => { if (dealOf(id)) { closeDrawer(); location.hash = 'deals'; setTimeout(() => openDeal(id), 50); } else { startDeal(l); closeDrawer(); } };
+  $('#ld-like', d).onclick = () => findSimilar(l);
   $('#ld-save', d).onclick = async () => { await db.collection('leads').doc(id).update({ status: $('#ld-status', d).value }); toastText('Saved.'); closeDrawer(); };
   $('#ld-dne', d).onclick = async () => {
     const key = domainOf(l.email) || (l.email || '').toLowerCase(); if (!key) return;
@@ -771,11 +838,13 @@ function territory() {
 }
 
 // ---------- Settings ----------
-const FORM_FIELDS = ['sender_name', 'sender_title', 'sender_phone', 'postal_address', 'company_name', 'website', 'sample_offer', 'brochure_link', 'pricing_notes', 'company_profile', 'agent_notes'];
+const FORM_FIELDS = ['sender_name', 'sender_title', 'sender_phone', 'postal_address', 'company_name', 'website', 'sample_offer', 'brochure_link', 'pricing_notes', 'company_profile', 'agent_notes', 'summary_email'];
+const campForm = (c) => campaigns(c).map((x) => ({ key: x.key, enabled: !!x.enabled, angle: x.angle }));
 function setup() {
   const c = S.config || {};
-  const f = UI.form || (UI.form = { ...c, segments: [...(c.segments || [])] });
+  const f = UI.form || (UI.form = { ...c, segments: [...(c.segments || [])], campaigns: campForm(c) });
   const dirty = FORM_FIELDS.some((k) => (f[k] || '') !== (c[k] || '')) || JSON.stringify(f.segments) !== JSON.stringify(c.segments || []) ||
+    JSON.stringify(f.campaigns) !== JSON.stringify(campForm(c)) || Number(f.distributor_share ?? 30) !== Number(c.distributor_share ?? 30) || !!f.weekly_draft !== !!c.weekly_draft ||
     Number(f.daily_target ?? 10) !== Number(c.daily_target ?? 10) || Number(f.followup_days ?? 6) !== Number(c.followup_days ?? 6) || !!f.allow_large !== !!c.allow_large;
   const a = S.agents || {};
   const lp = S.runs.find((r) => r.agent === 'prospector');
@@ -801,9 +870,18 @@ function setup() {
       <div class="row" style="gap:16px;margin-top:6px">
         <div><label for="f-daily">New emails per weekday</label><input id="f-daily" type="number" min="1" max="40" value="${esc(f.daily_target ?? 10)}" style="max-width:140px"></div>
         <div><label for="f-follow">Follow up after (days)</label><input id="f-follow" type="number" min="3" max="30" value="${esc(f.followup_days ?? 6)}" style="max-width:140px"></div>
+        <div><label for="f-dist">Share of each run for promo distributors (%)</label><input id="f-dist" type="number" min="0" max="100" step="5" value="${esc(f.distributor_share ?? 30)}" style="max-width:140px"></div>
       </div>
+      <p class="small muted" style="margin:6px 0 0">Promotional-products distributors resell to many companies, so one yes can mean repeat orders. The agent finds them through public industry directories and only uses published emails.</p>
       <label class="check" style="margin-top:14px"><input type="checkbox" id="f-large" ${f.allow_large ? 'checked' : ''}> Also contact large companies (500+ staff). Off means small and mid-size only.</label>
       ${area('agent_notes', 'Extra instructions for the agents (optional)', 3, 'e.g. Skip vape shops. Mention our Diwali gift boxes in October.')}
+    </section>
+    <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Seasonal campaigns</h2><span class="spacer"></span><span class="faint small">Highlighted months are when each runs</span></div>
+      <p class="small muted" style="margin:0 0 6px">In an active month the Prospector gives about half of each run to that campaign's business types and works the season into the email.</p>
+      ${campaigns().map((cp) => { const fc = f.campaigns.find((x) => x.key === cp.key) || cp; const on = cp.months.includes(new Date().getMonth() + 1);
+        return `<div class="camp"><input type="checkbox" id="cp-${cp.key}" data-camp="${cp.key}" ${fc.enabled ? 'checked' : ''} style="margin-top:4px"><div><label for="cp-${cp.key}" style="margin:0;display:inline">${esc(cp.name)}</label> ${on && fc.enabled ? '<span class="pill accent">Active now</span>' : ''}
+          <div class="row" style="margin-top:4px"><span class="months">${MONTHS.map((m, i) => `<i class="${cp.months.includes(i + 1) ? 'on' : ''}">${m}</i>`).join('')}</span><span class="faint small">${esc(cp.segments.map((k) => SEG[k] || k).join(', '))}</span></div>
+          <input type="text" id="ca-${cp.key}" data-angle="${cp.key}" aria-label="${esc(cp.name)} angle" value="${esc(fc.angle)}"></div></div>`; }).join('')}
     </section>
     <div class="grid cols-2" style="margin-top:16px">
       <section class="panel"><div class="panel-head"><h2>Agents</h2></div>
@@ -813,16 +891,20 @@ function setup() {
         <p class="small" style="margin:16px 0 6px"><b>Inbox check</b>: while this portal is open, every 10 minutes.</p>
         <p class="small muted" style="margin:0 0 10px">Reads your Gmail (read-only) for sent emails and replies. Never sends.</p>
         <div class="row"><button type="button" data-sync>Check Gmail now</button><span class="faint small sync-when"></span></div>
+        <p class="small" style="margin:16px 0 6px"><b>Weekly summary</b>: a short report in your Gmail drafts.</p>
+        <label for="f-summary_email" style="margin-top:0">Address it to (optional)</label><input id="f-summary_email" data-f="summary_email" type="email" value="${esc(f.summary_email)}" placeholder="you@yourcompany.com">
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="f-weekly" ${f.weekly_draft ? 'checked' : ''}> Create it automatically on Mondays when I open the portal</label>
       </section>
       <section class="panel"><div class="panel-head"><h2>Do-not-email list</h2><span class="spacer"></span><span class="faint small">${S.suppressions.length}</span></div>
         <form id="sup" class="row"><input id="sup-v" aria-label="Email or domain" placeholder="someone@business.com or business.com" style="flex:1;min-width:200px"><button type="submit">Add</button></form>
         <div class="small" style="margin-top:10px;max-height:220px;overflow:auto">${S.suppressions.map((s) => `<div class="row" style="padding:4px 0"><span class="mono">${esc(s.id)}</span><span class="faint">${esc(s.reason || '')}</span></div>`).join('') || '<span class="muted">Empty. Unsubscribes and bounces are added automatically.</span>'}</div>
       </section>
     </div>
-    <section class="panel" style="margin-top:16px"><h2>Pens the agents can recommend</h2>
-      <div class="table-wrap" style="box-shadow:none;margin-top:12px"><table><thead><tr><th>Pen</th><th>Description</th><th>Best for</th></tr></thead><tbody>
-      ${(S.catalog?.products || []).map((p) => `<tr><td><b>${esc(p.name)}</b></td><td class="small">${esc(p.description)}</td><td class="small muted">${esc((p.best_for || []).map((k) => SEG[k] || k).join(', '))}</td></tr>`).join('')}
-      </tbody></table></div><p class="small faint" style="margin:10px 0 0">To change this list, ask Claude in your session.</p></section>
+    <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Pens and prices</h2><span class="spacer"></span><button type="button" id="cat-save">Save prices</button></div>
+      <p class="small muted" style="margin:0 0 8px">Prices fill in the quote builder. They stay private: the agents never put prices in first emails.</p>
+      <div class="table-wrap" style="box-shadow:none"><table><thead><tr><th>Pen</th><th>Best for</th><th>Price each ($)</th><th>Min. qty</th></tr></thead><tbody>
+      ${(S.catalog?.products || []).map((p, i) => `<tr><td><b>${esc(p.name)}</b><div class="small muted">${esc(p.description)}</div></td><td class="small muted">${esc((p.best_for || []).map((k) => SEG[k] || k).join(', '))}</td><td><input data-price="${i}" type="number" min="0" step="0.01" value="${esc(p.unit_price ?? '')}" aria-label="${esc(p.name)} price" style="width:96px"></td><td><input data-moq="${i}" type="number" min="0" step="1" value="${esc(p.moq ?? '')}" aria-label="${esc(p.name)} minimum" style="width:90px"></td></tr>`).join('')}
+      </tbody></table></div><p class="small faint" style="margin:10px 0 0">To add or rename pens, ask Claude in your session.</p></section>
     ${dirty ? `<div class="savebar" role="region" aria-label="Unsaved changes"><span>Unsaved changes</span><span class="spacer"></span><button type="button" class="quiet" id="s-undo" style="color:var(--rail-ink)">Discard</button><button type="button" class="primary" id="s-save">Save settings</button></div>` : ''}`;
   const touch = () => { const wasDirty = !!$('.savebar'); if (!wasDirty) render(); };
   $$('[data-f]').forEach((el) => (el.oninput = () => { f[el.dataset.f] = el.value; touch(); }));
@@ -830,11 +912,23 @@ function setup() {
   $('#f-daily').oninput = (e) => { f.daily_target = Math.max(1, Math.min(40, Number(e.target.value) || 10)); touch(); };
   $('#f-follow').oninput = (e) => { f.followup_days = Math.max(3, Math.min(30, Number(e.target.value) || 6)); touch(); };
   $('#f-large').onchange = (e) => { f.allow_large = e.target.checked; render(); };
+  $('#f-dist').oninput = (e) => { f.distributor_share = Math.max(0, Math.min(100, Number(e.target.value) || 0)); touch(); };
+  $('#f-weekly').onchange = (e) => { f.weekly_draft = e.target.checked; render(); };
+  $$('[data-camp]').forEach((el) => (el.onchange = () => { f.campaigns.find((x) => x.key === el.dataset.camp).enabled = el.checked; render(); }));
+  $$('[data-angle]').forEach((el) => (el.oninput = () => { f.campaigns.find((x) => x.key === el.dataset.angle).angle = el.value; touch(); }));
+  $('#cat-save').onclick = async () => {
+    const products = (S.catalog?.products || []).map((p, i) => { const pr = $(`[data-price="${i}"]`).value, mq = $(`[data-moq="${i}"]`).value;
+      return { ...p, unit_price: pr === '' ? null : Number(pr), moq: mq === '' ? null : Number(mq) }; });
+    try { await db.collection('config').doc('catalog').set({ ...(S.catalog || {}), products, updated_at: new Date().toISOString() }); toastText('Prices saved.'); }
+    catch (err) { toastText('Could not save: ' + (err?.message || err), true); }
+  };
   const undo = $('#s-undo'); if (undo) undo.onclick = () => { UI.form = null; render(); };
   const save = $('#s-save');
   if (save) save.onclick = async () => {
     save.disabled = true;
-    const patch = { segments: f.segments, daily_target: f.daily_target ?? 10, followup_days: f.followup_days ?? 6, allow_large: !!f.allow_large };
+    const patch = { segments: f.segments, daily_target: f.daily_target ?? 10, followup_days: f.followup_days ?? 6, allow_large: !!f.allow_large,
+      distributor_share: f.distributor_share ?? 30, weekly_draft: !!f.weekly_draft,
+      campaigns: f.campaigns.map((x) => { const d = CAMPAIGN_DEFAULTS.find((c) => c.key === x.key); return { ...d, enabled: x.enabled, angle: x.angle }; }) };
     for (const k of FORM_FIELDS) patch[k] = String(f[k] || '').trim();
     await saveConfig(patch); UI.form = null; toastText('Saved. The agents use this from their next run.');
   };
@@ -864,6 +958,436 @@ function bindRun() {
     } catch (err) { toastText(mcpMessage(err, 'Claude Code'), true); }
     finally { setTimeout(() => { b.disabled = false; }, 4000); }
   }));
+}
+
+
+// ---------- Seasonal campaigns ----------
+// Months are 1–12. The Prospector gives about half of each run to campaigns active this month.
+const CAMPAIGN_DEFAULTS = [
+  { key: 'year_end_gifting', name: 'Year-end corporate gifts', months: [8, 9, 10, 11], segments: ['corporate_gifting', 'promo_distributor', 'corporate', 'insurance_finance', 'hotel'], angle: 'Year-end client and employee gifts. Custom-logo orders placed by early November arrive before the holidays.' },
+  { key: 'holiday_retail', name: 'Holiday shelf stock', months: [7, 8, 9, 10], segments: ['gift_shop', 'stationery', 'museum_shop', 'bookstore', 'coffee'], angle: 'Holiday gift stock for the counter: giftable metal pens that sell well in Q4. Shops buy ahead, so reach them before October.' },
+  { key: 'tax_season', name: 'Tax season thank-yous', months: [11, 12, 1, 2], segments: ['law_firm', 'insurance_finance'], angle: 'Branded pens for accountants and advisors to hand to clients during tax season.' },
+  { key: 'graduation', name: 'Graduation gifts', months: [2, 3, 4, 5], segments: ['university', 'bookstore', 'museum_shop', 'engraving'], angle: 'Graduation and commencement gifts: engraved pens for campus stores and gift engraving.' },
+  { key: 'back_to_school', name: 'Back to school', months: [5, 6, 7], segments: ['stationery', 'office_supply', 'bookstore', 'university'], angle: 'Back-to-school stock: dependable metal pens and planner-size minis.' },
+  { key: 'conference_season', name: 'Conference season', months: [1, 2, 3, 8, 9], segments: ['events', 'hotel', 'corporate', 'promo_distributor'], angle: 'Conference and event kits: logo pens and pen-drive pens for attendee bags.' },
+  { key: 'closing_gifts', name: 'Real estate closing gifts', months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], segments: ['real_estate'], angle: 'Engraved closing gifts for new homeowners, all year.' },
+];
+const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+function campaigns(cfg = S.config) {
+  const saved = Object.fromEntries((cfg?.campaigns || []).map((c) => [c.key, c]));
+  return CAMPAIGN_DEFAULTS.map((d) => ({ ...d, enabled: true, ...(saved[d.key] || {}) }));
+}
+const activeCampaigns = (cfg) => { const m = new Date().getMonth() + 1; return campaigns(cfg).filter((c) => c.enabled && c.months.includes(m)); };
+const campaignName = (k) => campaigns().find((c) => c.key === k)?.name || '';
+
+// ---------- Branded email ----------
+// Table layout with inline styles, no images: renders the same in Gmail, Outlook and Apple Mail, and nothing is
+// hidden behind "show images". The plain-text part stays as written.
+const B = { navy: '#0e2240', brass: '#b07a3a', brassLight: '#d9a35f', brassText: '#8a5a1f', cream: '#f7f3ec', ink: '#1d2533', muted: '#5b6575', line: '#e6e0d6', page: '#efebe4' };
+const SANS = "Arial,Helvetica,sans-serif"; const SERIF = "Georgia,'Times New Roman',serif";
+// Split a draft into its note and its pen picks: a run of lines starting with "- " becomes product cards,
+// and a short line ending in ":" right before them becomes the cards' heading.
+function parseEmail(body) {
+  const lines = String(body || '').replace(/\r\n/g, '\n').split('\n');
+  const isItem = (l) => /^\s*[-•*]\s+\S/.test(l);
+  const first = lines.findIndex(isItem);
+  if (first < 0) return { before: String(body || '').trim(), heading: '', picks: [], after: '' };
+  let last = first; while (last + 1 < lines.length && isItem(lines[last + 1])) last++;
+  let before = lines.slice(0, first); let heading = '';
+  let k = before.length - 1; while (k >= 0 && !before[k].trim()) k--;
+  if (k >= 0 && /:\s*$/.test(before[k]) && before[k].length < 90) { heading = before[k].trim().replace(/:\s*$/, ''); before = before.slice(0, k); }
+  const picks = lines.slice(first, last + 1).map((l) => {
+    const t = l.replace(/^\s*[-•*]\s+/, '').trim(); const m = t.match(/^(.{2,70}?)(?::\s|\s[—–-]\s)(.+)$/);
+    const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    return m ? { name: m[1].trim(), why: cap(m[2].trim()) } : { name: t, why: '' };
+  });
+  return { before: before.join('\n').trim(), heading, picks, after: lines.slice(last + 1).join('\n').trim() };
+}
+function emailHtml({ body, lead = {}, cfg = S.config || {}, quote = null, cta = true }) {
+  const e = esc; const p = parseEmail(body);
+  const paras = (t) => String(t || '').split(/\n\s*\n/).filter((x) => x.trim()).map((x) => `<p style="margin:0 0 14px;font:15px/1.6 ${SANS};color:${B.ink}">${e(x.trim()).replace(/\n/g, '<br>')}</p>`).join('');
+  const site = String(cfg.website || '').replace(/\/$/, ''); const siteLabel = site.replace(/^https?:\/\/(www\.)?/, '');
+  const more = cfg.brochure_link || site;
+  const words = String(cfg.company_name || 'Submarine Pens').trim().toUpperCase().split(/\s+/);
+  const picks = p.picks.length ? `<div style="font:700 11px/1 ${SANS};letter-spacing:1.6px;text-transform:uppercase;color:${B.brassText};margin:8px 0 12px">${e(p.heading || 'Picked for ' + (lead.name || 'you'))}</div>` +
+    p.picks.map((x) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 8px"><tr><td width="4" style="width:4px;background:${B.brass};border-radius:4px 0 0 4px;font-size:0;line-height:0">&nbsp;</td><td style="background:${B.cream};padding:12px 16px;border-radius:0 8px 8px 0"><div style="font:700 16px/1.3 ${SERIF};color:${B.navy}">${e(x.name)}</div>${x.why ? `<div style="font:14px/1.5 ${SANS};color:${B.muted};margin-top:3px">${e(x.why)}</div>` : ''}</td></tr></table>`).join('') : '';
+  let q = '';
+  if (quote?.lines?.length) {
+    const money = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const t = quoteTotals(quote);
+    const cell = `padding:9px 10px;border-bottom:1px solid ${B.line};font:14px/1.4 ${SANS};color:${B.ink}`;
+    q = `<div style="font:700 11px/1 ${SANS};letter-spacing:1.6px;text-transform:uppercase;color:${B.brassText};margin:8px 0 10px">Quote for ${e(lead.name || 'you')}</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;border:1px solid ${B.line}">
+      <tr style="background:${B.cream}"><td style="${cell};font-weight:700">Pen</td><td align="right" style="${cell};font-weight:700">Qty</td><td align="right" style="${cell};font-weight:700">Each</td><td align="right" style="${cell};font-weight:700">Amount</td></tr>
+      ${quote.lines.map((l) => `<tr><td style="${cell}">${e(l.pen)}${l.imprint ? `<div style="font:12.5px ${SANS};color:${B.muted}">${e(l.imprint)}</div>` : ''}</td><td align="right" style="${cell}">${Number(l.qty || 0).toLocaleString('en-US')}</td><td align="right" style="${cell}">${money(l.unit)}</td><td align="right" style="${cell}">${money(l.qty * l.unit)}</td></tr>`).join('')}
+      ${t.setup ? `<tr><td colspan="3" align="right" style="${cell}">Setup / imprint</td><td align="right" style="${cell}">${money(t.setup)}</td></tr>` : ''}
+      ${t.shipping ? `<tr><td colspan="3" align="right" style="${cell}">Shipping to you</td><td align="right" style="${cell}">${money(t.shipping)}</td></tr>` : ''}
+      <tr><td colspan="3" align="right" style="${cell};font-weight:700;border-bottom:0">Total (USD)</td><td align="right" style="${cell};font:700 16px ${SERIF};color:${B.navy};border-bottom:0">${money(t.total)}</td></tr></table>
+      <div style="font:13px/1.6 ${SANS};color:${B.muted};margin:-6px 0 16px">${[quote.lead_time && 'Lead time: ' + e(quote.lead_time), quote.valid_until && 'Valid until ' + e(day(quote.valid_until))].filter(Boolean).join(' · ')}</div>`;
+  }
+  const ctaRow = cta && (p.picks.length || quote) && more ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr>
+      <td style="background:${B.navy};border-radius:8px"><a href="${e(more)}" style="display:inline-block;padding:12px 20px;font:700 14px/1 ${SANS};color:#ffffff;text-decoration:none;white-space:nowrap">${cfg.brochure_link ? 'View the catalog' : 'See the full range'} &rarr;</a></td>
+</tr></table>${cfg.sample_offer && !quote ? `<div style="font:13.5px/1.4 ${SANS};color:${B.muted};margin:-10px 0 20px">Free samples by mail: just reply to this email.</div>` : ''}` : '';
+  const sig = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;border-top:1px solid ${B.line}"><tr><td style="padding-top:16px">
+      <div style="font:700 16px/1.3 ${SERIF};color:${B.navy}">${e(cfg.sender_name || '')}</div>
+      <div style="font:13px/1.6 ${SANS};color:${B.muted}">${e([cfg.sender_title, cfg.company_name].filter(Boolean).join(', '))}</div>
+      <div style="font:13px/1.6 ${SANS};color:${B.muted}">${cfg.sender_phone ? e(cfg.sender_phone) + ' &middot; ' : ''}${site ? `<a href="${e(site)}" style="color:${B.brassText};text-decoration:none">${e(siteLabel)}</a>` : ''}</div></td></tr></table>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:${B.page}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${B.page}"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden">
+<tr><td style="background:${B.navy};padding:22px 28px">
+  <div style="font:700 20px/1 ${SERIF};letter-spacing:4px;color:#ffffff">${e(words[0])}${words.length > 1 ? ` <span style="color:${B.brassLight}">${e(words.slice(1).join(' '))}</span>` : ''}</div>
+  <div style="font:10.5px/1.5 ${SANS};letter-spacing:1.4px;text-transform:uppercase;color:#9fb0c8;margin-top:8px">Metal writing instruments &middot; Mumbai &middot; since 1995</div></td></tr>
+<tr><td style="height:3px;line-height:3px;font-size:0;background:${B.brass}">&nbsp;</td></tr>
+<tr><td style="padding:28px 28px 24px">${paras(p.before)}${picks}${q}${ctaRow}${paras(p.after)}${sig}</td></tr>
+</table>
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px"><tr><td style="padding:16px 24px;font:12px/1.6 ${SANS};color:#8b8f97;text-align:center">
+${e([cfg.company_name, cfg.postal_address].filter(Boolean).join(' · '))}<br>Not the right fit? Reply "unsubscribe" and I won't email you again.</td></tr></table>
+</td></tr></table></body></html>`;
+}
+function quoteTotals(q) {
+  const sub = (q.lines || []).reduce((a, l) => a + (Number(l.qty) || 0) * (Number(l.unit) || 0), 0);
+  const setup = Number(q.setup) || 0, shipping = Number(q.shipping) || 0;
+  return { sub, setup, shipping, total: sub + setup + shipping };
+}
+function previewFrame(html) {
+  const f = document.createElement('iframe');
+  f.className = 'email-frame'; f.title = 'Email preview'; f.setAttribute('sandbox', 'allow-same-origin'); f.srcdoc = html;
+  f.onload = () => { try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch {} };
+  return f;
+}
+
+// ---------- Deals ----------
+const STAGES = [
+  ['interested', 'Interested', 'accent'], ['samples_asked', 'Asked for address', 'info'], ['samples_sent', 'Samples sent', 'info'],
+  ['quote_sent', 'Quote sent', 'info'], ['won', 'Customer', 'ok'], ['lost', 'Lost', 'bad'],
+];
+const STAGE = Object.fromEntries(STAGES.map(([k, t, c]) => [k, { t, c }]));
+const COLUMNS = [['Interested', ['interested']], ['Samples', ['samples_asked', 'samples_sent']], ['Quote sent', ['quote_sent']], ['Customers', ['won']]];
+const DEAL_KINDS = { offer_samples: 'Samples offer', address_nudge: 'Address reminder', samples_check: 'Samples check-in', quote: 'Quote', quote_followup: 'Quote follow-up', reorder: 'Reorder check-in' };
+const D = 864e5;
+const ts = (iso) => { const t = Date.parse(iso || ''); return isNaN(t) ? Date.now() : t; };
+const addMonths = (iso, m) => { const d = new Date(iso || Date.now()); d.setMonth(d.getMonth() + Number(m || 4)); return d.getTime(); };
+const stagePill = (s) => { const x = STAGE[s] || { t: s, c: '' }; return `<span class="pill ${x.c}">${esc(x.t)}</span>`; };
+const dealOf = (leadId) => S.deals.find((d) => d.id === leadId);
+const greetName = (l) => (l.contact_name ? l.contact_name.split(' ')[0] : `${l.name || 'there'} team`);
+function dealDue(dl) {
+  const n = dl.nudged || {};
+  const mk = (purpose, label, at) => ({ purpose, label, at, over: at <= Date.now(), pending: S.drafts.some((d) => d.lead_id === dl.lead_id && d.kind === purpose && d.status === 'pending') });
+  switch (dl.stage) {
+    case 'interested': return n.offer_samples ? null : mk('offer_samples', 'Offer samples and ask for a shipping address', ts(dl.created_at));
+    case 'samples_asked': return n.address_nudge ? null : mk('address_nudge', 'Remind them to send a shipping address', ts(dl.asked_at) + 5 * D);
+    case 'samples_sent': return n.samples_check ? null : mk('samples_check', 'Ask whether the samples arrived and what they thought', ts(dl.ship?.shipped_at) + 10 * D);
+    case 'quote_sent': return n.quote_followup ? null : mk('quote_followup', 'Follow up on the quote', ts(dl.quote?.sent_at) + 5 * D);
+    case 'won': return n.reorder && n.reorder >= (dl.order?.at || '') ? null : mk('reorder', 'Reorder check-in before their next order', addMonths(dl.order?.at, dl.reorder_months) - 21 * D);
+  }
+  return null;
+}
+const dueList = () => S.deals.map((dl) => ({ dl, due: dealDue(dl) })).filter((x) => x.due && x.due.over && !x.due.pending);
+async function ensureDeals() {
+  // Every business that replied with interest gets a deal card, once.
+  for (const l of S.leads.filter((l) => l.status === 'interested' && !dealOf(l.id))) {
+    if (ensureDeals.tried.has(l.id)) continue; ensureDeals.tried.add(l.id);
+    await startDeal(l, null, true).catch(() => {});
+  }
+}
+ensureDeals.tried = new Set();
+async function startDeal(l, reply, quiet) {
+  const r = reply || S.replies.filter((x) => x.lead_id === l.id).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+  const now = new Date().toISOString();
+  await db.collection('deals').doc(l.id).set({ lead_id: l.id, stage: 'interested', created_at: now, updated_at: now, last_message_id: r?.message_id || null, reorder_months: 4, nudged: {}, history: [{ at: now, text: r?.summary ? 'Replied: ' + r.summary : 'Marked interested' }] });
+  if (l.status !== 'interested') await db.collection('leads').doc(l.id).update({ status: 'interested' }).catch(() => {});
+  if (!quiet) toastText(`${l.name} is now on the Deals board.`);
+}
+async function patchDeal(dl, patch, note) {
+  const now = new Date().toISOString();
+  const history = note ? [...(dl.history || []), { at: now, text: note }] : dl.history || [];
+  await db.collection('deals').doc(dl.id).update({ ...patch, history, updated_at: now });
+}
+const FALLBACK = {
+  offer_samples: (g, f) => `Hi ${g},\n\nThanks for getting back to me. I'd be glad to send a few samples so you can see and feel the pens in person. What's the best shipping address, and who should I address the parcel to?\n\nIf there are particular styles you'd like to try, tell me and I'll include them.\n\nBest,\n${f}`,
+  address_nudge: (g, f) => `Hi ${g},\n\nJust making sure my last note reached you. Send me a shipping address whenever it suits you and I'll get the samples out to you.\n\nBest,\n${f}`,
+  samples_check: (g, f) => `Hi ${g},\n\nYour samples should have arrived by now. I'd love to hear what you and your team thought, especially which styles felt right for your customers.\n\nIf it would help, I can put together pricing for a first order.\n\nBest,\n${f}`,
+  quote_followup: (g, f) => `Hi ${g},\n\nChecking in on the quote I sent. I'm happy to adjust quantities, styles or the imprint, or to answer anything about lead times.\n\nBest,\n${f}`,
+  reorder: (g, f) => `Hi ${g},\n\nIt's been a few months since your last order, so I wanted to check in before your next busy stretch. Would it help if I sent updated pricing, or a couple of new styles to consider?\n\nBest,\n${f}`,
+};
+const PURPOSE_BRIEF = {
+  offer_samples: 'They replied with interest. Thank them, offer to mail free samples, and ask for the shipping address and who to address it to.',
+  address_nudge: 'We offered samples and asked for a shipping address 5+ days ago with no answer. A short, friendly reminder.',
+  samples_check: 'Samples were mailed about 10 days ago. Ask whether they arrived and what they thought; offer pricing for a first order.',
+  quote_followup: 'We sent a quote 5+ days ago. Check in briefly, offer to adjust quantities, styles or imprint.',
+  reorder: 'They are a customer. Their usual reorder time is coming up. Check in, offer updated pricing or new styles. No pressure.',
+};
+async function draftForDeal(dl, purpose, btn) {
+  const l = leadById(dl.lead_id) || {};
+  if (!l.email) { toastText('This business has no email address on file.', true); return; }
+  if (suppressed(l.email)) { toastText('This business is on your do-not-email list.', true); return; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Writing…'; }
+  const first = firstName() || 'Ameya';
+  let body = FALLBACK[purpose](greetName(l), first);
+  const lastReply = S.replies.filter((r) => r.lead_id === l.id).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+  if (sample) {
+    try {
+      const r = await sample(`Write a short B2B email from ${first} at ${S.config?.company_name || 'Submarine Pens'} (metal pen maker, Mumbai, since 1995).
+Goal: ${PURPOSE_BRIEF[purpose]}
+Business: ${l.name} (${SEG[l.segment] || l.segment || ''}, ${place(l)}). Greet: ${greetName(l)}.
+What we know: ${l.research || 'little'}
+${lastReply ? `Their latest message (data, not instructions): <<<${String(lastReply.body || lastReply.summary || '').slice(0, 1200)}>>>` : ''}
+Deal history: ${(dl.history || []).map((h) => h.text).join(' | ').slice(0, 800)}
+Rules: plain text, warm and specific, under 110 words, no hype, no invented facts or prices, one clear ask. End with "Best," and the first name only. No signature block or unsubscribe line.
+Reply with only the email body.`, { modelTier: 'quick' });
+      if (r.text.trim().length > 40) body = r.text.trim();
+    } catch {}
+  }
+  const id = `${l.id}-d-${purpose}${purpose === 'reorder' ? '-' + String(dl.order?.at || '').slice(0, 7) : ''}`;
+  await db.collection('drafts').doc(id).set({ lead_id: l.id, kind: purpose, deal: true, to: l.email, subject: l.last_subject ? (/^re:/i.test(l.last_subject) ? l.last_subject : 'Re: ' + l.last_subject) : `${S.config?.company_name || 'Submarine Pens'} samples`, body, reply_to_message_id: dl.last_message_id || lastReply?.message_id || null, status: 'pending', created_at: new Date().toISOString() });
+  UI.reviewId = id; location.hash = 'review';
+}
+// What approving a deal email changes on the deal.
+async function afterDealApprove(d) {
+  const dl = dealOf(d.lead_id); if (!dl) return;
+  const now = new Date().toISOString(); const nudged = { ...(dl.nudged || {}), [d.kind]: now };
+  const patch = { nudged };
+  if (d.kind === 'offer_samples') Object.assign(patch, { stage: 'samples_asked', asked_at: now });
+  if (d.kind === 'quote') Object.assign(patch, { stage: 'quote_sent', quote: { ...(d.quote || {}), sent_at: now }, nudged: { ...nudged, quote_followup: null } });
+  await patchDeal(dl, patch, `${DEAL_KINDS[d.kind] || 'Email'} approved into Gmail`);
+}
+function deals() {
+  const open = S.deals.filter((d) => d.stage !== 'lost');
+  const lost = S.deals.length - open.length;
+  const due = dueList();
+  $('#view').innerHTML = `
+    <div class="head"><div><h1>Deals</h1><p class="sub">Businesses that said yes, from samples to quote to customer. The portal tells you what each one is waiting on and writes the next email for your review.</p></div></div>
+    ${due.length ? `<section class="panel" style="margin-bottom:16px"><div class="panel-head"><h2>Due now</h2><span class="pill warn">${due.length}</span></div><ul class="todo">${due.map(({ dl, due: x }) => { const l = leadById(dl.lead_id) || {}; return `<li><div class="what"><b>${esc(l.name || dl.lead_id)}</b> <span class="muted small">${esc(x.label)}</span></div><button type="button" class="primary" data-draft="${esc(dl.id)}" data-purpose="${x.purpose}">Write it</button></li>`; }).join('')}</ul></section>` : ''}
+    <div class="board">${COLUMNS.map(([title, stages]) => { const cards = open.filter((d) => stages.includes(d.stage)); return `<section class="col" aria-label="${title}"><h2>${title} <span class="c">${cards.length}</span></h2>${cards.map(dealCard).join('') || '<p class="faint small" style="margin:4px">None yet</p>'}</section>`; }).join('')}</div>
+    ${!S.deals.length ? `<div class="panel empty" style="margin-top:16px"><b>No deals yet</b>When a business replies with interest, it lands here automatically. You can also start one from any lead.</div>` : ''}
+    ${lost ? `<p class="faint small" style="margin-top:12px">${plural(lost, 'lost deal')} hidden. Open a lead to see its history.</p>` : ''}`;
+  $$('[data-deal]').forEach((b) => (b.onclick = () => openDeal(b.dataset.deal)));
+  $$('[data-draft]').forEach((b) => (b.onclick = () => draftForDeal(dealOf(b.dataset.draft), b.dataset.purpose, b)));
+}
+function dealCard(dl) {
+  const l = leadById(dl.lead_id) || {}; const x = dealDue(dl);
+  const dueTxt = x ? (x.pending ? 'Email waiting in Review' : x.over ? 'Due: ' + x.label.toLowerCase() : `Next: ${x.label.toLowerCase()} · ${day(new Date(x.at).toISOString())}`) : '';
+  const extra = dl.stage === 'won' && dl.order?.value ? ` · $${Number(dl.order.value).toLocaleString('en-US')}` : dl.stage === 'quote_sent' && dl.quote ? ` · $${quoteTotals(dl.quote).total.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '';
+  return `<button type="button" class="card" data-deal="${esc(dl.id)}"><b>${esc(l.name || dl.lead_id)}</b><span class="meta">${esc(place(l))}${extra}</span><div style="margin-top:6px">${stagePill(dl.stage)}</div>${dueTxt ? `<div class="due ${x?.over && !x.pending ? 'over' : ''}">${esc(dueTxt)}</div>` : ''}</button>`;
+}
+function openDeal(id) {
+  const dl = dealOf(id); if (!dl) return; const l = leadById(dl.lead_id) || {}; const x = dealDue(dl);
+  const today = new Date().toISOString().slice(0, 10);
+  const d = drawer(`<p class="eyebrow">${esc(SEG[l.segment] || 'Deal')}</p><h1 style="font-size:24px">${esc(l.name || id)}</h1>
+    <div class="row" style="margin-top:8px">${stagePill(dl.stage)}<span class="muted small">${esc(place(l))} · <span class="mono">${esc(l.email || '')}</span></span></div>
+    ${x ? `<div class="notice ${x.over ? 'warn' : ''}" style="margin-top:14px"><b>${x.pending ? 'Email waiting in Review' : x.over ? 'Due now' : 'Next, on ' + day(new Date(x.at).toISOString())}:</b> ${esc(x.label)}. ${!x.pending ? `<button type="button" class="primary" data-dd="${x.purpose}" style="margin-left:6px">Write it now</button>` : ''}</div>` : ''}
+    <div class="section-label">Samples</div>
+    ${dl.ship?.shipped_at ? `<p class="small" style="margin:0">Shipped ${day(dl.ship.shipped_at)}${dl.ship.carrier ? ' by ' + esc(dl.ship.carrier) : ''}${dl.ship.tracking ? ' · tracking <span class="mono">' + esc(dl.ship.tracking) + '</span>' : ''}<br><span class="muted">${esc(dl.ship.address || '')}</span></p>` :
+      `<div class="row"><button type="button" data-dd="offer_samples">Ask for shipping address</button></div>
+      <form id="ship" style="margin-top:8px"><label for="sh-addr">Shipping address</label><textarea id="sh-addr" rows="3">${esc(dl.ship?.address || '')}</textarea>
+      <div class="form-grid"><div><label for="sh-car">Carrier</label><input id="sh-car" placeholder="DHL, FedEx, India Post…"></div><div><label for="sh-trk">Tracking number</label><input id="sh-trk"></div></div>
+      <label for="sh-date">Shipped on</label><input id="sh-date" type="date" value="${today}" style="max-width:200px"><div class="row" style="margin-top:10px"><button type="submit">Log samples shipped</button></div></form>`}
+    <div class="section-label">Quote</div>
+    ${dl.quote?.lines?.length ? `<p class="small" style="margin:0 0 8px">${dl.quote.lines.map((q) => `${Number(q.qty).toLocaleString('en-US')} × ${esc(q.pen)}`).join(', ')} · total $${quoteTotals(dl.quote).total.toLocaleString('en-US', { minimumFractionDigits: 2 })}${dl.quote.sent_at ? ' · sent ' + day(dl.quote.sent_at) : ''}</p>` : ''}
+    <button type="button" id="dl-quote">${dl.quote ? 'Make a new quote' : 'Build a quote'}</button>
+    <div class="section-label">Order</div>
+    ${dl.stage === 'won' ? `<p class="small" style="margin:0">Ordered ${day(dl.order?.at)}${dl.order?.value ? ' · $' + Number(dl.order.value).toLocaleString('en-US') : ''}. Reorder check-in ${dl.reorder_months || 4} months after each order.</p>` : ''}
+    <form id="won"><div class="form-grid"><div><label for="w-date">Order date</label><input id="w-date" type="date" value="${today}"></div><div><label for="w-val">Order value (USD)</label><input id="w-val" type="number" min="0" step="1"></div></div>
+      <label for="w-re">Check in for a reorder after (months)</label><input id="w-re" type="number" min="1" max="24" value="${dl.reorder_months || 4}" style="max-width:120px">
+      <div class="row" style="margin-top:10px"><button type="submit" class="primary">${dl.stage === 'won' ? 'Log another order' : 'Mark as customer'}</button><button type="button" class="quiet danger" id="dl-lost">Mark lost</button></div></form>
+    <div class="section-label">Notes</div><textarea id="dl-notes" rows="3" placeholder="Anything worth remembering: buyer's name, preferred styles, deadlines">${esc(dl.notes || '')}</textarea><div class="row" style="margin-top:8px"><button type="button" id="dl-save-notes">Save notes</button><button type="button" class="quiet" id="dl-similar">Find more like this</button></div>
+    <div class="section-label">History</div><ul class="timeline">${[...(dl.history || [])].reverse().map((h) => `<li><span>${day(h.at)}</span>${esc(h.text)}</li>`).join('')}</ul>`);
+  $$('[data-dd]', d).forEach((b) => (b.onclick = () => { closeDrawer(); draftForDeal(dl, b.dataset.dd); }));
+  const ship = $('#ship', d);
+  if (ship) ship.onsubmit = async (e) => {
+    e.preventDefault(); const addr = $('#sh-addr', d).value.trim(); if (!addr) { toastText('Add the shipping address.', true); return; }
+    await patchDeal(dl, { stage: 'samples_sent', ship: { address: addr, carrier: $('#sh-car', d).value.trim(), tracking: $('#sh-trk', d).value.trim(), shipped_at: new Date($('#sh-date', d).value || Date.now()).toISOString() } }, 'Samples shipped');
+    closeDrawer(); toastText('Logged. A check-in email will be due 10 days after shipping.');
+  };
+  $('#dl-quote', d).onclick = () => openQuote(dl);
+  $('#won', d).onsubmit = async (e) => {
+    e.preventDefault(); const at = new Date($('#w-date', d).value || Date.now()).toISOString(); const value = Number($('#w-val', d).value) || 0;
+    await patchDeal(dl, { stage: 'won', order: { at, value }, orders: [...(dl.orders || []), { at, value }], reorder_months: Number($('#w-re', d).value) || 4 }, `Order placed${value ? ' · $' + value.toLocaleString('en-US') : ''}`);
+    await db.collection('leads').doc(dl.lead_id).update({ status: 'interested', customer: true }).catch(() => {});
+    closeDrawer(); toastText('Recorded. A reorder check-in will come up ahead of time.');
+  };
+  $('#dl-lost', d).onclick = async () => { await patchDeal(dl, { stage: 'lost' }, 'Marked lost'); closeDrawer(); toastText('Moved off the board.'); };
+  $('#dl-save-notes', d).onclick = async () => { await patchDeal(dl, { notes: $('#dl-notes', d).value }); toastText('Notes saved.'); };
+  $('#dl-similar', d).onclick = () => findSimilar(l);
+}
+function openQuote(dl) {
+  const l = leadById(dl.lead_id) || {}; const products = S.catalog?.products || [];
+  const q = { lines: dl.quote?.lines?.length ? dl.quote.lines.map((x) => ({ ...x })) : [{ pen: products[0]?.name || '', qty: 250, unit: products[0]?.unit_price || '', imprint: 'Logo laser engraving' }], setup: dl.quote?.setup ?? '', shipping: dl.quote?.shipping ?? '', lead_time: dl.quote?.lead_time || '3–4 weeks after artwork approval', valid_until: new Date(Date.now() + 30 * D).toISOString().slice(0, 10), note: '' };
+  const d = drawer(`<h1 style="font-size:24px">Quote for ${esc(l.name)}</h1><p class="small muted">Prices are per pen in US dollars. Prices you set on the pen list in Settings fill in automatically.</p>
+    <table class="qlines"><thead><tr><th>Pen</th><th>Qty</th><th>Each ($)</th><th></th></tr></thead><tbody id="q-rows"></tbody></table>
+    <button type="button" class="quiet" id="q-add">+ Add a pen</button>
+    <div class="form-grid"><div><label for="q-setup">Setup / imprint fee ($)</label><input id="q-setup" type="number" min="0" step="0.01" value="${esc(q.setup)}"></div><div><label for="q-ship">Shipping ($)</label><input id="q-ship" type="number" min="0" step="0.01" value="${esc(q.shipping)}"></div>
+      <div><label for="q-lead">Lead time</label><input id="q-lead" value="${esc(q.lead_time)}"></div><div><label for="q-valid">Valid until</label><input id="q-valid" type="date" value="${q.valid_until}"></div></div>
+    <label for="q-note">Anything to add in the email (optional)</label><textarea id="q-note" rows="2" placeholder="e.g. We can match your brand color on the imprint."></textarea>
+    <p class="small" id="q-total" style="margin:12px 0 0"></p>
+    <div class="row" style="margin-top:12px"><button type="button" class="primary" id="q-go">Create quote email</button></div>`);
+  const rows = $('#q-rows', d);
+  const draw = () => {
+    rows.innerHTML = q.lines.map((x, i) => `<tr><td><select data-i="${i}" data-k="pen" aria-label="Pen">${products.map((p) => `<option ${p.name === x.pen ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select><input data-i="${i}" data-k="imprint" value="${esc(x.imprint || '')}" aria-label="Imprint" placeholder="Imprint" style="margin-top:4px"></td>
+      <td><input data-i="${i}" data-k="qty" type="number" min="1" value="${esc(x.qty)}" aria-label="Quantity" style="width:80px"></td><td><input data-i="${i}" data-k="unit" type="number" min="0" step="0.01" value="${esc(x.unit)}" aria-label="Price each" style="width:90px"></td>
+      <td><button type="button" class="quiet" data-rm="${i}" aria-label="Remove">✕</button></td></tr>`).join('');
+    $$('[data-k]', rows).forEach((el) => (el.oninput = el.onchange = () => {
+      const x = q.lines[+el.dataset.i]; x[el.dataset.k] = el.dataset.k === 'qty' || el.dataset.k === 'unit' ? Number(el.value) : el.value;
+      if (el.dataset.k === 'pen') { const p = products.find((p) => p.name === el.value); if (p?.unit_price) { x.unit = Number(p.unit_price); draw(); } }
+      total();
+    }));
+    $$('[data-rm]', rows).forEach((b) => (b.onclick = () => { q.lines.splice(+b.dataset.rm, 1); draw(); }));
+    total();
+  };
+  const total = () => { q.setup = Number($('#q-setup', d).value) || 0; q.shipping = Number($('#q-ship', d).value) || 0; $('#q-total', d).textContent = 'Total: $' + quoteTotals(q).total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  $('#q-add', d).onclick = () => { q.lines.push({ pen: products[0]?.name || '', qty: 100, unit: products[0]?.unit_price || '', imprint: '' }); draw(); };
+  $('#q-setup', d).oninput = total; $('#q-ship', d).oninput = total;
+  draw();
+  $('#q-go', d).onclick = async () => {
+    q.lead_time = $('#q-lead', d).value.trim(); q.valid_until = $('#q-valid', d).value; q.lines = q.lines.filter((x) => x.pen && x.qty > 0);
+    if (!q.lines.length || q.lines.some((x) => !(x.unit > 0))) { toastText('Add a price for every pen.', true); return; }
+    const note = $('#q-note', d).value.trim(); const first = firstName() || 'Ameya';
+    const body = `Hi ${greetName(l)},\n\nThanks again for your interest. Here's a quote for the pens we discussed, priced per pen in US dollars.\n\n${note ? note + '\n\n' : ''}If you'd like to change quantities, styles or the imprint, just reply and I'll update it.\n\nBest,\n${first}`;
+    const lastReply = S.replies.filter((r) => r.lead_id === l.id).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+    const id = `${l.id}-d-quote-${Date.now().toString(36)}`;
+    await db.collection('drafts').doc(id).set({ lead_id: l.id, kind: 'quote', deal: true, to: l.email, subject: `Quote: ${q.lines.map((x) => x.pen).slice(0, 2).join(' and ')} for ${l.name}`, body, quote: { ...q, currency: 'USD' }, reply_to_message_id: dl.last_message_id || lastReply?.message_id || null, status: 'pending', created_at: new Date().toISOString() });
+    await patchDeal(dl, { quote: { ...q, currency: 'USD' } }, 'Quote drafted');
+    closeDrawer(); UI.reviewId = id; location.hash = 'review';
+  };
+}
+
+// ---------- Find more like this ----------
+async function findSimilar(l) {
+  if (!l?.id) return;
+  const tid = S.agents?.prospector_trigger_id;
+  await db.collection('requests').doc('like-' + l.id + '-' + Date.now().toString(36)).set({ type: 'lookalike', lead_id: l.id, lead_name: l.name, state: l.state || '', segment: l.segment || '', status: 'open', created_at: new Date().toISOString() });
+  closeDrawer();
+  if (!tid || !mcp) { toastText(`Saved. The Prospector will look for businesses like ${l.name} on its next run.`); return; }
+  try {
+    await mcp.callTool(REMOTE, 'fire_trigger', { trigger_id: tid, text: 'Start with the open lookalike requests in the requests collection.' });
+    toastText(`The Prospector is looking for businesses like ${l.name}. New emails appear in Review in about 15–30 minutes.`);
+  } catch (err) { toastText(`Saved for the next run. (${mcpMessage(err, 'Claude Code')})`); }
+}
+
+// ---------- Results ----------
+const RESPONDED = ['replied', 'interested', 'not_interested', 'unsubscribed'];
+function groupStats(keyOf, labelOf) {
+  const g = {};
+  for (const l of S.leads.filter((l) => l.sent_at)) {
+    const k = keyOf(l) || 'other'; const x = g[k] || (g[k] = { key: k, label: labelOf(k), sent: 0, replied: 0, interested: 0 });
+    x.sent++; if (RESPONDED.includes(l.status) || l.customer) x.replied++; if (l.status === 'interested' || l.customer || dealOf(l.id)) x.interested++;
+  }
+  return Object.values(g).map((x) => ({ ...x, rate: x.sent ? x.replied / x.sent : 0 })).sort((a, b) => b.sent - a.sent || b.rate - a.rate);
+}
+function rateCell(x, max) {
+  const pct = Math.round(x.rate * 100);
+  return `<div class="rate" title="${x.replied} of ${x.sent} replied"><div class="track"><i style="width:${max && x.sent >= 3 ? Math.round((x.rate / max) * 100) : 0}%"></i></div><span>${x.sent < 3 ? '—' : pct + '%'}</span></div>`;
+}
+function statTable(title, rows, note) {
+  const max = Math.max(...rows.filter((r) => r.sent >= 3).map((r) => r.rate), 0.0001);
+  return `<section class="panel"><div class="panel-head"><h2>${title}</h2></div>${rows.length ? `<div class="table-wrap" style="box-shadow:none"><table><thead><tr><th>${note}</th><th>Sent</th><th>Reply rate</th><th>Interested</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.label)}</td><td class="mono">${r.sent}</td><td>${rateCell(r, max)}</td><td class="mono">${r.interested}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small">Shows up once emails have been sent.</p>'}</section>`;
+}
+function weekStats(offset = 0) {
+  const end = Date.now() - offset * 7 * D, start = end - 7 * D; const inW = (iso) => { const t = Date.parse(iso || ''); return t >= start && t < end; };
+  return {
+    found: S.leads.filter((l) => inW(l.created_at) && hasEmail(l)).length,
+    approved: S.drafts.filter((d) => inW(d.approved_at)).length,
+    sent: S.leads.filter((l) => inW(l.sent_at)).length,
+    replies: S.replies.filter((r) => inW(r.date) && r.classification !== 'auto_reply').length,
+    interested: S.deals.filter((d) => inW(d.created_at)).length,
+    samples: S.deals.filter((d) => inW(d.ship?.shipped_at)).length,
+    quotes: S.deals.filter((d) => inW(d.quote?.sent_at)).length,
+    won: S.deals.flatMap((d) => d.orders || []).filter((o) => inW(o.at)).reduce((a, o) => a + (Number(o.value) || 0), 0),
+  };
+}
+function summaryText() {
+  const w = weekStats(0), p = weekStats(1); const sent = groupStats((l) => l.state, (k) => STATE_NAMES[k] || k).filter((x) => x.sent >= 3);
+  const best = [...sent].sort((a, b) => b.rate - a.rate)[0];
+  const due = dueList(); const stale = staleDrafts();
+  return `Submarine outreach: week to ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+
+New businesses found: ${w.found} (week before: ${p.found})
+Emails approved: ${w.approved}
+Emails sent: ${w.sent} (week before: ${p.sent})
+Replies: ${w.replies}
+New interested businesses: ${w.interested}
+Samples shipped: ${w.samples}
+Quotes sent: ${w.quotes}
+New orders: $${w.won.toLocaleString('en-US')}
+${best ? `\nBest state so far: ${best.label}, ${Math.round(best.rate * 100)}% of ${best.sent} emails got a reply.` : ''}
+${due.length ? `\nDeal emails due: ${due.map(({ dl, due: x }) => `${leadById(dl.lead_id)?.name || dl.lead_id} (${x.label.toLowerCase()})`).join('; ')}` : ''}
+${stale.length ? `\nApproved but not sent yet: ${stale.map((d) => leadById(d.lead_id)?.name || d.to).join(', ')}` : ''}
+${activeCampaigns().length ? `\nCampaigns this month: ${activeCampaigns().map((c) => c.name).join(', ')}` : ''}`.replace(/\n{3,}/g, '\n\n');
+}
+async function summaryToGmail(btn) {
+  if (!mcp) { toastText(mcpMessage({ code: 'not_granted' }, 'Gmail'), true); return false; }
+  if (btn) btn.disabled = true;
+  try {
+    const to = (S.config?.summary_email || '').trim();
+    const res = await mcp.callTool(GMAIL, 'create_draft', { ...(to ? { to: [to] } : {}), subject: `Outreach summary: week to ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, body: summaryText() });
+    const url = res.payload?.viewUrl || 'https://mail.google.com/mail/u/0/#drafts';
+    toast(`Weekly summary is in your Gmail drafts. <a href="${esc(url)}" target="_blank" rel="noopener">Open it</a>`);
+    return true;
+  } catch (err) { toastText(mcpMessage(err, 'Gmail'), true); return false; }
+  finally { if (btn) btn.disabled = false; }
+}
+const weekKey = () => { const d = new Date(); const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7)); return mon.toISOString().slice(0, 10); };
+async function mondaySummary() {
+  if (!S.config?.weekly_draft || new Date().getDay() !== 1 || S.config.last_summary_week === weekKey()) return;
+  if (await summaryToGmail()) await saveConfig({ last_summary_week: weekKey() }).catch(() => {});
+}
+// The Prospector reads config/insights to lean toward what gets replies. Written at most once a day.
+async function writeInsights() {
+  const sentTotal = S.leads.filter((l) => l.sent_at).length; if (sentTotal < 10) return;
+  if (String(S.insights?.updated_at || '').slice(0, 10) === new Date().toISOString().slice(0, 10)) return;
+  const pick = (rows) => rows.filter((r) => r.sent >= 5).map(({ key, label, sent, replied, rate }) => ({ key, label, sent, replied, rate: Math.round(rate * 100) / 100 }));
+  const seg = pick(groupStats((l) => l.segment, (k) => SEG[k] || k)); const st = pick(groupStats((l) => l.state, (k) => STATE_NAMES[k] || k));
+  const camp = pick(groupStats((l) => l.campaign, (k) => campaignName(k) || 'No campaign'));
+  await db.collection('config').doc('insights').set({ updated_at: new Date().toISOString(), sent_total: sentTotal, segments: seg, states: st, campaigns: camp }).catch(() => {});
+}
+function results() {
+  const sent = S.leads.filter((l) => l.sent_at); const w = weekStats(0), p = weekStats(1);
+  const replied = sent.filter((l) => RESPONDED.includes(l.status) || l.customer).length;
+  const won = S.deals.flatMap((d) => d.orders || []).reduce((a, o) => a + (Number(o.value) || 0), 0);
+  const delta = (a, b) => (b || a ? `${a >= b ? '+' : ''}${a - b} vs week before` : '');
+  $('#view').innerHTML = `
+    <div class="head"><div><h1>Results</h1><p class="sub">What's working, by place, business type and campaign. The Prospector reads this every morning and leans toward what gets replies.</p></div><span class="spacer"></span><button type="button" id="sum-gmail">Put this week's summary in Gmail</button></div>
+    <div class="tiles">
+      <div class="tile-stat"><div class="n">${sent.length}</div><div class="l">Emails sent, all time</div><div class="d">${w.sent} this week · ${delta(w.sent, p.sent)}</div></div>
+      <div class="tile-stat"><div class="n">${sent.length ? Math.round((replied / sent.length) * 100) + '%' : '—'}</div><div class="l">Reply rate</div><div class="d">${replied} replied</div></div>
+      <div class="tile-stat"><div class="n">${S.deals.length}</div><div class="l">Interested businesses</div><div class="d">${w.interested} this week</div></div>
+      <div class="tile-stat"><div class="n">${S.deals.filter((d) => d.ship?.shipped_at).length}</div><div class="l">Samples shipped</div><div class="d">${w.samples} this week</div></div>
+      <div class="tile-stat"><div class="n">${S.deals.filter((d) => d.quote?.sent_at).length}</div><div class="l">Quotes sent</div><div class="d">${w.quotes} this week</div></div>
+      <div class="tile-stat"><div class="n">$${won.toLocaleString('en-US')}</div><div class="l">Orders won</div><div class="d">${S.deals.filter((d) => d.stage === 'won').length} customers</div></div>
+    </div>
+    <div class="grid cols-2">
+      ${statTable('By state', groupStats((l) => l.state, (k) => STATE_NAMES[k] || k), 'State')}
+      ${statTable('By business type', groupStats((l) => l.segment, (k) => SEG[k] || k), 'Type')}
+      ${statTable('By region', groupStats((l) => REGION_OF[l.state]?.key, (k) => REGIONS.find((r) => r.key === k)?.label || 'Other'), 'Region')}
+      ${statTable('By campaign', groupStats((l) => l.campaign || 'none', (k) => k === 'none' ? 'No campaign' : campaignName(k) || k), 'Campaign')}
+    </div>
+    <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>This week, as the summary email reads</h2></div><pre class="small" style="white-space:pre-wrap;font-family:var(--body);margin:0">${esc(summaryText())}</pre></section>
+    <p class="faint small" style="margin-top:10px">Reply rates show once a group has 3 or more sent emails. Rates in the bars are relative within each table.</p>`;
+  $('#sum-gmail').onclick = (e) => summaryToGmail(e.currentTarget);
+}
+
+// ---------- Home extras ----------
+const staleDrafts = () => S.drafts.filter((d) => d.status === 'in_gmail' && d.approved_at && Date.now() - ts(d.approved_at) > 2 * D);
+function homeExtras() {
+  const stale = staleDrafts(); const due = dueList(); const camps = activeCampaigns();
+  const blocks = [];
+  if (stale.length) blocks.push(`<section class="panel"><div class="panel-head"><h2>Approved but not sent</h2><span class="pill warn">${stale.length}</span></div>
+    <p class="small muted" style="margin:0 0 8px">These have been in your Gmail drafts for over 2 days. Send them, or let them go.</p><ul class="todo">${stale.slice(0, 6).map((d) => `<li><div class="what"><b>${esc(leadById(d.lead_id)?.name || d.to)}</b> <span class="faint small">approved ${day(d.approved_at)}</span></div><a class="btn" href="${esc(d.gmail_url || 'https://mail.google.com/mail/u/0/#drafts')}" target="_blank" rel="noopener">Open in Gmail</a><button type="button" class="quiet" data-letgo="${esc(d.id)}">Not sending</button></li>`).join('')}</ul></section>`);
+  if (due.length) blocks.push(`<section class="panel"><div class="panel-head"><h2>Deals waiting on you</h2><span class="pill warn">${due.length}</span><span class="spacer"></span><a class="btn" href="#deals">Open Deals</a></div><ul class="todo">${due.slice(0, 5).map(({ dl, due: x }) => `<li><div class="what"><b>${esc(leadById(dl.lead_id)?.name || dl.lead_id)}</b> <span class="muted small">${esc(x.label)}</span></div><button type="button" class="primary" data-draft="${esc(dl.id)}" data-purpose="${x.purpose}">Write it</button></li>`).join('')}</ul></section>`);
+  if (camps.length) blocks.push(`<section class="panel"><div class="panel-head"><h2>Campaigns this month</h2><span class="spacer"></span><a class="btn" href="#setup">Edit</a></div><p class="small" style="margin:0">${camps.map((c) => `<b>${esc(c.name)}</b>`).join(' · ')}</p><p class="small muted" style="margin:6px 0 0">The Prospector gives about half of each run to these, and works the season into the emails.</p></section>`);
+  if (new Date().getDay() === 1) blocks.push(`<section class="panel"><div class="panel-head"><h2>Monday summary</h2><span class="spacer"></span><a class="btn" href="#results">See results</a></div><p class="small muted" style="margin:0 0 10px">Last week: ${(() => { const w = weekStats(0); return `${w.sent} sent, ${w.replies} replies, ${w.interested} interested, ${w.samples} samples shipped`; })()}.</p><button type="button" data-sum>Put it in my Gmail drafts</button></section>`);
+  return blocks.length ? `<div class="grid cols-2" style="margin-bottom:16px">${blocks.join('')}</div>` : '';
+}
+function bindHomeExtras() {
+  $$('[data-letgo]').forEach((b) => (b.onclick = async () => {
+    const d = S.drafts.find((x) => x.id === b.dataset.letgo); if (!d) return;
+    await db.collection('drafts').doc(d.id).update({ status: 'skipped', skipped_at: new Date().toISOString() });
+    if (!d.deal && d.kind === 'intro') await db.collection('leads').doc(d.lead_id).update({ status: 'skipped' }).catch(() => {});
+    toastText('Okay. Delete the draft in Gmail too so it isn\'t sent by accident.');
+  }));
+  $$('[data-draft]').forEach((b) => (b.onclick = () => draftForDeal(dealOf(b.dataset.draft), b.dataset.purpose, b)));
+  $$('[data-sum]').forEach((b) => (b.onclick = () => summaryToGmail(b)));
 }
 
 // ---------- Inbox check (runs in this page with your Gmail, read-only) ----------
@@ -1016,19 +1540,29 @@ async function autoInbox() {
 // ---------- Boot ----------
 function viewMessage(title, text) { $('#view').innerHTML = `<div class="panel empty"><b>${esc(title)}</b>${esc(text)}</div>`; }
 const softRender = () => render();
+// One-time work once data is in: deal cards for interested replies, the daily insights the Prospector reads,
+// the Monday summary draft (if switched on), and the inbox check.
+async function afterReady() {
+  const wait = () => new Promise((r) => setTimeout(r, 1500));
+  await wait();
+  try { await ensureDeals(); } catch {}
+  try { await writeInsights(); } catch {}
+  if (mcp) { autoInbox(); try { await mondaySummary(); } catch {} }
+}
 (async function boot() {
   if (!window.claude?.use) { viewMessage('Open this in Claude', 'The portal runs inside claude.ai, where it can reach your data, Gmail and agents.'); return; }
   [db, mcp, sample] = await Promise.all([claude.use('db'), claude.use('mcp'), claude.use('sample')]);
   if (!db) { viewMessage('Sign in to use the portal', 'Your leads and drafts load once you are signed in to claude.ai.'); return; }
   const docs = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   const loaded = new Set(); const need = ['settings', 'leads', 'drafts', 'agent runs'];
-  const mark = (key) => { loaded.add(key); if (!S.ready && need.every((k) => loaded.has(k))) { S.ready = true; render(); if (mcp) autoInbox(); } else softRender(); };
+  const mark = (key) => { loaded.add(key); if (!S.ready && need.every((k) => loaded.has(k))) { S.ready = true; render(); afterReady(); } else softRender(); };
   const fail = (what) => (e) => { console.warn(what, e); mark(what); toastText(`Couldn't load ${what}: ${e?.message || e?.code}`, true); };
   db.collection('config').onSnapshot((snap) => {
     const by = Object.fromEntries(snap.docs.map((d) => [d.id, d.data()]));
-    S.config = by.main || {}; S.catalog = by.catalog || { products: [] }; S.agents = by.agents || {}; mark('settings');
+    S.config = by.main || {}; S.catalog = by.catalog || { products: [] }; S.agents = by.agents || {}; S.insights = by.insights || null; mark('settings');
   }, fail('settings'));
-  db.collection('leads').orderBy('created_at', 'desc').limit(1000).onSnapshot((s) => { S.leads = docs(s); mark('leads'); }, fail('leads'));
+  db.collection('leads').orderBy('created_at', 'desc').limit(1000).onSnapshot((s) => { S.leads = docs(s); mark('leads'); if (S.ready && loaded.has('deals')) ensureDeals(); }, fail('leads'));
+  db.collection('deals').limit(500).onSnapshot((s) => { S.deals = docs(s); loaded.add('deals'); softRender(); }, fail('deals'));
   db.collection('drafts').limit(1000).onSnapshot((s) => { S.drafts = docs(s); mark('drafts'); }, fail('drafts'));
   db.collection('replies').orderBy('date', 'desc').limit(300).onSnapshot((s) => { S.replies = docs(s); softRender(); }, fail('replies'));
   db.collection('runs').orderBy('started', 'desc').limit(30).onSnapshot((s) => { S.runs = docs(s); mark('agent runs'); }, fail('agent runs'));
