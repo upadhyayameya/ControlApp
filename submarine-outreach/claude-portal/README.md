@@ -7,17 +7,25 @@ Nothing to install or host. It runs inside claude.ai, keeps its data in the page
 
 | Part | What it does | When it runs |
 |---|---|---|
-| **Prospector** (scheduled Claude agent, `prospector-prompt.md`) | Researches businesses you add. Then it finds new small and mid-size US businesses in the types chosen in Setup and finds a *published* business email for each. It writes each one a personal intro email recommending the pens that suit it, and drafts one follow-up after N days without a reply. | Weekdays 8:49am US Eastern, or **Run now** in the portal |
+| **Prospector** (scheduled Claude agent, `prospector-prompt.md`) | Researches businesses you add. Then it finds new small and mid-size US businesses in the types chosen in Settings, working the Territory plan one state at a time, and finds a *published* business email for each. It writes each one a personal intro email recommending the pens that suit it, and drafts one follow-up after N days without a reply. | Weekdays 8:49am US Eastern, or **Run now** in the portal |
 | **Inbox watcher** (inside the portal, uses your Gmail read-only) | Confirms which approved drafts you actually sent, and reads replies from those businesses. It sorts them (interested, question, not interested, unsubscribe, out of office), drafts suggested answers and records bounces. Unsubscribes and bounces go on the do-not-email list. | When the portal is open: on load, then every 10 minutes |
 | **You** | Approve, edit or rewrite each email. **Approve → Gmail draft** puts it in your Gmail drafts with your signature, postal address and an unsubscribe line. You press Send in Gmail. | Whenever you like |
 
 Nothing is ever sent automatically.
 
+## Screens
+
+- **Home**: the one next step (add your postal address, review emails, or send the drafts waiting in Gmail), the pipeline from found to interested, a territory map and recent activity.
+- **Review emails**: one email at a time, exactly as it will go out (footer included), beside what the agent learned about the business. Keys: J/K for next/previous, Ctrl or Cmd+Enter to approve.
+- **Replies**, **Leads**: replies with suggested answers; every business with filters by status, region, state and type.
+- **Territory**: three zones and seven regions. West has Pacific Coast and Mountain West. Central has Midwest and South Central. East has Northeast, Mid-Atlantic and Southeast. Add whole regions or tap single states on the map, then put the states in order. The Prospector works the first state that has fewer than the per-state target of businesses with an email (default 20), then moves to the next. With no states chosen it rotates across the country.
+- **Settings**: sender details, offer, business types, agents, do-not-email list and pen catalog.
+
 ## Data (page database)
 
 The page keeps these collections:
 
-- `config/main`: sender details, postal address, sample offer, brochure link, pricing notes, business types, states, daily target, follow-up days, large-company switch, extra agent instructions. The Setup tab edits this document, and the Prospector reads it on every run.
+- `config/main`: sender details, postal address, sample offer, brochure link, pricing notes, business types, `states` (ordered territory plan), `per_state_target`, daily target, follow-up days, large-company switch, extra agent instructions. Settings and Territory edit this document, and the Prospector reads it on every run.
 - `config/catalog`: the pens the agents may recommend.
 - `config/agents`: the Prospector's routine id, which the Run now button uses.
 - `leads/<website-host-with-dashes>`: one document per business, holding its research, fit, email, where the email was found, and its status.
