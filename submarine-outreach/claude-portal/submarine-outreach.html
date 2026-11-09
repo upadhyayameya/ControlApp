@@ -784,7 +784,7 @@ function openLead(id) {
   const l = leadById(id); if (!l) return;
   const ds = S.drafts.filter((d) => d.lead_id === id);
   const rs = S.replies.filter((r) => r.lead_id === id);
-  const d = drawer(`<p class="eyebrow">${esc(SEG[l.segment] || l.segment || 'Business')}</p><h1 style="font-size:24px">${esc(l.name)}</h1>
+  const d = drawer(`<p class="eyebrow">${catLabel(l.segment) ? esc(catLabel(l.segment)) + ' · ' : ''}${esc(SEG[l.segment] || l.segment || 'Business')}</p><h1 style="font-size:24px">${esc(l.name)}</h1>
     <div class="row" style="margin-top:8px">${pill(l.status)}${fit(l.fit)}</div>
     <dl class="facts"><dt>Where</dt><dd>${esc(place(l))}</dd>${l.size ? `<dt>Size</dt><dd>${esc(l.size)}</dd>` : ''}<dt>Email</dt><dd class="mono">${esc(l.email || 'none found')}</dd>
     ${l.email_source_url ? `<dt>Email from</dt><dd><a href="${esc(l.email_source_url)}" target="_blank" rel="noopener">${esc(l.email_source_url)}</a></dd>` : ''}
@@ -796,12 +796,14 @@ function openLead(id) {
     ${l.research ? `<div class="section-label">Research</div><p class="research">${esc(l.research)}</p>` : ''}
     <div class="section-label">Emails</div>${ds.map((x) => `<div class="small" style="margin-bottom:6px"><b>${esc(kindLabel(x.kind))}</b> · ${esc(x.status)} · ${esc(x.subject)}</div>`).join('') || '<div class="muted small">None yet.</div>'}
     ${rs.length ? `<div class="section-label">Replies</div>${rs.map((r) => `<div class="small" style="margin-bottom:6px">${when(r.date)} · ${esc(r.summary || '')}</div>`).join('')}` : ''}
+    <div class="section-label">Business type</div><div class="row"><select id="ld-seg" aria-label="Business type" style="width:auto">${SEG[l.segment] ? '' : '<option value="" selected>Not set</option>'}${segOptions(l.segment)}</select></div>
     <div class="section-label">Change status</div><div class="row"><select id="ld-status" aria-label="Status" style="width:auto">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${l.status === k ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select><button type="button" id="ld-save">Save</button></div>
     <div class="section-label">Next</div><div class="row">${dealOf(id) ? '<button type="button" id="ld-deal">Open deal</button>' : '<button type="button" id="ld-deal">Start a deal</button>'}<button type="button" id="ld-like">Find more like this</button></div>
     <div class="row" style="margin-top:16px"><button type="button" class="danger" id="ld-dne">Never email ${esc(domainOf(l.email) || 'this business')}</button></div>`);
   $('#ld-deal', d).onclick = () => { if (dealOf(id)) { closeDrawer(); location.hash = 'deals'; setTimeout(() => openDeal(id), 50); } else { startDeal(l); closeDrawer(); } };
   $('#ld-like', d).onclick = () => findSimilar(l);
-  $('#ld-save', d).onclick = async () => { await db.collection('leads').doc(id).update({ status: $('#ld-status', d).value }); toastText('Saved.'); closeDrawer(); };
+  $('#ld-save', d).onclick = async () => { const seg = $('#ld-seg', d).value; await db.collection('leads').doc(id).update({ status: $('#ld-status', d).value, ...(seg ? { segment: seg } : {}) }); toastText('Saved.'); closeDrawer(); };
+  $('#ld-seg', d).onchange = async (e) => { if (!e.target.value) return; await db.collection('leads').doc(id).update({ segment: e.target.value }); toastText('Moved to ' + catLabel(e.target.value) + ' · ' + SEG[e.target.value] + '.'); };
   $('#ld-dne', d).onclick = async () => {
     const key = domainOf(l.email) || (l.email || '').toLowerCase(); if (!key) return;
     await db.collection('suppressions').doc(key).set({ reason: 'added by you', created_at: new Date().toISOString() });
