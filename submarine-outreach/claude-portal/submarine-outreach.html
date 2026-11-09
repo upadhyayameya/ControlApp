@@ -207,6 +207,9 @@ tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); 
 .empty { text-align: center; padding: 40px 18px; color: var(--muted); }
 .empty b { display: block; color: var(--ink); font: 600 19px/1.3 var(--display); margin-bottom: 6px; }
 .checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 16px; }
+.cats { display: grid; gap: 12px; margin-bottom: 12px; }
+fieldset.cat { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px 12px; margin: 0; min-width: 0; }
+fieldset.cat legend { padding: 0 6px; }
 .checks label, label.check { display: flex; gap: 9px; align-items: center; font-weight: 500; color: var(--ink); margin: 0; font-size: 14px; }
 .checks input, label.check input { width: auto; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 11px; max-width: min(560px, calc(100vw - 32px)); z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,.22); }
@@ -312,8 +315,22 @@ const SEGMENTS = [
   ['real_estate', 'Real estate brokerages'], ['law_firm', 'Law & accounting firms'], ['medical_dental', 'Medical & dental practices'],
   ['insurance_finance', 'Insurance agencies & credit unions'], ['events', 'Event & wedding planners'],
   ['hotel', 'Hotels & resorts'], ['university', 'Universities & campus stores'], ['corporate', 'Corporate offices'],
+  ['big_box', 'Big-box & department store chains'], ['retail_chain', 'National & regional retail chains'],
 ];
 const SEG = Object.fromEntries(SEGMENTS);
+// Lead categories: the five kinds of buyer we target. Every business type belongs to exactly one.
+const CATEGORIES = [
+  { key: 'gifting', label: 'Gifting', blurb: 'Buy pens to give away or resell as gifts, often with a logo.', segments: ['corporate_gifting', 'promo_distributor', 'engraving', 'events'] },
+  { key: 'shops', label: 'Shops', blurb: 'Independent stores that stock pens on the shelf.', segments: ['stationery', 'gift_shop', 'bookstore', 'museum_shop', 'coffee', 'office_supply'] },
+  { key: 'companies', label: 'Companies', blurb: 'Larger organisations that order branded pens for staff, guests and clients.', segments: ['corporate', 'hotel', 'university'] },
+  { key: 'small_business', label: 'Small businesses', blurb: 'Local practices and agencies that hand pens to clients.', segments: ['real_estate', 'law_firm', 'medical_dental', 'insurance_finance'] },
+  { key: 'big_box', label: 'Big box retail', blurb: 'Chains that buy through category buyers and vendor programs. Large by nature.', segments: ['big_box', 'retail_chain'] },
+];
+const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.key, c]));
+const CAT_OF = Object.fromEntries(CATEGORIES.flatMap((c) => c.segments.map((s) => [s, c.key])));
+const catLabel = (seg) => CAT[CAT_OF[seg]]?.label || '';
+const segMatches = (l, f) => !f || (f.startsWith('cat:') ? CAT_OF[l.segment] === f.slice(4) : l.segment === f);
+const segOptions = (sel) => CATEGORIES.map((c) => `<optgroup label="${esc(c.label)}">${c.segments.map((k) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${esc(SEG[k])}</option>`).join('')}</optgroup>`).join('');
 const STATUS = {
   new: ['Waiting for research', ''], no_email: ['No public email', ''], low_fit: ['Low fit', ''],
   pending_approval: ['Ready to review', 'accent'], in_gmail: ['In Gmail drafts', 'info'], sent: ['Sent', 'ok'],
@@ -704,7 +721,7 @@ const LEAD_TABS = [
 function leads() {
   const tab = LEAD_TABS.find((t) => t[0] === UI.leadTab) || LEAD_TABS[0];
   const q = UI.leadQ.toLowerCase();
-  const base = S.leads.filter((l) => (!UI.leadSeg || l.segment === UI.leadSeg) &&
+  const base = S.leads.filter((l) => segMatches(l, UI.leadSeg) &&
     (!UI.leadZone || (UI.leadZone.length === 2 ? l.state === UI.leadZone : REGION_OF[l.state]?.key === UI.leadZone || ZONE_OF[l.state] === UI.leadZone)) &&
     (!q || [l.name, l.city, l.state, l.email, l.website].join(' ').toLowerCase().includes(q)));
   const rows = base.filter(tab[2]);
@@ -715,10 +732,10 @@ function leads() {
     <div class="toolbar">
       <input id="lf-q" type="search" aria-label="Search leads" placeholder="Search name, city, email" value="${esc(UI.leadQ)}">
       <select id="lf-zone" aria-label="Where"><option value="">Anywhere</option>${ZONES.map((z) => `<optgroup label="${z.label}"><option value="${z.key}" ${UI.leadZone === z.key ? 'selected' : ''}>All of the ${z.label}</option>${z.regions.map((r) => `<option value="${r.key}" ${UI.leadZone === r.key ? 'selected' : ''}>${r.label}</option>`).join('')}</optgroup>`).join('')}${usedStates.length ? `<optgroup label="States">${usedStates.map((s) => `<option value="${s}" ${UI.leadZone === s ? 'selected' : ''}>${esc(STATE_NAMES[s] || s)}</option>`).join('')}</optgroup>` : ''}</select>
-      <select id="lf-seg" aria-label="Business type"><option value="">Any business type</option>${SEGMENTS.map(([k, t]) => `<option value="${k}" ${UI.leadSeg === k ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      <select id="lf-seg" aria-label="Business type"><option value="">Any category or type</option><optgroup label="Categories">${CATEGORIES.map((c) => `<option value="cat:${c.key}" ${UI.leadSeg === 'cat:' + c.key ? 'selected' : ''}>All ${esc(c.label.toLowerCase())}</option>`).join('')}</optgroup>${segOptions(UI.leadSeg)}</select>
     </div>
     <div class="table-wrap"><table><thead><tr><th>Business</th><th>Where</th><th>Type</th><th>Fit</th><th>Status</th><th>Added</th></tr></thead><tbody>
-      ${rows.map((l) => `<tr class="click" data-lead="${esc(l.id)}" tabindex="0"><td><b>${esc(l.name)}</b><div class="muted small mono">${esc(l.email || '')}</div></td><td>${esc(place(l))}</td><td class="small">${esc(SEG[l.segment] || l.segment || '')}</td><td>${fit(l.fit)}</td><td>${pill(l.status)}</td><td class="small faint">${day(l.created_at)}</td></tr>`).join('') ||
+      ${rows.map((l) => `<tr class="click" data-lead="${esc(l.id)}" tabindex="0"><td><b>${esc(l.name)}</b><div class="muted small mono">${esc(l.email || '')}</div></td><td>${esc(place(l))}</td><td class="small">${catLabel(l.segment) ? `<b>${esc(catLabel(l.segment))}</b><div class="muted">${esc(SEG[l.segment])}</div>` : esc(SEG[l.segment] || l.segment || '')}</td><td>${fit(l.fit)}</td><td>${pill(l.status)}</td><td class="small faint">${day(l.created_at)}</td></tr>`).join('') ||
       `<tr><td colspan="6"><div class="empty"><b>Nothing here</b>${S.leads.length ? 'Try another filter.' : 'The Prospector adds businesses each weekday, or add your own.'}</div></td></tr>`}
     </tbody></table></div>`;
   $$('[data-lt]').forEach((b) => (b.onclick = () => { UI.leadTab = b.dataset.lt; render(); }));
@@ -770,7 +787,7 @@ function openLead(id) {
 function openAdd() {
   const d = drawer(`<h1 style="font-size:24px">Add businesses</h1><p class="small muted">One per line: <span class="mono">Business name, website, email, city, state</span>. Website and email are optional. The Prospector researches each one and drafts an email on its next run.</p>
     <label for="add-lines">Businesses</label><textarea id="add-lines" style="min-height:180px" placeholder="Paper Trail Stationers, papertrailatx.com, hello@papertrailatx.com, Austin, TX"></textarea>
-    <label for="add-seg">Business type</label><select id="add-seg">${SEGMENTS.map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('')}</select>
+    <label for="add-seg">Business type</label><select id="add-seg">${segOptions('')}</select>
     <div class="row" style="margin-top:16px"><button type="button" class="primary" id="add-go">Add</button></div>`);
   $('#add-go', d).onclick = async () => {
     const lines = $('#add-lines', d).value.split('\n').map((s) => s.trim()).filter(Boolean);
@@ -866,7 +883,10 @@ function setup() {
       </section>
     </div>
     <section class="panel" style="margin-top:16px"><h2>Who to look for</h2><p class="small muted" style="margin:6px 0 12px">Where to look is set in <a href="#territory">Territory</a>.</p>
-      <div class="checks">${SEGMENTS.map(([k, t]) => `<label><input type="checkbox" data-seg="${k}" ${f.segments.includes(k) ? 'checked' : ''}> ${esc(t)}</label>`).join('')}</div>
+      <div class="cats">${CATEGORIES.map((c) => { const on = c.segments.filter((k) => f.segments.includes(k)).length; return `<fieldset class="cat"><legend><label class="check"><input type="checkbox" data-cat="${c.key}" ${on === c.segments.length ? 'checked' : ''} ${on && on < c.segments.length ? 'data-mixed="1"' : ''}> <b>${esc(c.label)}</b> <span class="faint small">${on} of ${c.segments.length}</span></label></legend>
+        <p class="small muted" style="margin:0 0 8px">${esc(c.blurb)}</p>
+        <div class="checks">${c.segments.map((k) => `<label><input type="checkbox" data-seg="${k}" ${f.segments.includes(k) ? 'checked' : ''}> ${esc(SEG[k])}</label>`).join('')}</div></fieldset>`; }).join('')}</div>
+      ${CATEGORIES.find((c) => c.key === 'big_box').segments.some((k) => f.segments.includes(k)) ? '<p class="small muted" style="margin:0 0 8px">Big box retail is on: the Prospector looks for vendor or supplier pages and published buyer contacts at these chains, even when large companies are off below. Expect fewer, slower leads; chains usually need a vendor application first.</p>' : ''}
       <div class="row" style="gap:16px;margin-top:6px">
         <div><label for="f-daily">New emails per weekday</label><input id="f-daily" type="number" min="1" max="40" value="${esc(f.daily_target ?? 10)}" style="max-width:140px"></div>
         <div><label for="f-follow">Follow up after (days)</label><input id="f-follow" type="number" min="3" max="30" value="${esc(f.followup_days ?? 6)}" style="max-width:140px"></div>
@@ -909,6 +929,10 @@ function setup() {
   const touch = () => { const wasDirty = !!$('.savebar'); if (!wasDirty) render(); };
   $$('[data-f]').forEach((el) => (el.oninput = () => { f[el.dataset.f] = el.value; touch(); }));
   $$('[data-seg]').forEach((el) => (el.onchange = () => { f.segments = el.checked ? [...f.segments, el.dataset.seg] : f.segments.filter((s) => s !== el.dataset.seg); render(); }));
+  $$('[data-cat]').forEach((el) => {
+    el.indeterminate = !!el.dataset.mixed;
+    el.onchange = () => { const segs = CAT[el.dataset.cat].segments; f.segments = el.checked ? [...new Set([...f.segments, ...segs])] : f.segments.filter((s) => !segs.includes(s)); render(); };
+  });
   $('#f-daily').oninput = (e) => { f.daily_target = Math.max(1, Math.min(40, Number(e.target.value) || 10)); touch(); };
   $('#f-follow').oninput = (e) => { f.followup_days = Math.max(3, Math.min(30, Number(e.target.value) || 6)); touch(); };
   $('#f-large').onchange = (e) => { f.allow_large = e.target.checked; render(); };
@@ -1339,7 +1363,8 @@ async function writeInsights() {
   const pick = (rows) => rows.filter((r) => r.sent >= 5).map(({ key, label, sent, replied, rate }) => ({ key, label, sent, replied, rate: Math.round(rate * 100) / 100 }));
   const seg = pick(groupStats((l) => l.segment, (k) => SEG[k] || k)); const st = pick(groupStats((l) => l.state, (k) => STATE_NAMES[k] || k));
   const camp = pick(groupStats((l) => l.campaign, (k) => campaignName(k) || 'No campaign'));
-  await db.collection('config').doc('insights').set({ updated_at: new Date().toISOString(), sent_total: sentTotal, segments: seg, states: st, campaigns: camp }).catch(() => {});
+  const cats = pick(groupStats((l) => CAT_OF[l.segment], (k) => CAT[k]?.label || k));
+  await db.collection('config').doc('insights').set({ updated_at: new Date().toISOString(), sent_total: sentTotal, segments: seg, categories: cats, states: st, campaigns: camp }).catch(() => {});
 }
 function results() {
   const sent = S.leads.filter((l) => l.sent_at); const w = weekStats(0), p = weekStats(1);
@@ -1358,6 +1383,7 @@ function results() {
     </div>
     <div class="grid cols-2">
       ${statTable('By state', groupStats((l) => l.state, (k) => STATE_NAMES[k] || k), 'State')}
+      ${statTable('By lead category', groupStats((l) => CAT_OF[l.segment] || 'other', (k) => CAT[k]?.label || 'Other'), 'Category')}
       ${statTable('By business type', groupStats((l) => l.segment, (k) => SEG[k] || k), 'Type')}
       ${statTable('By region', groupStats((l) => REGION_OF[l.state]?.key, (k) => REGIONS.find((r) => r.key === k)?.label || 'Other'), 'Region')}
       ${statTable('By campaign', groupStats((l) => l.campaign || 'none', (k) => k === 'none' ? 'No campaign' : campaignName(k) || k), 'Campaign')}
