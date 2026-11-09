@@ -368,20 +368,20 @@ const CAT_OF = Object.fromEntries(CATEGORIES.flatMap((c) => c.segments.map((s) =
 // Default playbook per category. The owner edits these on the Playbooks page; saved to config/main.playbooks.
 const CUSTOM = 'pens printed or engraved with their name and logo';
 const PLAYBOOK_DEFAULTS = {
-  gifting: { goal: 'Get on their supplier list for client gifts and logo orders.', contacts: 'Owner, sales rep, account manager, sourcing or procurement', angle: 'Factory-direct metal pens they can brand with a client logo (imprint or engraving) and resell at a good margin, with gift boxes and steady quality on repeat orders.', offer: 'a small sample kit, with a logo mock-up on request', tone: 'Trade to trade. Short and practical: margins, turnaround, minimums.', followup_days: 5, share: 25, products: [] },
-  shops: { goal: 'Win a first small wholesale order for the counter or pen shelf.', contacts: 'Owner, buyer, merchandise manager', angle: 'Giftable metal pens that sell at the counter and suit what they already stock, with the option of pens carrying the shop name. A small first order is fine.', offer: 'a few sample pens to try at the counter', tone: 'Warm and personal. Mention something real about their store.', followup_days: 7, share: 20, products: [] },
-  hospitality: { goal: 'Branded pens for the front desk, rooms, bill folders and events.', contacts: 'General manager, owner, purchasing, sales or events manager', angle: `Good-looking ${CUSTOM} for guest rooms, check-in and the bill. Guests take them home, so every pen advertises the place.`, offer: 'a sample printed with their logo', tone: 'Friendly and practical.', followup_days: 7, share: 15, products: [] },
-  healthcare: { goal: 'Branded pens for reception, staff and patient forms.', contacts: 'Practice manager, office manager, purchasing, marketing', angle: `Durable ${CUSTOM} for reception desks, staff and patient check-in. Sturdy metal pens that last.`, offer: 'a few samples with their logo', tone: 'Professional and short. They are busy.', followup_days: 10, share: 10, products: [] },
-  finance: { goal: 'Branded pens for counters, signings and client gifts.', contacts: 'Branch manager, marketing manager, office manager', angle: `Premium ${CUSTOM} for teller counters, account openings and closings. Signing with a good pen leaves an impression.`, offer: 'a sample engraved with their logo', tone: 'Professional and polished.', followup_days: 7, share: 10, products: [] },
-  companies: { goal: 'Branded pens for staff, visitors, onboarding kits and events.', contacts: 'Office manager, marketing, HR, events, procurement', angle: `${CUSTOM[0].toUpperCase() + CUSTOM.slice(1)} for staff, visitors and new-hire kits, with consistent quality at volume, delivered to the US.`, offer: 'a sample engraved with their logo', tone: 'Professional and brief. One clear use case for them.', followup_days: 7, share: 10, products: [] },
-  fitness: { goal: 'Branded pens for sign-ups, the front desk and member gifts.', contacts: 'Owner, general manager, marketing', angle: `${CUSTOM[0].toUpperCase() + CUSTOM.slice(1)} for member sign-ups and the front desk, plus small welcome gifts for new members.`, offer: 'a few samples with their logo', tone: 'Upbeat and short.', followup_days: 7, share: 5, products: [] },
-  education: { goal: 'Branded pens for events, admissions, alumni and donors.', contacts: 'Purchasing, events or development office, communications', angle: 'Pens printed or engraved with their name or crest for graduations, open days, donors and staff.', offer: 'a sample with their name or crest', tone: 'Warm and respectful.', followup_days: 10, share: 5, products: [] },
-  local: { goal: 'A pen with their name on it to hand to customers.', contacts: 'Owner, general manager, office manager', angle: 'Customers sign something at every visit. A good pen with their name on it keeps them in mind. Small runs are fine.', offer: 'a few sample pens with their name', tone: 'Friendly, local and short. No jargon.', followup_days: 7, share: 10, products: [] },
-  big_box: { goal: 'Get considered as a supplier for the pen and stationery category.', contacts: 'Category buyer, vendor relations, merchandising, supplier diversity', angle: 'Established maker since 1995 with private-label and custom capacity and steady quality at volume. Ask how to join their vendor process.', offer: 'a line sheet, with samples on request', tone: 'Formal and factual. No hard sell.', followup_days: 14, share: 5, products: [] },
+  gifting: { goal: 'Get on their supplier list for client gifts and logo orders.', contacts: 'Owner, sales rep, account manager, sourcing or procurement', angle: 'Factory-direct metal pens they can brand with a client logo (imprint or engraving) and resell at a good margin, with gift boxes and steady quality on repeat orders.', offer: 'a 15-minute call to hear what their clients usually ask for', tone: 'Trade to trade. Short and practical: margins, turnaround, minimums.', followup_days: 5, share: 25, products: [] },
+  shops: { goal: 'Start a conversation that leads to a first small wholesale order.', contacts: 'Owner, buyer, merchandise manager', angle: 'Giftable metal pens that sell at the counter and suit what they already stock, with the option of pens carrying the shop name. ', offer: 'a quick call to hear what sells at their counter', tone: 'Warm and personal. Mention something real about their store.', followup_days: 7, share: 20, products: [] },
+  hospitality: { goal: 'Branded pens for the front desk, rooms, bill folders and events.', contacts: 'General manager, owner, purchasing, sales or events manager', angle: `Good-looking ${CUSTOM} for guest rooms, check-in and the bill. Guests take them home, so every pen advertises the place.`, offer: 'a short call about pens for their rooms and front desk', tone: 'Friendly and practical.', followup_days: 7, share: 15, products: [] },
+  healthcare: { goal: 'Branded pens for reception, staff and patient forms.', contacts: 'Practice manager, office manager, purchasing, marketing', angle: `Durable ${CUSTOM} for reception desks, staff and patient check-in. Sturdy metal pens that last.`, offer: 'a short call about what they use at reception', tone: 'Professional and short. They are busy.', followup_days: 10, share: 10, products: [] },
+  finance: { goal: 'Branded pens for counters, signings and client gifts.', contacts: 'Branch manager, marketing manager, office manager', angle: `Premium ${CUSTOM} for teller counters, account openings and closings. Signing with a good pen leaves an impression.`, offer: 'a short call about pens for their counters and clients', tone: 'Professional and polished.', followup_days: 7, share: 10, products: [] },
+  companies: { goal: 'Branded pens for staff, visitors, onboarding kits and events.', contacts: 'Office manager, marketing, HR, events, procurement', angle: `${CUSTOM[0].toUpperCase() + CUSTOM.slice(1)} for staff, visitors and new-hire kits, with consistent quality at volume, delivered to the US.`, offer: 'a short call about pens for their counters and clients', tone: 'Professional and brief. One clear use case for them.', followup_days: 7, share: 10, products: [] },
+  fitness: { goal: 'Branded pens for sign-ups, the front desk and member gifts.', contacts: 'Owner, general manager, marketing', angle: `${CUSTOM[0].toUpperCase() + CUSTOM.slice(1)} for member sign-ups and the front desk, plus small welcome gifts for new members.`, offer: 'a short call about what they use at reception', tone: 'Upbeat and short.', followup_days: 7, share: 5, products: [] },
+  education: { goal: 'Branded pens for events, admissions, alumni and donors.', contacts: 'Purchasing, events or development office, communications', angle: 'Pens printed or engraved with their name or crest for graduations, open days, donors and staff.', offer: 'a short call about their events and gifts', tone: 'Warm and respectful.', followup_days: 10, share: 5, products: [] },
+  local: { goal: 'A pen with their name on it to hand to customers.', contacts: 'Owner, general manager, office manager', angle: 'Customers sign something at every visit. A good pen with their name on it keeps them in mind. Small runs are fine.', offer: 'a quick call about a pen with their name on it', tone: 'Friendly, local and short. No jargon.', followup_days: 7, share: 10, products: [] },
+  big_box: { goal: 'Get considered as a supplier for the pen and stationery category.', contacts: 'Category buyer, vendor relations, merchandising, supplier diversity', angle: 'Established maker since 1995 with private-label and custom capacity and steady quality at volume. Ask how to join their vendor process.', offer: 'a short call about their vendor process', tone: 'Formal and factual. No hard sell.', followup_days: 14, share: 5, products: [] },
 };
 const playbook = (cat) => ({ ...(PLAYBOOK_DEFAULTS[cat] || {}), ...((S.config?.playbooks || {})[cat] || {}) });
 const playbookOf = (seg) => (CAT_OF[seg] ? playbook(CAT_OF[seg]) : null);
-const playbookBrief = (seg) => { const p = playbookOf(seg); return p ? `Strategy for ${catLabel(seg)}: goal: ${p.goal} Angle: ${p.angle} Offer: ${p.offer || S.config?.sample_offer || 'samples'}. Tone: ${p.tone}${p.products?.length ? ' Lead with: ' + p.products.join(', ') + '.' : ''}` : ''; };
+const playbookBrief = (seg) => { const p = playbookOf(seg); return p ? `Strategy for ${catLabel(seg)}: goal: ${p.goal} Angle: ${p.angle} Ask in the first email: ${p.offer || S.config?.intro_ask || 'a short call'}. Tone: ${p.tone}${p.products?.length ? ' Lead with: ' + p.products.join(', ') + '.' : ''}` : ''; };
 const catLabel = (seg) => CAT[CAT_OF[seg]]?.label || '';
 const segMatches = (l, f) => !f || (f.startsWith('cat:') ? CAT_OF[l.segment] === f.slice(4) : l.segment === f);
 const segOptions = (sel) => CATEGORIES.map((c) => `<optgroup label="${esc(c.label)}">${c.segments.map((k) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${esc(SEG[k])}</option>`).join('')}</optgroup>`).join('');
@@ -473,7 +473,7 @@ function signature(cfg) {
   return [cfg.sender_name, [cfg.sender_title, cfg.company_name].filter(Boolean).join(', '), cfg.sender_phone, (cfg.website || '').replace(/^https?:\/\//, '').replace(/\/$/, '')].filter(Boolean).join('\n');
 }
 function footer(cfg) {
-  return `\n\n${signature(cfg)}\n\n${[cfg.company_name, cfg.postal_address].filter(Boolean).join(' · ')}\nNot the right fit? Just reply "unsubscribe" and I won't email you again.`;
+  return `\n\n${signature(cfg)}\n\n${[cfg.company_name, cfg.postal_address].filter(Boolean).join(' · ')}\nRather not hear from me? Just reply and say so, and I won't write again.`;
 }
 function missingForApproval() {
   const c = S.config || {}; const miss = [];
@@ -711,7 +711,7 @@ async function rewriteDraft(d, l, btn) {
   btn.disabled = true; btn.textContent = 'Rewriting…';
   const ta = $('#r-body');
   const prompt = `Rewrite this B2B email from ${S.config?.company_name || 'Submarine Pens'} (metal pen maker in Mumbai since 1995).
-Keep it plain text, warm and specific to the business, under 150 words, no hype, no invented facts or prices. End with the sender's first name only, with no signature block or unsubscribe line.
+Keep it plain text, warm and specific to the business, under 150 words, no hype, no invented facts or prices.${['intro', 'followup'].includes(d.kind) ? ` It is a first contact: keep its "About us:" paragraph (1–2 sentences about Submarine Pens chosen for this business), and end by asking for ${S.config?.intro_ask || 'a short 15-minute call'}; never ask them to order and never offer samples.` : ''} End with the sender's first name only, with no signature block or unsubscribe line.
 Business: ${l.name || ''} (${SEG[l.segment] || l.segment || ''}, ${place(l)}).
 ${playbookBrief(l.segment)}
 What we know about them: ${l.research || 'little'}
@@ -952,7 +952,7 @@ function territory() {
 }
 
 // ---------- Settings ----------
-const FORM_FIELDS = ['sender_name', 'sender_title', 'sender_phone', 'postal_address', 'company_name', 'website', 'sample_offer', 'brochure_link', 'pricing_notes', 'company_profile', 'agent_notes', 'summary_email'];
+const FORM_FIELDS = ['sender_name', 'sender_title', 'sender_phone', 'postal_address', 'company_name', 'website', 'intro_ask', 'call_link', 'sample_offer', 'brochure_link', 'pricing_notes', 'company_profile', 'agent_notes', 'summary_email'];
 const campForm = (c) => campaigns(c).map((x) => ({ key: x.key, enabled: !!x.enabled, angle: x.angle }));
 function setup() {
   const c = S.config || {};
@@ -972,8 +972,11 @@ function setup() {
         ${input('postal_address', 'Postal address (required in every email)', 'autocomplete="street-address"')}${input('company_name', 'Company')}${input('website', 'Website')}
         <div class="section-label">Signature preview</div><div class="mail-foot" style="margin:0">${esc(signature(f))}\n\n${esc([f.company_name, f.postal_address].filter(Boolean).join(' · '))}</div>
       </section>
-      <section class="panel"><h2>What the emails offer</h2>
-        ${input('sample_offer', 'Sample offer', 'placeholder="e.g. 5 sample pens and a printed catalog by mail, free"')}
+      <section class="panel"><h2>What the emails ask for</h2>
+        ${input('intro_ask', 'What the first email asks for', 'placeholder="a quick 15-minute call to hear what they need"')}
+        <p class="small faint" style="margin:-4px 0 10px">First emails and follow-ups ask for a short call. They never ask for an order and never offer samples.</p>
+        ${input('call_link', 'Call booking link (optional)', 'placeholder="e.g. your Calendly or Google Calendar booking page"')}
+        ${input('sample_offer', 'Samples, only once someone is interested (optional)', 'placeholder="e.g. a few sample pens by mail, free"')}
         ${input('brochure_link', 'Brochure link (Google Drive or website, optional)', 'placeholder="https://drive.google.com/…"')}
         ${area('pricing_notes', 'Prices or minimums the agents may mention (optional)', 3, "Leave empty and the agents will say you'll confirm pricing.")}
         ${area('company_profile', 'About Submarine, for the agents', 5)}
@@ -1018,10 +1021,10 @@ function setup() {
         <div class="small" style="margin-top:10px;max-height:220px;overflow:auto">${S.suppressions.map((s) => `<div class="row" style="padding:4px 0"><span class="mono">${esc(s.id)}</span><span class="faint">${esc(s.reason || '')}</span></div>`).join('') || '<span class="muted">Empty. Unsubscribes and bounces are added automatically.</span>'}</div>
       </section>
     </div>
-    <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Pens and prices</h2><span class="spacer"></span><button type="button" id="cat-save">Save prices</button></div>
-      <p class="small muted" style="margin:0 0 8px">Prices fill in the quote builder. They stay private: the agents never put prices in first emails.</p>
+    <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Pens and prices</h2><span class="spacer"></span><span class="faint small">${(S.catalog?.products || []).length} pen lines${S.catalog?.synced_at ? ' · from submarinepens.com ' + esc(day(S.catalog.synced_at)) : ''}</span><button type="button" id="cat-save">Save prices</button></div>
+      <p class="small muted" style="margin:0 0 8px">Enter your US prices here: they fill in the quote builder and stay private. The prices on submarinepens.com are Indian retail prices and are never used. Emails show the pen photos but never link to the shop.</p>
       <div class="table-wrap" style="box-shadow:none"><table><thead><tr><th>Pen</th><th>Best for</th><th>Price each ($)</th><th>Min. qty</th></tr></thead><tbody>
-      ${(S.catalog?.products || []).map((p, i) => `<tr><td><b>${esc(p.name)}</b><div class="small muted">${esc(p.description)}</div></td><td class="small muted">${esc((p.best_for || []).map((k) => SEG[k] || k).join(', '))}</td><td><input data-price="${i}" type="number" min="0" step="0.01" value="${esc(p.unit_price ?? '')}" aria-label="${esc(p.name)} price" style="width:96px"></td><td><input data-moq="${i}" type="number" min="0" step="1" value="${esc(p.moq ?? '')}" aria-label="${esc(p.name)} minimum" style="width:90px"></td></tr>`).join('')}
+      ${(S.catalog?.products || []).map((p, i) => `<tr><td><div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:12px">${p.image ? `<img src="${esc(thumb(p.image, 96))}" alt="" width="48" height="48" loading="lazy" onerror="this.remove()" style="width:48px;height:48px;border-radius:6px;object-fit:cover;flex:none">` : ''}<div><b>${esc(p.name)}</b>${p.customizable ? ' <span class="pill ok" style="font-size:11px">Can be personalised</span>' : ''}<div class="small muted">${esc(p.description)}</div>${p.model_count ? `<div class="small faint">${plural(p.model_count, 'model')} on the site${p.url ? ` · <a href="${esc(p.url)}" target="_blank" rel="noopener">view</a>` : ''}</div>` : ''}</div></div></td><td class="small muted">${(p.best_for || []).length > 15 ? 'Every kind of business' : esc((p.best_for || []).map((k) => SEG[k] || k).join(', '))}</td><td><input data-price="${i}" type="number" min="0" step="0.01" value="${esc(p.unit_price ?? '')}" aria-label="${esc(p.name)} price" style="width:96px"></td><td><input data-moq="${i}" type="number" min="0" step="1" value="${esc(p.moq ?? '')}" aria-label="${esc(p.name)} minimum" style="width:90px"></td></tr>`).join('')}
       </tbody></table></div><p class="small faint" style="margin:10px 0 0">To add or rename pens, ask Claude in your session.</p></section>
     ${dirty ? `<div class="savebar" role="region" aria-label="Unsaved changes"><span>Unsaved changes</span><span class="spacer"></span><button type="button" class="quiet" id="s-undo" style="color:var(--rail-ink)">Discard</button><button type="button" class="primary" id="s-save">Save settings</button></div>` : ''}`;
   const touch = () => { const wasDirty = !!$('.savebar'); if (!wasDirty) render(); };
@@ -1102,7 +1105,7 @@ function playbooks() {
           </div>
           <label for="pb-${c.key}-angle">Pitch: why Submarine is right for them</label><textarea id="pb-${c.key}-angle" data-pbf="${c.key}.angle" rows="2">${esc(p.angle)}</textarea>
           <div class="grid cols-2">
-            <div><label for="pb-${c.key}-offer">Offer in the first email</label><input id="pb-${c.key}-offer" data-pbf="${c.key}.offer" value="${esc(p.offer)}" placeholder="${esc(S.config?.sample_offer || 'Uses the sample offer from Settings')}"></div>
+            <div><label for="pb-${c.key}-offer">What the first email asks for</label><input id="pb-${c.key}-offer" data-pbf="${c.key}.offer" value="${esc(p.offer)}" placeholder="${esc(S.config?.intro_ask || 'a short call')}"></div>
             <div><label for="pb-${c.key}-tone">Tone</label><input id="pb-${c.key}-tone" data-pbf="${c.key}.tone" value="${esc(p.tone)}"></div>
           </div>
           <div class="row" style="gap:16px">
@@ -1168,6 +1171,7 @@ const campaignName = (k) => campaigns().find((c) => c.key === k)?.name || '';
 // ---------- Branded email ----------
 // Table layout with inline styles, no images: renders the same in Gmail, Outlook and Apple Mail, and nothing is
 // hidden behind "show images". The plain-text part stays as written.
+const LOGO_URL = 'https://www.submarinepens.com/cdn/shop/files/submarine_logo_4.png?v=1765367235&width=480';
 const B = { navy: '#0e2240', brass: '#b07a3a', brassLight: '#d9a35f', brassText: '#8a5a1f', cream: '#f7f3ec', ink: '#1d2533', muted: '#5b6575', line: '#e6e0d6', page: '#efebe4' };
 const SANS = "Arial,Helvetica,sans-serif"; const SERIF = "Georgia,'Times New Roman',serif";
 // Split a draft into its note and its pen picks: a run of lines starting with "- " becomes product cards,
@@ -1188,14 +1192,22 @@ function parseEmail(body) {
   });
   return { before: before.join('\n').trim(), heading, picks, after: lines.slice(last + 1).join('\n').trim() };
 }
+const penByName = (n) => { const k = String(n || '').toLowerCase().trim(); const ps = S.catalog?.products || [];
+  return ps.find((x) => x.name.toLowerCase() === k) || ps.find((x) => k && (k.startsWith(x.name.toLowerCase()) || x.name.toLowerCase().startsWith(k))) || null; };
+const thumb = (u, w = 112) => (u ? u + (u.includes('?') ? '&' : '?') + `width=${w}&height=${w}&crop=center` : '');
 function emailHtml({ body, lead = {}, cfg = S.config || {}, quote = null, cta = true }) {
   const e = esc; const p = parseEmail(body);
-  const paras = (t) => String(t || '').split(/\n\s*\n/).filter((x) => x.trim()).map((x) => `<p style="margin:0 0 14px;font:15px/1.6 ${SANS};color:${B.ink}">${e(x.trim()).replace(/\n/g, '<br>')}</p>`).join('');
+  const about = (x) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 18px"><tr><td style="border-top:1px solid ${B.line};border-bottom:1px solid ${B.line};padding:16px 4px">
+      <div style="font:700 11px/1 ${SANS};letter-spacing:1.6px;text-transform:uppercase;color:${B.brassText};margin:0 0 8px">A little about us</div>
+      <div style="font:italic 16px/1.6 ${SERIF};color:${B.navy}">${e(x).replace(/\n/g, '<br>')}</div></td></tr></table>`;
+  const paras = (t) => String(t || '').split(/\n\s*\n/).filter((x) => x.trim()).map((x) => { const m = x.trim().match(/^about us\s*[:\-–—]\s*([\s\S]+)$/i);
+    return m ? about(m[1].trim().replace(/^./, (c) => c.toUpperCase())) : `<p style="margin:0 0 14px;font:15px/1.6 ${SANS};color:${B.ink}">${e(x.trim()).replace(/\n/g, '<br>')}</p>`; }).join('');
   const site = String(cfg.website || '').replace(/\/$/, ''); const siteLabel = site.replace(/^https?:\/\/(www\.)?/, '');
-  const more = cfg.brochure_link || site;
+  const callLink = /^https?:\/\//.test(cfg.call_link || '') ? cfg.call_link : '';
+  const more = callLink || cfg.brochure_link || '';
   const words = String(cfg.company_name || 'Submarine Pens').trim().toUpperCase().split(/\s+/);
   const picks = p.picks.length ? `<div style="font:700 11px/1 ${SANS};letter-spacing:1.6px;text-transform:uppercase;color:${B.brassText};margin:8px 0 12px">${e(p.heading || 'Picked for ' + (lead.name || 'you'))}</div>` +
-    p.picks.map((x) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 8px"><tr><td width="4" style="width:4px;background:${B.brass};border-radius:4px 0 0 4px;font-size:0;line-height:0">&nbsp;</td><td style="background:${B.cream};padding:12px 16px;border-radius:0 8px 8px 0"><div style="font:700 16px/1.3 ${SERIF};color:${B.navy}">${e(x.name)}</div>${x.why ? `<div style="font:14px/1.5 ${SANS};color:${B.muted};margin-top:3px">${e(x.why)}</div>` : ''}</td></tr></table>`).join('') : '';
+    p.picks.map((x, i) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 10px"><tr><td width="4" style="width:4px;background:${B.brass};border-radius:4px 0 0 4px;font-size:0;line-height:0">&nbsp;</td><td width="52" align="center" style="width:52px;background:${B.cream};padding:14px 0 14px 8px;vertical-align:top;font:italic 400 24px/1 ${SERIF};color:${B.brass}">0${i + 1}</td><td style="background:${B.cream};padding:14px 18px 14px 6px;border-radius:0 8px 8px 0"><div style="font:700 16px/1.3 ${SERIF};color:${B.navy}">${e(x.name)}</div>${x.why ? `<div style="font:14px/1.5 ${SANS};color:${B.muted};margin-top:3px">${e(x.why)}</div>` : ''}</td></tr></table>`).join('') : '';
   let q = '';
   if (quote?.lines?.length) {
     const money = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1210,9 +1222,9 @@ function emailHtml({ body, lead = {}, cfg = S.config || {}, quote = null, cta = 
       <tr><td colspan="3" align="right" style="${cell};font-weight:700;border-bottom:0">Total (USD)</td><td align="right" style="${cell};font:700 16px ${SERIF};color:${B.navy};border-bottom:0">${money(t.total)}</td></tr></table>
       <div style="font:13px/1.6 ${SANS};color:${B.muted};margin:-6px 0 16px">${[quote.lead_time && 'Lead time: ' + e(quote.lead_time), quote.valid_until && 'Valid until ' + e(day(quote.valid_until))].filter(Boolean).join(' · ')}</div>`;
   }
-  const ctaRow = cta && (p.picks.length || quote) && more ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr>
-      <td style="background:${B.navy};border-radius:8px"><a href="${e(more)}" style="display:inline-block;padding:12px 20px;font:700 14px/1 ${SANS};color:#ffffff;text-decoration:none;white-space:nowrap">${cfg.brochure_link ? 'View the catalog' : 'See the full range'} &rarr;</a></td>
-</tr></table>${cfg.sample_offer && !quote ? `<div style="font:13.5px/1.4 ${SANS};color:${B.muted};margin:-10px 0 20px">Free samples by mail: just reply to this email.</div>` : ''}` : '';
+  const ctaRow = cta && (p.picks.length || quote) && more ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 22px"><tr>
+      <td style="background:${B.navy};border-radius:999px"><a href="${e(more)}" style="display:inline-block;padding:14px 24px;font:700 14px/1 ${SANS};color:#ffffff;text-decoration:none;white-space:nowrap">${callLink && !quote ? 'Book a 15-minute call' : 'View the catalog'} &rarr;</a></td>
+</tr></table>` : '';
   const sig = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;border-top:1px solid ${B.line}"><tr><td style="padding-top:16px">
       <div style="font:700 16px/1.3 ${SERIF};color:${B.navy}">${e(cfg.sender_name || '')}</div>
       <div style="font:13px/1.6 ${SANS};color:${B.muted}">${e([cfg.sender_title, cfg.company_name].filter(Boolean).join(', '))}</div>
@@ -1220,14 +1232,19 @@ function emailHtml({ body, lead = {}, cfg = S.config || {}, quote = null, cta = 
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:${B.page}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${B.page}"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden">
-<tr><td style="background:${B.navy};padding:22px 28px">
-  <div style="font:700 20px/1 ${SERIF};letter-spacing:4px;color:#ffffff">${e(words[0])}${words.length > 1 ? ` <span style="color:${B.brassLight}">${e(words.slice(1).join(' '))}</span>` : ''}</div>
-  <div style="font:10.5px/1.5 ${SANS};letter-spacing:1.4px;text-transform:uppercase;color:#9fb0c8;margin-top:8px">Metal writing instruments &middot; Mumbai &middot; since 1995</div></td></tr>
-<tr><td style="height:3px;line-height:3px;font-size:0;background:${B.brass}">&nbsp;</td></tr>
-<tr><td style="padding:28px 28px 24px">${paras(p.before)}${picks}${q}${ctaRow}${paras(p.after)}${sig}</td></tr>
+<tr><td align="center" style="background:#ffffff;padding:30px 28px 22px">
+  <img src="${e(cfg.logo_url || LOGO_URL)}" width="200" alt="${e(words.join(' '))}" style="display:block;width:200px;max-width:60%;height:auto;border:0;font:700 20px/1 ${SERIF};letter-spacing:4px;color:${B.navy}">
+  <div style="font:10.5px/1.5 ${SANS};letter-spacing:2px;text-transform:uppercase;color:${B.brassText};margin-top:14px">Metal pens &middot; Made to carry your name</div></td></tr>
+<tr><td style="padding:0 32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="height:1px;line-height:1px;font-size:0;background:${B.line}">&nbsp;</td><td width="56" style="width:56px;height:3px;line-height:3px;font-size:0;background:${B.brass}">&nbsp;</td><td style="height:1px;line-height:1px;font-size:0;background:${B.line}">&nbsp;</td></tr></table></td></tr>
+<tr><td style="padding:30px 32px 26px">${paras(p.before)}${picks}${q}${(() => {
+  const ps = String(p.after || '').split(/\n\s*\n/).filter((x) => x.trim());
+  const k = ps.findIndex((x) => /^(best|thanks|thank you|cheers|warmly|regards|kind regards|all the best|sincerely)\b/i.test(x.trim()));
+  const at = k < 0 ? ps.length : k;
+  return paras(ps.slice(0, at).join('\n\n')) + ctaRow + paras(ps.slice(at).join('\n\n'));
+})()}${sig}</td></tr>
 </table>
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px"><tr><td style="padding:16px 24px;font:12px/1.6 ${SANS};color:#8b8f97;text-align:center">
-${e([cfg.company_name, cfg.postal_address].filter(Boolean).join(' · '))}<br>Not the right fit? Reply "unsubscribe" and I won't email you again.</td></tr></table>
+${e([cfg.company_name, cfg.postal_address].filter(Boolean).join(' · '))}<br>Rather not hear from me? Just reply and say so, and I won't write again.</td></tr></table>
 </td></tr></table></body></html>`;
 }
 function quoteTotals(q) {
@@ -1617,7 +1634,7 @@ async function analyzeReply(lead, body, subject) {
     `Business that replied: ${lead.name || ''} (${SEG[lead.segment] || lead.segment || ''}, ${[lead.city, lead.state].filter(Boolean).join(', ')}).`,
     `Their reply (subject: ${subject}):`, '<<<', body, '>>>',
     `Our company: ${c.company_profile || 'Submarine Pens, metal pen maker in Mumbai since 1995'}`,
-    `Pens we offer: ${(S.catalog?.products || []).map((p) => p.name + ' - ' + p.description).join('; ')}`,
+    `Pens we offer: ${(S.catalog?.products || []).map((p) => p.name + ' - ' + p.description + (p.customizable ? ' (can carry their name or logo)' : '')).join('; ')}`,
     `Sample offer: ${c.sample_offer || 'a few samples'}. Brochure: ${c.brochure_link || 'none'}. Pricing we may mention: ${c.pricing_notes || 'none; say we will confirm'}.`,
     'Return JSON {"classification": one of "interested","question","not_interested","unsubscribe","auto_reply","other", "summary": one plain sentence, "reply": suggested answer or ""}.',
     `For interested, question or other, write "reply": plain text, warm, under 150 words, answers exactly what they asked, never invents prices, minimums, lead times or shipping costs (say we will confirm), asks for a shipping address and name if they want samples, signed with "${first}" only, no signature block. For the other classifications "reply" is "".`,
