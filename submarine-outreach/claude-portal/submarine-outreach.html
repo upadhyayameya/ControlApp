@@ -423,8 +423,8 @@ const REMOTE = 'Claude Code Remote';
 const DEFAULT_PER_STATE = 20;
 
 // ---------- State ----------
-const S = { config: null, catalog: null, agents: null, insights: null, leads: [], drafts: [], replies: [], runs: [], suppressions: [], deals: [], ready: false };
-const UI = { pb: null, pbOpen: null, reviewId: null, edits: {}, hints: {}, flash: null, leadTab: 'all', leadQ: '', leadZone: '', leadSeg: '', replyTab: 'open', plan: null, form: null, mode: 'preview' };
+const S = { requests: [], config: null, catalog: null, agents: null, insights: null, leads: [], drafts: [], replies: [], runs: [], suppressions: [], deals: [], ready: false };
+const UI = { phoneOnly: false, pb: null, pbOpen: null, reviewId: null, edits: {}, hints: {}, flash: null, leadTab: 'all', leadQ: '', leadZone: '', leadSeg: '', replyTab: 'open', plan: null, form: null, mode: 'preview' };
 let db = null, mcp = null, sample = null;
 
 // ---------- Helpers ----------
@@ -437,6 +437,8 @@ const pill = (status) => { const [t, c] = STATUS[status] || [status || '—', ''
 const fit = (n) => n ? `<span class="fit" title="Fit ${n} of 5" aria-label="Fit ${n} of 5">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>` : '';
 const domainOf = (email) => String(email || '').split('@')[1]?.toLowerCase() || '';
 const place = (l) => [l.city, l.state].filter(Boolean).join(', ');
+const telHref = (p) => 'tel:' + String(p || '').replace(/[^0-9+]/g, '');
+const phoneLink = (p) => (p ? `<a class="mono" href="${esc(telHref(p))}">${esc(p)}</a>` : '');
 const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 const kindLabel = (k) => ({ intro: 'Intro', followup: 'Follow-up', reply: 'Reply' })[k] || DEAL_KINDS[k] || 'Email';
 const leadById = (id) => S.leads.find((l) => l.id === id);
@@ -641,6 +643,7 @@ function review() {
           ${playbookOf(l.segment) ? `<dt>Playbook</dt><dd class="small">${esc(playbookOf(l.segment).goal)} <a href="#playbooks" data-pbopen="${CAT_OF[l.segment]}">Edit</a></dd>` : ''}
           ${l.fit ? `<dt>Fit</dt><dd>${fit(l.fit)}<div class="small" style="margin-top:4px">${esc(l.fit_reason || '')}</div></dd>` : ''}
           ${l.size ? `<dt>Size</dt><dd>${esc(l.size)}</dd>` : ''}
+          ${l.phone ? `<dt>Phone</dt><dd>${phoneLink(l.phone)}</dd>` : ''}
           ${l.website ? `<dt>Website</dt><dd><a href="${esc(l.website)}" target="_blank" rel="noopener">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></dd>` : ''}
           ${l.email_source_url ? `<dt>Email from</dt><dd><a href="${esc(l.email_source_url)}" target="_blank" rel="noopener">${esc(l.email_source_url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 48))}</a></dd>` : ''}
         </dl>
@@ -778,23 +781,25 @@ const LEAD_TABS = [
 function leads() {
   const tab = LEAD_TABS.find((t) => t[0] === UI.leadTab) || LEAD_TABS[0];
   const q = UI.leadQ.toLowerCase();
-  const base = S.leads.filter((l) => segMatches(l, UI.leadSeg) &&
+  const base = S.leads.filter((l) => segMatches(l, UI.leadSeg) && (!UI.phoneOnly || l.phone) &&
     (!UI.leadZone || (UI.leadZone.length === 2 ? l.state === UI.leadZone : REGION_OF[l.state]?.key === UI.leadZone || ZONE_OF[l.state] === UI.leadZone)) &&
-    (!q || [l.name, l.city, l.state, l.email, l.website].join(' ').toLowerCase().includes(q)));
+    (!q || [l.name, l.city, l.state, l.email, l.website, l.phone].join(' ').toLowerCase().includes(q)));
   const rows = base.filter(tab[2]);
   const usedStates = [...new Set(S.leads.map((l) => l.state).filter(Boolean))].sort();
   $('#view').innerHTML = `
-    <div class="head"><div><h1>Leads</h1><p class="sub">${plural(S.leads.length, 'business', 'businesses')} so far, small and mid-size first.</p></div><span class="spacer"></span><button type="button" id="add-leads">Add businesses</button></div>
+    <div class="head"><div><h1>Leads</h1><p class="sub">${plural(S.leads.length, 'business', 'businesses')} so far, small and mid-size first.</p></div><span class="spacer"></span><button type="button" id="add-leads">Add businesses</button><button type="button" class="primary" id="find-leads">Find businesses</button></div>
+    ${(() => { const open = S.requests.filter((r) => r.type === 'find' && r.status === 'open'); return open.length ? `<div class="notice" style="margin-bottom:12px"><b>${plural(open.length, 'search')} waiting for the Prospector:</b> ${open.map((r) => esc(findLabel(r))).join(' · ')}</div>` : ''; })()}
     <div class="seg" role="group" aria-label="Category"><button type="button" data-lcat="" aria-pressed="${!UI.leadSeg}">All categories</button>${CATEGORIES.map((c) => `<button type="button" data-lcat="cat:${c.key}" aria-pressed="${UI.leadSeg === 'cat:' + c.key}">${esc(c.label)} <span class="c">${S.leads.filter((l) => CAT_OF[l.segment] === c.key).length}</span></button>`).join('')}</div>
     ${UI.leadSeg.startsWith('cat:') ? `<p class="small muted" style="margin:-4px 0 12px"><b>${esc(CAT[UI.leadSeg.slice(4)].label)} playbook:</b> ${esc(playbook(UI.leadSeg.slice(4)).goal)} <a href="#playbooks" data-pbopen="${UI.leadSeg.slice(4)}">Edit playbook</a></p>` : ''}
     <div class="seg" role="group" aria-label="Status">${LEAD_TABS.map(([k, label, f]) => `<button type="button" data-lt="${k}" aria-pressed="${UI.leadTab === k}">${label} <span class="c">${base.filter(f).length}</span></button>`).join('')}</div>
     <div class="toolbar">
-      <input id="lf-q" type="search" aria-label="Search leads" placeholder="Search name, city, email" value="${esc(UI.leadQ)}">
+      <input id="lf-q" type="search" aria-label="Search leads" placeholder="Search name, city, email, phone" value="${esc(UI.leadQ)}">
+      <label class="check small"><input type="checkbox" id="lf-phone" ${UI.phoneOnly ? 'checked' : ''}> Has a phone number</label>
       <select id="lf-zone" aria-label="Where"><option value="">Anywhere</option>${ZONES.map((z) => `<optgroup label="${z.label}"><option value="${z.key}" ${UI.leadZone === z.key ? 'selected' : ''}>All of the ${z.label}</option>${z.regions.map((r) => `<option value="${r.key}" ${UI.leadZone === r.key ? 'selected' : ''}>${r.label}</option>`).join('')}</optgroup>`).join('')}${usedStates.length ? `<optgroup label="States">${usedStates.map((s) => `<option value="${s}" ${UI.leadZone === s ? 'selected' : ''}>${esc(STATE_NAMES[s] || s)}</option>`).join('')}</optgroup>` : ''}</select>
       <select id="lf-seg" aria-label="Business type"><option value="">Any category or type</option><optgroup label="Categories">${CATEGORIES.map((c) => `<option value="cat:${c.key}" ${UI.leadSeg === 'cat:' + c.key ? 'selected' : ''}>All ${esc(c.label.toLowerCase())}</option>`).join('')}</optgroup>${segOptions(UI.leadSeg)}</select>
     </div>
     <div class="table-wrap"><table><thead><tr><th>Business</th><th>Where</th><th>Type</th><th>Fit</th><th>Status</th><th>Added</th></tr></thead><tbody>
-      ${rows.map((l) => `<tr class="click" data-lead="${esc(l.id)}" tabindex="0"><td><b>${esc(l.name)}</b><div class="muted small mono">${esc(l.email || '')}</div></td><td>${esc(place(l))}</td><td class="small">${catLabel(l.segment) ? `<b>${esc(catLabel(l.segment))}</b><div class="muted">${esc(SEG[l.segment])}</div>` : esc(SEG[l.segment] || l.segment || '')}</td><td>${fit(l.fit)}</td><td>${pill(l.status)}</td><td class="small faint">${day(l.created_at)}</td></tr>`).join('') ||
+      ${rows.map((l) => `<tr class="click" data-lead="${esc(l.id)}" tabindex="0"><td><b>${esc(l.name)}</b><div class="muted small mono">${esc(l.email || '')}</div>${l.phone ? `<div class="small">${phoneLink(l.phone)}</div>` : ''}</td><td>${esc(place(l))}</td><td class="small">${catLabel(l.segment) ? `<b>${esc(catLabel(l.segment))}</b><div class="muted">${esc(SEG[l.segment])}</div>` : esc(SEG[l.segment] || l.segment || '')}</td><td>${fit(l.fit)}</td><td>${pill(l.status)}</td><td class="small faint">${day(l.created_at)}</td></tr>`).join('') ||
       `<tr><td colspan="6"><div class="empty"><b>Nothing here</b>${S.leads.length ? 'Try another filter.' : 'The Prospector adds businesses each weekday, or add your own.'}</div></td></tr>`}
     </tbody></table></div>`;
   $$('[data-lt]').forEach((b) => (b.onclick = () => { UI.leadTab = b.dataset.lt; render(); }));
@@ -804,6 +809,8 @@ function leads() {
   $$('[data-lcat]').forEach((b) => (b.onclick = () => { UI.leadSeg = b.dataset.lcat; render(); }));
   $$('[data-lead]').forEach((tr) => { tr.onclick = () => openLead(tr.dataset.lead); tr.onkeydown = (e) => { if (e.key === 'Enter') openLead(tr.dataset.lead); }; });
   $('#add-leads').onclick = openAdd;
+  $('#find-leads').onclick = openFind;
+  $('#lf-phone').onchange = (e) => { UI.phoneOnly = e.target.checked; render(); };
 }
 function drawer(html) {
   closeDrawer();
@@ -821,7 +828,7 @@ function openLead(id) {
   const rs = S.replies.filter((r) => r.lead_id === id);
   const d = drawer(`<p class="eyebrow">${catLabel(l.segment) ? esc(catLabel(l.segment)) + ' · ' : ''}${esc(SEG[l.segment] || l.segment || 'Business')}</p><h1 style="font-size:24px">${esc(l.name)}</h1>
     <div class="row" style="margin-top:8px">${pill(l.status)}${fit(l.fit)}</div>
-    <dl class="facts"><dt>Where</dt><dd>${esc(place(l))}</dd>${l.size ? `<dt>Size</dt><dd>${esc(l.size)}</dd>` : ''}<dt>Email</dt><dd class="mono">${esc(l.email || 'none found')}</dd>
+    <dl class="facts"><dt>Where</dt><dd>${esc(place(l))}</dd>${l.size ? `<dt>Size</dt><dd>${esc(l.size)}</dd>` : ''}<dt>Email</dt><dd class="mono">${esc(l.email || 'none found')}</dd><dt>Phone</dt><dd>${l.phone ? phoneLink(l.phone) : `<span class="muted">${l.phone_checked ? 'none published' : 'none found yet'}</span>`}${/^https?:/.test(l.phone_source_url || '') ? ` <a class="small" href="${esc(l.phone_source_url)}" target="_blank" rel="noopener">source</a>` : ''}</dd>
     ${l.email_source_url ? `<dt>Email from</dt><dd><a href="${esc(l.email_source_url)}" target="_blank" rel="noopener">${esc(l.email_source_url)}</a></dd>` : ''}
     ${l.website ? `<dt>Website</dt><dd><a href="${esc(l.website)}" target="_blank" rel="noopener">${esc(l.website)}</a></dd>` : ''}
     ${l.contact_name ? `<dt>Contact</dt><dd>${esc(l.contact_name)}${l.contact_role ? ', ' + esc(l.contact_role) : ''}</dd>` : ''}
@@ -831,6 +838,7 @@ function openLead(id) {
     ${l.research ? `<div class="section-label">Research</div><p class="research">${esc(l.research)}</p>` : ''}
     <div class="section-label">Emails</div>${ds.map((x) => `<div class="small" style="margin-bottom:6px"><b>${esc(kindLabel(x.kind))}</b> · ${esc(x.status)} · ${esc(x.subject)}</div>`).join('') || '<div class="muted small">None yet.</div>'}
     ${rs.length ? `<div class="section-label">Replies</div>${rs.map((r) => `<div class="small" style="margin-bottom:6px">${when(r.date)} · ${esc(r.summary || '')}</div>`).join('')}` : ''}
+    <div class="section-label">Phone</div><div class="row"><input id="ld-phone" type="tel" value="${esc(l.phone || '')}" placeholder="(555) 123-4567" aria-label="Phone number" style="max-width:220px"><button type="button" id="ld-phone-save">Save phone</button></div>
     <div class="section-label">Business type</div><div class="row"><select id="ld-seg" aria-label="Business type" style="width:auto">${SEG[l.segment] ? '' : '<option value="" selected>Not set</option>'}${segOptions(l.segment)}</select></div>
     <div class="section-label">Change status</div><div class="row"><select id="ld-status" aria-label="Status" style="width:auto">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${l.status === k ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select><button type="button" id="ld-save">Save</button></div>
     <div class="section-label">Next</div><div class="row">${dealOf(id) ? '<button type="button" id="ld-deal">Open deal</button>' : '<button type="button" id="ld-deal">Start a deal</button>'}<button type="button" id="ld-like">Find more like this</button></div>
@@ -838,6 +846,7 @@ function openLead(id) {
   $('#ld-deal', d).onclick = () => { if (dealOf(id)) { closeDrawer(); location.hash = 'deals'; setTimeout(() => openDeal(id), 50); } else { startDeal(l); closeDrawer(); } };
   $('#ld-like', d).onclick = () => findSimilar(l);
   $('#ld-save', d).onclick = async () => { const seg = $('#ld-seg', d).value; await db.collection('leads').doc(id).update({ status: $('#ld-status', d).value, ...(seg ? { segment: seg } : {}) }); toastText('Saved.'); closeDrawer(); };
+  $('#ld-phone-save', d).onclick = async () => { const v = $('#ld-phone', d).value.trim(); await db.collection('leads').doc(id).update({ phone: v, phone_source_url: v ? 'added by you' : '' }); toastText(v ? 'Phone saved.' : 'Phone removed.'); };
   $('#ld-seg', d).onchange = async (e) => { if (!e.target.value) return; await db.collection('leads').doc(id).update({ segment: e.target.value }); toastText('Moved to ' + catLabel(e.target.value) + ' · ' + SEG[e.target.value] + '.'); };
   $('#ld-dne', d).onclick = async () => {
     const key = domainOf(l.email) || (l.email || '').toLowerCase(); if (!key) return;
@@ -863,6 +872,32 @@ function openAdd() {
       n++;
     }
     toastText(n ? `Added ${n}. The Prospector will research and draft on its next run.` : 'Nothing new to add.'); closeDrawer();
+  };
+}
+
+// ---------- Find businesses on request ----------
+const findLabel = (r) => `${r.count || 10} ${r.segment ? SEG[r.segment] || r.segment : (CAT[r.category]?.label || 'businesses')} in ${[r.city, STATE_NAMES[r.state] || r.state].filter(Boolean).join(', ') || 'your territory'}`;
+function openFind() {
+  const pre = UI.leadSeg || '';
+  const st = UI.leadZone && UI.leadZone.length === 2 ? UI.leadZone : (activeState() || '');
+  const d = drawer(`<h1 style="font-size:24px">Find businesses</h1><p class="small muted">Tell the Prospector exactly what to look for. It finds businesses of that kind, with their published email and phone number, and drafts an email for each one with that category's playbook.</p>
+    <label for="fd-what">What kind of business</label><select id="fd-what"><optgroup label="Whole category">${CATEGORIES.map((c) => `<option value="cat:${c.key}" ${pre === 'cat:' + c.key ? 'selected' : ''}>All ${esc(c.label.toLowerCase())}</option>`).join('')}</optgroup>${segOptions(pre)}</select>
+    <div class="grid cols-2"><div><label for="fd-state">State</label><select id="fd-state">${Object.entries(STATE_NAMES).map(([k, v]) => `<option value="${k}" ${st === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>
+    <div><label for="fd-city">City or area (optional)</label><input id="fd-city" placeholder="e.g. Philadelphia"></div></div>
+    <label for="fd-n">How many</label><select id="fd-n" style="max-width:160px"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+    <label for="fd-note">Anything specific? (optional)</label><input id="fd-note" placeholder="e.g. family-owned, near the airport, with event spaces">
+    <div class="row" style="margin-top:16px"><button type="button" class="primary" id="fd-go">Find them</button><span class="small muted">Starts now if the Prospector can be started from here, otherwise on its next run.</span></div>`);
+  $('#fd-go', d).onclick = async () => {
+    const what = $('#fd-what', d).value; const btn = $('#fd-go', d); btn.disabled = true;
+    const r = { type: 'find', ...(what.startsWith('cat:') ? { category: what.slice(4) } : { segment: what, category: CAT_OF[what] }), state: $('#fd-state', d).value,
+      city: $('#fd-city', d).value.trim(), note: $('#fd-note', d).value.trim(), count: Number($('#fd-n', d).value), status: 'open', created_at: new Date().toISOString() };
+    try { await db.collection('requests').doc('find-' + Date.now().toString(36)).set(r); }
+    catch (err) { btn.disabled = false; toastText('Could not save: ' + (err?.message || err), true); return; }
+    closeDrawer();
+    const tid = S.agents?.prospector_trigger_id;
+    if (!tid || !mcp) { toastText(`Saved: ${findLabel(r)}. The Prospector picks it up on its next run.`); return; }
+    try { await mcp.callTool(REMOTE, 'fire_trigger', { trigger_id: tid, text: 'Start with the open find requests in the requests collection.' }); toastText(`Searching for ${findLabel(r)}. New leads appear here in about 15–30 minutes.`); }
+    catch (err) { toastText(`Saved for the next run. (${mcpMessage(err, 'Claude Code')})`); }
   };
 }
 
@@ -1719,6 +1754,7 @@ async function afterReady() {
   db.collection('drafts').limit(1000).onSnapshot((s) => { S.drafts = docs(s); mark('drafts'); }, fail('drafts'));
   db.collection('replies').orderBy('date', 'desc').limit(300).onSnapshot((s) => { S.replies = docs(s); softRender(); }, fail('replies'));
   db.collection('runs').orderBy('started', 'desc').limit(30).onSnapshot((s) => { S.runs = docs(s); mark('agent runs'); }, fail('agent runs'));
+  db.collection('requests').limit(200).onSnapshot((s) => { S.requests = docs(s); softRender(); }, () => {});
   db.collection('suppressions').limit(1000).onSnapshot((s) => { S.suppressions = docs(s); softRender(); }, fail('do-not-email list'));
 })();
 </script>
