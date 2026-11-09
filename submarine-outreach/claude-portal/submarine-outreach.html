@@ -316,33 +316,68 @@ fieldset.cat legend { padding: 0 6px; }
 <script>
 // ---------- Constants ----------
 const SEGMENTS = [
+  // Gifting & promo resellers
   ['promo_distributor', 'Promotional products distributors'], ['corporate_gifting', 'Corporate gifting companies'],
+  ['engraving', 'Engraving, awards & trophy shops'], ['print_shop', 'Print, sign & embroidery shops'], ['events', 'Event & wedding planners'],
+  ['trade_show', 'Trade show & exhibit companies'],
+  // Shops
   ['stationery', 'Stationery & pen shops'], ['gift_shop', 'Gift shops & boutiques'], ['bookstore', 'Independent bookstores'],
-  ['museum_shop', 'Museum, science & space center shops'], ['coffee', 'Coffee roasters & cafés'],
-  ['engraving', 'Engraving, awards & trophy shops'], ['office_supply', 'Independent office supply dealers'],
-  ['real_estate', 'Real estate brokerages'], ['law_firm', 'Law & accounting firms'], ['medical_dental', 'Medical & dental practices'],
-  ['insurance_finance', 'Insurance agencies & credit unions'], ['events', 'Event & wedding planners'],
-  ['hotel', 'Hotels & resorts'], ['university', 'Universities & campus stores'], ['corporate', 'Corporate offices'],
+  ['museum_shop', 'Museum, science & space center shops'], ['coffee', 'Coffee roasters & cafés'], ['office_supply', 'Independent office supply dealers'],
+  ['souvenir', 'Souvenir & tourist shops'],
+  // Hotels, restaurants & venues
+  ['hotel', 'Hotels & resorts'], ['restaurant', 'Restaurants'], ['bar_brewery', 'Bars, breweries & wineries'], ['venue', 'Event & wedding venues'],
+  ['casino', 'Casinos'], ['travel', 'Travel agencies & tour operators'],
+  // Healthcare
+  ['hospital', 'Hospitals & health systems'], ['medical_dental', 'Medical & dental clinics'], ['pharmacy', 'Independent pharmacies'],
+  ['senior_living', 'Senior living & care homes'], ['veterinary', 'Veterinary clinics'],
+  // Banks & finance
+  ['bank', 'Banks & credit unions'], ['insurance_finance', 'Insurance agencies'], ['wealth', 'Financial advisors & wealth managers'],
+  ['mortgage', 'Mortgage & title companies'],
+  // Offices & companies
+  ['corporate', 'Corporate offices'], ['law_firm', 'Law & accounting firms'], ['real_estate', 'Real estate brokerages'],
+  ['coworking', 'Coworking spaces'], ['staffing', 'Staffing & recruiting agencies'], ['tech', 'Tech & startup companies'],
+  ['manufacturing', 'Manufacturers & industrial firms'],
+  // Gyms & wellness
+  ['gym', 'Gyms & fitness clubs'], ['studio', 'Yoga, pilates & boutique fitness studios'], ['spa_salon', 'Spas & salons'],
+  ['sports_club', 'Golf, country & sports clubs'],
+  // Schools & organizations
+  ['university', 'Universities & campus stores'], ['school', 'Private schools & school districts'], ['nonprofit', 'Nonprofits & associations'],
+  ['religious', 'Churches & faith organizations'], ['government', 'Local government & public offices'],
+  // Local services
+  ['auto_dealer', 'Car dealerships'], ['auto_service', 'Auto repair & tire shops'], ['property_mgmt', 'Property management & apartments'],
+  ['contractor', 'Contractors & home services'], ['funeral_home', 'Funeral homes'],
+  // Big box retail
   ['big_box', 'Big-box & department store chains'], ['retail_chain', 'National & regional retail chains'],
 ];
 const SEG = Object.fromEntries(SEGMENTS);
-// Lead categories: the five kinds of buyer we target. Every business type belongs to exactly one.
+// Lead categories: the kinds of buyer we target. Every business type belongs to exactly one.
 const CATEGORIES = [
-  { key: 'gifting', label: 'Gifting', blurb: 'Buy pens to give away or resell as gifts, often with a logo.', segments: ['corporate_gifting', 'promo_distributor', 'engraving', 'events'] },
-  { key: 'shops', label: 'Shops', blurb: 'Independent stores that stock pens on the shelf.', segments: ['stationery', 'gift_shop', 'bookstore', 'museum_shop', 'coffee', 'office_supply'] },
-  { key: 'companies', label: 'Companies', blurb: 'Larger organisations that order branded pens for staff, guests and clients.', segments: ['corporate', 'hotel', 'university'] },
-  { key: 'small_business', label: 'Small businesses', blurb: 'Local practices and agencies that hand pens to clients.', segments: ['real_estate', 'law_firm', 'medical_dental', 'insurance_finance'] },
+  { key: 'gifting', label: 'Gifting & promo', blurb: 'Resell pens or put logos on them for their own clients.', segments: ['promo_distributor', 'corporate_gifting', 'engraving', 'print_shop', 'events', 'trade_show'] },
+  { key: 'shops', label: 'Shops', blurb: 'Independent stores that stock pens on the shelf.', segments: ['stationery', 'gift_shop', 'bookstore', 'museum_shop', 'coffee', 'office_supply', 'souvenir'] },
+  { key: 'hospitality', label: 'Hotels, restaurants & venues', blurb: 'Pens at the front desk, in rooms, with the bill and at events. Guests take them home.', segments: ['hotel', 'restaurant', 'bar_brewery', 'venue', 'casino', 'travel'] },
+  { key: 'healthcare', label: 'Healthcare', blurb: 'Pens at reception, for staff and for patient forms.', segments: ['hospital', 'medical_dental', 'pharmacy', 'senior_living', 'veterinary'] },
+  { key: 'finance', label: 'Banks & finance', blurb: 'Pens for counters, signings and client gifts.', segments: ['bank', 'insurance_finance', 'wealth', 'mortgage'] },
+  { key: 'companies', label: 'Offices & companies', blurb: 'Branded pens for staff, visitors, onboarding and events.', segments: ['corporate', 'law_firm', 'real_estate', 'coworking', 'staffing', 'tech', 'manufacturing'] },
+  { key: 'fitness', label: 'Gyms & wellness', blurb: 'Pens for sign-ups, the front desk and member gifts.', segments: ['gym', 'studio', 'spa_salon', 'sports_club'] },
+  { key: 'education', label: 'Schools & organizations', blurb: 'Pens for events, admissions, donors and staff.', segments: ['university', 'school', 'nonprofit', 'religious', 'government'] },
+  { key: 'local', label: 'Local services', blurb: 'Customers sign something at every visit.', segments: ['auto_dealer', 'auto_service', 'property_mgmt', 'contractor', 'funeral_home'] },
   { key: 'big_box', label: 'Big box retail', blurb: 'Chains that buy through category buyers and vendor programs. Large by nature.', segments: ['big_box', 'retail_chain'] },
 ];
 const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.key, c]));
 const CAT_OF = Object.fromEntries(CATEGORIES.flatMap((c) => c.segments.map((s) => [s, c.key])));
 // Default playbook per category. The owner edits these on the Playbooks page; saved to config/main.playbooks.
+const CUSTOM = 'pens printed or engraved with their name and logo';
 const PLAYBOOK_DEFAULTS = {
-  gifting: { goal: 'Get on their supplier list for client gifts and logo orders.', contacts: 'Owner, sales rep, account manager, sourcing or procurement', angle: 'Factory-direct metal pens they can brand with a client logo and resell at a good margin: engraving, gift boxes, steady quality on repeat orders.', offer: 'a small sample kit, with a logo mock-up on request', tone: 'Trade to trade. Short and practical: margins, turnaround, minimums.', followup_days: 5, share: 30, products: [] },
-  shops: { goal: 'Win a first small wholesale order for the counter or pen shelf.', contacts: 'Owner, buyer, merchandise manager', angle: 'Giftable metal pens that sell at the counter and suit what they already stock. A small first order is fine.', offer: 'a few sample pens to try at the counter', tone: 'Warm and personal. Mention something real about their store.', followup_days: 7, share: 30, products: [] },
-  companies: { goal: 'Branded pens for staff, guests, events and onboarding kits.', contacts: 'Office manager, marketing, events, procurement', angle: 'Pens made with their logo for staff, guests and events, consistent quality at volume, delivered to the US.', offer: 'a sample engraved with their logo', tone: 'Professional and brief. One clear use case for them.', followup_days: 7, share: 15, products: [] },
-  small_business: { goal: 'A pen with their name on it to hand to clients.', contacts: 'Owner, managing partner, office manager', angle: 'A good metal pen with their name on it that clients keep: closing gifts, thank-yous, front-desk pens. Small runs are fine.', offer: 'a few sample pens', tone: 'Friendly, local and short. No jargon.', followup_days: 7, share: 15, products: [] },
-  big_box: { goal: 'Get considered as a supplier for the pen and stationery category.', contacts: 'Category buyer, vendor relations, merchandising, supplier diversity', angle: 'Established maker since 1995 with private-label capacity and steady quality at volume. Ask how to join their vendor process.', offer: 'a line sheet, with samples on request', tone: 'Formal and factual. No hard sell.', followup_days: 14, share: 10, products: [] },
+  gifting: { goal: 'Get on their supplier list for client gifts and logo orders.', contacts: 'Owner, sales rep, account manager, sourcing or procurement', angle: 'Factory-direct metal pens they can brand with a client logo (imprint or engraving) and resell at a good margin, with gift boxes and steady quality on repeat orders.', offer: 'a small sample kit, with a logo mock-up on request', tone: 'Trade to trade. Short and practical: margins, turnaround, minimums.', followup_days: 5, share: 25, products: [] },
+  shops: { goal: 'Win a first small wholesale order for the counter or pen shelf.', contacts: 'Owner, buyer, merchandise manager', angle: 'Giftable metal pens that sell at the counter and suit what they already stock, with the option of pens carrying the shop name. A small first order is fine.', offer: 'a few sample pens to try at the counter', tone: 'Warm and personal. Mention something real about their store.', followup_days: 7, share: 20, products: [] },
+  hospitality: { goal: 'Branded pens for the front desk, rooms, bill folders and events.', contacts: 'General manager, owner, purchasing, sales or events manager', angle: `Good-looking ${CUSTOM} for guest rooms, check-in and the bill. Guests take them home, so every pen advertises the place.`, offer: 'a sample printed with their logo', tone: 'Friendly and practical.', followup_days: 7, share: 15, products: [] },
+  healthcare: { goal: 'Branded pens for reception, staff and patient forms.', contacts: 'Practice manager, office manager, purchasing, marketing', angle: `Durable ${CUSTOM} for reception desks, staff and patient check-in. Sturdy metal pens that last.`, offer: 'a few samples with their logo', tone: 'Professional and short. They are busy.', followup_days: 10, share: 10, products: [] },
+  finance: { goal: 'Branded pens for counters, signings and client gifts.', contacts: 'Branch manager, marketing manager, office manager', angle: `Premium ${CUSTOM} for teller counters, account openings and closings. Signing with a good pen leaves an impression.`, offer: 'a sample engraved with their logo', tone: 'Professional and polished.', followup_days: 7, share: 10, products: [] },
+  companies: { goal: 'Branded pens for staff, visitors, onboarding kits and events.', contacts: 'Office manager, marketing, HR, events, procurement', angle: `${CUSTOM[0].toUpperCase() + CUSTOM.slice(1)} for staff, visitors and new-hire kits, with consistent quality at volume, delivered to the US.`, offer: 'a sample engraved with their logo', tone: 'Professional and brief. One clear use case for them.', followup_days: 7, share: 10, products: [] },
+  fitness: { goal: 'Branded pens for sign-ups, the front desk and member gifts.', contacts: 'Owner, general manager, marketing', angle: `${CUSTOM[0].toUpperCase() + CUSTOM.slice(1)} for member sign-ups and the front desk, plus small welcome gifts for new members.`, offer: 'a few samples with their logo', tone: 'Upbeat and short.', followup_days: 7, share: 5, products: [] },
+  education: { goal: 'Branded pens for events, admissions, alumni and donors.', contacts: 'Purchasing, events or development office, communications', angle: 'Pens printed or engraved with their name or crest for graduations, open days, donors and staff.', offer: 'a sample with their name or crest', tone: 'Warm and respectful.', followup_days: 10, share: 5, products: [] },
+  local: { goal: 'A pen with their name on it to hand to customers.', contacts: 'Owner, general manager, office manager', angle: 'Customers sign something at every visit. A good pen with their name on it keeps them in mind. Small runs are fine.', offer: 'a few sample pens with their name', tone: 'Friendly, local and short. No jargon.', followup_days: 7, share: 10, products: [] },
+  big_box: { goal: 'Get considered as a supplier for the pen and stationery category.', contacts: 'Category buyer, vendor relations, merchandising, supplier diversity', angle: 'Established maker since 1995 with private-label and custom capacity and steady quality at volume. Ask how to join their vendor process.', offer: 'a line sheet, with samples on request', tone: 'Formal and factual. No hard sell.', followup_days: 14, share: 5, products: [] },
 };
 const playbook = (cat) => ({ ...(PLAYBOOK_DEFAULTS[cat] || {}), ...((S.config?.playbooks || {})[cat] || {}) });
 const playbookOf = (seg) => (CAT_OF[seg] ? playbook(CAT_OF[seg]) : null);
@@ -910,6 +945,7 @@ function setup() {
       </section>
     </div>
     <section class="panel" style="margin-top:16px"><h2>Who to look for</h2><p class="small muted" style="margin:6px 0 12px">Where to look is set in <a href="#territory">Territory</a>.</p>
+      <div class="row" style="margin:0 0 10px"><button type="button" id="seg-all">Select every type</button><button type="button" class="quiet" id="seg-none">Clear all</button><span class="small muted">${f.segments.length} of ${SEGMENTS.length} business types selected</span></div>
       <div class="cats">${CATEGORIES.map((c) => { const on = c.segments.filter((k) => f.segments.includes(k)).length; return `<fieldset class="cat"><legend><label class="check"><input type="checkbox" data-cat="${c.key}" ${on === c.segments.length ? 'checked' : ''} ${on && on < c.segments.length ? 'data-mixed="1"' : ''}> <b>${esc(c.label)}</b> <span class="faint small">${on} of ${c.segments.length}</span></label></legend>
         <p class="small muted" style="margin:0 0 8px">${esc(c.blurb)}</p>
         <div class="checks">${c.segments.map((k) => `<label><input type="checkbox" data-seg="${k}" ${f.segments.includes(k) ? 'checked' : ''}> ${esc(SEG[k])}</label>`).join('')}</div></fieldset>`; }).join('')}</div>
@@ -956,6 +992,8 @@ function setup() {
   const touch = () => { const wasDirty = !!$('.savebar'); if (!wasDirty) render(); };
   $$('[data-f]').forEach((el) => (el.oninput = () => { f[el.dataset.f] = el.value; touch(); }));
   $$('[data-seg]').forEach((el) => (el.onchange = () => { f.segments = el.checked ? [...f.segments, el.dataset.seg] : f.segments.filter((s) => s !== el.dataset.seg); render(); }));
+  $('#seg-all').onclick = () => { f.segments = SEGMENTS.map(([k]) => k); render(); };
+  $('#seg-none').onclick = () => { f.segments = []; render(); };
   $$('[data-cat]').forEach((el) => {
     el.indeterminate = !!el.dataset.mixed;
     el.onchange = () => { const segs = CAT[el.dataset.cat].segments; f.segments = el.checked ? [...new Set([...f.segments, ...segs])] : f.segments.filter((s) => !segs.includes(s)); render(); };
