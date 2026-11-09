@@ -1,0 +1,16 @@
+{
+  "pageTopic": "Submarine Pens",
+  "defaultHashtags": [
+    "#submarinepens",
+    "#ubootbunker",
+    "#ww2history",
+    "#atlanticwall",
+    "#militaryhistory",
+    "#bunker",
+    "#navalhistory",
+    "#brutalism"
+  ],
+  "postsPerRun": 1,
+  "graphHost": "https://graph.instagram.com",
+  "apiVersion": "v21.0"
+}
