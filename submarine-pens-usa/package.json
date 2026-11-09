@@ -1,0 +1,14 @@
+{
+  "name": "submarine-pens-usa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "US online store for Submarine Pens with Square checkout",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  }
+}
