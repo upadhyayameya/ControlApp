@@ -1,0 +1,35 @@
+{
+  "store_name": "Submarine Pens USA",
+  "legal_name": "Submarine Pens Limited",
+  "tagline": "Fine writing instruments, designed in India — now shipping across the USA.",
+  "india_site_url": "https://www.submarinepens.com",
+  "support_email": "online@submarinepens.co.in",
+  "support_phone": "",
+  "support_hours": "Monday to Saturday, 10 am – 7 pm IST",
+  "business_address": "Unit No. 2, Building No 4, Plot No. B, Survey No. 73/8/3, Near Khodiyar Dham, Village Bapane, Naigaon (East), Taluka Vasai, District Palghar 401208, Maharashtra, India",
+
+  "shipping": {
+    "flat_rate_usd": 5.99,
+    "free_over_usd": 50,
+    "ships_from": "[REVIEW: where US orders ship from, e.g. 'our US warehouse in New Jersey' or 'Mumbai, India']",
+    "processing_days": "1–2 business days",
+    "delivery_estimate": "[REVIEW: e.g. 3–7 business days within the contiguous US]",
+    "regions": "all 50 US states, Puerto Rico and APO/FPO addresses",
+    "duties_note": "[REVIEW: who pays US import duties. If orders ship from a US warehouse, delete this. If they ship from India, e.g. 'Any US import duties are included in our prices, so you won't pay extra on delivery.']"
+  },
+  "returns": {
+    "window_days": 30,
+    "who_pays_return_shipping": "[REVIEW: 'we do' or 'the customer, unless the item arrived damaged or incorrect']",
+    "refund_days": "5–10 business days"
+  },
+  "legal": {
+    "governing_law": "[REVIEW: e.g. the State of New York]",
+    "effective_date": "[REVIEW: launch date]"
+  },
+  "hide_unpriced_products": false,
+
+  "import": {
+    "source_url": "https://www.submarinepens.com",
+    "exclude_title_patterns": ["mystery gift", "customi[sz]ation charge"]
+  }
+}

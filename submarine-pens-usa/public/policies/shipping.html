@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shipping Policy | Submarine Pens USA</title>
+  <meta name="description" content="Shipping rates, delivery times and coverage for Submarine Pens USA orders." />
+  <link rel="icon" type="image/png" href="/img/mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main id="main">
+    <section class="page-hero">
+      <div class="wrap narrow">
+        <p class="eyebrow">Policies</p>
+        <h1>Shipping Policy</h1>
+        <p class="muted">Effective <span data-cfg="legal.effective_date"></span></p>
+      </div>
+    </section>
+    <article class="wrap narrow prose">
+      <h2>Where we ship</h2>
+      <p>We ship to <span data-cfg="shipping.regions"></span>. We don't currently ship outside the United States from this store. If you're in India, please order from our <a data-cfg-href="india_site_url" href="#" rel="noopener">Indian website</a>.</p>
+
+      <h2>Shipping rates</h2>
+      <table>
+        <thead><tr><th>Order subtotal</th><th>Shipping</th></tr></thead>
+        <tbody>
+          <tr><td>Under <span data-cfg="shipping.free_over_usd" data-fmt="usd"></span></td><td><span data-cfg="shipping.flat_rate_usd" data-fmt="usd"></span> flat rate</td></tr>
+          <tr><td><span data-cfg="shipping.free_over_usd" data-fmt="usd"></span> and over</td><td>Free</td></tr>
+        </tbody>
+      </table>
+      <p>The shipping charge is shown in your cart and again at checkout before you pay.</p>
+
+      <h2>Processing and delivery times</h2>
+      <p>Orders ship from <span data-cfg="shipping.ships_from"></span>. We process orders within <span data-cfg="shipping.processing_days"></span> (excluding weekends and US holidays). Once shipped, delivery usually takes <span data-cfg="shipping.delivery_estimate"></span>. These are estimates, not guarantees, and carrier delays can happen.</p>
+
+      <h2>Tracking</h2>
+      <p>When your order ships, we'll email you a tracking number to the address you used at checkout.</p>
+
+      <h2>Duties and taxes</h2>
+      <p>Prices are in US dollars. Applicable sales tax is calculated at checkout. <span data-cfg="shipping.duties_note"></span></p>
+
+      <h2>Lost or damaged parcels</h2>
+      <p>If your parcel arrives damaged, or tracking shows it delivered but you didn't receive it, contact us at <a data-cfg-mailto="support_email" href="#"><span data-cfg="support_email"></span></a> within 7 days of the delivery date. Please include your order number and, for damage, a photo. We'll send a replacement or a refund.</p>
+
+      <h2>Wrong address</h2>
+      <p>Please check your shipping address at checkout. If you spot a mistake, email us right away. We can update it if the order hasn't shipped yet.</p>
+      <nav class="policy-nav" aria-label="Other policies">
+        <a href="/policies/shipping">Shipping</a>
+        <a href="/policies/returns">Returns &amp; refunds</a>
+        <a href="/policies/privacy">Privacy</a>
+        <a href="/policies/terms">Terms</a>
+      </nav>
+    </article>
+  </main>
+  <script type="module" src="/js/layout.js"></script>
+</body>
+</html>
