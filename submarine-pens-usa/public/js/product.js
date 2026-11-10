@@ -63,14 +63,14 @@ function render(product, summary) {
 
   const update = () => {
     const v = hasOptions ? variantFor(product, selected) : product.variants[0];
-    // option buttons: mark selected, and mark values that can't make a buyable variant with the other choices
+    // option buttons: mark selected, and strike through values that are sold out or don't exist with the other choices
     root.querySelectorAll("[data-opt]").forEach((b) => {
       const i = Number(b.dataset.opt);
       const trial = [...selected];
       trial[i] = b.dataset.val;
       const tv = variantFor(product, trial);
       b.setAttribute("aria-pressed", String(selected[i] === b.dataset.val));
-      b.classList.toggle("unavailable", !tv || !tv.purchasable);
+      b.classList.toggle("unavailable", !tv || !tv.available);
     });
     root.querySelectorAll("[data-sel]").forEach((el) => (el.textContent = selected[Number(el.dataset.sel)] || ""));
 
