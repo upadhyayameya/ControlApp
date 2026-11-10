@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submarine Pens USA | Fountain, Roller &amp; Ball Pens</title>
+  <meta name="description" content="Shop Submarine Pens in the USA: fountain pens, roller pens, ball pens and gift sets, shipped across all 50 states." />
+  <meta property="og:title" content="Submarine Pens USA" />
+  <meta property="og:description" content="Fountain pens, roller pens, ball pens and gift sets, shipped across the USA." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/png" href="/img/mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main id="main">
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div>
+          <p class="eyebrow">Crafting pens since 1995 · Now shipping across the USA</p>
+          <h1>Writing instruments with a <em>signature</em> of their own.</h1>
+          <p class="lede">Fountain pens, roller pens and ball pens from Submarine — designed and finished in India, now available to order in US dollars.</p>
+          <div class="hero-cta">
+            <a class="btn" href="#shop">Shop the collection</a>
+            <a class="btn ghost light" href="/about">Our story</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cats wrap" aria-label="Shop by category">
+      <a href="/?category=Fountain%20Pens#shop"><strong>Fountain Pens</strong><span>Classic nibs, converters &amp; cartridges</span></a>
+      <a href="/?category=Roller%20Pens#shop"><strong>Roller Pens</strong><span>Smooth, wet-ink everyday writers</span></a>
+      <a href="/?category=Ball%20Pens#shop"><strong>Ball Pens</strong><span>Reliable twist &amp; click ball pens</span></a>
+      <a href="/?category=Gift%20Sets#shop"><strong>Gift Sets</strong><span>Boxed pens &amp; diary sets for gifting</span></a>
+    </section>
+
+    <section class="wrap shop" id="shop">
+      <div class="shop-head">
+        <h2>Shop all pens</h2>
+        <span class="muted" id="count"></span>
+      </div>
+      <div class="toolbar">
+        <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+        <div class="tools">
+          <label class="sr-only" for="search">Search products</label>
+          <input type="search" id="search" placeholder="Search pens…" autocomplete="off" />
+          <label class="sr-only" for="sort">Sort by</label>
+          <select id="sort">
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid" id="grid" aria-live="polite">
+        <p class="muted">Loading products…</p>
+      </div>
+    </section>
+
+    <section class="trust">
+      <div class="wrap trust-grid">
+        <div><strong>Ships to all 50 states</strong><span>Tracked delivery on every order</span></div>
+        <div><strong><span data-cfg="returns.window_days">30</span>-day returns</strong><span>Not the right fit? Send it back.</span></div>
+        <div><strong>Secure checkout</strong><span>Payments processed by Square</span></div>
+        <div><strong>Real people</strong><span><a href="/contact">Contact our team</a> about any order</span></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/layout.js"></script>
+  <script type="module" src="/js/shop.js"></script>
+</body>
+</html>

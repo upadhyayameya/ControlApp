@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thank You | Submarine Pens USA</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" href="/img/mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main id="main" class="wrap narrow center-page">
+    <div class="check" aria-hidden="true">✓</div>
+    <h1>Thank you for your order!</h1>
+    <p>Your payment was received. Square will email your receipt, and we'll send tracking details as soon as your order ships.</p>
+    <p class="demo-banner" id="demo" hidden>Demo mode: no payment was taken. Add your Square keys to take real orders.</p>
+    <p>Questions? <a href="/contact">Contact us</a>.</p>
+    <a class="btn" href="/">Continue shopping</a>
+  </main>
+  <script type="module">
+    import { clearCart } from "/js/layout.js";
+    clearCart();
+    if (new URLSearchParams(location.search).has("demo")) document.getElementById("demo").hidden = false;
+  </script>
+</body>
+</html>

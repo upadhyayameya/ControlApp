@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Us | Submarine Pens USA</title>
+  <meta name="description" content="Questions about an order, a pen or a corporate gift? Contact Submarine Pens USA." />
+  <link rel="icon" type="image/png" href="/img/mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main id="main">
+    <section class="page-hero">
+      <div class="wrap narrow">
+        <p class="eyebrow">Contact</p>
+        <h1>How can we help?</h1>
+        <p class="lede">Questions about an order, a pen, or a corporate or bulk gift? Send us a message and we'll reply by email.</p>
+      </div>
+    </section>
+    <div class="wrap contact-grid">
+      <form id="contactForm" class="form" novalidate>
+        <div class="field">
+          <label for="name">Your name</label>
+          <input id="name" name="name" autocomplete="name" required maxlength="120" />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="order">Order number <span class="muted">(optional)</span></label>
+          <input id="order" name="order" maxlength="60" />
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="6" required maxlength="5000"></textarea>
+        </div>
+        <div class="hp" aria-hidden="true">
+          <label for="website">Leave this empty</label>
+          <input id="website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+        <p class="muted small">By sending this form you agree to our <a href="/policies/privacy">privacy policy</a>.</p>
+        <p class="error" id="formError" role="alert"></p>
+        <button class="btn" type="submit" id="sendBtn">Send message</button>
+        <div class="success-box" id="formOk" hidden>
+          <strong>Thanks, your message is on its way.</strong>
+          <p>We'll reply to you by email, usually within one business day.</p>
+        </div>
+      </form>
+      <aside class="contact-info">
+        <h2>Customer support</h2>
+        <p><strong>Email</strong><br /><a data-cfg-mailto="support_email" href="#"><span data-cfg="support_email"></span></a></p>
+        <p data-cfg-if="support_phone"><strong>Phone</strong><br /><span data-cfg="support_phone"></span></p>
+        <p><strong>Hours</strong><br /><span data-cfg="support_hours"></span></p>
+        <p><strong>Company</strong><br /><span data-cfg="legal_name"></span><br /><span class="muted small" data-cfg="business_address"></span></p>
+        <p class="muted small">Shopping from India? Visit <a data-cfg-href="india_site_url" href="https://www.submarinepens.com" rel="noopener">submarinepens.com</a>.</p>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="/js/layout.js"></script>
+  <script type="module">
+    import { $ } from "/js/layout.js";
+    const form = $("#contactForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("#formError");
+      err.textContent = "";
+      const data = Object.fromEntries(new FormData(form));
+      if (!data.name.trim() || !data.message.trim()) { err.textContent = "Please enter your name and a message."; return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { err.textContent = "Please enter a valid email address."; return; }
+      const btn = $("#sendBtn");
+      btn.disabled = true; btn.textContent = "Sending…";
+      try {
+        const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || "Couldn't send your message.");
+        form.querySelectorAll(".field, .hp, p.muted, #sendBtn").forEach((el) => (el.hidden = true));
+        $("#formOk").hidden = false;
+      } catch (ex) {
+        err.textContent = ex.message;
+        btn.disabled = false; btn.textContent = "Send message";
+      }
+    });
+  </script>
+</body>
+</html>
