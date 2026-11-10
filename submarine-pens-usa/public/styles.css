@@ -214,7 +214,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .prose .lead { font-size: 1.15rem; }
 .prose li { margin-bottom: .4em; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
+.three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 620px) { .two-col, .three-col { grid-template-columns: 1fr; } }
 .panel { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
 .panel h3 { margin: 0 0 6px; letter-spacing: .08em; font-size: 1rem; }
 .panel p { margin: 0; color: var(--muted); }
