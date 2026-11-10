@@ -12,33 +12,33 @@
   },
   "products": [
     {
-      "id": "sample-ballpoint",
-      "name": "REPLACE: Ballpoint pen name",
-      "category": "Ballpoint",
-      "price": 0,
-      "description": "REPLACE: one or two lines on what makes this pen good to write with.",
-      "image": "images/sample-ballpoint.jpg",
+      "id": "brass-series-rollerball",
+      "name": "Brass Series Rollerball",
+      "category": "Rollerball",
+      "price": 13.0,
+      "description": "REPLACE: finish, ink colour and tip size (price is the $13 MSRP listed on Faire; confirm).",
+      "image": "images/brass-series-rollerball.jpg",
       "buyUrl": "REPLACE-with-Stripe-payment-link",
       "available": true,
       "featured": true
     },
     {
-      "id": "sample-gel",
-      "name": "REPLACE: Gel pen name",
-      "category": "Gel",
+      "id": "caduceus-clip-ballpoint",
+      "name": "Caduceus Clip Retractable Ballpoint",
+      "category": "Ballpoint",
       "price": 0,
-      "description": "REPLACE: colour, tip size, ink.",
-      "image": "images/sample-gel.jpg",
+      "description": "REPLACE: finish, ink colour and tip size.",
+      "image": "images/caduceus-clip-ballpoint.jpg",
       "buyUrl": "REPLACE-with-Stripe-payment-link",
       "available": true
     },
     {
-      "id": "sample-set",
-      "name": "REPLACE: Gift set name",
+      "id": "gift-set",
+      "name": "REPLACE: Gift set name (or delete this product)",
       "category": "Sets",
       "price": 0,
       "description": "REPLACE: what's in the box.",
-      "image": "images/sample-set.jpg",
+      "image": "images/gift-set.jpg",
       "buyUrl": "REPLACE-with-Stripe-payment-link",
       "available": true
     }

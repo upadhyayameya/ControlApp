@@ -49,14 +49,24 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
+      - name: Check Instagram is connected
+        id: creds
+        env:
+          HAS: ${{ secrets.IG_ACCESS_TOKEN != '' && secrets.IG_USER_ID != '' }}
+        run: |
+          if [ "$HAS" != "true" ]; then
+            echo "::notice::Instagram not connected yet: add IG_USER_ID and IG_ACCESS_TOKEN secrets (see instagram/README.md). Skipping."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
       - name: Post next due item
+        if: steps.creds.outputs.ok == 'true' || inputs.task == 'post (dry run)'
         env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           MEDIA_BASE_URL: ${{ vars.MEDIA_BASE_URL }}
         run: node instagram/post.mjs ${{ inputs.task == 'post (dry run)' && '--dry-run' || '' }}
       - name: Commit moved files and log
-        if: always() && inputs.task != 'post (dry run)'
+        if: always() && steps.creds.outputs.ok == 'true' && inputs.task != 'post (dry run)'
         run: |
           git config user.name 'instagram-bot'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -70,7 +80,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
+      - name: Check Instagram is connected
+        id: creds
+        env:
+          HAS: ${{ secrets.IG_ACCESS_TOKEN != '' && secrets.IG_USER_ID != '' }}
+        run: |
+          if [ "$HAS" != "true" ]; then
+            echo "::notice::Instagram not connected yet: add IG_USER_ID and IG_ACCESS_TOKEN secrets (see instagram/README.md). Skipping."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
       - name: Build report
+        if: steps.creds.outputs.ok == 'true'
         env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
@@ -78,7 +98,7 @@ jobs:
           node instagram/report.mjs --dm-out "$RUNNER_TEMP/dms.md"
           cat instagram/REPORT.md >> "$GITHUB_STEP_SUMMARY"
       - name: Open, update or close the "Unanswered Instagram DMs" issue
-        if: always()
+        if: always() && steps.creds.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -92,7 +112,7 @@ jobs:
             gh issue close "$NUM" --comment "All DMs answered ✅"
           fi
       - name: Commit report
-        if: always()
+        if: always() && steps.creds.outputs.ok == 'true'
         run: |
           git config user.name 'instagram-bot'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
