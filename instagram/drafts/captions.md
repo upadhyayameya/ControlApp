@@ -1,24 +1,31 @@
-# Caption drafts — Submarine Pens
+# Caption drafts: Submarine Pens USA
 
-Starter captions. Pair one with your own photo, save it as `queue/<date>-<name>.txt`, and check the facts against your sources before posting.
+Starter captions, one or more per pillar. Replace the **[brackets]** with real product details, save each one as the `.txt` next to its photo in `queue/`, and don't claim anything about a pen you haven't checked.
 
-## Keroman, Lorient (France)
-Three colossal blocks (K1, K2, K3) built 1941–43 made Keroman the largest U-boat base on the Atlantic coast. Allied bombing flattened the town of Lorient around it, but the roofs held. The French Navy kept using the base until 1997; today it houses a submarine museum (the Flore S645).
-What would you do with a building that can't be demolished?
+## Launch / first posts
+**`offer_welcome`**: Hello, Instagram. ✒️ We're Submarine Pens USA, from [Arlington, VA]. Pens made to help you say what you mean, on paper. Follow along for new arrivals, writing inspiration and the occasional giveaway. Shop: link in bio.
 
-## Saint-Nazaire (France)
-Fourteen pens under a roof several metres thick. After the war the city grew up around a bunker it couldn't remove, and eventually built a rooftop walkway and exhibition spaces on top of it. The concrete became a viewpoint.
+**`brand_who-we-are`**: Every pen we sell is one we'd use ourselves. Here's [name] packing today's orders. Say hi 👋 What are you writing this week?
 
-## Bordeaux (France)
-Bordeaux's base also served Italian submarines of the BETASOM flotilla. Today part of it is the Bassins des Lumières, one of the largest digital art centres in the world, projected onto walls built to stop bombs.
+## Product spotlight (`spotlight`)
+- Meet the [pen name]. [Tip size] tip, [ink colour] ink, [one standout detail]. Swipe for the close-ups →
+- One pen, [number] colours. Which one is yours? Tell us below 👇
+- The details matter: [clip / grip / finish]. Built for [everyday notes / long writing sessions].
 
-## Bunker Valentin, Bremen-Farge (Germany)
-Meant to assemble Type XXI U-boats in sections, Valentin was never finished. Thousands of forced labourers and prisoners were used to build it, and many died. It is now a memorial, the Denkort Bunker Valentin. Some concrete carries memory, not just weight.
+## Writing in action (`writing`)
+- Sound on. 🔊 Nothing beats a pen that just glides. [Pen name] on [paper type].
+- Sunday planning with the [pen name]. What's on your list this week?
+- Ink swatch: every colour of the [pen name] range. Save this for your next order 📌
 
-## Dora I, Trondheim (Norway)
-Built for the 13th U-boat Flotilla. In a quiet fjord city it's an unexpected slab of grey that still stands and has been reused for archives and storage.
+## Community & reviews (`community`)
+- "[Short customer quote]" (@[customer], shared with permission). Thank you! Tag us to be featured.
+- Giveaway 🎁 Win a [set]: 1) follow @submarinepensusa 2) like this post 3) tag a friend who needs a better pen. Ends [date]. US only. [Link to rules]
+- Question for you: ballpoint or gel? Wrong answers only 😄
 
-## Generic / engagement
-- Swipe to see how thick the roof is →
-- Which pen should we feature next? Lorient, Brest, La Pallice, Bordeaux, Saint-Nazaire, Trondheim, Bergen, or Valentin? 👇
-- Built to survive the war. Now they're among the hardest buildings in Europe to get rid of.
+## Behind the brand (`brand`)
+- New stock just landed in [Arlington]. Unboxing with us →
+- Every order is packed by hand. Here's what yours looks like on the way out.
+
+## Offers & launches (`offer`)
+- NEW: [pen name] in [colour]. Limited first batch. Link in bio.
+- The [gift set] is back, ready to give. Order by [date] for delivery by [holiday]. Link in bio.

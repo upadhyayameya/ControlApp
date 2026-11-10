@@ -1,16 +1,25 @@
 {
-  "pageTopic": "Submarine Pens",
+  "brand": "Submarine Pens USA",
+  "handle": "submarinepensusa",
   "defaultHashtags": [
     "#submarinepens",
-    "#ubootbunker",
-    "#ww2history",
-    "#atlanticwall",
-    "#militaryhistory",
-    "#bunker",
-    "#navalhistory",
-    "#brutalism"
+    "#submarinepensusa",
+    "#powertoexpress",
+    "#pens",
+    "#penaddict",
+    "#stationery",
+    "#handwriting"
   ],
+  "pillars": {
+    "spotlight": { "label": "Product spotlight", "share": 30, "about": "One pen, shot beautifully: detail, colour, how it feels to hold" },
+    "writing": { "label": "Writing in action", "share": 25, "about": "Pens being used: journaling, notes, lettering, ink swatches, desk setups" },
+    "community": { "label": "Community & reviews", "share": 20, "about": "Customer photos and reviews (with permission), giveaways, Q&A" },
+    "brand": { "label": "Behind the brand", "share": 15, "about": "Packing orders, new stock arriving, the team, Arlington VA" },
+    "offer": { "label": "Offers & launches", "share": 10, "about": "New arrivals, bundles, limited deals, all pointing to the shop link" }
+  },
+  "postDays": ["Mon", "Wed", "Fri"],
   "postsPerRun": 1,
+  "reportPosts": 30,
   "graphHost": "https://graph.instagram.com",
   "apiVersion": "v21.0"
 }

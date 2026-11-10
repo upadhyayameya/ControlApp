@@ -1,0 +1,46 @@
+{
+  "store": {
+    "name": "Submarine Pens USA",
+    "tagline": "Power to express",
+    "instagram": "submarinepensusa",
+    "logo": "images/logo.png",
+    "location": "Arlington, Virginia",
+    "contactEmail": "REPLACE-with-your-store-email@example.com",
+    "shipsNote": "Ships within the US. REPLACE with your shipping & returns policy.",
+    "currency": "USD",
+    "siteUrl": "REPLACE-with-the-URL-where-you-host-this-shop"
+  },
+  "products": [
+    {
+      "id": "sample-ballpoint",
+      "name": "REPLACE: Ballpoint pen name",
+      "category": "Ballpoint",
+      "price": 0,
+      "description": "REPLACE: one or two lines on what makes this pen good to write with.",
+      "image": "images/sample-ballpoint.jpg",
+      "buyUrl": "REPLACE-with-Stripe-payment-link",
+      "available": true,
+      "featured": true
+    },
+    {
+      "id": "sample-gel",
+      "name": "REPLACE: Gel pen name",
+      "category": "Gel",
+      "price": 0,
+      "description": "REPLACE: colour, tip size, ink.",
+      "image": "images/sample-gel.jpg",
+      "buyUrl": "REPLACE-with-Stripe-payment-link",
+      "available": true
+    },
+    {
+      "id": "sample-set",
+      "name": "REPLACE: Gift set name",
+      "category": "Sets",
+      "price": 0,
+      "description": "REPLACE: what's in the box.",
+      "image": "images/sample-set.jpg",
+      "buyUrl": "REPLACE-with-Stripe-payment-link",
+      "available": true
+    }
+  ]
+}
