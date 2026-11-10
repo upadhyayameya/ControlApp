@@ -1,0 +1,22 @@
+{
+  "pricing": {
+    "_note": "US MSRP = India M.R.P. (INR) / inrPerUsd, then rounded. 40 makes the ₹500 roller pens $13, which matches the $13 MSRP already listed on Faire. Change it, rebuild, and every price in the PDF and CSV follows.",
+    "inrPerUsd": 40,
+    "roundBelow10": 0.5,
+    "roundFrom10": 1,
+    "minimumUsd": 1,
+    "wholesaleFraction": 0.5,
+    "overrides": {}
+  },
+  "labels": {
+    "priceLabel": "MSRP",
+    "perPiece": "ea."
+  },
+  "backPage": {
+    "company": "SUBMARINE PENS USA",
+    "line1": "US distributor of Submarine Pens Limited, Mumbai, India",
+    "line2": "(An ISO 9001:2015 certified manufacturer)",
+    "line3": "Arlington, Virginia",
+    "contact": "Instagram @submarinepensusa"
+  }
+}
