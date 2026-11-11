@@ -1,5 +1,7 @@
 # Instagram automation: @submarinepensusa
 
+> **Paused:** posting is manual for now. The daily schedules are commented out in `.github/workflows/instagram.yml`; uncomment the `schedule:` block to resume. Queued posts in `queue/` stay put. Use them as ready-made images and captions to upload by hand.
+
 Everything runs on GitHub Actions (`.github/workflows/instagram.yml`) through Instagram's official API. There's no server to run and nothing to install.
 
 | You want to… | Use | Where you see it |
