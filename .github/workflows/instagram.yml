@@ -1,0 +1,137 @@
+name: Instagram
+
+on:
+  schedule:
+    - cron: '7 16 * * *'    # post: daily 16:07 UTC (11:07 ET); undated posts only on config.postDays
+    - cron: '17 12 * * *'   # report: daily 12:17 UTC (7:17 ET) traction, DMs, calendar
+    - cron: '23 3 1,15 * *' # refresh the access token on the 1st & 15th
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'What to run'
+        type: choice
+        options: [report, post, post (dry run)]
+        default: report
+  push:
+    paths: ['instagram/**', 'shop/**', '.github/workflows/instagram.yml']
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: instagram
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Check the post queue
+        run: node instagram/post.mjs --dry-run
+      - name: Content calendar
+        run: node instagram/plan.mjs --weeks 4 | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Build the shop
+        run: node shop/build.mjs || node shop/build.mjs --preview
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shop-site
+          path: shop/dist
+
+  post:
+    if: (github.event_name == 'schedule' && github.event.schedule == '7 16 * * *') || (github.event_name == 'workflow_dispatch' && startsWith(inputs.task, 'post'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Check Instagram is connected
+        id: creds
+        env:
+          HAS: ${{ secrets.IG_ACCESS_TOKEN != '' && secrets.IG_USER_ID != '' }}
+        run: |
+          if [ "$HAS" != "true" ]; then
+            echo "::notice::Instagram not connected yet: add IG_USER_ID and IG_ACCESS_TOKEN secrets (see instagram/README.md). Skipping."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Post next due item
+        if: steps.creds.outputs.ok == 'true' || inputs.task == 'post (dry run)'
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          MEDIA_BASE_URL: ${{ vars.MEDIA_BASE_URL }}
+        run: node instagram/post.mjs ${{ inputs.task == 'post (dry run)' && '--dry-run' || '' }}
+      - name: Commit moved files and log
+        if: always() && steps.creds.outputs.ok == 'true' && inputs.task != 'post (dry run)'
+        run: |
+          git config user.name 'instagram-bot'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A instagram
+          git diff --cached --quiet || (git commit -m 'Instagram: archive posted item' && git pull --rebase && git push)
+
+  report:
+    if: (github.event_name == 'schedule' && github.event.schedule == '17 12 * * *') || (github.event_name == 'workflow_dispatch' && inputs.task == 'report')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Check Instagram is connected
+        id: creds
+        env:
+          HAS: ${{ secrets.IG_ACCESS_TOKEN != '' && secrets.IG_USER_ID != '' }}
+        run: |
+          if [ "$HAS" != "true" ]; then
+            echo "::notice::Instagram not connected yet: add IG_USER_ID and IG_ACCESS_TOKEN secrets (see instagram/README.md). Skipping."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Build report
+        if: steps.creds.outputs.ok == 'true'
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          node instagram/report.mjs --dm-out "$RUNNER_TEMP/dms.md"
+          cat instagram/REPORT.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Open, update or close the "Unanswered Instagram DMs" issue
+        if: always() && steps.creds.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f "$RUNNER_TEMP/dms.md" ] || { echo "DM check did not run"; exit 0; }
+          TITLE='Unanswered Instagram DMs'
+          NUM=$(gh issue list --state open --search "in:title \"$TITLE\"" --json number,title -q ".[] | select(.title==\"$TITLE\") | .number" | head -1)
+          if [ -s "$RUNNER_TEMP/dms.md" ]; then
+            if [ -n "$NUM" ]; then gh issue edit "$NUM" --body-file "$RUNNER_TEMP/dms.md" && gh issue comment "$NUM" --body "Still waiting as of $(date -u +'%Y-%m-%d %H:%M') UTC."
+            else gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/dms.md" --assignee "$GITHUB_REPOSITORY_OWNER"; fi
+          elif [ -n "$NUM" ]; then
+            gh issue close "$NUM" --comment "All DMs answered ✅"
+          fi
+      - name: Commit report
+        if: always() && steps.creds.outputs.ok == 'true'
+        run: |
+          git config user.name 'instagram-bot'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add instagram/REPORT.md instagram/insights
+          git diff --cached --quiet || (git commit -m 'Instagram: daily report' && git pull --rebase && git push)
+
+  refresh-token:
+    if: github.event_name == 'schedule' && github.event.schedule == '23 3 1,15 * *'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Refresh token and save it back to the secret
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}  # fine-grained PAT with "Secrets: read & write" on this repo
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "GH_PAT not set: skipping auto-refresh (refresh manually every ~50 days)"; exit 0; fi
+          NEW=$(node instagram/refresh-token.mjs)
+          echo "::add-mask::$NEW"
+          gh secret set IG_ACCESS_TOKEN --body "$NEW" --repo "$GITHUB_REPOSITORY"
