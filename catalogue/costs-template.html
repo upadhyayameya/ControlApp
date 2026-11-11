@@ -1,0 +1,305 @@
+<title>Submarine Pricing Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112..125,500;112..125,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an import-costing worksheet. Assumptions rail on the left (the levers), results on the right:
+   headline figures, per-section summary, then the full product ledger with a cost-composition bar per row. */
+:root {
+  --bg: #f4f5f7; --surface: #ffffff; --fg: #16191f; --muted: #5d6573; --line: #e2e5ea; --soft: #eef0f3;
+  --accent: #12336b; --bronze: #93703f;
+  --c-factory: #12336b; --c-duty: #b5832f; --c-freight: #3f8f86; --c-fees: #9aa3b1;
+  --good: #1f7a4d; --warn: #b26b00; --bad: #b3261e; --good-bg: #e6f3ec; --warn-bg: #fbf1e0; --bad-bg: #fbe9e7;
+  --display: "Archivo", "Arial Narrow", Helvetica, sans-serif; --body: "Inter", Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1015; --surface: #151920; --fg: #e8eaee; --muted: #9aa3b1; --line: #262c36; --soft: #1c212a;
+  --accent: #9db8ee; --bronze: #cda56c;
+  --c-factory: #6f93d8; --c-duty: #d6a556; --c-freight: #5fb7ac; --c-fees: #6b7483;
+  --good: #5cc48f; --warn: #e7a94a; --bad: #f08074; --good-bg: #13291f; --warn-bg: #2d2412; --bad-bg: #331917; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d1015; --surface: #151920; --fg: #e8eaee; --muted: #9aa3b1; --line: #262c36; --soft: #1c212a;
+  --accent: #9db8ee; --bronze: #cda56c;
+  --c-factory: #6f93d8; --c-duty: #d6a556; --c-freight: #5fb7ac; --c-fees: #6b7483;
+  --good: #5cc48f; --warn: #e7a94a; --bad: #f08074; --good-bg: #13291f; --warn-bg: #2d2412; --bad-bg: #331917; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.45 var(--body); }
+.wrap { max-width: 1500px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px 40px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+
+header.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+header.top h1 { font: 500 28px/1.1 var(--display); font-stretch: 120%; }
+header.top p { margin: 6px 0 0; color: var(--muted); max-width: 70ch; }
+.badge { display: inline-block; font: 700 11px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--bad); background: var(--bad-bg); border-radius: 4px; padding: 5px 8px; vertical-align: middle; margin-left: 8px; }
+
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+.layout > * { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+
+/* assumptions */
+.levers { padding: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.levers h2 { font: 600 12px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--bronze); margin-bottom: 12px; }
+.lever { display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--line); }
+.lever:first-of-type { border-top: none; padding-top: 0; }
+.lever .lab { display: flex; justify-content: space-between; gap: 8px; font-weight: 500; }
+.lever .lab output { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.lever input[type="range"] { width: 100%; accent-color: var(--accent); }
+.lever small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.lever.changed .lab output::after { content: " •"; color: var(--bronze); }
+.levers .btns { display: flex; gap: 8px; margin-top: 12px; }
+.btn { border: 1px solid var(--line); background: var(--soft); color: var(--fg); border-radius: 7px; padding: 7px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+.btn:hover { border-color: var(--bronze); }
+.note-asm { margin-top: 12px; font-size: 12px; color: var(--muted); }
+
+/* headline figures */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.kpi { padding: 12px 14px; }
+.kpi .k { font-size: 12px; color: var(--muted); }
+.kpi .v { font: 600 22px/1.2 var(--body); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.kpi .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+h2.sec { font: 500 18px/1.2 var(--display); font-stretch: 115%; margin: 20px 0 10px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: right; }
+th { font-size: 11.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; background: var(--surface); position: sticky; top: 0; z-index: 1; }
+th.l, td.l { text-align: left; }
+tbody tr:hover td { background: var(--soft); }
+td { font-variant-numeric: tabular-nums; }
+.sum td:first-child { font-weight: 600; }
+
+/* ledger */
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 12px; border-bottom: 1px solid var(--line); }
+.tools input[type="search"], .tools select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--fg); font: inherit; }
+.tools input[type="search"] { flex: 1 1 220px; min-width: 0; }
+.tools label.t { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-left: auto; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.ledger { max-height: 72vh; overflow: auto; }
+.ledger th { cursor: pointer; user-select: none; }
+.ledger th[aria-sort="ascending"]::after { content: " ▲"; }
+.ledger th[aria-sort="descending"]::after { content: " ▼"; }
+.ledger td.p, .ledger th.p { position: sticky; left: 0; background: var(--surface); z-index: 1; text-align: left; }
+.ledger th.p { z-index: 2; }
+tbody tr:hover td.p { background: var(--soft); }
+.prod { display: flex; gap: 9px; align-items: center; min-width: 250px; }
+.thumb { width: 64px; height: 30px; background: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex: none; border: 1px solid var(--line); }
+.thumb img { max-width: 60px; max-height: 26px; object-fit: contain; }
+.prod b { font-weight: 600; display: block; font-size: 13px; }
+.prod span { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.new { background: #d9661f; color: #fff; font: 700 9px/1 var(--body); padding: 2px 4px; border-radius: 3px; margin-left: 5px; letter-spacing: 0.06em; }
+.out { color: var(--bad); font-size: 11px; font-weight: 600; margin-left: 5px; }
+.bar { display: flex; height: 8px; width: 90px; border-radius: 2px; overflow: hidden; background: var(--soft); margin-top: 3px; margin-left: auto; }
+.bar span { display: block; height: 100%; }
+.pill { display: inline-block; padding: 2px 7px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+.pill.good { color: var(--good); background: var(--good-bg); }
+.pill.warn { color: var(--warn); background: var(--warn-bg); }
+.pill.bad { color: var(--bad); background: var(--bad-bg); }
+.ovr { color: var(--bronze); font-size: 11px; }
+.grp td { background: var(--soft); text-align: left; font-weight: 600; color: var(--accent); }
+.foot { color: var(--muted); font-size: 12px; margin-top: 12px; max-width: 110ch; }
+.foot b { color: var(--fg); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .levers { position: static; }
+  .legend { margin-left: 0; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Pricing Console <span class="badge">Internal</span></h1>
+      <p>India M.R.P. to US retail for every Submarine product: landed cost, markup, profit and margin. Move the assumptions on the left to see how every price changes. Don’t share this page with customers.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel levers" id="levers" aria-label="Assumptions">
+      <h2>Assumptions</h2>
+      <div id="leverList"></div>
+      <div class="btns"><button class="btn" type="button" id="reset">Reset to catalogue settings</button></div>
+      <p class="note-asm">The catalogue PDF and the customer portal use the catalogue settings. When you settle on new numbers, send them to Claude to rebuild both. A dot • marks a changed setting.</p>
+    </aside>
+
+    <section>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="panel">
+        <div class="scroll"><table class="sum" id="sumTable"></table></div>
+      </div>
+
+      <h2 class="sec">Every product</h2>
+      <div class="panel">
+        <div class="tools">
+          <input type="search" id="q" placeholder="Search name or code" aria-label="Search products">
+          <select id="sec" aria-label="Section"></select>
+          <label class="t" for="showOut"><input type="checkbox" id="showOut"> Include left-out items</label>
+          <div class="legend"><span><i style="background:var(--c-factory)"></i>Factory</span><span><i style="background:var(--c-duty)"></i>Duty + tariff</span><span><i style="background:var(--c-freight)"></i>Freight</span><span><i style="background:var(--c-fees)"></i>Fees</span></div>
+        </div>
+        <div class="ledger" id="ledgerWrap"><table id="ledger"></table></div>
+      </div>
+      <div class="foot" id="foot"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const D = /*DATA*/null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const usd = (v) => (v < 0 ? "−$" : "$") + Math.abs(v).toFixed(2);
+const inr = (v) => "₹" + Math.round(v).toLocaleString("en-IN");
+const pct = (v) => (isFinite(v) ? v.toFixed(0) + "%" : "–");
+const BASE = D.settings;
+
+const LEVERS = [
+  { k: "inrPerUsd", label: "Exchange rate", min: 80, max: 105, step: 0.5, fmt: (v) => `₹${v} / $`, help: "Rupees per US dollar." },
+  { k: "factoryShare", label: "Factory price", min: 0.3, max: 0.8, step: 0.01, fmt: (v) => `${Math.round(v * 100)}% of M.R.P.`, help: "What Submarine charges you, as a share of the India M.R.P. Assumption until you have their export price list." },
+  { k: "freightPerKg", label: "Freight", min: 0, max: 20, step: 0.25, fmt: (v) => `$${v.toFixed(2)} / kg`, help: "India to Virginia, door to door. Air cargo is about $5–9/kg; sea is far less but takes 5–7 weeks." },
+  { k: "indiaTariffPct", label: "Extra US tariff on India", min: 0, max: 50, step: 1, fmt: (v) => `${v}%`, help: "On top of normal duty. Confirm the current rate with your customs broker." },
+  { k: "otherPct", label: "Broker, bank, insurance", min: 0, max: 10, step: 0.5, fmt: (v) => `${v}% of factory`, help: "Plus the 0.35% customs processing fee." },
+  { k: "markup", label: "Retail markup on landed", min: 2, max: 6, step: 0.1, fmt: (v) => `× ${v.toFixed(1)}`, help: "Retail = landed × this, rounded up to .99, with a $3.99 minimum ($1.99 refills)." },
+  { k: "wholesaleShare", label: "Wholesale price", min: 0.4, max: 0.7, step: 0.01, fmt: (v) => `${Math.round(v * 100)}% of retail`, help: "What a shop pays you. 50% is standard." },
+  { k: "cardFeePct", label: "Card / checkout fee", min: 0, max: 6, step: 0.1, fmt: (v) => `${v.toFixed(1)}%`, help: "Taken off your direct sales (Stripe is 2.9% + 30¢ per order)." },
+  { k: "wholesaleFeePct", label: "Wholesale platform fee", min: 0, max: 30, step: 1, fmt: (v) => `${v}%`, help: "Taken off wholesale sales. Faire charges 15% on reorders, 25% on a shop's first order; 0% for your own wholesale." },
+];
+const DEFAULTS = { ...BASE, cardFeePct: 2.9, wholesaleFeePct: 0 };
+let S = { ...DEFAULTS };
+try { const saved = JSON.parse(localStorage.getItem("pricing-levers") || "null"); if (saved) S = { ...DEFAULTS, ...saved }; } catch {}
+
+function compute(r) {
+  const factoryInr = r.factoryInr ?? r.mrp * S.factoryShare;
+  const factory = factoryInr / S.inrPerUsd;
+  const duty = factory * r.dutyPct / 100 + r.pieces * r.cents / 100;
+  const tariff = factory * S.indiaTariffPct / 100;
+  const freight = r.grams / 1000 * S.freightPerKg;
+  const fees = factory * (S.mpfPct + S.otherPct) / 100;
+  const landed = factory + duty + tariff + freight + fees;
+  let retail;
+  if (r.override != null) retail = r.override;
+  else {
+    const floor = S.minimum[r.group] ?? S.minimum.default;
+    retail = Math.max(Math.ceil(landed * S.markup - S.ending + 1e-9) + S.ending, floor);
+  }
+  retail = Math.round(retail * 100) / 100;
+  const wholesale = Math.round(retail * S.wholesaleShare * 100) / 100;
+  const retailNet = retail * (1 - S.cardFeePct / 100);
+  const wholesaleNet = wholesale * (1 - S.wholesaleFeePct / 100);
+  const profit = retailNet - landed, wProfit = wholesaleNet - landed;
+  return { factoryInr, factory, duty, tariff, freight, fees, landed, retail, wholesale, profit, wProfit,
+    mrpUsd: r.mrp / S.inrPerUsd, markupPct: (retail / landed - 1) * 100, margin: profit / retail * 100,
+    wMargin: wProfit / wholesale * 100, vsIndia: retail / (r.mrp / S.inrPerUsd) };
+}
+
+function pill(m) { const c = m >= 50 ? "good" : m >= 30 ? "warn" : "bad"; return `<span class="pill ${c}">${pct(m)}</span>`; }
+function median(a) { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; }
+
+function levers() {
+  $("leverList").innerHTML = LEVERS.map((l) => `<div class="lever${S[l.k] !== DEFAULTS[l.k] ? " changed" : ""}">
+    <label class="lab" for="lv-${l.k}"><span>${esc(l.label)}</span><output id="o-${l.k}">${esc(l.fmt(S[l.k]))}</output></label>
+    <input type="range" id="lv-${l.k}" data-k="${l.k}" min="${l.min}" max="${l.max}" step="${l.step}" value="${S[l.k]}">
+    <small>${esc(l.help)}</small></div>`).join("");
+}
+$("leverList").addEventListener("input", (e) => {
+  const k = e.target.dataset.k; if (!k) return;
+  S[k] = parseFloat(e.target.value);
+  const l = LEVERS.find((x) => x.k === k);
+  $("o-" + k).textContent = l.fmt(S[k]);
+  e.target.closest(".lever").classList.toggle("changed", S[k] !== DEFAULTS[k]);
+  try { localStorage.setItem("pricing-levers", JSON.stringify(S)); } catch {}
+  update();
+});
+$("reset").addEventListener("click", () => { S = { ...DEFAULTS }; try { localStorage.removeItem("pricing-levers"); } catch {} levers(); update(); });
+
+$("sec").innerHTML = `<option value="">All sections</option>` + D.sections.map((s) => `<option>${esc(s)}</option>`).join("");
+const sortState = { key: null, dir: 1 };
+const COLS = [
+  { k: "name", t: "Product", cls: "p l" },
+  { k: "mrp", t: "India M.R.P." }, { k: "mrpUsd", t: "M.R.P. in $" },
+  { k: "factory", t: "Factory" }, { k: "duty", t: "Duty" }, { k: "tariff", t: "Tariff" },
+  { k: "freight", t: "Freight" }, { k: "fees", t: "Fees" }, { k: "landed", t: "Landed" },
+  { k: "retail", t: "US retail" }, { k: "markupPct", t: "Markup" }, { k: "profit", t: "Profit / unit" },
+  { k: "margin", t: "Margin" }, { k: "wholesale", t: "Wholesale" }, { k: "wProfit", t: "W. profit" },
+  { k: "wMargin", t: "W. margin" }, { k: "vsIndia", t: "US ÷ India" }, { k: "grams", t: "Weight" }, { k: "hts", t: "HTS", cls: "l" },
+];
+
+function update() {
+  const rows = D.rows.map((r) => ({ ...r, ...compute(r) }));
+  const live = rows.filter((r) => !r.excluded);
+  const sum = (a, f) => a.reduce((s, r) => s + f(r), 0);
+
+  // headline figures (a simple average across products: every SKU counts once)
+  const avgMargin = sum(live, (r) => r.margin) / live.length;
+  const avgW = sum(live, (r) => r.wMargin) / live.length;
+  const freightShare = sum(live, (r) => r.freight) / sum(live, (r) => r.landed) * 100;
+  const dutyShare = sum(live, (r) => r.duty + r.tariff) / sum(live, (r) => r.landed) * 100;
+  const thin = live.filter((r) => r.wMargin < 30).length;
+  $("kpis").innerHTML = [
+    ["Products in US catalogue", live.length, `${rows.length - live.length} left out`],
+    ["Median landed cost", usd(median(live.map((r) => r.landed))), `median retail ${usd(median(live.map((r) => r.retail)))}`],
+    ["Average retail margin", pct(avgMargin), `after ${S.cardFeePct}% card fee`],
+    ["Average wholesale margin", pct(avgW), S.wholesaleFeePct ? `after ${S.wholesaleFeePct}% platform fee` : "selling direct to shops"],
+    ["Freight share of landed", pct(freightShare), `duty + tariff ${pct(dutyShare)}`],
+    ["Thin wholesale margin", thin, "products under 30%"],
+  ].map(([k, v, s]) => `<div class="panel kpi"><div class="k">${esc(k)}</div><div class="v">${v}</div><div class="s">${esc(s)}</div></div>`).join("");
+
+  // per-section summary
+  const secRows = D.sections.map((s) => {
+    const g = live.filter((r) => r.section === s); if (!g.length) return "";
+    const avg = (f) => sum(g, f) / g.length;
+    return `<tr><td class="l">${esc(s)}</td><td>${g.length}</td><td>${inr(avg((r) => r.mrp))}</td><td>${usd(avg((r) => r.landed))}</td>
+      <td>${usd(avg((r) => r.freight))}</td><td>${usd(avg((r) => r.retail))}</td><td>${pct(avg((r) => r.markupPct))}</td>
+      <td>${usd(avg((r) => r.profit))}</td><td>${pill(avg((r) => r.margin))}</td><td>${pill(avg((r) => r.wMargin))}</td></tr>`;
+  }).join("");
+  $("sumTable").innerHTML = `<thead><tr><th class="l">Section (averages)</th><th>Products</th><th>India M.R.P.</th><th>Landed</th><th>Freight</th><th>US retail</th><th>Markup</th><th>Profit / unit</th><th>Margin</th><th>W. margin</th></tr></thead><tbody>${secRows}</tbody>`;
+
+  // ledger
+  const q = $("q").value.trim().toLowerCase(), sec = $("sec").value, showOut = $("showOut").checked;
+  let list = rows.filter((r) => (showOut || !r.excluded) && (!sec || r.section === sec)
+    && (!q || (r.name + " " + r.note + " " + r.code + " " + r.code.replace(/-/g, "")).toLowerCase().includes(q)));
+  if (sortState.key) list.sort((a, b) => { const x = a[sortState.key], y = b[sortState.key];
+    return (typeof x === "string" ? x.localeCompare(y) : x - y) * sortState.dir; });
+  const head = `<thead><tr>${COLS.map((c) => `<th class="${c.cls || ""}" data-k="${c.k}" aria-sort="${sortState.key === c.k ? (sortState.dir > 0 ? "ascending" : "descending") : "none"}" scope="col">${c.t}</th>`).join("")}</tr></thead>`;
+  let lastSec = null;
+  const body = list.map((r) => {
+    let g = "";
+    if (!sortState.key && r.section !== lastSec) { lastSec = r.section; g = `<tr class="grp"><td class="p" colspan="1">${esc(r.section)}</td><td colspan="${COLS.length - 1}"></td></tr>`; }
+    const parts = [["factory", "--c-factory"], ["dt", "--c-duty"], ["freight", "--c-freight"], ["fees", "--c-fees"]];
+    const val = { factory: r.factory, dt: r.duty + r.tariff, freight: r.freight, fees: r.fees };
+    const bar = `<div class="bar" title="Factory ${usd(r.factory)} · duty + tariff ${usd(r.duty + r.tariff)} · freight ${usd(r.freight)} · fees ${usd(r.fees)}">${parts.map(([k, c]) => `<span style="width:${(val[k] / r.landed * 100).toFixed(1)}%;background:var(${c})"></span>`).join("")}</div>`;
+    return g + `<tr>
+      <td class="p"><div class="prod"><div class="thumb">${r.img ? `<img src="${r.img}" alt="" loading="lazy">` : ""}</div><div><b>${esc(r.name)}${r.new ? '<span class="new">NEW</span>' : ""}${r.excluded ? '<span class="out" title="' + esc(r.excluded) + '">LEFT OUT</span>' : ""}</b><span>${esc(r.code)}</span>${r.note ? ` <span style="font-family:var(--body)">· ${esc(r.note)}</span>` : ""}</div></div></td>
+      <td>${inr(r.mrp)}${r.perPiece ? " ea." : ""}</td><td>${usd(r.mrpUsd)}</td>
+      <td title="${inr(r.factoryInr)}">${usd(r.factory)}</td><td>${usd(r.duty)}</td><td>${usd(r.tariff)}</td><td>${usd(r.freight)}</td><td>${usd(r.fees)}</td>
+      <td><b>${usd(r.landed)}</b>${bar}</td>
+      <td><b>${usd(r.retail)}</b>${r.override != null ? '<div class="ovr">set by hand</div>' : ""}</td>
+      <td>${pct(r.markupPct)}</td><td>${usd(r.profit)}</td><td>${pill(r.margin)}</td>
+      <td>${usd(r.wholesale)}</td><td>${usd(r.wProfit)}</td><td>${pill(r.wMargin)}</td>
+      <td>×${r.vsIndia.toFixed(1)}</td><td>${r.grams} g</td><td class="l">${esc(r.hts)}</td></tr>`;
+  }).join("");
+  $("ledger").innerHTML = head + `<tbody>${body || `<tr><td class="l" colspan="${COLS.length}" style="padding:24px;color:var(--muted)">No products match “${esc(q)}”. Try a code or a shorter word.</td></tr>`}</tbody>`;
+
+  $("foot").innerHTML = `<b>How the numbers work.</b> Factory = India M.R.P. × ${Math.round(S.factoryShare * 100)}% ÷ ₹${S.inrPerUsd}. Duty is the US rate for each product type (pens 5.4% + 0.8¢ each, fountain pens 2.7% + 0.4¢, ink 1.8%, diaries mostly duty-free). Tariff = ${S.indiaTariffPct}% of factory. Freight = shipping weight × $${S.freightPerKg.toFixed(2)}/kg. Fees = ${(S.mpfPct + S.otherPct).toFixed(2)}% of factory.
+  <b>Markup</b> = how much retail is above landed. <b>Profit / unit</b> = retail after the ${S.cardFeePct}% card fee, minus landed; customer shipping is charged separately and isn’t counted. <b>Margin</b> = profit ÷ retail. <b>W.</b> = the same if you sell to a shop at ${Math.round(S.wholesaleShare * 100)}% of retail. Green is 50% or more, amber 30–50%, red under 30%. <b>US ÷ India</b> = US retail compared with the India M.R.P. in dollars. Averages count every product once. Weights and the factory share are estimates until you weigh samples and get Submarine’s export price list.`;
+}
+
+$("ledger").addEventListener("click", (e) => {
+  const th = e.target.closest("th"); if (!th) return;
+  const k = th.dataset.k;
+  if (sortState.key === k) { if (sortState.dir === -1) { sortState.key = null; sortState.dir = 1; } else sortState.dir = -1; }
+  else { sortState.key = k; sortState.dir = 1; }
+  update();
+});
+let t; $("q").addEventListener("input", () => { clearTimeout(t); t = setTimeout(update, 120); });
+$("sec").addEventListener("change", update);
+$("showOut").addEventListener("change", update);
+levers();
+update();
+</script>

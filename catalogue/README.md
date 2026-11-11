@@ -19,6 +19,14 @@ It is built from the manufacturer's India catalogue (`source/`). Product photos 
 python3 catalogue/build.py && python3 catalogue/portal.py    # writes catalogue/.work/portal.html
 ```
 
+## Pricing console (internal)
+
+`costs.py` builds a private page with every product's India M.R.P., factory price, duty, tariff, freight, fees, landed cost, US retail, markup, profit and margin, plus wholesale profit and margin. The pricing assumptions are sliders, so you can try out a different freight rate or markup and see the effect before rebuilding. **Don't share it.**
+
+```bash
+python3 catalogue/build.py && python3 catalogue/costs.py      # writes catalogue/.work/costs.html
+```
+
 ## How retail prices are set: landed cost × 3.5
 
 ```
@@ -64,6 +72,7 @@ python3 catalogue/build.py        # needs Node with Playwright and Chromium for 
 | `pricing.py` | Landed cost and retail price |
 | `catalogue.css`, `render.cjs` | Layout, and printing to US Letter PDF with Chromium |
 | `portal.py`, `portal-template.html` | The online catalogue portal (one self-contained page) |
+| `costs.py`, `costs-template.html` | The internal pricing console |
 | `products-2026-27.json` | All 292 products with every field above |
 
 ## Still to check
