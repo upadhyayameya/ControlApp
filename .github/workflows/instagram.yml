@@ -1,10 +1,11 @@
 name: Instagram
 
 on:
-  schedule:
-    - cron: '7 16 * * *'    # post: daily 16:07 UTC (11:07 ET); undated posts only on config.postDays
-    - cron: '17 12 * * *'   # report: daily 12:17 UTC (7:17 ET) traction, DMs, calendar
-    - cron: '23 3 1,15 * *' # refresh the access token on the 1st & 15th
+  # Automatic posting is PAUSED (posting manually for now). To resume, restore:
+  # schedule:
+  #   - cron: '7 16 * * *'    # post: daily 16:07 UTC (11:07 ET)
+  #   - cron: '17 12 * * *'   # report: daily 12:17 UTC (7:17 ET)
+  #   - cron: '23 3 1,15 * *' # refresh the access token on the 1st & 15th
   workflow_dispatch:
     inputs:
       task:
