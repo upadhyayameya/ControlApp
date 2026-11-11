@@ -59,6 +59,8 @@ def main():
             "indiaTariffPct": lc["indiaAdditionalTariffPct"], "mpfPct": lc["merchandiseProcessingFeePct"],
             "otherPct": lc["brokerBankAndOtherPct"], "markup": rc["markupOnLanded"], "ending": rc["priceEnding"],
             "wholesaleShare": rc["wholesaleShareOfRetail"], "minimum": rc["minimumUsd"],
+            "mode": rc["mode"], "targetMargin": rc["targetMarginPct"], "targetProfit": rc["targetProfitUsd"],
+            "cardFeePct": rc["cardFeePct"],
         },
         "shipping": {"flat": ship["flatRateUsd"], "freeOver": ship["freeOverUsd"], "method": ship["method"],
                      "dispatch": ship["dispatch"]},

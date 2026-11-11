@@ -146,6 +146,18 @@ dialog::backdrop { background: rgba(5, 7, 10, 0.55); }
 .lever input[type="range"] { width: 100%; accent-color: var(--accent); }
 .lever small { color: var(--muted); font-size: 12px; line-height: 1.35; }
 .lever.changed .lab output::after { content: " •"; color: var(--bronze); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: none; background: var(--surface); padding: 7px 4px; font-size: 13px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-checked="true"] { background: var(--accent); color: var(--surface); font-weight: 600; }
+.setown { border-top: 1px solid var(--line); padding: 12px; display: grid; gap: 10px; background: var(--soft); }
+.setown-h { font-weight: 600; font-size: 14px; }
+.setown-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.setown label { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--muted); }
+.setown input { width: 96px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); font: 500 14px var(--body); font-variant-numeric: tabular-nums; }
+.setown .or { color: var(--muted); font-size: 13px; }
+.setown output { font-size: 13.5px; font-weight: 600; }
+.ownflag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--bronze); text-transform: uppercase; }
 .note-asm { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .kpi { padding: 12px 14px; }
@@ -219,7 +231,7 @@ table.t { border-collapse: collapse; width: 100%; font-size: 13px; }
 </header>
 
 <div class="banner" id="banner" hidden>
-  <div class="wrap"><span>Prices on this page use test settings from the Costs tab, not your published catalogue prices.</span><button class="btn" type="button" id="bannerReset">Reset to catalogue settings</button></div>
+  <div class="wrap"><span>Prices on this page use your test settings or prices you set by hand, not the prices in your PDF catalogue.</span><button class="btn" type="button" id="bannerReset">Reset to catalogue settings</button></div>
 </div>
 
 <!-- ======================= Catalogue ======================= -->
@@ -263,8 +275,9 @@ table.t { border-collapse: collapse; width: 100%; font-size: 13px; }
       <aside class="panel levers" aria-label="Assumptions">
         <h2>Assumptions</h2>
         <div id="leverList"></div>
-        <button class="btn" type="button" id="reset" style="margin-top:12px">Reset to catalogue settings</button>
-        <p class="note-asm">The PDF catalogue uses the catalogue settings. When you settle on new numbers, send them to Claude to rebuild it. A dot • marks a changed setting.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="reset">Reset to catalogue settings</button><button class="btn" type="button" id="copySet">Copy settings for Claude</button></div>
+        <textarea id="copyOut" hidden readonly rows="6" style="width:100%;margin-top:8px;font:12px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px" aria-label="Settings to send to Claude"></textarea>
+        <p class="note-asm">Changes here are saved in this browser only. The PDF catalogue keeps its prices until you press “Copy settings for Claude” and send the text to Claude to rebuild it. A dot • marks a changed setting.</p>
       </aside>
       <section>
         <div class="kpis" id="kpis"></div>
@@ -301,9 +314,19 @@ const bySec = Object.fromEntries(D.sections.map((s) => [s.id, s]));
 const c = D.contact;
 
 /* ---------- pricing model (same formula as catalogue/pricing.py) ---------- */
-const DEFAULTS = { ...D.settings, cardFeePct: 2.9, wholesaleFeePct: 0 };
+const DEFAULTS = { ...D.settings, wholesaleFeePct: 0 };
 let S = { ...DEFAULTS, ...(store.get("pricing-levers") || {}) };
-const isDefault = () => ["inrPerUsd", "factoryShare", "freightPerKg", "indiaTariffPct", "otherPct", "markup", "wholesaleShare"].every((k) => S[k] === DEFAULTS[k]);
+let OV = store.get("price-overrides") || {};  // { code: retail $ } set by you on a product
+const PRICE_KEYS = ["inrPerUsd", "factoryShare", "freightPerKg", "indiaTariffPct", "otherPct", "mode", "markup", "targetMargin", "targetProfit", "cardFeePct", "wholesaleShare"];
+const isDefault = () => ["inrPerUsd", "factoryShare", "freightPerKg", "indiaTariffPct", "otherPct", "wholesaleShare", "mode"].every((k) => S[k] === DEFAULTS[k])
+  && (S.mode !== "markup" || S.markup === DEFAULTS.markup) && !Object.keys(OV).length;
+const roundUp = (v) => Math.ceil(v - S.ending + 1e-9) + S.ending;  // next price ending in .99
+function priceFor(landed, group) {
+  const keep = 1 - S.cardFeePct / 100;
+  const raw = S.mode === "margin" ? landed / Math.max(0.05, keep - S.targetMargin / 100)
+    : S.mode === "profit" ? (landed + S.targetProfit) / keep : landed * S.markup;
+  return Math.max(roundUp(raw), S.minimum[group] ?? S.minimum.default);
+}
 
 function compute(r) {
   const factoryInr = r.factoryInr ?? r.mrp * S.factoryShare;
@@ -313,15 +336,15 @@ function compute(r) {
   const freight = r.grams / 1000 * S.freightPerKg;
   const fees = factory * (S.mpfPct + S.otherPct) / 100;
   const landed = factory + duty + tariff + freight + fees;
-  let retail = r.override != null ? r.override
-    : Math.max(Math.ceil(landed * S.markup - S.ending + 1e-9) + S.ending, S.minimum[r.group] ?? S.minimum.default);
+  const mine = OV[r.code];
+  let retail = mine != null ? mine : r.override != null ? r.override : priceFor(landed, r.group);
   retail = Math.round(retail * 100) / 100;
   const wholesale = Math.round(retail * S.wholesaleShare * 100) / 100;
   const profit = retail * (1 - S.cardFeePct / 100) - landed;
   const wProfit = wholesale * (1 - S.wholesaleFeePct / 100) - landed;
   return { factoryInr, factory, duty, tariff, freight, fees, landed, retail, wholesale, profit, wProfit,
     mrpUsd: r.mrp / S.inrPerUsd, markupPct: (retail / landed - 1) * 100, margin: profit / retail * 100,
-    wMargin: wProfit / wholesale * 100, vsIndia: retail / (r.mrp / S.inrPerUsd) };
+    wMargin: wProfit / wholesale * 100, vsIndia: retail / (r.mrp / S.inrPerUsd), mine: mine != null };
 }
 let P = [];  // products with live numbers
 function recompute() { P = D.products.map((p, i) => ({ ...p, i, ...compute(p),
@@ -362,7 +385,7 @@ function card(p) {
     <div class="plate">${p.img ? `<img src="${p.img}" alt="" loading="lazy" decoding="async">` : ""}</div>
     <div class="info"><div class="name">${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</div>
       <div class="note">${esc(p.note)}</div>
-      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${usd(p.retail)}</span></div>${cost}</div></button>`;
+      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${usd(p.retail)}</span></div>${cost && p.mine ? cost.replace('<div class="costline">', '<div class="costline"><span class="ownflag">set by you</span>') : cost}</div></button>`;
 }
 function renderCat() {
   const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -403,7 +426,17 @@ function openProduct(code) {
     <tr><td>US retail · markup</td><td>${usd(p.retail)} · ${pct(p.markupPct)}</td></tr>
     <tr class="tot"><td>Profit per unit (after ${S.cardFeePct}% card fee) · margin</td><td>${usd(p.profit)} · ${pill(p.margin)}</td></tr>
     <tr><td>Wholesale · profit · margin</td><td>${usd(p.wholesale)} · ${usd(p.wProfit)} · ${pill(p.wMargin)}</td></tr>
-    <tr><td>US retail compared with India M.R.P.</td><td>×${p.vsIndia.toFixed(1)}</td></tr></table></div>`;
+    <tr><td>US retail compared with India M.R.P.</td><td>×${p.vsIndia.toFixed(1)}</td></tr></table>
+    <div class="setown">
+      <div class="setown-h">Set this product’s price${p.mine ? ' <span class="ownflag">set by you</span>' : ""}</div>
+      <div class="setown-row">
+        <label for="ownPrice">Retail $<input id="ownPrice" type="number" min="0" step="0.01" inputmode="decimal" value="${p.retail.toFixed(2)}"></label>
+        <span class="or">or</span>
+        <label for="ownProfit">Profit $<input id="ownProfit" type="number" step="0.01" inputmode="decimal" value="${p.profit.toFixed(2)}"></label>
+        <output id="ownMargin">${pct(p.margin)} margin</output>
+      </div>
+      <div class="setown-row"><button class="btn" type="button" id="saveOwn">Use this price</button>${p.mine ? '<button class="btn" type="button" id="clearOne">Go back to the formula</button>' : ""}</div>
+    </div></div>`;
   $("dv").innerHTML = `<button class="close" type="button" aria-label="Close" id="dvclose">×</button>
     <div class="plate">${p.img ? `<img src="${p.img}" alt="${esc(p.name)}">` : ""}</div>
     <div class="body">
@@ -416,14 +449,30 @@ function openProduct(code) {
       <p class="how">To order, send the product code to ${handle}. Price includes freight, US duty and import tariffs. ${usd(D.shipping.flat)} shipping, free over ${usd(D.shipping.freeOver).replace(".00", "")}.</p>
       ${costs}
     </div>`;
-  const dv = $("dv");
-  if (typeof dv.showModal === "function") dv.showModal(); else dv.setAttribute("open", "");
+  const dv = $("dv"); dvCode = p.code;
+  if (!dv.open) { if (typeof dv.showModal === "function") dv.showModal(); else dv.setAttribute("open", ""); }
   setHash("#p-" + p.code);
 }
 function closeProduct() { const dv = $("dv"); if (dv.open) dv.close ? dv.close() : dv.removeAttribute("open"); }
 $("dv").addEventListener("close", () => setHash(view === "costs" ? "#costs" : state.section === "all" ? "" : "#" + state.section));
+let dvCode = null;
+$("dv").addEventListener("input", (e) => {
+  const p = P.find((x) => x.code === dvCode); if (!p) return;
+  const keep = 1 - S.cardFeePct / 100;
+  if (e.target.id === "ownProfit") { const v = parseFloat(e.target.value); if (isFinite(v)) $("ownPrice").value = ((p.landed + v) / keep).toFixed(2); }
+  if (e.target.id === "ownPrice") { const v = parseFloat(e.target.value); if (isFinite(v)) $("ownProfit").value = (v * keep - p.landed).toFixed(2); }
+  const r = parseFloat($("ownPrice").value), pr = r * keep - p.landed;
+  $("ownMargin").textContent = isFinite(r) && r > 0 ? `${pct(pr / r * 100)} margin` : "";
+});
 $("dv").addEventListener("click", async (e) => {
   if (e.target === $("dv") || e.target.id === "dvclose") return closeProduct();
+  if (e.target.id === "saveOwn" || e.target.id === "clearOne") {
+    const v = Math.round(parseFloat($("ownPrice").value) * 100) / 100;
+    if (e.target.id === "clearOne") delete OV[dvCode];
+    else if (!(v > 0)) { $("ownMargin").textContent = "Enter a price above $0"; return; }
+    else OV[dvCode] = v;
+    store.set("price-overrides", OV); const code = dvCode; levers(); refresh(); openProduct(code); return;
+  }
   if (e.target.id === "copy") {
     try { await navigator.clipboard.writeText($("dvcode").textContent); e.target.textContent = "Copied"; }
     catch { const r = document.createRange(); r.selectNodeContents($("dvcode")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = "Selected: press Ctrl+C"; }
@@ -437,17 +486,31 @@ const LEVERS = [
   { k: "freightPerKg", label: "Freight", min: 0, max: 20, step: 0.25, fmt: (v) => `$${v.toFixed(2)} / kg`, help: "India to Virginia, door to door. Air cargo is about $5–9/kg; sea is far less but takes 5–7 weeks." },
   { k: "indiaTariffPct", label: "Extra US tariff on India", min: 0, max: 50, step: 1, fmt: (v) => `${v}%`, help: "On top of normal duty. Confirm the current rate with your customs broker." },
   { k: "otherPct", label: "Broker, bank, insurance", min: 0, max: 10, step: 0.5, fmt: (v) => `${v}% of factory`, help: "Plus the 0.35% customs processing fee." },
-  { k: "markup", label: "Retail markup on landed", min: 2, max: 6, step: 0.1, fmt: (v) => `× ${v.toFixed(1)}`, help: "Retail = landed × this, rounded up to .99, with a $3.99 minimum ($1.99 refills)." },
+  { k: "markup", when: "markup", label: "Retail markup on landed", min: 1.5, max: 6, step: 0.1, fmt: (v) => `× ${v.toFixed(1)}`, help: "Retail = landed × this, rounded up to .99, with a $3.99 minimum ($1.99 refills)." },
+  { k: "targetMargin", when: "margin", label: "Target profit margin", min: 10, max: 85, step: 1, fmt: (v) => `${v}% of retail`, help: "Each price is set so profit (after the card fee) is this share of the retail price, rounded up to .99." },
+  { k: "targetProfit", when: "profit", label: "Target profit per item", min: 0.5, max: 25, step: 0.25, fmt: (v) => `$${v.toFixed(2)}`, help: "Each price is set to landed cost + this profit + the card fee, rounded up to .99. Same dollar profit on every product." },
   { k: "wholesaleShare", label: "Wholesale price", min: 0.4, max: 0.7, step: 0.01, fmt: (v) => `${Math.round(v * 100)}% of retail`, help: "What a shop pays you. 50% is standard." },
   { k: "cardFeePct", label: "Card / checkout fee", min: 0, max: 6, step: 0.1, fmt: (v) => `${v.toFixed(1)}%`, help: "Taken off your direct sales (Stripe is 2.9% + 30¢ per order)." },
   { k: "wholesaleFeePct", label: "Wholesale platform fee", min: 0, max: 30, step: 1, fmt: (v) => `${v}%`, help: "Taken off wholesale sales. Faire charges 15% on reorders, 25% on a shop's first order; 0% for your own wholesale." },
 ];
+const MODES = [["markup", "Markup ×"], ["margin", "Margin %"], ["profit", "Profit $"]];
 function levers() {
-  $("leverList").innerHTML = LEVERS.map((l) => `<div class="lever${S[l.k] !== DEFAULTS[l.k] ? " changed" : ""}">
+  const mode = `<div class="lever"><div class="lab"><span>Set prices by</span></div>
+    <div class="seg" role="radiogroup" aria-label="Set prices by">${MODES.map(([m, t]) => `<button type="button" role="radio" data-mode="${m}" aria-checked="${S.mode === m}">${t}</button>`).join("")}</div>
+    <small>Choose what you want to control. The slider below changes to match.</small></div>`;
+  const own = Object.keys(OV).length;
+  const order = [...LEVERS.filter((l) => l.when === S.mode), ...LEVERS.filter((l) => !l.when)];
+  $("leverList").innerHTML = mode + order.map((l) => `<div class="lever${S[l.k] !== DEFAULTS[l.k] ? " changed" : ""}">
     <label class="lab" for="lv-${l.k}"><span>${esc(l.label)}</span><output id="o-${l.k}">${esc(l.fmt(S[l.k]))}</output></label>
     <input type="range" id="lv-${l.k}" data-k="${l.k}" min="${l.min}" max="${l.max}" step="${l.step}" value="${S[l.k]}">
-    <small>${esc(l.help)}</small></div>`).join("");
+    <small>${esc(l.help)}</small></div>`).join("")
+    + (own ? `<div class="lever"><div class="lab"><span>Prices you set by hand</span><output>${own}</output></div><small>Set on single products. They stay as you set them when you move the sliders.</small><button class="btn" type="button" id="clearOwn">Clear prices set by hand</button></div>` : "");
 }
+$("leverList").addEventListener("click", (e) => {
+  const m = e.target.closest("[data-mode]");
+  if (m) { S.mode = m.dataset.mode; store.set("pricing-levers", S); levers(); refresh(); }
+  if (e.target.id === "clearOwn") { OV = {}; store.del("price-overrides"); levers(); refresh(); }
+});
 $("leverList").addEventListener("input", (e) => {
   const k = e.target.dataset.k; if (!k) return;
   S[k] = parseFloat(e.target.value);
@@ -456,7 +519,14 @@ $("leverList").addEventListener("input", (e) => {
   store.set("pricing-levers", S);
   refresh();
 });
-function resetLevers() { S = { ...DEFAULTS }; store.del("pricing-levers"); levers(); refresh(); }
+function resetLevers() { S = { ...DEFAULTS }; OV = {}; store.del("pricing-levers"); store.del("price-overrides"); levers(); refresh(); }
+async function copySettings(btn) {
+  const out = { settings: Object.fromEntries(PRICE_KEYS.map((k) => [k, S[k]])), pricesSetByHand: OV };
+  const text = "Please rebuild the catalogue with these pricing settings:\n" + JSON.stringify(out, null, 1);
+  try { await navigator.clipboard.writeText(text); btn.textContent = "Copied. Paste it to Claude"; }
+  catch { $("copyOut").hidden = false; $("copyOut").value = text; $("copyOut").select(); btn.textContent = "Select all and copy the text below"; }
+}
+$("copySet").addEventListener("click", (e) => copySettings(e.target));
 $("reset").addEventListener("click", resetLevers);
 $("bannerReset").addEventListener("click", resetLevers);
 
@@ -499,7 +569,7 @@ function renderCosts() {
     const bar = `<div class="cbar" title="Factory ${usd(r.factory)} · duty + tariff ${usd(r.duty + r.tariff)} · freight ${usd(r.freight)} · fees ${usd(r.fees)}">${parts.map(([v, col]) => `<span style="width:${(v / r.landed * 100).toFixed(1)}%;background:var(${col})"></span>`).join("")}</div>`;
     return g + `<tr><td class="p"><div class="prod" data-code="${esc(r.code)}"><div class="thumb">${r.img ? `<img src="${r.img}" alt="" loading="lazy">` : ""}</div><div><b>${esc(r.name)}${r.new ? '<span class="new" style="margin-left:5px;font-size:9px;padding:2px 4px">NEW</span>' : ""}${r.excluded ? `<span class="out" title="${esc(r.excluded)}">LEFT OUT</span>` : ""}</b><span>${esc(r.code)}</span>${r.note ? ` <span style="font-family:var(--body)">· ${esc(r.note)}</span>` : ""}</div></div></td>
       <td>${inr(r.mrp)}${r.perPiece ? " ea." : ""}</td><td>${usd(r.mrpUsd)}</td><td title="${inr(r.factoryInr)}">${usd(r.factory)}</td><td>${usd(r.duty)}</td><td>${usd(r.tariff)}</td><td>${usd(r.freight)}</td><td>${usd(r.fees)}</td>
-      <td><b>${usd(r.landed)}</b>${bar}</td><td><b>${usd(r.retail)}</b></td><td>${pct(r.markupPct)}</td><td>${usd(r.profit)}</td><td>${pill(r.margin)}</td>
+      <td><b>${usd(r.landed)}</b>${bar}</td><td><b>${usd(r.retail)}</b>${r.mine ? '<div class="ownflag">set by you</div>' : ""}</td><td>${pct(r.markupPct)}</td><td>${usd(r.profit)}</td><td>${pill(r.margin)}</td>
       <td>${usd(r.wholesale)}</td><td>${usd(r.wProfit)}</td><td>${pill(r.wMargin)}</td><td>×${r.vsIndia.toFixed(1)}</td><td>${r.grams} g</td><td class="l">${esc(r.hts)}</td></tr>`;
   }).join("");
   $("ledger").innerHTML = `<thead><tr>${COLS.map((col) => `<th class="${col.cls || ""}" data-k="${col.k}" scope="col" aria-sort="${sortState.key === col.k ? (sortState.dir > 0 ? "ascending" : "descending") : "none"}">${col.t}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td class="l" colspan="${COLS.length}" style="padding:24px;color:var(--muted)">No products match “${esc(q)}”. Try a code or a shorter word.</td></tr>`}</tbody>`;

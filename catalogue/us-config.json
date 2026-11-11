@@ -55,6 +55,11 @@
   },
 
   "retail": {
+    "mode": "markup",
+    "_mode": "How prices are set: \"markup\" (landed × markupOnLanded), \"margin\" (profit after the card fee = targetMarginPct of retail) or \"profit\" (landed + targetProfitUsd + card fee). Then rounded up to .99.",
+    "targetMarginPct": 70,
+    "targetProfitUsd": 3.0,
+    "cardFeePct": 2.9,
     "markupOnLanded": 3.5,
     "_markupOnLanded": "Retail = landed cost × this. 3.5 leaves room for a 50% wholesale price and still about 1.75× landed at wholesale.",
     "minimumUsd": {"default": 3.99, "Refills": 1.99, "Cartridges": 2.99},

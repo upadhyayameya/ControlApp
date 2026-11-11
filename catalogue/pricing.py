@@ -59,7 +59,14 @@ def retail(item, landed_total, cfg):
     r = cfg
     if item["code"] in r["overrides"]:
         return float(r["overrides"][item["code"]])
-    raw = landed_total * r["markupOnLanded"]
+    keep = 1 - r["cardFeePct"] / 100
+    mode = r.get("mode", "markup")
+    if mode == "margin":  # profit after the card fee is targetMarginPct of retail
+        raw = landed_total / max(0.05, keep - r["targetMarginPct"] / 100)
+    elif mode == "profit":  # the same dollar profit on every product
+        raw = (landed_total + r["targetProfitUsd"]) / keep
+    else:
+        raw = landed_total * r["markupOnLanded"]
     price = math.ceil(raw - r["priceEnding"] + 1e-9) + r["priceEnding"]  # next price ending in .99
     floor = r["minimumUsd"].get(kind(item), r["minimumUsd"]["default"])
     return round(max(price, floor), 2)

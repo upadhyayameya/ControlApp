@@ -17,6 +17,7 @@ It is built from the manufacturer's India catalogue (`source/`). Product photos 
 
 - **Catalogue tab:** all 288 products with photos, search, section filters, sorting (including by margin), a "New only" filter and a product view with a copy-code button. Each section and product has its own link (`#ball-pens`, `#p-<code>`).
 - **Show costs switch:** adds landed cost, profit and margin to every card. The product view always shows the full breakdown: India M.R.P., factory price, duty, tariff, freight, fees, landed cost, markup, profit, margin and wholesale.
+- **Set your profit:** in the Costs & margins tab, choose how prices are set: by **markup ×**, a **target margin %** or a **target profit $** per item. In any product's view you can type a retail price or the profit you want for that one product. "Copy settings for Claude" copies your choices so the PDF can be rebuilt with them (`retail.mode`, `targetMarginPct`, `targetProfitUsd` and `overrides` in `us-config.json`).
 - **Costs & margins tab** (`#costs`): headline figures, averages per section and a sortable table of all 292 products. The pricing assumptions are sliders: exchange rate, factory %, freight per kg, tariff, fees, markup, wholesale %, card fee and wholesale platform fee. When you move them, every price on the page follows, with a banner so you know they're test numbers.
 
 **The page carries your costs, so don't share its link with customers. Send them the PDF.**
