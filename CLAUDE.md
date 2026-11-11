@@ -23,4 +23,8 @@ This repo holds two unrelated things:
   `catalogue/us-config.json`. `catalogue/us-pricing-workbook.csv` shows costs and is internal, not for customers.
 - Four NASA-logo products are left out of the US catalogue (`excludeFromUS` in the config).
 - The owner sends the catalogue as an email attachment, so keep the PDF well under 10 MB.
+- The main catalogue page is the USA catalogue portal (`catalogue/portal.py`, published at
+  https://claude.ai/artifact/NcgN95DCymxTGyqpBct9t2). It has the catalogue plus an owner "Costs & margins" tab
+  (India M.R.P., landed cost, markup, profit, margin, what-if sliders). There is no separate pricing console;
+  keep cost views in this one page. It contains costs, so it isn't for customers; customers get the PDF.
 - When adding a product to `shop/products.json`, take its code, retail price (`retailUsd`) and description from `catalogue/products-2026-27.json`.

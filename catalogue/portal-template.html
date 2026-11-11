@@ -2,58 +2,76 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112..125,500;112..125,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112..125,500;112..125,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: black brand masthead with the cover pen, a sticky finder bar, then a product grid on white
-   "photo plates" (the catalogue's own studio shots), closed by ordering terms. */
+/* Layout: black brand masthead with the cover pen and two tabs (Catalogue / Costs & margins); a sticky
+   finder bar over a grid of white "photo plates"; the costs tab is an import-costing worksheet with the
+   assumptions as a left rail and a product ledger whose rows show a cost-composition bar. */
 :root {
-  --bg: #f5f6f8; --surface: #ffffff; --fg: #15191f; --muted: #5a6270; --line: #e1e4e9;
+  --bg: #f5f6f8; --surface: #ffffff; --fg: #15191f; --muted: #5a6270; --line: #e1e4e9; --soft: #eef0f3;
   --accent: #12336b; --bronze: #93703f; --new: #c95a17; --plate: #ffffff; --chip: #eceef2;
   --band: #08090b; --band-fg: #f1f1f1; --band-muted: #a7a9ad;
+  --c-factory: #12336b; --c-duty: #b5832f; --c-freight: #3f8f86; --c-fees: #9aa3b1;
+  --good: #1f7a4d; --warn: #a26200; --bad: #b3261e; --good-bg: #e6f3ec; --warn-bg: #fbf1e0; --bad-bg: #fbe9e7;
   --display: "Archivo", "Arial Narrow", Helvetica, sans-serif;
   --body: "Inter", Helvetica, Arial, sans-serif;
   --mono: "JetBrains Mono", Menlo, Consolas, monospace;
   --radius: 10px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0d1015; --surface: #151920; --fg: #e9ebef; --muted: #9ba3b1; --line: #252b35;
+  --bg: #0d1015; --surface: #151920; --fg: #e9ebef; --muted: #9ba3b1; --line: #252b35; --soft: #1c212a;
   --accent: #9db8ee; --bronze: #cda56c; --new: #f0894a; --plate: #ffffff; --chip: #1e232c;
-  --band: #000000; --band-fg: #f1f1f1; --band-muted: #a7a9ad; color-scheme: dark } }
+  --band: #000000; --band-fg: #f1f1f1; --band-muted: #a7a9ad;
+  --c-factory: #6f93d8; --c-duty: #d6a556; --c-freight: #5fb7ac; --c-fees: #6b7483;
+  --good: #5cc48f; --warn: #e7a94a; --bad: #f08074; --good-bg: #13291f; --warn-bg: #2d2412; --bad-bg: #331917; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #0d1015; --surface: #151920; --fg: #e9ebef; --muted: #9ba3b1; --line: #252b35;
+  --bg: #0d1015; --surface: #151920; --fg: #e9ebef; --muted: #9ba3b1; --line: #252b35; --soft: #1c212a;
   --accent: #9db8ee; --bronze: #cda56c; --new: #f0894a; --plate: #ffffff; --chip: #1e232c;
-  --band: #000000; --band-fg: #f1f1f1; --band-muted: #a7a9ad; color-scheme: dark }
+  --band: #000000; --band-fg: #f1f1f1; --band-muted: #a7a9ad;
+  --c-factory: #6f93d8; --c-duty: #d6a556; --c-freight: #5fb7ac; --c-fees: #6b7483;
+  --good: #5cc48f; --warn: #e7a94a; --bad: #f08074; --good-bg: #13291f; --warn-bg: #2d2412; --bad-bg: #331917; color-scheme: dark }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
-.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 h1, h2, h3 { margin: 0; text-wrap: balance; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
+.num, td { font-variant-numeric: tabular-nums; }
 
 /* masthead */
 .mast { background: var(--band); color: var(--band-fg); position: relative; overflow: hidden; }
-.mast .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: 24px; align-items: center; padding-block: 36px 40px; }
-.mast .logo { width: 210px; max-width: 60%; display: block; margin-bottom: 26px; }
+.mast .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr); gap: 24px; align-items: center; padding-block: 30px 0; }
+.mast .logo { width: 200px; max-width: 60%; display: block; margin-bottom: 22px; }
 .kicker { font: 600 12px/1 var(--body); letter-spacing: 0.22em; text-transform: uppercase; color: var(--bronze); }
-.mast h1 { font: 500 clamp(30px, 4.6vw, 52px)/1.05 var(--display); font-stretch: 125%; letter-spacing: -0.01em; margin: 12px 0 14px; }
+.mast h1 { font: 500 clamp(30px, 4.6vw, 50px)/1.05 var(--display); font-stretch: 125%; letter-spacing: -0.01em; margin: 12px 0 14px; }
 .mast p { color: var(--band-muted); max-width: 52ch; margin: 0; }
-.mast .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 22px; font-size: 13.5px; color: var(--band-fg); }
+.mast .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 18px; font-size: 13.5px; color: var(--band-fg); }
 .mast .facts b { color: var(--bronze); font-weight: 600; }
-.mast .art { height: 300px; background-size: cover; background-position: 50% 42%; border-radius: var(--radius);
-  -webkit-mask-image: radial-gradient(ellipse 75% 75% at 55% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 75% 75% at 55% 50%, #000 55%, transparent 100%); }
+.mast .art { height: 270px; background-size: cover; background-position: 50% 42%;
+  -webkit-mask-image: radial-gradient(ellipse 70% 72% at 55% 50%, #000 50%, transparent 100%); mask-image: radial-gradient(ellipse 70% 72% at 55% 50%, #000 50%, transparent 100%); }
+.tabs { grid-column: 1 / -1; display: flex; gap: 4px; margin-top: 18px; }
+.tab { border: none; background: transparent; color: var(--band-muted); padding: 11px 16px 12px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; font-size: 14.5px; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--fg); }
+.tab .lock { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--bronze); margin-left: 6px; }
+
+/* test-settings banner */
+.banner { background: var(--warn-bg); color: var(--warn); border-bottom: 1px solid var(--line); }
+.banner .wrap { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-block: 9px; font-size: 14px; }
+.btn { border: 1px solid var(--line); background: var(--soft); color: var(--fg); border-radius: 7px; padding: 7px 11px; font-size: 13px; cursor: pointer; }
+.btn:hover { border-color: var(--bronze); }
 
 /* finder bar */
 .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
 .bar .wrap { display: flex; flex-direction: column; gap: 10px; padding-block: 12px; }
-.row1 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.row1 { display: flex; gap: 10px 14px; flex-wrap: wrap; align-items: center; }
 .search { flex: 1 1 260px; min-width: 0; position: relative; }
-.search input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+.search input, .field { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
 .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--muted); fill: none; }
 select { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
 .toggle { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; }
-.toggle input { accent-color: var(--new); width: 16px; height: 16px; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
 .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .chips::-webkit-scrollbar { display: none; }
 .chip { flex: none; border: 1px solid transparent; background: var(--chip); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; cursor: pointer; white-space: nowrap; }
@@ -61,7 +79,7 @@ select { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; b
 .chip[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
 .chip[aria-pressed="true"] span { color: inherit; opacity: 0.75; }
 
-/* results */
+/* catalogue grid */
 main { padding-block: 22px 40px; }
 .head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
 .head h2 { font: 500 26px/1.15 var(--display); font-stretch: 118%; }
@@ -78,9 +96,11 @@ main { padding-block: 22px 40px; }
 .foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: auto; padding-top: 8px; }
 .code { font: 500 12px/1 var(--mono); color: var(--muted); letter-spacing: 0.02em; }
 .price { font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.costline { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 7px; font-variant-numeric: tabular-nums; }
+.costline b { color: var(--fg); font-weight: 600; }
 .new { background: var(--new); color: #fff; font: 700 10px/1 var(--body); letter-spacing: 0.1em; padding: 3px 6px; border-radius: 4px; }
 .empty { padding: 48px 16px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--radius); }
-.empty button { margin-top: 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.empty button { margin-top: 12px; }
 
 /* terms */
 .terms { border-top: 1px solid var(--line); background: var(--surface); }
@@ -91,22 +111,88 @@ main { padding-block: 22px 40px; }
 .fine { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; margin: 0; }
 
 /* product view */
-dialog { border: none; padding: 0; border-radius: 14px; background: var(--surface); color: var(--fg); width: min(720px, calc(100% - 32px)); max-height: calc(100% - 32px); }
+dialog { border: none; padding: 0; border-radius: 14px; background: var(--surface); color: var(--fg); width: min(760px, calc(100% - 32px)); max-height: calc(100% - 32px); }
 dialog::backdrop { background: rgba(5, 7, 10, 0.55); }
-.dv .plate { height: auto; min-height: 220px; padding: 28px; }
-.dv .plate img { max-height: 340px; }
+.dv .plate { height: auto; min-height: 200px; padding: 26px; }
+.dv .plate img { max-height: 320px; }
 .dv .body { padding: 20px 22px 22px; display: grid; gap: 10px; }
 .dv .sec { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bronze); font-weight: 600; }
 .dv h3 { font: 500 26px/1.15 var(--display); font-stretch: 115%; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .dv .price { font-size: 30px; }
 .dv .codebox { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 .dv .codebox .code { font-size: 15px; color: var(--fg); user-select: all; }
-.dv .codebox button { margin-left: auto; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+.dv .codebox button { margin-left: auto; }
 .dv .how { color: var(--muted); font-size: 14px; margin: 0; }
+.dv .costs { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.dv .costs h4 { margin: 0; padding: 10px 12px; background: var(--soft); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bronze); }
+.dv .costs table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.dv .costs td { padding: 6px 12px; border-top: 1px solid var(--line); }
+.dv .costs td:last-child { text-align: right; font-weight: 500; }
+.dv .costs tr.tot td { font-weight: 700; }
 .close { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 20px; line-height: 1; }
 
+/* costs & margins tab */
+.cv { padding-block: 22px 40px; }
+.cv-intro { margin: 0 0 16px; color: var(--muted); max-width: 80ch; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+.layout > * { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.levers { padding: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); font-size: 14px; }
+.levers h2 { font: 600 12px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--bronze); margin-bottom: 12px; }
+.lever { display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--line); }
+.lever:first-child { border-top: none; padding-top: 0; }
+.lever .lab { display: flex; justify-content: space-between; gap: 8px; font-weight: 500; }
+.lever .lab output { font-family: var(--mono); font-size: 13px; color: var(--accent); text-align: right; }
+.lever input[type="range"] { width: 100%; accent-color: var(--accent); }
+.lever small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.lever.changed .lab output::after { content: " •"; color: var(--bronze); }
+.note-asm { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.kpi { padding: 12px 14px; }
+.kpi .k { font-size: 12px; color: var(--muted); }
+.kpi .v { font: 600 22px/1.2 var(--body); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.kpi .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+h2.sub { font: 500 18px/1.2 var(--display); font-stretch: 115%; margin: 20px 0 10px; }
+.scroll { overflow-x: auto; }
+table.t { border-collapse: collapse; width: 100%; font-size: 13px; }
+.t th, .t td { padding: 7px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: right; }
+.t th { font-size: 11.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; background: var(--surface); position: sticky; top: 0; z-index: 1; }
+.t th.l, .t td.l { text-align: left; }
+.t tbody tr:hover td { background: var(--soft); }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 12px; border-bottom: 1px solid var(--line); }
+.tools .field { padding-left: 12px; flex: 1 1 220px; min-width: 0; width: auto; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-left: auto; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.ledger { max-height: 72vh; overflow: auto; }
+.ledger th { cursor: pointer; user-select: none; }
+.ledger th[aria-sort="ascending"]::after { content: " ▲"; }
+.ledger th[aria-sort="descending"]::after { content: " ▼"; }
+.ledger td.p, .ledger th.p { position: sticky; left: 0; background: var(--surface); z-index: 1; text-align: left; }
+.ledger th.p { z-index: 2; }
+.ledger tbody tr:hover td.p { background: var(--soft); }
+.prod { display: flex; gap: 9px; align-items: center; min-width: 250px; cursor: pointer; }
+.thumb { width: 64px; height: 30px; background: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex: none; border: 1px solid var(--line); }
+.thumb img { max-width: 60px; max-height: 26px; object-fit: contain; }
+.prod b { font-weight: 600; display: block; font-size: 13px; }
+.prod span { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.out { color: var(--bad); font-size: 11px; font-weight: 600; margin-left: 5px; }
+.cbar { display: flex; height: 8px; width: 90px; border-radius: 2px; overflow: hidden; background: var(--soft); margin-top: 3px; margin-left: auto; }
+.cbar span { display: block; height: 100%; }
+.pill { display: inline-block; padding: 2px 7px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+.pill.good { color: var(--good); background: var(--good-bg); }
+.pill.warn { color: var(--warn); background: var(--warn-bg); }
+.pill.bad { color: var(--bad); background: var(--bad-bg); }
+.grp td { background: var(--soft); text-align: left; font-weight: 600; color: var(--accent); }
+.cfoot { color: var(--muted); font-size: 12.5px; margin-top: 12px; max-width: 110ch; }
+.cfoot b { color: var(--fg); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .levers { position: static; }
+  .legend { margin-left: 0; }
+}
 @media (max-width: 760px) {
-  .mast .wrap { grid-template-columns: 1fr; padding-block: 26px 28px; }
+  .mast .wrap { grid-template-columns: 1fr; padding-block: 24px 0; }
   .mast .art { display: none; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
   .plate { height: 96px; }
@@ -125,38 +211,79 @@ dialog::backdrop { background: rgba(5, 7, 10, 0.55); }
       <div class="facts" id="facts"></div>
     </div>
     <div class="art" id="art" role="img" aria-label="Submarine fountain pen"></div>
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" type="button" role="tab" id="tab-cat" aria-selected="true" aria-controls="view-cat">Catalogue</button>
+      <button class="tab" type="button" role="tab" id="tab-costs" aria-selected="false" aria-controls="view-costs">Costs &amp; margins<span class="lock">OWNER</span></button>
+    </div>
   </div>
 </header>
 
-<div class="bar">
-  <div class="wrap">
-    <div class="row1">
-      <label class="search" for="q">
-        <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-        <input id="q" type="search" placeholder="Search by name, color word or product code" autocomplete="off" aria-label="Search products">
-      </label>
-      <select id="sort" aria-label="Sort">
-        <option value="catalogue">Catalogue order</option>
-        <option value="low">Price: low to high</option>
-        <option value="high">Price: high to low</option>
-      </select>
-      <label class="toggle" for="onlyNew"><input id="onlyNew" type="checkbox"> New only</label>
-    </div>
-    <div class="chips" id="chips" role="toolbar" aria-label="Sections"></div>
-  </div>
+<div class="banner" id="banner" hidden>
+  <div class="wrap"><span>Prices on this page use test settings from the Costs tab, not your published catalogue prices.</span><button class="btn" type="button" id="bannerReset">Reset to catalogue settings</button></div>
 </div>
 
-<main class="wrap">
-  <div class="head">
-    <div><h2 id="title">All products</h2><p id="intro"></p></div>
-    <div class="count" id="count" aria-live="polite"></div>
+<!-- ======================= Catalogue ======================= -->
+<div id="view-cat" role="tabpanel" aria-labelledby="tab-cat">
+  <div class="bar">
+    <div class="wrap">
+      <div class="row1">
+        <label class="search" for="q">
+          <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input id="q" type="search" placeholder="Search by name or product code" autocomplete="off" aria-label="Search products">
+        </label>
+        <select id="sort" aria-label="Sort">
+          <option value="catalogue">Catalogue order</option>
+          <option value="low">Price: low to high</option>
+          <option value="high">Price: high to low</option>
+          <option value="margin">Margin: lowest first</option>
+        </select>
+        <label class="toggle" for="onlyNew"><input id="onlyNew" type="checkbox"> New only</label>
+        <label class="toggle" for="showCosts"><input id="showCosts" type="checkbox"> Show costs</label>
+      </div>
+      <div class="chips" id="chips" role="toolbar" aria-label="Sections"></div>
+    </div>
   </div>
-  <div class="grid" id="grid"></div>
-</main>
 
-<footer class="terms">
-  <div class="wrap" id="terms"></div>
-</footer>
+  <main class="wrap">
+    <div class="head">
+      <div><h2 id="title">All products</h2><p id="intro"></p></div>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <footer class="terms"><div class="wrap" id="terms"></div></footer>
+</div>
+
+<!-- ======================= Costs & margins ======================= -->
+<div id="view-costs" role="tabpanel" aria-labelledby="tab-costs" hidden>
+  <div class="wrap cv">
+    <p class="cv-intro">India M.R.P. to US retail for every product: landed cost, markup, profit and margin. Move the assumptions to test new numbers; the catalogue tab follows them too. This tab shows your costs, so keep this page to yourself and send customers the PDF catalogue.</p>
+    <div class="layout">
+      <aside class="panel levers" aria-label="Assumptions">
+        <h2>Assumptions</h2>
+        <div id="leverList"></div>
+        <button class="btn" type="button" id="reset" style="margin-top:12px">Reset to catalogue settings</button>
+        <p class="note-asm">The PDF catalogue uses the catalogue settings. When you settle on new numbers, send them to Claude to rebuild it. A dot • marks a changed setting.</p>
+      </aside>
+      <section>
+        <div class="kpis" id="kpis"></div>
+        <div class="panel"><div class="scroll"><table class="t" id="sumTable"></table></div></div>
+        <h2 class="sub">Every product</h2>
+        <div class="panel">
+          <div class="tools">
+            <input class="field" type="search" id="cq" placeholder="Search name or code" aria-label="Search products">
+            <select id="csec" aria-label="Section"></select>
+            <label class="toggle" for="showOut"><input type="checkbox" id="showOut"> Include left-out items</label>
+            <div class="legend"><span><i style="background:var(--c-factory)"></i>Factory</span><span><i style="background:var(--c-duty)"></i>Duty + tariff</span><span><i style="background:var(--c-freight)"></i>Freight</span><span><i style="background:var(--c-fees)"></i>Fees</span></div>
+          </div>
+          <div class="ledger"><table class="t" id="ledger"></table></div>
+        </div>
+        <div class="cfoot" id="cfoot"></div>
+      </section>
+    </div>
+  </div>
+</div>
 
 <dialog id="dv" class="dv" aria-label="Product"></dialog>
 
@@ -164,117 +291,259 @@ dialog::backdrop { background: rgba(5, 7, 10, 0.55); }
 const D = /*DATA*/null;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const money = (v) => "$" + v.toFixed(2);
+const usd = (v) => (v < 0 ? "−$" : "$") + Math.abs(v).toFixed(2);
+const inr = (v) => "₹" + Math.round(v).toLocaleString("en-IN");
+const pct = (v) => (isFinite(v) ? v.toFixed(0) + "%" : "–");
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+                del(k) { try { localStorage.removeItem(k); } catch {} } };
 const bySec = Object.fromEntries(D.sections.map((s) => [s.id, s]));
-const state = { section: "all", q: "", sort: "catalogue", onlyNew: false };
-D.products.forEach((p, i) => { p.i = i; p.hay = (p.name + " " + p.note + " " + p.code + " " + p.code.replace(/-/g, "") + " " + bySec[p.section].name).toLowerCase(); });
+const c = D.contact;
 
+/* ---------- pricing model (same formula as catalogue/pricing.py) ---------- */
+const DEFAULTS = { ...D.settings, cardFeePct: 2.9, wholesaleFeePct: 0 };
+let S = { ...DEFAULTS, ...(store.get("pricing-levers") || {}) };
+const isDefault = () => ["inrPerUsd", "factoryShare", "freightPerKg", "indiaTariffPct", "otherPct", "markup", "wholesaleShare"].every((k) => S[k] === DEFAULTS[k]);
+
+function compute(r) {
+  const factoryInr = r.factoryInr ?? r.mrp * S.factoryShare;
+  const factory = factoryInr / S.inrPerUsd;
+  const duty = factory * r.dutyPct / 100 + r.pieces * r.cents / 100;
+  const tariff = factory * S.indiaTariffPct / 100;
+  const freight = r.grams / 1000 * S.freightPerKg;
+  const fees = factory * (S.mpfPct + S.otherPct) / 100;
+  const landed = factory + duty + tariff + freight + fees;
+  let retail = r.override != null ? r.override
+    : Math.max(Math.ceil(landed * S.markup - S.ending + 1e-9) + S.ending, S.minimum[r.group] ?? S.minimum.default);
+  retail = Math.round(retail * 100) / 100;
+  const wholesale = Math.round(retail * S.wholesaleShare * 100) / 100;
+  const profit = retail * (1 - S.cardFeePct / 100) - landed;
+  const wProfit = wholesale * (1 - S.wholesaleFeePct / 100) - landed;
+  return { factoryInr, factory, duty, tariff, freight, fees, landed, retail, wholesale, profit, wProfit,
+    mrpUsd: r.mrp / S.inrPerUsd, markupPct: (retail / landed - 1) * 100, margin: profit / retail * 100,
+    wMargin: wProfit / wholesale * 100, vsIndia: retail / (r.mrp / S.inrPerUsd) };
+}
+let P = [];  // products with live numbers
+function recompute() { P = D.products.map((p, i) => ({ ...p, i, ...compute(p),
+  hay: (p.name + " " + p.note + " " + p.code + " " + p.code.replace(/-/g, "") + " " + bySec[p.section].name).toLowerCase() })); }
+const pill = (m) => `<span class="pill ${m >= 50 ? "good" : m >= 30 ? "warn" : "bad"}">${pct(m)}</span>`;
+const median = (a) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+const catalogue = () => P.filter((p) => !p.excluded);
+
+/* ---------- masthead, tabs ---------- */
 $("logo").src = D.logo;
 $("art").style.backgroundImage = `url("${D.cover}")`;
-const c = D.contact;
-$("facts").innerHTML = [
-  `<span><b>${D.products.length}</b> products</span>`,
-  `<span><b>Landed</b> US prices, duty paid</span>`,
-  `<span>Free shipping over <b>${money(D.shipping.freeOver).replace(".00", "")}</b></span>`,
-].join("");
+function facts() {
+  $("facts").innerHTML = `<span><b>${catalogue().length}</b> products</span><span><b>Landed</b> US prices, duty paid</span><span>Free shipping over <b>${usd(D.shipping.freeOver).replace(".00", "")}</b></span>`;
+}
+let view = "cat";
+function showView(v) {
+  view = v;
+  $("view-cat").hidden = v !== "cat"; $("view-costs").hidden = v !== "costs";
+  $("tab-cat").setAttribute("aria-selected", v === "cat"); $("tab-costs").setAttribute("aria-selected", v === "costs");
+  if (v === "costs") { setHash("#costs"); renderCosts(); } else { setHash(state.section === "all" ? "" : "#" + state.section); renderCat(); }
+}
+$("tab-cat").addEventListener("click", () => showView("cat"));
+$("tab-costs").addEventListener("click", () => showView("costs"));
+function setHash(h) { if (location.hash !== h) history.replaceState(null, "", h || location.pathname + location.search); }
+
+/* ---------- catalogue ---------- */
+const state = { section: "all", q: "", sort: "catalogue", onlyNew: false, showCosts: !!store.get("show-costs") };
+$("showCosts").checked = state.showCosts;
 
 function chips() {
-  const counts = {};
-  D.products.forEach((p) => { if (!state.onlyNew || p.new) counts[p.section] = (counts[p.section] || 0) + 1; });
+  const counts = {}; catalogue().forEach((p) => { if (!state.onlyNew || p.new) counts[p.section] = (counts[p.section] || 0) + 1; });
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const all = [{ id: "all", name: "All" }, ...D.sections];
-  $("chips").innerHTML = all.map((s) => `<button class="chip" type="button" data-s="${s.id}" aria-pressed="${state.section === s.id}">${esc(s.name)}<span>${s.id === "all" ? total : counts[s.id] || 0}</span></button>`).join("");
+  $("chips").innerHTML = [{ id: "all", name: "All" }, ...D.sections].map((s) => `<button class="chip" type="button" data-s="${s.id}" aria-pressed="${state.section === s.id}">${esc(s.name)}<span>${s.id === "all" ? total : counts[s.id] || 0}</span></button>`).join("");
 }
-
 function card(p) {
-  return `<button class="card" type="button" data-code="${esc(p.code)}" aria-label="${esc(p.name)}, ${esc(p.code)}, ${money(p.price)}">
+  const cost = state.showCosts ? `<div class="costline"><span>Landed <b>${usd(p.landed)}</b></span><span>Profit <b>${usd(p.profit)}</b></span>${pill(p.margin)}</div>` : "";
+  return `<button class="card" type="button" data-code="${esc(p.code)}" aria-label="${esc(p.name)}, ${esc(p.code)}, ${usd(p.retail)}">
     <div class="plate">${p.img ? `<img src="${p.img}" alt="" loading="lazy" decoding="async">` : ""}</div>
-    <div class="info">
-      <div class="name">${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</div>
+    <div class="info"><div class="name">${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</div>
       <div class="note">${esc(p.note)}</div>
-      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${money(p.price)}</span></div>
-    </div></button>`;
+      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${usd(p.retail)}</span></div>${cost}</div></button>`;
 }
-
-function render() {
+function renderCat() {
   const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
-  let list = D.products.filter((p) => (state.section === "all" || p.section === state.section) && (!state.onlyNew || p.new)
-    && words.every((w) => p.hay.includes(w)));
-  if (state.sort === "low") list = list.slice().sort((a, b) => a.price - b.price || a.i - b.i);
-  if (state.sort === "high") list = list.slice().sort((a, b) => b.price - a.price || a.i - b.i);
+  let list = catalogue().filter((p) => (state.section === "all" || p.section === state.section) && (!state.onlyNew || p.new) && words.every((w) => p.hay.includes(w)));
+  if (state.sort === "low") list.sort((a, b) => a.retail - b.retail || a.i - b.i);
+  if (state.sort === "high") list.sort((a, b) => b.retail - a.retail || a.i - b.i);
+  if (state.sort === "margin") list.sort((a, b) => a.margin - b.margin || a.i - b.i);
   const sec = bySec[state.section];
   $("title").textContent = sec ? sec.name : state.onlyNew ? "New this season" : "All products";
   $("intro").textContent = sec ? sec.intro : "Every product in the Submarine USA collection. Tap a product for its code and ordering details.";
   $("count").textContent = list.length === 1 ? "1 product" : `${list.length} products`;
   $("grid").innerHTML = list.length ? list.map(card).join("")
-    : `<div class="empty" style="grid-column:1/-1">No products match “${esc(state.q)}”${sec ? " in " + esc(sec.name) : ""}. Try a product code or a simpler word.<br><button type="button" id="reset">Show all products</button></div>`;
+    : `<div class="empty" style="grid-column:1/-1">No products match “${esc(state.q)}”${sec ? " in " + esc(sec.name) : ""}. Try a product code or a simpler word.<br><button class="btn" type="button" id="resetFind">Show all products</button></div>`;
   chips();
 }
+function setSection(id) { state.section = id; setHash(id === "all" ? "" : "#" + id); renderCat(); }
 
-function setSection(id) {
-  state.section = id;
-  const want = id === "all" ? "" : "#" + id;
-  if (location.hash !== want) history.replaceState(null, "", want || location.pathname + location.search);
-  render();
-}
+$("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setSection(b.dataset.s); });
+$("grid").addEventListener("click", (e) => {
+  if (e.target.id === "resetFind") { state.q = ""; $("q").value = ""; state.onlyNew = false; $("onlyNew").checked = false; return setSection("all"); }
+  const b = e.target.closest(".card"); if (b) openProduct(b.dataset.code);
+});
+let t1; $("q").addEventListener("input", (e) => { clearTimeout(t1); t1 = setTimeout(() => { state.q = e.target.value.trim(); renderCat(); }, 120); });
+$("sort").addEventListener("change", (e) => { state.sort = e.target.value; renderCat(); });
+$("onlyNew").addEventListener("change", (e) => { state.onlyNew = e.target.checked; renderCat(); });
+$("showCosts").addEventListener("change", (e) => { state.showCosts = e.target.checked; store.set("show-costs", state.showCosts); renderCat(); });
 
+/* ---------- product view ---------- */
 function openProduct(code) {
-  const p = D.products.find((x) => x.code === code);
-  if (!p) return;
-  const dv = $("dv");
+  const p = P.find((x) => x.code === code); if (!p) return;
   const handle = c.instagram ? `Instagram ${esc(c.instagram)}` : "us";
-  dv.innerHTML = `<button class="close" type="button" aria-label="Close" id="dvclose">×</button>
+  const rows = [["India M.R.P.", `${inr(p.mrp)}${p.perPiece ? " each" : ""} <span style="color:var(--muted)">(${usd(p.mrpUsd)})</span>`],
+    ["Factory price", `${inr(p.factoryInr)} = ${usd(p.factory)}`], [`US duty (${esc(p.hts)})`, usd(p.duty)], [`India tariff (${S.indiaTariffPct}%)`, usd(p.tariff)],
+    [`Freight (${p.grams} g)`, usd(p.freight)], ["Broker, bank, customs fees", usd(p.fees)]];
+  const costs = `<div class="costs"><h4>Costs &amp; margin · owner only</h4><table>
+    ${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}
+    <tr class="tot"><td>Landed cost</td><td>${usd(p.landed)}</td></tr>
+    <tr><td>US retail · markup</td><td>${usd(p.retail)} · ${pct(p.markupPct)}</td></tr>
+    <tr class="tot"><td>Profit per unit (after ${S.cardFeePct}% card fee) · margin</td><td>${usd(p.profit)} · ${pill(p.margin)}</td></tr>
+    <tr><td>Wholesale · profit · margin</td><td>${usd(p.wholesale)} · ${usd(p.wProfit)} · ${pill(p.wMargin)}</td></tr>
+    <tr><td>US retail compared with India M.R.P.</td><td>×${p.vsIndia.toFixed(1)}</td></tr></table></div>`;
+  $("dv").innerHTML = `<button class="close" type="button" aria-label="Close" id="dvclose">×</button>
     <div class="plate">${p.img ? `<img src="${p.img}" alt="${esc(p.name)}">` : ""}</div>
     <div class="body">
-      <div class="sec">${esc(bySec[p.section].name)}</div>
+      <div class="sec">${esc(bySec[p.section].name)}${p.excluded ? ' · <span style="color:var(--bad)">left out of US catalogue</span>' : ""}</div>
       <h3>${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</h3>
       ${p.note ? `<div style="color:var(--muted)">${esc(p.note)}</div>` : ""}
-      <div class="price">${money(p.price)}</div>
-      <div class="codebox"><span style="color:var(--muted);font-size:13px">Product code</span><span class="code" id="dvcode">${esc(p.code)}</span><button type="button" id="copy">Copy code</button></div>
-      <p class="how">To order, send the product code to ${handle}. Price includes freight, US duty and import tariffs. ${money(D.shipping.flat)} shipping, free over ${money(D.shipping.freeOver).replace(".00", "")}.</p>
+      ${p.excluded ? `<div style="color:var(--bad);font-size:14px">${esc(p.excluded)}</div>` : ""}
+      <div class="price">${usd(p.retail)}</div>
+      <div class="codebox"><span style="color:var(--muted);font-size:13px">Product code</span><span class="code" id="dvcode">${esc(p.code)}</span><button class="btn" type="button" id="copy">Copy code</button></div>
+      <p class="how">To order, send the product code to ${handle}. Price includes freight, US duty and import tariffs. ${usd(D.shipping.flat)} shipping, free over ${usd(D.shipping.freeOver).replace(".00", "")}.</p>
+      ${costs}
     </div>`;
-  if (typeof dv.showModal === "function") dv.showModal(); else dv.setAttribute("open", "");
-  const want = "#p-" + p.code;
-  if (location.hash !== want) history.replaceState(null, "", want);
-}
-
-function closeProduct() {
   const dv = $("dv");
-  if (dv.open) dv.close ? dv.close() : dv.removeAttribute("open");
+  if (typeof dv.showModal === "function") dv.showModal(); else dv.setAttribute("open", "");
+  setHash("#p-" + p.code);
 }
-$("dv").addEventListener("close", () => setSection(state.section));
+function closeProduct() { const dv = $("dv"); if (dv.open) dv.close ? dv.close() : dv.removeAttribute("open"); }
+$("dv").addEventListener("close", () => setHash(view === "costs" ? "#costs" : state.section === "all" ? "" : "#" + state.section));
 $("dv").addEventListener("click", async (e) => {
   if (e.target === $("dv") || e.target.id === "dvclose") return closeProduct();
   if (e.target.id === "copy") {
-    const code = $("dvcode").textContent;
-    try { await navigator.clipboard.writeText(code); e.target.textContent = "Copied"; }
+    try { await navigator.clipboard.writeText($("dvcode").textContent); e.target.textContent = "Copied"; }
     catch { const r = document.createRange(); r.selectNodeContents($("dvcode")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = "Selected: press Ctrl+C"; }
   }
 });
 
-$("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setSection(b.dataset.s); });
-$("grid").addEventListener("click", (e) => {
-  if (e.target.id === "reset") { state.q = ""; $("q").value = ""; state.onlyNew = false; $("onlyNew").checked = false; return setSection("all"); }
-  const b = e.target.closest(".card"); if (b) openProduct(b.dataset.code);
+/* ---------- costs & margins ---------- */
+const LEVERS = [
+  { k: "inrPerUsd", label: "Exchange rate", min: 80, max: 105, step: 0.5, fmt: (v) => `₹${v} / $`, help: "Rupees per US dollar." },
+  { k: "factoryShare", label: "Factory price", min: 0.3, max: 0.8, step: 0.01, fmt: (v) => `${Math.round(v * 100)}% of M.R.P.`, help: "What Submarine charges you, as a share of India M.R.P. An assumption until you have their export price list." },
+  { k: "freightPerKg", label: "Freight", min: 0, max: 20, step: 0.25, fmt: (v) => `$${v.toFixed(2)} / kg`, help: "India to Virginia, door to door. Air cargo is about $5–9/kg; sea is far less but takes 5–7 weeks." },
+  { k: "indiaTariffPct", label: "Extra US tariff on India", min: 0, max: 50, step: 1, fmt: (v) => `${v}%`, help: "On top of normal duty. Confirm the current rate with your customs broker." },
+  { k: "otherPct", label: "Broker, bank, insurance", min: 0, max: 10, step: 0.5, fmt: (v) => `${v}% of factory`, help: "Plus the 0.35% customs processing fee." },
+  { k: "markup", label: "Retail markup on landed", min: 2, max: 6, step: 0.1, fmt: (v) => `× ${v.toFixed(1)}`, help: "Retail = landed × this, rounded up to .99, with a $3.99 minimum ($1.99 refills)." },
+  { k: "wholesaleShare", label: "Wholesale price", min: 0.4, max: 0.7, step: 0.01, fmt: (v) => `${Math.round(v * 100)}% of retail`, help: "What a shop pays you. 50% is standard." },
+  { k: "cardFeePct", label: "Card / checkout fee", min: 0, max: 6, step: 0.1, fmt: (v) => `${v.toFixed(1)}%`, help: "Taken off your direct sales (Stripe is 2.9% + 30¢ per order)." },
+  { k: "wholesaleFeePct", label: "Wholesale platform fee", min: 0, max: 30, step: 1, fmt: (v) => `${v}%`, help: "Taken off wholesale sales. Faire charges 15% on reorders, 25% on a shop's first order; 0% for your own wholesale." },
+];
+function levers() {
+  $("leverList").innerHTML = LEVERS.map((l) => `<div class="lever${S[l.k] !== DEFAULTS[l.k] ? " changed" : ""}">
+    <label class="lab" for="lv-${l.k}"><span>${esc(l.label)}</span><output id="o-${l.k}">${esc(l.fmt(S[l.k]))}</output></label>
+    <input type="range" id="lv-${l.k}" data-k="${l.k}" min="${l.min}" max="${l.max}" step="${l.step}" value="${S[l.k]}">
+    <small>${esc(l.help)}</small></div>`).join("");
+}
+$("leverList").addEventListener("input", (e) => {
+  const k = e.target.dataset.k; if (!k) return;
+  S[k] = parseFloat(e.target.value);
+  $("o-" + k).textContent = LEVERS.find((x) => x.k === k).fmt(S[k]);
+  e.target.closest(".lever").classList.toggle("changed", S[k] !== DEFAULTS[k]);
+  store.set("pricing-levers", S);
+  refresh();
 });
-let t; $("q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 120); });
-$("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
-$("onlyNew").addEventListener("change", (e) => { state.onlyNew = e.target.checked; render(); });
+function resetLevers() { S = { ...DEFAULTS }; store.del("pricing-levers"); levers(); refresh(); }
+$("reset").addEventListener("click", resetLevers);
+$("bannerReset").addEventListener("click", resetLevers);
 
-const ship = D.shipping;
-const reach = [c.instagram && `Instagram <b>${esc(c.instagram)}</b>`, c.email && `<b>${esc(c.email)}</b>`, c.phone && `<b>${esc(c.phone)}</b>`, c.website && `<b>${esc(c.website)}</b>`].filter(Boolean);
-$("terms").innerHTML = `
-  <div><h3>Landed prices</h3><p>Every price is a US retail price in US dollars with freight from India, <b>US customs duty and import tariffs already included</b>. Nothing more to pay on delivery.</p></div>
-  <div><h3>Shipping</h3><p><b>${money(ship.flat)}</b> flat rate in the US, <b>free over ${money(ship.freeOver).replace(".00", "")}</b>.</p><p>${esc(ship.dispatch)}, by ${esc(ship.method)}.</p></div>
-  <div><h3>How to order</h3><p>Send the product codes you want to ${reach.join(", ") || "us"}.</p><p>Retailers, offices and events: ask for wholesale pricing and custom branding.</p></div>
-  <p class="fine">${esc(c.business)} · ${esc(c.location)} · Manufactured by Submarine Pens Limited, Mumbai, India (ISO 9001:2015). Prices effective November 2026 and subject to change; sales tax added where it applies. Colors in photos may vary slightly.</p>`;
+$("csec").innerHTML = `<option value="">All sections</option>` + D.sections.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
+const sortState = { key: null, dir: 1 };
+const COLS = [
+  { k: "name", t: "Product", cls: "p l" }, { k: "mrp", t: "India M.R.P." }, { k: "mrpUsd", t: "M.R.P. in $" },
+  { k: "factory", t: "Factory" }, { k: "duty", t: "Duty" }, { k: "tariff", t: "Tariff" }, { k: "freight", t: "Freight" },
+  { k: "fees", t: "Fees" }, { k: "landed", t: "Landed" }, { k: "retail", t: "US retail" }, { k: "markupPct", t: "Markup" },
+  { k: "profit", t: "Profit / unit" }, { k: "margin", t: "Margin" }, { k: "wholesale", t: "Wholesale" },
+  { k: "wProfit", t: "W. profit" }, { k: "wMargin", t: "W. margin" }, { k: "vsIndia", t: "US ÷ India" },
+  { k: "grams", t: "Weight" }, { k: "hts", t: "HTS", cls: "l" },
+];
+function renderCosts() {
+  const live = catalogue();
+  const sum = (a, f) => a.reduce((s, r) => s + f(r), 0);
+  const freightShare = sum(live, (r) => r.freight) / sum(live, (r) => r.landed) * 100;
+  const dutyShare = sum(live, (r) => r.duty + r.tariff) / sum(live, (r) => r.landed) * 100;
+  $("kpis").innerHTML = [
+    ["Products in US catalogue", live.length, `${P.length - live.length} left out`],
+    ["Median landed cost", usd(median(live.map((r) => r.landed))), `median retail ${usd(median(live.map((r) => r.retail)))}`],
+    ["Average retail margin", pct(sum(live, (r) => r.margin) / live.length), `after ${S.cardFeePct}% card fee`],
+    ["Average wholesale margin", pct(sum(live, (r) => r.wMargin) / live.length), S.wholesaleFeePct ? `after ${S.wholesaleFeePct}% platform fee` : "selling direct to shops"],
+    ["Freight share of landed", pct(freightShare), `duty + tariff ${pct(dutyShare)}`],
+    ["Thin wholesale margin", live.filter((r) => r.wMargin < 30).length, "products under 30%"],
+  ].map(([k, v, s]) => `<div class="panel kpi"><div class="k">${esc(k)}</div><div class="v">${v}</div><div class="s">${esc(s)}</div></div>`).join("");
 
+  $("sumTable").innerHTML = `<thead><tr><th class="l">Section (averages)</th><th>Products</th><th>India M.R.P.</th><th>Landed</th><th>Freight</th><th>US retail</th><th>Markup</th><th>Profit / unit</th><th>Margin</th><th>W. margin</th></tr></thead><tbody>` +
+    D.sections.map((s) => { const g = live.filter((r) => r.section === s.id); if (!g.length) return ""; const a = (f) => sum(g, f) / g.length;
+      return `<tr><td class="l"><b>${esc(s.name)}</b></td><td>${g.length}</td><td>${inr(a((r) => r.mrp))}</td><td>${usd(a((r) => r.landed))}</td><td>${usd(a((r) => r.freight))}</td><td>${usd(a((r) => r.retail))}</td><td>${pct(a((r) => r.markupPct))}</td><td>${usd(a((r) => r.profit))}</td><td>${pill(a((r) => r.margin))}</td><td>${pill(a((r) => r.wMargin))}</td></tr>`; }).join("") + "</tbody>";
+
+  const q = $("cq").value.trim().toLowerCase(), sec = $("csec").value, showOut = $("showOut").checked;
+  let list = P.filter((r) => (showOut || !r.excluded) && (!sec || r.section === sec) && (!q || r.hay.includes(q)));
+  if (sortState.key) list.sort((a, b) => { const x = a[sortState.key], y = b[sortState.key]; return (typeof x === "string" ? x.localeCompare(y) : x - y) * sortState.dir; });
+  let last = null;
+  const body = list.map((r) => {
+    let g = "";
+    if (!sortState.key && r.section !== last) { last = r.section; g = `<tr class="grp"><td class="p">${esc(bySec[r.section].name)}</td><td colspan="${COLS.length - 1}"></td></tr>`; }
+    const parts = [[r.factory, "--c-factory"], [r.duty + r.tariff, "--c-duty"], [r.freight, "--c-freight"], [r.fees, "--c-fees"]];
+    const bar = `<div class="cbar" title="Factory ${usd(r.factory)} · duty + tariff ${usd(r.duty + r.tariff)} · freight ${usd(r.freight)} · fees ${usd(r.fees)}">${parts.map(([v, col]) => `<span style="width:${(v / r.landed * 100).toFixed(1)}%;background:var(${col})"></span>`).join("")}</div>`;
+    return g + `<tr><td class="p"><div class="prod" data-code="${esc(r.code)}"><div class="thumb">${r.img ? `<img src="${r.img}" alt="" loading="lazy">` : ""}</div><div><b>${esc(r.name)}${r.new ? '<span class="new" style="margin-left:5px;font-size:9px;padding:2px 4px">NEW</span>' : ""}${r.excluded ? `<span class="out" title="${esc(r.excluded)}">LEFT OUT</span>` : ""}</b><span>${esc(r.code)}</span>${r.note ? ` <span style="font-family:var(--body)">· ${esc(r.note)}</span>` : ""}</div></div></td>
+      <td>${inr(r.mrp)}${r.perPiece ? " ea." : ""}</td><td>${usd(r.mrpUsd)}</td><td title="${inr(r.factoryInr)}">${usd(r.factory)}</td><td>${usd(r.duty)}</td><td>${usd(r.tariff)}</td><td>${usd(r.freight)}</td><td>${usd(r.fees)}</td>
+      <td><b>${usd(r.landed)}</b>${bar}</td><td><b>${usd(r.retail)}</b></td><td>${pct(r.markupPct)}</td><td>${usd(r.profit)}</td><td>${pill(r.margin)}</td>
+      <td>${usd(r.wholesale)}</td><td>${usd(r.wProfit)}</td><td>${pill(r.wMargin)}</td><td>×${r.vsIndia.toFixed(1)}</td><td>${r.grams} g</td><td class="l">${esc(r.hts)}</td></tr>`;
+  }).join("");
+  $("ledger").innerHTML = `<thead><tr>${COLS.map((col) => `<th class="${col.cls || ""}" data-k="${col.k}" scope="col" aria-sort="${sortState.key === col.k ? (sortState.dir > 0 ? "ascending" : "descending") : "none"}">${col.t}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td class="l" colspan="${COLS.length}" style="padding:24px;color:var(--muted)">No products match “${esc(q)}”. Try a code or a shorter word.</td></tr>`}</tbody>`;
+
+  $("cfoot").innerHTML = `<b>How the numbers work.</b> Factory = India M.R.P. × ${Math.round(S.factoryShare * 100)}% ÷ ₹${S.inrPerUsd}. Duty is the US rate for each product type (pens 5.4% + 0.8¢ each, fountain pens 2.7% + 0.4¢, ink 1.8%, diaries mostly duty-free). Tariff = ${S.indiaTariffPct}% of factory. Freight = shipping weight × $${S.freightPerKg.toFixed(2)}/kg. Fees = ${(S.mpfPct + S.otherPct).toFixed(2)}% of factory.
+    <b>Markup</b> = how much retail is above landed. <b>Profit / unit</b> = retail after the ${S.cardFeePct}% card fee, minus landed; the shipping customers pay is charged separately and isn’t counted. <b>Margin</b> = profit ÷ retail. <b>W.</b> = the same when you sell to a shop at ${Math.round(S.wholesaleShare * 100)}% of retail. Green is 50% or more, amber 30–50%, red under 30%. <b>US ÷ India</b> = US retail compared with India M.R.P. in dollars. Averages count every product once. Weights and the factory share are estimates until you weigh samples and get Submarine’s export price list. Click a product for its full breakdown.`;
+}
+$("ledger").addEventListener("click", (e) => {
+  const pr = e.target.closest(".prod"); if (pr) return openProduct(pr.dataset.code);
+  const th = e.target.closest("th"); if (!th) return;
+  if (sortState.key === th.dataset.k) { if (sortState.dir === -1) { sortState.key = null; sortState.dir = 1; } else sortState.dir = -1; }
+  else { sortState.key = th.dataset.k; sortState.dir = 1; }
+  renderCosts();
+});
+let t2; $("cq").addEventListener("input", () => { clearTimeout(t2); t2 = setTimeout(renderCosts, 120); });
+$("csec").addEventListener("change", renderCosts);
+$("showOut").addEventListener("change", renderCosts);
+
+/* ---------- terms ---------- */
+function terms() {
+  const ship = D.shipping;
+  const reach = [c.instagram && `Instagram <b>${esc(c.instagram)}</b>`, c.email && `<b>${esc(c.email)}</b>`, c.phone && `<b>${esc(c.phone)}</b>`, c.website && `<b>${esc(c.website)}</b>`].filter(Boolean);
+  $("terms").innerHTML = `
+    <div><h3>Landed prices</h3><p>Every price is a US retail price in US dollars with freight from India, <b>US customs duty and import tariffs already included</b>. Nothing more to pay on delivery.</p></div>
+    <div><h3>Shipping</h3><p><b>${usd(ship.flat)}</b> flat rate in the US, <b>free over ${usd(ship.freeOver).replace(".00", "")}</b>.</p><p>${esc(ship.dispatch)}, by ${esc(ship.method)}.</p></div>
+    <div><h3>How to order</h3><p>Send the product codes you want to ${reach.join(", ") || "us"}.</p><p>Retailers, offices and events: ask for wholesale pricing and custom branding.</p></div>
+    <p class="fine">${esc(c.business)} · ${esc(c.location)} · Manufactured by Submarine Pens Limited, Mumbai, India (ISO 9001:2015). Prices effective November 2026 and subject to change; sales tax added where it applies. Colors in photos may vary slightly.</p>`;
+}
+
+/* ---------- boot ---------- */
+function refresh() {
+  recompute(); facts();
+  $("banner").hidden = isDefault();
+  if (view === "costs") renderCosts(); else renderCat();
+}
 function fromHash() {
   const h = decodeURIComponent(location.hash.slice(1));
-  if (h.startsWith("p-")) { const p = D.products.find((x) => x.code === h.slice(2)); if (p) { state.section = state.section === "all" || p.section === state.section ? state.section : "all"; render(); openProduct(p.code); return; } }
+  if (h === "costs") { showView("costs"); return; }
+  if (h.startsWith("p-") && P.some((x) => x.code === h.slice(2))) { if (view !== "cat") showView("cat"); openProduct(h.slice(2)); return; }
   state.section = bySec[h] ? h : "all";
-  render();
+  showView("cat");
 }
 window.addEventListener("hashchange", fromHash);
+recompute(); facts(); terms(); levers();
+$("banner").hidden = isDefault();
 fromHash();
 </script>

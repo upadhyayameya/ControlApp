@@ -11,20 +11,18 @@ It is built from the manufacturer's India catalogue (`source/`). Product photos 
 - **Price List:** every code and price on a few pages, for quick ordering.
 - **Back cover:** Submarine Pens USA, Arlington, Virginia, and the manufacturer credit.
 
-## Online catalogue portal
+## USA catalogue portal (the main catalogue page)
 
-`portal.py` builds a web page you can browse and share. It includes all 288 products with photos, search, section filters, price sorting, a "New only" filter and a product view with a copy-code button. Each product has its own link (`#p-<code>`), so you can send someone one pen. It shows US retail prices only, never your costs or the India M.R.P.
+`portal.py` builds one web page with everything:
+
+- **Catalogue tab:** all 288 products with photos, search, section filters, sorting (including by margin), a "New only" filter and a product view with a copy-code button. Each section and product has its own link (`#ball-pens`, `#p-<code>`).
+- **Show costs switch:** adds landed cost, profit and margin to every card. The product view always shows the full breakdown: India M.R.P., factory price, duty, tariff, freight, fees, landed cost, markup, profit, margin and wholesale.
+- **Costs & margins tab** (`#costs`): headline figures, averages per section and a sortable table of all 292 products. The pricing assumptions are sliders: exchange rate, factory %, freight per kg, tariff, fees, markup, wholesale %, card fee and wholesale platform fee. When you move them, every price on the page follows, with a banner so you know they're test numbers.
+
+**The page carries your costs, so don't share its link with customers. Send them the PDF.**
 
 ```bash
 python3 catalogue/build.py && python3 catalogue/portal.py    # writes catalogue/.work/portal.html
-```
-
-## Pricing console (internal)
-
-`costs.py` builds a private page with every product's India M.R.P., factory price, duty, tariff, freight, fees, landed cost, US retail, markup, profit and margin, plus wholesale profit and margin. The pricing assumptions are sliders, so you can try out a different freight rate or markup and see the effect before rebuilding. **Don't share it.**
-
-```bash
-python3 catalogue/build.py && python3 catalogue/costs.py      # writes catalogue/.work/costs.html
 ```
 
 ## How retail prices are set: landed cost × 3.5
@@ -71,8 +69,7 @@ python3 catalogue/build.py        # needs Node with Playwright and Chromium for 
 | `photos.py` | Cuts each product's photo out of the source, with all text removed so no ₹ prices appear |
 | `pricing.py` | Landed cost and retail price |
 | `catalogue.css`, `render.cjs` | Layout, and printing to US Letter PDF with Chromium |
-| `portal.py`, `portal-template.html` | The online catalogue portal (one self-contained page) |
-| `costs.py`, `costs-template.html` | The internal pricing console |
+| `portal.py`, `portal-template.html` | The USA catalogue portal, with costs and margins (one self-contained page) |
 | `products-2026-27.json` | All 292 products with every field above |
 
 ## Still to check
