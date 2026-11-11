@@ -1,0 +1,280 @@
+<title>Submarine Pens USA Catalogue</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112..125,500;112..125,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: black brand masthead with the cover pen, a sticky finder bar, then a product grid on white
+   "photo plates" (the catalogue's own studio shots), closed by ordering terms. */
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --fg: #15191f; --muted: #5a6270; --line: #e1e4e9;
+  --accent: #12336b; --bronze: #93703f; --new: #c95a17; --plate: #ffffff; --chip: #eceef2;
+  --band: #08090b; --band-fg: #f1f1f1; --band-muted: #a7a9ad;
+  --display: "Archivo", "Arial Narrow", Helvetica, sans-serif;
+  --body: "Inter", Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1015; --surface: #151920; --fg: #e9ebef; --muted: #9ba3b1; --line: #252b35;
+  --accent: #9db8ee; --bronze: #cda56c; --new: #f0894a; --plate: #ffffff; --chip: #1e232c;
+  --band: #000000; --band-fg: #f1f1f1; --band-muted: #a7a9ad; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d1015; --surface: #151920; --fg: #e9ebef; --muted: #9ba3b1; --line: #252b35;
+  --accent: #9db8ee; --bronze: #cda56c; --new: #f0894a; --plate: #ffffff; --chip: #1e232c;
+  --band: #000000; --band-fg: #f1f1f1; --band-muted: #a7a9ad; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
+
+/* masthead */
+.mast { background: var(--band); color: var(--band-fg); position: relative; overflow: hidden; }
+.mast .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: 24px; align-items: center; padding-block: 36px 40px; }
+.mast .logo { width: 210px; max-width: 60%; display: block; margin-bottom: 26px; }
+.kicker { font: 600 12px/1 var(--body); letter-spacing: 0.22em; text-transform: uppercase; color: var(--bronze); }
+.mast h1 { font: 500 clamp(30px, 4.6vw, 52px)/1.05 var(--display); font-stretch: 125%; letter-spacing: -0.01em; margin: 12px 0 14px; }
+.mast p { color: var(--band-muted); max-width: 52ch; margin: 0; }
+.mast .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 22px; font-size: 13.5px; color: var(--band-fg); }
+.mast .facts b { color: var(--bronze); font-weight: 600; }
+.mast .art { height: 300px; background-size: cover; background-position: 50% 42%; border-radius: var(--radius);
+  -webkit-mask-image: radial-gradient(ellipse 75% 75% at 55% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 75% 75% at 55% 50%, #000 55%, transparent 100%); }
+
+/* finder bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; flex-direction: column; gap: 10px; padding-block: 12px; }
+.row1 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.search { flex: 1 1 260px; min-width: 0; position: relative; }
+.search input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+.search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--muted); fill: none; }
+select { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+.toggle { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; }
+.toggle input { accent-color: var(--new); width: 16px; height: 16px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid transparent; background: var(--chip); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; cursor: pointer; white-space: nowrap; }
+.chip span { color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.chip[aria-pressed="true"] span { color: inherit; opacity: 0.75; }
+
+/* results */
+main { padding-block: 22px 40px; }
+.head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.head h2 { font: 500 26px/1.15 var(--display); font-stretch: 118%; }
+.head p { margin: 4px 0 0; color: var(--muted); }
+.count { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; text-align: left; padding: 0; cursor: pointer; transition: transform .15s ease, border-color .15s ease; }
+.card:hover { transform: translateY(-2px); border-color: var(--bronze); }
+.plate { background: var(--plate); height: 128px; display: flex; align-items: center; justify-content: center; padding: 12px; border-bottom: 1px solid var(--line); }
+.plate img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.info { padding: 11px 13px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.name { font-weight: 600; font-size: 14.5px; line-height: 1.3; display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.note { font-size: 12.5px; color: var(--muted); min-height: 1.4em; }
+.foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: auto; padding-top: 8px; }
+.code { font: 500 12px/1 var(--mono); color: var(--muted); letter-spacing: 0.02em; }
+.price { font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.new { background: var(--new); color: #fff; font: 700 10px/1 var(--body); letter-spacing: 0.1em; padding: 3px 6px; border-radius: 4px; }
+.empty { padding: 48px 16px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--radius); }
+.empty button { margin-top: 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+
+/* terms */
+.terms { border-top: 1px solid var(--line); background: var(--surface); }
+.terms .wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; padding-block: 32px 40px; }
+.terms h3 { font: 600 13px/1.2 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--bronze); margin-bottom: 8px; }
+.terms p { margin: 0 0 6px; color: var(--muted); font-size: 14px; max-width: 46ch; }
+.terms p b { color: var(--fg); }
+.fine { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; margin: 0; }
+
+/* product view */
+dialog { border: none; padding: 0; border-radius: 14px; background: var(--surface); color: var(--fg); width: min(720px, calc(100% - 32px)); max-height: calc(100% - 32px); }
+dialog::backdrop { background: rgba(5, 7, 10, 0.55); }
+.dv .plate { height: auto; min-height: 220px; padding: 28px; }
+.dv .plate img { max-height: 340px; }
+.dv .body { padding: 20px 22px 22px; display: grid; gap: 10px; }
+.dv .sec { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bronze); font-weight: 600; }
+.dv h3 { font: 500 26px/1.15 var(--display); font-stretch: 115%; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.dv .price { font-size: 30px; }
+.dv .codebox { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.dv .codebox .code { font-size: 15px; color: var(--fg); user-select: all; }
+.dv .codebox button { margin-left: auto; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+.dv .how { color: var(--muted); font-size: 14px; margin: 0; }
+.close { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 20px; line-height: 1; }
+
+@media (max-width: 760px) {
+  .mast .wrap { grid-template-columns: 1fr; padding-block: 26px 28px; }
+  .mast .art { display: none; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .plate { height: 96px; }
+  .price { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <div>
+      <img class="logo" id="logo" alt="Submarine, Power to Express">
+      <div class="kicker">Submarine Pens USA</div>
+      <h1>USA Collection 2026–27</h1>
+      <p>Ball pens, roller pens, fountain pens, gift sets, diaries, inks and refills, made by Submarine in India since 1995.</p>
+      <div class="facts" id="facts"></div>
+    </div>
+    <div class="art" id="art" role="img" aria-label="Submarine fountain pen"></div>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="row1">
+      <label class="search" for="q">
+        <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <input id="q" type="search" placeholder="Search by name, color word or product code" autocomplete="off" aria-label="Search products">
+      </label>
+      <select id="sort" aria-label="Sort">
+        <option value="catalogue">Catalogue order</option>
+        <option value="low">Price: low to high</option>
+        <option value="high">Price: high to low</option>
+      </select>
+      <label class="toggle" for="onlyNew"><input id="onlyNew" type="checkbox"> New only</label>
+    </div>
+    <div class="chips" id="chips" role="toolbar" aria-label="Sections"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="head">
+    <div><h2 id="title">All products</h2><p id="intro"></p></div>
+    <div class="count" id="count" aria-live="polite"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer class="terms">
+  <div class="wrap" id="terms"></div>
+</footer>
+
+<dialog id="dv" class="dv" aria-label="Product"></dialog>
+
+<script>
+const D = /*DATA*/null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = (v) => "$" + v.toFixed(2);
+const bySec = Object.fromEntries(D.sections.map((s) => [s.id, s]));
+const state = { section: "all", q: "", sort: "catalogue", onlyNew: false };
+D.products.forEach((p, i) => { p.i = i; p.hay = (p.name + " " + p.note + " " + p.code + " " + p.code.replace(/-/g, "") + " " + bySec[p.section].name).toLowerCase(); });
+
+$("logo").src = D.logo;
+$("art").style.backgroundImage = `url("${D.cover}")`;
+const c = D.contact;
+$("facts").innerHTML = [
+  `<span><b>${D.products.length}</b> products</span>`,
+  `<span><b>Landed</b> US prices, duty paid</span>`,
+  `<span>Free shipping over <b>${money(D.shipping.freeOver).replace(".00", "")}</b></span>`,
+].join("");
+
+function chips() {
+  const counts = {};
+  D.products.forEach((p) => { if (!state.onlyNew || p.new) counts[p.section] = (counts[p.section] || 0) + 1; });
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const all = [{ id: "all", name: "All" }, ...D.sections];
+  $("chips").innerHTML = all.map((s) => `<button class="chip" type="button" data-s="${s.id}" aria-pressed="${state.section === s.id}">${esc(s.name)}<span>${s.id === "all" ? total : counts[s.id] || 0}</span></button>`).join("");
+}
+
+function card(p) {
+  return `<button class="card" type="button" data-code="${esc(p.code)}" aria-label="${esc(p.name)}, ${esc(p.code)}, ${money(p.price)}">
+    <div class="plate">${p.img ? `<img src="${p.img}" alt="" loading="lazy" decoding="async">` : ""}</div>
+    <div class="info">
+      <div class="name">${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</div>
+      <div class="note">${esc(p.note)}</div>
+      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${money(p.price)}</span></div>
+    </div></button>`;
+}
+
+function render() {
+  const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+  let list = D.products.filter((p) => (state.section === "all" || p.section === state.section) && (!state.onlyNew || p.new)
+    && words.every((w) => p.hay.includes(w)));
+  if (state.sort === "low") list = list.slice().sort((a, b) => a.price - b.price || a.i - b.i);
+  if (state.sort === "high") list = list.slice().sort((a, b) => b.price - a.price || a.i - b.i);
+  const sec = bySec[state.section];
+  $("title").textContent = sec ? sec.name : state.onlyNew ? "New this season" : "All products";
+  $("intro").textContent = sec ? sec.intro : "Every product in the Submarine USA collection. Tap a product for its code and ordering details.";
+  $("count").textContent = list.length === 1 ? "1 product" : `${list.length} products`;
+  $("grid").innerHTML = list.length ? list.map(card).join("")
+    : `<div class="empty" style="grid-column:1/-1">No products match “${esc(state.q)}”${sec ? " in " + esc(sec.name) : ""}. Try a product code or a simpler word.<br><button type="button" id="reset">Show all products</button></div>`;
+  chips();
+}
+
+function setSection(id) {
+  state.section = id;
+  const want = id === "all" ? "" : "#" + id;
+  if (location.hash !== want) history.replaceState(null, "", want || location.pathname + location.search);
+  render();
+}
+
+function openProduct(code) {
+  const p = D.products.find((x) => x.code === code);
+  if (!p) return;
+  const dv = $("dv");
+  const handle = c.instagram ? `Instagram ${esc(c.instagram)}` : "us";
+  dv.innerHTML = `<button class="close" type="button" aria-label="Close" id="dvclose">×</button>
+    <div class="plate">${p.img ? `<img src="${p.img}" alt="${esc(p.name)}">` : ""}</div>
+    <div class="body">
+      <div class="sec">${esc(bySec[p.section].name)}</div>
+      <h3>${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</h3>
+      ${p.note ? `<div style="color:var(--muted)">${esc(p.note)}</div>` : ""}
+      <div class="price">${money(p.price)}</div>
+      <div class="codebox"><span style="color:var(--muted);font-size:13px">Product code</span><span class="code" id="dvcode">${esc(p.code)}</span><button type="button" id="copy">Copy code</button></div>
+      <p class="how">To order, send the product code to ${handle}. Price includes freight, US duty and import tariffs. ${money(D.shipping.flat)} shipping, free over ${money(D.shipping.freeOver).replace(".00", "")}.</p>
+    </div>`;
+  if (typeof dv.showModal === "function") dv.showModal(); else dv.setAttribute("open", "");
+  const want = "#p-" + p.code;
+  if (location.hash !== want) history.replaceState(null, "", want);
+}
+
+function closeProduct() {
+  const dv = $("dv");
+  if (dv.open) dv.close ? dv.close() : dv.removeAttribute("open");
+}
+$("dv").addEventListener("close", () => setSection(state.section));
+$("dv").addEventListener("click", async (e) => {
+  if (e.target === $("dv") || e.target.id === "dvclose") return closeProduct();
+  if (e.target.id === "copy") {
+    const code = $("dvcode").textContent;
+    try { await navigator.clipboard.writeText(code); e.target.textContent = "Copied"; }
+    catch { const r = document.createRange(); r.selectNodeContents($("dvcode")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = "Selected: press Ctrl+C"; }
+  }
+});
+
+$("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setSection(b.dataset.s); });
+$("grid").addEventListener("click", (e) => {
+  if (e.target.id === "reset") { state.q = ""; $("q").value = ""; state.onlyNew = false; $("onlyNew").checked = false; return setSection("all"); }
+  const b = e.target.closest(".card"); if (b) openProduct(b.dataset.code);
+});
+let t; $("q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 120); });
+$("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+$("onlyNew").addEventListener("change", (e) => { state.onlyNew = e.target.checked; render(); });
+
+const ship = D.shipping;
+const reach = [c.instagram && `Instagram <b>${esc(c.instagram)}</b>`, c.email && `<b>${esc(c.email)}</b>`, c.phone && `<b>${esc(c.phone)}</b>`, c.website && `<b>${esc(c.website)}</b>`].filter(Boolean);
+$("terms").innerHTML = `
+  <div><h3>Landed prices</h3><p>Every price is a US retail price in US dollars with freight from India, <b>US customs duty and import tariffs already included</b>. Nothing more to pay on delivery.</p></div>
+  <div><h3>Shipping</h3><p><b>${money(ship.flat)}</b> flat rate in the US, <b>free over ${money(ship.freeOver).replace(".00", "")}</b>.</p><p>${esc(ship.dispatch)}, by ${esc(ship.method)}.</p></div>
+  <div><h3>How to order</h3><p>Send the product codes you want to ${reach.join(", ") || "us"}.</p><p>Retailers, offices and events: ask for wholesale pricing and custom branding.</p></div>
+  <p class="fine">${esc(c.business)} · ${esc(c.location)} · Manufactured by Submarine Pens Limited, Mumbai, India (ISO 9001:2015). Prices effective November 2026 and subject to change; sales tax added where it applies. Colors in photos may vary slightly.</p>`;
+
+function fromHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h.startsWith("p-")) { const p = D.products.find((x) => x.code === h.slice(2)); if (p) { state.section = state.section === "all" || p.section === state.section ? state.section : "all"; render(); openProduct(p.code); return; } }
+  state.section = bySec[h] ? h : "all";
+  render();
+}
+window.addEventListener("hashchange", fromHash);
+fromHash();
+</script>
