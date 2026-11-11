@@ -1,0 +1,21 @@
+{
+  "name": "submarine-outreach",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "B2B outreach portal for Submarine Pens in the USA: discover businesses nationwide, gather public contact emails, run compliant email sequences, and handle replies.",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server/index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test 'test/*.test.js'"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "imapflow": "^2.1.2",
+    "mailparser": "^3.9.31",
+    "nodemailer": "^10.0.12"
+  }
+}
