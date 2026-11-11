@@ -9,8 +9,19 @@
   "pdfPage": 3,
   "inrMrp": 120,
   "perPiece": false,
-  "usdMsrp": 3.0,
-  "usdWholesale": 1.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 0.94,
+  "landedBreakdown": {
+   "factory": 0.638,
+   "duty": 0.042,
+   "tariff": 0.064,
+   "freight": 0.175,
+   "fees": 0.021
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109710141",
@@ -22,8 +33,19 @@
   "pdfPage": 3,
   "inrMrp": 120,
   "perPiece": false,
-  "usdMsrp": 3.0,
-  "usdWholesale": 1.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 0.94,
+  "landedBreakdown": {
+   "factory": 0.638,
+   "duty": 0.042,
+   "tariff": 0.064,
+   "freight": 0.175,
+   "fees": 0.021
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0106680500",
@@ -35,8 +57,19 @@
   "pdfPage": 3,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0106680300",
@@ -48,8 +81,19 @@
   "pdfPage": 3,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0106684700",
@@ -61,8 +105,19 @@
   "pdfPage": 3,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0106680100",
@@ -74,8 +129,19 @@
   "pdfPage": 3,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109170100",
@@ -87,8 +153,19 @@
   "pdfPage": 4,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108322200",
@@ -100,8 +177,19 @@
   "pdfPage": 4,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108323800",
@@ -113,8 +201,19 @@
   "pdfPage": 4,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0106681400",
@@ -126,8 +225,19 @@
   "pdfPage": 4,
   "inrMrp": 140,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.07,
+  "landedBreakdown": {
+   "factory": 0.745,
+   "duty": 0.048,
+   "tariff": 0.074,
+   "freight": 0.175,
+   "fees": 0.025
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109630500",
@@ -139,8 +249,19 @@
   "pdfPage": 4,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108323300",
@@ -152,8 +273,19 @@
   "pdfPage": 4,
   "inrMrp": 130,
   "perPiece": false,
-  "usdMsrp": 3.5,
-  "usdWholesale": 1.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.0,
+  "landedBreakdown": {
+   "factory": 0.691,
+   "duty": 0.045,
+   "tariff": 0.069,
+   "freight": 0.175,
+   "fees": 0.023
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109170700",
@@ -165,8 +297,19 @@
   "pdfPage": 5,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109170300",
@@ -178,8 +321,19 @@
   "pdfPage": 5,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109171100",
@@ -191,8 +345,19 @@
   "pdfPage": 5,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109170600",
@@ -204,8 +369,19 @@
   "pdfPage": 5,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109170200",
@@ -217,8 +393,19 @@
   "pdfPage": 5,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.13,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.051,
+   "tariff": 0.08,
+   "freight": 0.175,
+   "fees": 0.027
+  },
+  "retailUsd": 3.99,
+  "wholesaleUsd": 2.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109890500",
@@ -230,8 +417,19 @@
   "pdfPage": 5,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.19,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.175,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109891000",
@@ -243,8 +441,19 @@
   "pdfPage": 6,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.19,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.175,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109890600",
@@ -256,8 +465,19 @@
   "pdfPage": 6,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.19,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.175,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109890734",
@@ -269,8 +489,19 @@
   "pdfPage": 6,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.19,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.175,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109891600",
@@ -282,8 +513,19 @@
   "pdfPage": 6,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.19,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.175,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0107012300",
@@ -295,8 +537,19 @@
   "pdfPage": 6,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.33,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.315,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109890831",
@@ -308,8 +561,19 @@
   "pdfPage": 6,
   "inrMrp": 160,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.19,
+  "landedBreakdown": {
+   "factory": 0.851,
+   "duty": 0.054,
+   "tariff": 0.085,
+   "freight": 0.175,
+   "fees": 0.028
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109220731",
@@ -321,8 +585,19 @@
   "pdfPage": 7,
   "inrMrp": 170,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.4,
+  "landedBreakdown": {
+   "factory": 0.904,
+   "duty": 0.057,
+   "tariff": 0.09,
+   "freight": 0.315,
+   "fees": 0.03
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109220300",
@@ -334,8 +609,19 @@
   "pdfPage": 7,
   "inrMrp": 170,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.4,
+  "landedBreakdown": {
+   "factory": 0.904,
+   "duty": 0.057,
+   "tariff": 0.09,
+   "freight": 0.315,
+   "fees": 0.03
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109221100",
@@ -347,8 +633,19 @@
   "pdfPage": 7,
   "inrMrp": 170,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.4,
+  "landedBreakdown": {
+   "factory": 0.904,
+   "duty": 0.057,
+   "tariff": 0.09,
+   "freight": 0.315,
+   "fees": 0.03
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109220600",
@@ -360,8 +657,19 @@
   "pdfPage": 7,
   "inrMrp": 170,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.4,
+  "landedBreakdown": {
+   "factory": 0.904,
+   "duty": 0.057,
+   "tariff": 0.09,
+   "freight": 0.315,
+   "fees": 0.03
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109220200",
@@ -373,8 +681,19 @@
   "pdfPage": 7,
   "inrMrp": 170,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.4,
+  "landedBreakdown": {
+   "factory": 0.904,
+   "duty": 0.057,
+   "tariff": 0.09,
+   "freight": 0.315,
+   "fees": 0.03
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109220100",
@@ -386,8 +705,19 @@
   "pdfPage": 7,
   "inrMrp": 170,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.4,
+  "landedBreakdown": {
+   "factory": 0.904,
+   "duty": 0.057,
+   "tariff": 0.09,
+   "freight": 0.315,
+   "fees": 0.03
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108582200",
@@ -399,8 +729,19 @@
   "pdfPage": 8,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108322100",
@@ -412,8 +753,19 @@
   "pdfPage": 8,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108324600",
@@ -425,8 +777,19 @@
   "pdfPage": 8,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108320400",
@@ -438,8 +801,19 @@
   "pdfPage": 8,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0107784800",
@@ -451,8 +825,19 @@
   "pdfPage": 8,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.32,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.175,
+   "fees": 0.032
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0107780515",
@@ -464,8 +849,19 @@
   "pdfPage": 8,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.32,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.175,
+   "fees": 0.032
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108731800",
@@ -477,8 +873,19 @@
   "pdfPage": 9,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109610100",
@@ -490,8 +897,19 @@
   "pdfPage": 9,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0112021400",
@@ -503,8 +921,19 @@
   "pdfPage": 9,
   "inrMrp": 180,
   "perPiece": false,
-  "usdMsrp": 4.5,
-  "usdWholesale": 2.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.46,
+  "landedBreakdown": {
+   "factory": 0.957,
+   "duty": 0.06,
+   "tariff": 0.096,
+   "freight": 0.315,
+   "fees": 0.032
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109530100",
@@ -516,8 +945,19 @@
   "pdfPage": 9,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109530700",
@@ -529,8 +969,19 @@
   "pdfPage": 9,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109530600",
@@ -542,8 +993,19 @@
   "pdfPage": 9,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130270700",
@@ -555,8 +1017,19 @@
   "pdfPage": 10,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130280700",
@@ -568,8 +1041,19 @@
   "pdfPage": 10,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130270900",
@@ -581,8 +1065,19 @@
   "pdfPage": 10,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130280900",
@@ -594,8 +1089,19 @@
   "pdfPage": 10,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130271400",
@@ -607,8 +1113,19 @@
   "pdfPage": 10,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130281400",
@@ -620,8 +1137,19 @@
   "pdfPage": 10,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109350100",
@@ -633,8 +1161,19 @@
   "pdfPage": 11,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108730300",
@@ -646,8 +1185,19 @@
   "pdfPage": 11,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109742300",
@@ -659,8 +1209,19 @@
   "pdfPage": 11,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108720100",
@@ -672,8 +1233,19 @@
   "pdfPage": 11,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0115681400",
@@ -685,8 +1257,19 @@
   "pdfPage": 11,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108720600",
@@ -698,8 +1281,19 @@
   "pdfPage": 11,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108721600",
@@ -711,8 +1305,19 @@
   "pdfPage": 12,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0140080771",
@@ -724,8 +1329,19 @@
   "pdfPage": 12,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.42,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0140090734",
@@ -737,8 +1353,19 @@
   "pdfPage": 12,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.42,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0140100171",
@@ -750,8 +1377,19 @@
   "pdfPage": 12,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.42,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109351624",
@@ -763,8 +1401,19 @@
   "pdfPage": 12,
   "inrMrp": 220,
   "perPiece": false,
-  "usdMsrp": 5.5,
-  "usdWholesale": 2.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.71,
+  "landedBreakdown": {
+   "factory": 1.17,
+   "duty": 0.071,
+   "tariff": 0.117,
+   "freight": 0.315,
+   "fees": 0.039
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108720700",
@@ -776,8 +1425,19 @@
   "pdfPage": 12,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109020300",
@@ -789,8 +1449,19 @@
   "pdfPage": 13,
   "inrMrp": 220,
   "perPiece": false,
-  "usdMsrp": 5.5,
-  "usdWholesale": 2.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.71,
+  "landedBreakdown": {
+   "factory": 1.17,
+   "duty": 0.071,
+   "tariff": 0.117,
+   "freight": 0.315,
+   "fees": 0.039
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109020400",
@@ -802,8 +1473,19 @@
   "pdfPage": 13,
   "inrMrp": 220,
   "perPiece": false,
-  "usdMsrp": 5.5,
-  "usdWholesale": 2.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.71,
+  "landedBreakdown": {
+   "factory": 1.17,
+   "duty": 0.071,
+   "tariff": 0.117,
+   "freight": 0.315,
+   "fees": 0.039
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0123061000",
@@ -815,8 +1497,19 @@
   "pdfPage": 13,
   "inrMrp": 225,
   "perPiece": false,
-  "usdMsrp": 5.5,
-  "usdWholesale": 2.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.81,
+  "landedBreakdown": {
+   "factory": 1.197,
+   "duty": 0.073,
+   "tariff": 0.12,
+   "freight": 0.385,
+   "fees": 0.04
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0123060800",
@@ -828,8 +1521,19 @@
   "pdfPage": 13,
   "inrMrp": 225,
   "perPiece": false,
-  "usdMsrp": 5.5,
-  "usdWholesale": 2.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.81,
+  "landedBreakdown": {
+   "factory": 1.197,
+   "duty": 0.073,
+   "tariff": 0.12,
+   "freight": 0.385,
+   "fees": 0.04
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0123060900",
@@ -841,8 +1545,19 @@
   "pdfPage": 13,
   "inrMrp": 225,
   "perPiece": false,
-  "usdMsrp": 5.5,
-  "usdWholesale": 2.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.81,
+  "landedBreakdown": {
+   "factory": 1.197,
+   "duty": 0.073,
+   "tariff": 0.12,
+   "freight": 0.385,
+   "fees": 0.04
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0140120271",
@@ -854,8 +1569,19 @@
   "pdfPage": 13,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.01,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.42,
+   "fees": 0.045
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0140130734",
@@ -867,8 +1593,19 @@
   "pdfPage": 14,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.01,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.42,
+   "fees": 0.045
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109920100",
@@ -880,8 +1617,19 @@
   "pdfPage": 14,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109920300",
@@ -893,8 +1641,19 @@
   "pdfPage": 14,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109920600",
@@ -906,8 +1665,19 @@
   "pdfPage": 14,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109920731",
@@ -919,8 +1689,19 @@
   "pdfPage": 14,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109930700",
@@ -932,8 +1713,19 @@
   "pdfPage": 14,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109931000",
@@ -945,8 +1737,19 @@
   "pdfPage": 15,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108872200",
@@ -958,8 +1761,19 @@
   "pdfPage": 15,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "01230512105",
@@ -971,8 +1785,19 @@
   "pdfPage": 15,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.97,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.385,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "01230511103",
@@ -984,8 +1809,19 @@
   "pdfPage": 15,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.97,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.385,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "01230508104",
@@ -997,8 +1833,19 @@
   "pdfPage": 15,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.97,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.385,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109930800",
@@ -1010,8 +1857,19 @@
   "pdfPage": 15,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120890612",
@@ -1023,8 +1881,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120672100",
@@ -1036,8 +1905,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0101263000",
@@ -1049,8 +1929,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0107250100",
@@ -1062,8 +1953,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108970100",
@@ -1075,8 +1977,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108972200",
@@ -1088,8 +2001,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110090100",
@@ -1101,8 +2025,19 @@
   "pdfPage": 16,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0107260100",
@@ -1114,8 +2049,19 @@
   "pdfPage": 17,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110252200",
@@ -1127,8 +2073,19 @@
   "pdfPage": 17,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110182200",
@@ -1140,8 +2097,19 @@
   "pdfPage": 17,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0108852100",
@@ -1153,8 +2121,19 @@
   "pdfPage": 17,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108840300",
@@ -1166,8 +2145,19 @@
   "pdfPage": 17,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0110470100",
@@ -1179,8 +2169,19 @@
   "pdfPage": 17,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109781400",
@@ -1192,8 +2193,19 @@
   "pdfPage": 18,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109052100",
@@ -1205,8 +2217,19 @@
   "pdfPage": 18,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0110830100",
@@ -1218,8 +2241,19 @@
   "pdfPage": 18,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109200100",
@@ -1231,8 +2265,19 @@
   "pdfPage": 18,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109200200",
@@ -1244,8 +2289,19 @@
   "pdfPage": 18,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109082100",
@@ -1257,8 +2313,19 @@
   "pdfPage": 18,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0110532200",
@@ -1270,8 +2337,19 @@
   "pdfPage": 19,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109801436",
@@ -1283,8 +2361,19 @@
   "pdfPage": 19,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109791438",
@@ -1296,8 +2385,19 @@
   "pdfPage": 19,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130261400",
@@ -1309,8 +2409,19 @@
   "pdfPage": 19,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.81,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.595,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130070100",
@@ -1322,8 +2433,19 @@
   "pdfPage": 19,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": "NASA logo on the pen: NASA's name and insignia need NASA's permission on US products"
  },
  {
   "code": "0109310100",
@@ -1335,8 +2457,19 @@
   "pdfPage": 19,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110323100",
@@ -1348,8 +2481,19 @@
   "pdfPage": 20,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110262100",
@@ -1361,8 +2505,19 @@
   "pdfPage": 20,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110212372",
@@ -1374,8 +2529,19 @@
   "pdfPage": 20,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110020400",
@@ -1387,8 +2553,19 @@
   "pdfPage": 20,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110020300",
@@ -1400,8 +2577,19 @@
   "pdfPage": 20,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110021900",
@@ -1413,8 +2601,19 @@
   "pdfPage": 20,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0130241400",
@@ -1426,8 +2625,19 @@
   "pdfPage": 21,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0115981400",
@@ -1439,8 +2649,19 @@
   "pdfPage": 21,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0115972043",
@@ -1452,8 +2673,19 @@
   "pdfPage": 21,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0140150100",
@@ -1465,8 +2697,19 @@
   "pdfPage": 21,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.13,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.595,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110050300",
@@ -1478,8 +2721,19 @@
   "pdfPage": 21,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110520300",
@@ -1491,8 +2745,19 @@
   "pdfPage": 21,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0115022400",
@@ -1504,8 +2769,19 @@
   "pdfPage": 22,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110011400",
@@ -1517,8 +2793,19 @@
   "pdfPage": 22,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0130211400",
@@ -1530,8 +2817,19 @@
   "pdfPage": 22,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0109961400",
@@ -1543,8 +2841,19 @@
   "pdfPage": 22,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "01099717000",
@@ -1556,8 +2865,19 @@
   "pdfPage": 22,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0109761400",
@@ -1569,8 +2889,19 @@
   "pdfPage": 22,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0130031400",
@@ -1582,8 +2913,19 @@
   "pdfPage": 23,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0110350721",
@@ -1595,8 +2937,19 @@
   "pdfPage": 23,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0115032100",
@@ -1608,8 +2961,19 @@
   "pdfPage": 23,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0115720700",
@@ -1621,8 +2985,19 @@
   "pdfPage": 23,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0108802100",
@@ -1634,8 +3009,19 @@
   "pdfPage": 23,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.39,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.595,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "01203404106",
@@ -1647,8 +3033,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "01203409106",
@@ -1660,8 +3057,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "01203403106",
@@ -1673,8 +3081,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "01203461106",
@@ -1686,8 +3105,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "01203405106",
@@ -1699,8 +3129,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120330700",
@@ -1712,8 +3153,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120331000",
@@ -1725,8 +3177,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120330200",
@@ -1738,8 +3201,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120330734",
@@ -1751,8 +3225,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0120330800",
@@ -1764,8 +3249,19 @@
   "pdfPage": 24,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.66,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.49,
+   "fees": 0.089
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110710121",
@@ -1777,8 +3273,19 @@
   "pdfPage": 25,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.39,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.595,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0110120714",
@@ -1790,8 +3297,19 @@
   "pdfPage": 25,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.39,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.595,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0110110721",
@@ -1803,8 +3321,19 @@
   "pdfPage": 25,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.39,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.595,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0115510500",
@@ -1816,8 +3345,19 @@
   "pdfPage": 25,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.78,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 0.35,
+   "fees": 0.125
+  },
+  "retailUsd": 16.99,
+  "wholesaleUsd": 8.49,
+  "excludedFromUS": null
  },
  {
   "code": "0115511900",
@@ -1829,8 +3369,19 @@
   "pdfPage": 25,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.15,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.35,
+   "fees": 0.107
+  },
+  "retailUsd": 14.99,
+  "wholesaleUsd": 7.5,
+  "excludedFromUS": null
  },
  {
   "code": "0110040351",
@@ -1842,8 +3393,19 @@
   "pdfPage": 25,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.66,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.595,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0110040352",
@@ -1855,8 +3417,19 @@
   "pdfPage": 26,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.66,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.595,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0110040355",
@@ -1868,8 +3441,19 @@
   "pdfPage": 26,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.66,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.595,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0110040354",
@@ -1881,8 +3465,19 @@
   "pdfPage": 26,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.66,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.595,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0110041400",
@@ -1894,8 +3489,19 @@
   "pdfPage": 26,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.66,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.595,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0116150500",
@@ -1907,8 +3513,19 @@
   "pdfPage": 26,
   "inrMrp": 1200,
   "perPiece": false,
-  "usdMsrp": 30,
-  "usdWholesale": 15.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 7.94,
+  "landedBreakdown": {
+   "factory": 6.383,
+   "duty": 0.353,
+   "tariff": 0.638,
+   "freight": 0.35,
+   "fees": 0.214
+  },
+  "retailUsd": 27.99,
+  "wholesaleUsd": 13.99,
+  "excludedFromUS": null
  },
  {
   "code": "0110040353",
@@ -1920,8 +3537,19 @@
   "pdfPage": 26,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.66,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.595,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0112010100",
@@ -1933,8 +3561,19 @@
   "pdfPage": 27,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.25,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.35,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0112010700",
@@ -1946,8 +3585,19 @@
   "pdfPage": 27,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.25,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.35,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0112010600",
@@ -1959,8 +3609,19 @@
   "pdfPage": 27,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.25,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.35,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0112010400",
@@ -1972,8 +3633,19 @@
   "pdfPage": 27,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Ball Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.25,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.35,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0308640100",
@@ -1985,8 +3657,19 @@
   "pdfPage": 28,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0308642300",
@@ -1998,8 +3681,19 @@
   "pdfPage": 28,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0308640600",
@@ -2011,8 +3705,19 @@
   "pdfPage": 28,
   "inrMrp": 200,
   "perPiece": false,
-  "usdMsrp": 5.0,
-  "usdWholesale": 2.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.59,
+  "landedBreakdown": {
+   "factory": 1.064,
+   "duty": 0.065,
+   "tariff": 0.106,
+   "freight": 0.315,
+   "fees": 0.036
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "0307270300",
@@ -2024,8 +3729,19 @@
   "pdfPage": 28,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0307270500",
@@ -2037,8 +3753,19 @@
   "pdfPage": 28,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310841600",
@@ -2050,8 +3777,19 @@
   "pdfPage": 28,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.9,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.315,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0340110171",
@@ -2063,8 +3801,19 @@
   "pdfPage": 29,
   "inrMrp": 250,
   "perPiece": false,
-  "usdMsrp": 6.5,
-  "usdWholesale": 3.25
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 1.76,
+  "landedBreakdown": {
+   "factory": 1.33,
+   "duty": 0.08,
+   "tariff": 0.133,
+   "freight": 0.175,
+   "fees": 0.045
+  },
+  "retailUsd": 6.99,
+  "wholesaleUsd": 3.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310090100",
@@ -2076,8 +3825,19 @@
   "pdfPage": 29,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0320672100",
@@ -2089,8 +3849,19 @@
   "pdfPage": 29,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0330000700",
@@ -2102,8 +3873,19 @@
   "pdfPage": 29,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.08,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.175,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": "NASA logo on the pen and its packaging"
  },
  {
   "code": "0301263000",
@@ -2115,8 +3897,19 @@
   "pdfPage": 29,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.64,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.42,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0308052200",
@@ -2128,8 +3921,19 @@
   "pdfPage": 29,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.22,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.315,
+   "fees": 0.053
+  },
+  "retailUsd": 7.99,
+  "wholesaleUsd": 4.0,
+  "excludedFromUS": null
  },
  {
   "code": "0320350183",
@@ -2141,8 +3945,19 @@
   "pdfPage": 30,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.32,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.42,
+   "fees": 0.053
+  },
+  "retailUsd": 8.99,
+  "wholesaleUsd": 4.5,
+  "excludedFromUS": null
  },
  {
   "code": "0320360183",
@@ -2154,8 +3969,19 @@
   "pdfPage": 30,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.32,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.094,
+   "tariff": 0.16,
+   "freight": 0.42,
+   "fees": 0.053
+  },
+  "retailUsd": 8.99,
+  "wholesaleUsd": 4.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310470141",
@@ -2167,8 +3993,19 @@
   "pdfPage": 30,
   "inrMrp": 350,
   "perPiece": false,
-  "usdMsrp": 9.0,
-  "usdWholesale": 4.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.64,
+  "landedBreakdown": {
+   "factory": 1.862,
+   "duty": 0.109,
+   "tariff": 0.186,
+   "freight": 0.42,
+   "fees": 0.062
+  },
+  "retailUsd": 9.99,
+  "wholesaleUsd": 5.0,
+  "excludedFromUS": null
  },
  {
   "code": "0306690100",
@@ -2180,8 +4017,19 @@
   "pdfPage": 30,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.95,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.42,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0309101600",
@@ -2193,8 +4041,19 @@
   "pdfPage": 30,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.95,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.42,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0309100100",
@@ -2206,8 +4065,19 @@
   "pdfPage": 30,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 2.95,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.123,
+   "tariff": 0.213,
+   "freight": 0.42,
+   "fees": 0.071
+  },
+  "retailUsd": 10.99,
+  "wholesaleUsd": 5.5,
+  "excludedFromUS": null
  },
  {
   "code": "0330070100",
@@ -2219,8 +4089,19 @@
   "pdfPage": 31,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": "NASA logo on the pen"
  },
  {
   "code": "0310262100",
@@ -2232,8 +4113,19 @@
   "pdfPage": 31,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310212372",
@@ -2245,8 +4137,19 @@
   "pdfPage": 31,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0309801436",
@@ -2258,8 +4161,19 @@
   "pdfPage": 31,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310532200",
@@ -2271,8 +4185,19 @@
   "pdfPage": 31,
   "inrMrp": 450,
   "perPiece": false,
-  "usdMsrp": 11,
-  "usdWholesale": 5.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.45,
+  "landedBreakdown": {
+   "factory": 2.394,
+   "duty": 0.137,
+   "tariff": 0.239,
+   "freight": 0.595,
+   "fees": 0.08
+  },
+  "retailUsd": 12.99,
+  "wholesaleUsd": 6.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310050300",
@@ -2284,8 +4209,19 @@
   "pdfPage": 31,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0315972043",
@@ -2297,8 +4233,19 @@
   "pdfPage": 32,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0310520300",
@@ -2310,8 +4257,19 @@
   "pdfPage": 32,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0310630500",
@@ -2323,8 +4281,19 @@
   "pdfPage": 32,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0310630300",
@@ -2336,8 +4305,19 @@
   "pdfPage": 32,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0340157000",
@@ -2349,8 +4329,19 @@
   "pdfPage": 32,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 3.76,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.152,
+   "tariff": 0.266,
+   "freight": 0.595,
+   "fees": 0.089
+  },
+  "retailUsd": 13.99,
+  "wholesaleUsd": 7.0,
+  "excludedFromUS": null
  },
  {
   "code": "0315022400",
@@ -2362,8 +4353,19 @@
   "pdfPage": 32,
   "inrMrp": 550,
   "perPiece": false,
-  "usdMsrp": 14,
-  "usdWholesale": 7.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.08,
+  "landedBreakdown": {
+   "factory": 2.926,
+   "duty": 0.166,
+   "tariff": 0.293,
+   "freight": 0.595,
+   "fees": 0.098
+  },
+  "retailUsd": 14.99,
+  "wholesaleUsd": 7.5,
+  "excludedFromUS": null
  },
  {
   "code": "0310350721",
@@ -2375,8 +4377,19 @@
   "pdfPage": 33,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.39,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.595,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0315032100",
@@ -2388,8 +4401,19 @@
   "pdfPage": 33,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.39,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.18,
+   "tariff": 0.319,
+   "freight": 0.595,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0310120714",
@@ -2401,8 +4425,19 @@
   "pdfPage": 33,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.02,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 0.595,
+   "fees": 0.125
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "0310710121",
@@ -2414,8 +4449,19 @@
   "pdfPage": 33,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.02,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 0.595,
+   "fees": 0.125
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "0308802100",
@@ -2427,8 +4473,19 @@
   "pdfPage": 33,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.02,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 0.595,
+   "fees": 0.125
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "0310110721",
@@ -2440,8 +4497,19 @@
   "pdfPage": 33,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.02,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 0.595,
+   "fees": 0.125
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "0315511900",
@@ -2453,8 +4521,19 @@
   "pdfPage": 34,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 4.81,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 0.385,
+   "fees": 0.125
+  },
+  "retailUsd": 16.99,
+  "wholesaleUsd": 8.49,
+  "excludedFromUS": null
  },
  {
   "code": "0315510500",
@@ -2466,8 +4545,19 @@
   "pdfPage": 34,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Roller Pens",
+  "hts": "9608.10.00",
+  "landedUsd": 5.45,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.238,
+   "tariff": 0.426,
+   "freight": 0.385,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0209192200",
@@ -2479,8 +4569,19 @@
   "pdfPage": 35,
   "inrMrp": 300,
   "perPiece": false,
-  "usdMsrp": 7.5,
-  "usdWholesale": 3.75
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 2.35,
+  "landedBreakdown": {
+   "factory": 1.596,
+   "duty": 0.047,
+   "tariff": 0.16,
+   "freight": 0.49,
+   "fees": 0.053
+  },
+  "retailUsd": 8.99,
+  "wholesaleUsd": 4.5,
+  "excludedFromUS": null
  },
  {
   "code": "0209150100",
@@ -2492,8 +4593,19 @@
   "pdfPage": 35,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209152200",
@@ -2505,8 +4617,19 @@
   "pdfPage": 35,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209153800",
@@ -2518,8 +4641,19 @@
   "pdfPage": 35,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209162200",
@@ -2531,8 +4665,19 @@
   "pdfPage": 35,
   "inrMrp": 400,
   "perPiece": false,
-  "usdMsrp": 10,
-  "usdWholesale": 5.0
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 3.28,
+  "landedBreakdown": {
+   "factory": 2.128,
+   "duty": 0.061,
+   "tariff": 0.213,
+   "freight": 0.805,
+   "fees": 0.071
+  },
+  "retailUsd": 11.99,
+  "wholesaleUsd": 6.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209150400",
@@ -2544,8 +4689,19 @@
   "pdfPage": 35,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209153300",
@@ -2557,8 +4713,19 @@
   "pdfPage": 36,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0230910900",
@@ -2570,8 +4737,19 @@
   "pdfPage": 36,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0230910700",
@@ -2583,8 +4761,19 @@
   "pdfPage": 36,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0215962000",
@@ -2596,8 +4785,19 @@
   "pdfPage": 36,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209154400",
@@ -2609,8 +4809,19 @@
   "pdfPage": 36,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0209154300",
@@ -2622,8 +4833,19 @@
   "pdfPage": 36,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0215972043",
@@ -2635,8 +4857,19 @@
   "pdfPage": 37,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.51,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.805,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0210110721",
@@ -2648,8 +4881,19 @@
   "pdfPage": 37,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 5.75,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.119,
+   "tariff": 0.426,
+   "freight": 0.805,
+   "fees": 0.142
+  },
+  "retailUsd": 20.99,
+  "wholesaleUsd": 10.49,
+  "excludedFromUS": null
  },
  {
   "code": "0215511900",
@@ -2661,8 +4905,19 @@
   "pdfPage": 37,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 5.57,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.119,
+   "tariff": 0.426,
+   "freight": 0.63,
+   "fees": 0.142
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "0215510500",
@@ -2674,8 +4929,19 @@
   "pdfPage": 37,
   "inrMrp": 900,
   "perPiece": false,
-  "usdMsrp": 23,
-  "usdWholesale": 11.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 6.19,
+  "landedBreakdown": {
+   "factory": 4.787,
+   "duty": 0.133,
+   "tariff": 0.479,
+   "freight": 0.63,
+   "fees": 0.16
+  },
+  "retailUsd": 21.99,
+  "wholesaleUsd": 10.99,
+  "excludedFromUS": null
  },
  {
   "code": "0209140321",
@@ -2687,8 +4953,19 @@
   "pdfPage": 37,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 5.75,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.119,
+   "tariff": 0.426,
+   "freight": 0.805,
+   "fees": 0.142
+  },
+  "retailUsd": 20.99,
+  "wholesaleUsd": 10.49,
+  "excludedFromUS": null
  },
  {
   "code": "02155105150",
@@ -2700,8 +4977,19 @@
   "pdfPage": 38,
   "inrMrp": 1090,
   "perPiece": false,
-  "usdMsrp": 27,
-  "usdWholesale": 13.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 7.36,
+  "landedBreakdown": {
+   "factory": 5.798,
+   "duty": 0.161,
+   "tariff": 0.58,
+   "freight": 0.63,
+   "fees": 0.194
+  },
+  "retailUsd": 25.99,
+  "wholesaleUsd": 12.99,
+  "excludedFromUS": null
  },
  {
   "code": "02155119150",
@@ -2713,8 +5001,19 @@
   "pdfPage": 38,
   "inrMrp": 990,
   "perPiece": false,
-  "usdMsrp": 25,
-  "usdWholesale": 12.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 6.74,
+  "landedBreakdown": {
+   "factory": 5.266,
+   "duty": 0.146,
+   "tariff": 0.527,
+   "freight": 0.63,
+   "fees": 0.176
+  },
+  "retailUsd": 23.99,
+  "wholesaleUsd": 11.99,
+  "excludedFromUS": null
  },
  {
   "code": "0210330186",
@@ -2726,8 +5025,19 @@
   "pdfPage": 38,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.34,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.63,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0210330786",
@@ -2739,8 +5049,19 @@
   "pdfPage": 38,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.34,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.09,
+   "tariff": 0.319,
+   "freight": 0.63,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "0216000100",
@@ -2752,8 +5073,19 @@
   "pdfPage": 39,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.95,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.105,
+   "tariff": 0.372,
+   "freight": 0.63,
+   "fees": 0.125
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "0210505000",
@@ -2765,8 +5097,19 @@
   "pdfPage": 39,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Fountain Pen",
+  "hts": "9608.30.00",
+  "landedUsd": 4.35,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.098,
+   "tariff": 0.319,
+   "freight": 0.63,
+   "fees": 0.107
+  },
+  "retailUsd": 15.99,
+  "wholesaleUsd": 8.0,
+  "excludedFromUS": null
  },
  {
   "code": "13401674112",
@@ -2778,8 +5121,19 @@
   "pdfPage": 40,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "13401675110",
@@ -2791,8 +5145,19 @@
   "pdfPage": 40,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "13401671111",
@@ -2804,8 +5169,19 @@
   "pdfPage": 40,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "13401675113",
@@ -2817,8 +5193,19 @@
   "pdfPage": 40,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "13401672107",
@@ -2830,8 +5217,19 @@
   "pdfPage": 41,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "13401676109",
@@ -2843,8 +5241,19 @@
   "pdfPage": 41,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "13401673108",
@@ -2856,8 +5265,19 @@
   "pdfPage": 41,
   "inrMrp": 1299,
   "perPiece": false,
-  "usdMsrp": 32,
-  "usdWholesale": 16.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.83,
+  "landedBreakdown": {
+   "factory": 6.91,
+   "duty": 0.389,
+   "tariff": 0.691,
+   "freight": 1.61,
+   "fees": 0.231
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "3210710121",
@@ -2869,8 +5289,19 @@
   "pdfPage": 41,
   "inrMrp": 1250,
   "perPiece": false,
-  "usdMsrp": 31,
-  "usdWholesale": 15.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.52,
+  "landedBreakdown": {
+   "factory": 6.649,
+   "duty": 0.375,
+   "tariff": 0.665,
+   "freight": 1.61,
+   "fees": 0.223
+  },
+  "retailUsd": 33.99,
+  "wholesaleUsd": 17.0,
+  "excludedFromUS": null
  },
  {
   "code": "3210120714",
@@ -2882,8 +5313,19 @@
   "pdfPage": 42,
   "inrMrp": 1250,
   "perPiece": false,
-  "usdMsrp": 31,
-  "usdWholesale": 15.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.52,
+  "landedBreakdown": {
+   "factory": 6.649,
+   "duty": 0.375,
+   "tariff": 0.665,
+   "freight": 1.61,
+   "fees": 0.223
+  },
+  "retailUsd": 33.99,
+  "wholesaleUsd": 17.0,
+  "excludedFromUS": null
  },
  {
   "code": "3210350721",
@@ -2895,8 +5337,19 @@
   "pdfPage": 42,
   "inrMrp": 1050,
   "perPiece": false,
-  "usdMsrp": 26,
-  "usdWholesale": 13.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 8.26,
+  "landedBreakdown": {
+   "factory": 5.585,
+   "duty": 0.318,
+   "tariff": 0.559,
+   "freight": 1.61,
+   "fees": 0.187
+  },
+  "retailUsd": 28.99,
+  "wholesaleUsd": 14.49,
+  "excludedFromUS": null
  },
  {
   "code": "3210110721",
@@ -2908,8 +5361,19 @@
   "pdfPage": 42,
   "inrMrp": 1250,
   "perPiece": false,
-  "usdMsrp": 31,
-  "usdWholesale": 15.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 9.52,
+  "landedBreakdown": {
+   "factory": 6.649,
+   "duty": 0.375,
+   "tariff": 0.665,
+   "freight": 1.61,
+   "fees": 0.223
+  },
+  "retailUsd": 33.99,
+  "wholesaleUsd": 17.0,
+  "excludedFromUS": null
  },
  {
   "code": "3208802100",
@@ -2921,8 +5385,19 @@
   "pdfPage": 42,
   "inrMrp": 1050,
   "perPiece": false,
-  "usdMsrp": 26,
-  "usdWholesale": 13.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 8.26,
+  "landedBreakdown": {
+   "factory": 5.585,
+   "duty": 0.318,
+   "tariff": 0.559,
+   "freight": 1.61,
+   "fees": 0.187
+  },
+  "retailUsd": 28.99,
+  "wholesaleUsd": 14.49,
+  "excludedFromUS": null
  },
  {
   "code": "3215972043",
@@ -2934,8 +5409,19 @@
   "pdfPage": 43,
   "inrMrp": 900,
   "perPiece": false,
-  "usdMsrp": 23,
-  "usdWholesale": 11.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 7.31,
+  "landedBreakdown": {
+   "factory": 4.787,
+   "duty": 0.275,
+   "tariff": 0.479,
+   "freight": 1.61,
+   "fees": 0.16
+  },
+  "retailUsd": 25.99,
+  "wholesaleUsd": 12.99,
+  "excludedFromUS": null
  },
  {
   "code": "3215022400",
@@ -2947,8 +5433,19 @@
   "pdfPage": 43,
   "inrMrp": 950,
   "perPiece": false,
-  "usdMsrp": 24,
-  "usdWholesale": 12.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 7.63,
+  "landedBreakdown": {
+   "factory": 5.053,
+   "duty": 0.289,
+   "tariff": 0.505,
+   "freight": 1.61,
+   "fees": 0.169
+  },
+  "retailUsd": 26.99,
+  "wholesaleUsd": 13.49,
+  "excludedFromUS": null
  },
  {
   "code": "3210050300",
@@ -2960,8 +5457,19 @@
   "pdfPage": 43,
   "inrMrp": 925,
   "perPiece": false,
-  "usdMsrp": 23,
-  "usdWholesale": 11.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 7.47,
+  "landedBreakdown": {
+   "factory": 4.92,
+   "duty": 0.282,
+   "tariff": 0.492,
+   "freight": 1.61,
+   "fees": 0.165
+  },
+  "retailUsd": 26.99,
+  "wholesaleUsd": 13.49,
+  "excludedFromUS": null
  },
  {
   "code": "3230070100",
@@ -2973,8 +5481,19 @@
   "pdfPage": 43,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.68,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.246,
+   "tariff": 0.426,
+   "freight": 1.61,
+   "fees": 0.142
+  },
+  "retailUsd": 23.99,
+  "wholesaleUsd": 11.99,
+  "excludedFromUS": "Pluto Nasa set: NASA logo on the pens"
  },
  {
   "code": "3215032100",
@@ -2986,8 +5505,19 @@
   "pdfPage": 43,
   "inrMrp": 1050,
   "perPiece": false,
-  "usdMsrp": 26,
-  "usdWholesale": 13.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 8.26,
+  "landedBreakdown": {
+   "factory": 5.585,
+   "duty": 0.318,
+   "tariff": 0.559,
+   "freight": 1.61,
+   "fees": 0.187
+  },
+  "retailUsd": 28.99,
+  "wholesaleUsd": 14.49,
+  "excludedFromUS": null
  },
  {
   "code": "329801400",
@@ -2999,8 +5529,19 @@
   "pdfPage": 44,
   "inrMrp": 750,
   "perPiece": false,
-  "usdMsrp": 19,
-  "usdWholesale": 9.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.36,
+  "landedBreakdown": {
+   "factory": 3.989,
+   "duty": 0.231,
+   "tariff": 0.399,
+   "freight": 1.61,
+   "fees": 0.134
+  },
+  "retailUsd": 22.99,
+  "wholesaleUsd": 11.49,
+  "excludedFromUS": null
  },
  {
   "code": "3210532200",
@@ -3012,8 +5553,19 @@
   "pdfPage": 44,
   "inrMrp": 750,
   "perPiece": false,
-  "usdMsrp": 19,
-  "usdWholesale": 9.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.36,
+  "landedBreakdown": {
+   "factory": 3.989,
+   "duty": 0.231,
+   "tariff": 0.399,
+   "freight": 1.61,
+   "fees": 0.134
+  },
+  "retailUsd": 22.99,
+  "wholesaleUsd": 11.49,
+  "excludedFromUS": null
  },
  {
   "code": "3210262100",
@@ -3025,8 +5577,19 @@
   "pdfPage": 44,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.68,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.246,
+   "tariff": 0.426,
+   "freight": 1.61,
+   "fees": 0.142
+  },
+  "retailUsd": 23.99,
+  "wholesaleUsd": 11.99,
+  "excludedFromUS": null
  },
  {
   "code": "3210212100",
@@ -3038,8 +5601,19 @@
   "pdfPage": 44,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.68,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.246,
+   "tariff": 0.426,
+   "freight": 1.61,
+   "fees": 0.142
+  },
+  "retailUsd": 23.99,
+  "wholesaleUsd": 11.99,
+  "excludedFromUS": null
  },
  {
   "code": "3210096900",
@@ -3051,8 +5625,19 @@
   "pdfPage": 45,
   "inrMrp": 525,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.94,
+  "landedBreakdown": {
+   "factory": 2.793,
+   "duty": 0.167,
+   "tariff": 0.279,
+   "freight": 1.61,
+   "fees": 0.093
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "3220672100",
@@ -3064,8 +5649,19 @@
   "pdfPage": 45,
   "inrMrp": 525,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.94,
+  "landedBreakdown": {
+   "factory": 2.793,
+   "duty": 0.167,
+   "tariff": 0.279,
+   "freight": 1.61,
+   "fees": 0.093
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "3201263000",
@@ -3077,8 +5673,19 @@
   "pdfPage": 45,
   "inrMrp": 550,
   "perPiece": false,
-  "usdMsrp": 14,
-  "usdWholesale": 7.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 5.09,
+  "landedBreakdown": {
+   "factory": 2.926,
+   "duty": 0.166,
+   "tariff": 0.293,
+   "freight": 1.61,
+   "fees": 0.098
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "3210470100",
@@ -3090,8 +5697,19 @@
   "pdfPage": 45,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 5.42,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.188,
+   "tariff": 0.319,
+   "freight": 1.61,
+   "fees": 0.107
+  },
+  "retailUsd": 18.99,
+  "wholesaleUsd": 9.49,
+  "excludedFromUS": null
  },
  {
   "code": "2508345000",
@@ -3103,8 +5721,19 @@
   "pdfPage": 46,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.88,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.212,
+   "tariff": 0.319,
+   "freight": 1.05,
+   "fees": 0.107
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "2509835000",
@@ -3116,8 +5745,19 @@
   "pdfPage": 46,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.88,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.212,
+   "tariff": 0.319,
+   "freight": 1.05,
+   "fees": 0.107
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "2509475000",
@@ -3129,8 +5769,19 @@
   "pdfPage": 46,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.88,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.212,
+   "tariff": 0.319,
+   "freight": 1.05,
+   "fees": 0.107
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "2508355000",
@@ -3142,8 +5793,19 @@
   "pdfPage": 47,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.88,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.212,
+   "tariff": 0.319,
+   "freight": 1.05,
+   "fees": 0.107
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "2508895000",
@@ -3155,8 +5817,19 @@
   "pdfPage": 47,
   "inrMrp": 600,
   "perPiece": false,
-  "usdMsrp": 15,
-  "usdWholesale": 7.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 4.88,
+  "landedBreakdown": {
+   "factory": 3.191,
+   "duty": 0.212,
+   "tariff": 0.319,
+   "freight": 1.05,
+   "fees": 0.107
+  },
+  "retailUsd": 17.99,
+  "wholesaleUsd": 8.99,
+  "excludedFromUS": null
  },
  {
   "code": "2340015071",
@@ -3168,8 +5841,19 @@
   "pdfPage": 48,
   "inrMrp": 799,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.66,
+  "landedBreakdown": {
+   "factory": 4.25,
+   "duty": 0.238,
+   "tariff": 0.425,
+   "freight": 1.61,
+   "fees": 0.142
+  },
+  "retailUsd": 23.99,
+  "wholesaleUsd": 11.99,
+  "excludedFromUS": null
  },
  {
   "code": "2340005071",
@@ -3181,8 +5865,19 @@
   "pdfPage": 48,
   "inrMrp": 699,
   "perPiece": false,
-  "usdMsrp": 17,
-  "usdWholesale": 8.5
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 6.03,
+  "landedBreakdown": {
+   "factory": 3.718,
+   "duty": 0.209,
+   "tariff": 0.372,
+   "freight": 1.61,
+   "fees": 0.124
+  },
+  "retailUsd": 21.99,
+  "wholesaleUsd": 10.99,
+  "excludedFromUS": null
  },
  {
   "code": "2323055000",
@@ -3194,8 +5889,19 @@
   "pdfPage": 49,
   "inrMrp": 700,
   "perPiece": false,
-  "usdMsrp": 18,
-  "usdWholesale": 9.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 5.5,
+  "landedBreakdown": {
+   "factory": 3.723,
+   "duty": 0.225,
+   "tariff": 0.372,
+   "freight": 1.05,
+   "fees": 0.125
+  },
+  "retailUsd": 19.99,
+  "wholesaleUsd": 9.99,
+  "excludedFromUS": null
  },
  {
   "code": "2323065000",
@@ -3207,8 +5913,19 @@
   "pdfPage": 49,
   "inrMrp": 650,
   "perPiece": false,
-  "usdMsrp": 16,
-  "usdWholesale": 8.0
+  "pricingGroup": "Sets",
+  "hts": "9608.50.00",
+  "landedUsd": 5.18,
+  "landedBreakdown": {
+   "factory": 3.457,
+   "duty": 0.211,
+   "tariff": 0.346,
+   "freight": 1.05,
+   "fees": 0.116
+  },
+  "retailUsd": 18.99,
+  "wholesaleUsd": 9.49,
+  "excludedFromUS": null
  },
  {
   "code": "1215545000",
@@ -3220,8 +5937,19 @@
   "pdfPage": 50,
   "inrMrp": 390,
   "perPiece": true,
-  "usdMsrp": 10.0,
-  "usdWholesale": 5.0
+  "pricingGroup": "Diary Set",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 4.64,
+  "landedBreakdown": {
+   "factory": 2.074,
+   "duty": 0.049,
+   "tariff": 0.207,
+   "freight": 2.24,
+   "fees": 0.069
+  },
+  "retailUsd": 16.99,
+  "wholesaleUsd": 8.49,
+  "excludedFromUS": null
  },
  {
   "code": "1015311400",
@@ -3233,8 +5961,19 @@
   "pdfPage": 51,
   "inrMrp": 800,
   "perPiece": false,
-  "usdMsrp": 20,
-  "usdWholesale": 10.0
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 9.47,
+  "landedBreakdown": {
+   "factory": 4.255,
+   "duty": 0.093,
+   "tariff": 0.426,
+   "freight": 4.55,
+   "fees": 0.142
+  },
+  "retailUsd": 33.99,
+  "wholesaleUsd": 17.0,
+  "excludedFromUS": null
  },
  {
   "code": "1015391500",
@@ -3246,8 +5985,19 @@
   "pdfPage": 51,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 7.63,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.061,
+   "tariff": 0.266,
+   "freight": 4.55,
+   "fees": 0.089
+  },
+  "retailUsd": 26.99,
+  "wholesaleUsd": 13.49,
+  "excludedFromUS": null
  },
  {
   "code": "1015400100",
@@ -3259,8 +6009,19 @@
   "pdfPage": 52,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 7.63,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.061,
+   "tariff": 0.266,
+   "freight": 4.55,
+   "fees": 0.089
+  },
+  "retailUsd": 26.99,
+  "wholesaleUsd": 13.49,
+  "excludedFromUS": null
  },
  {
   "code": "1015411300",
@@ -3272,8 +6033,19 @@
   "pdfPage": 52,
   "inrMrp": 500,
   "perPiece": false,
-  "usdMsrp": 13,
-  "usdWholesale": 6.5
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 7.63,
+  "landedBreakdown": {
+   "factory": 2.66,
+   "duty": 0.061,
+   "tariff": 0.266,
+   "freight": 4.55,
+   "fees": 0.089
+  },
+  "retailUsd": 26.99,
+  "wholesaleUsd": 13.49,
+  "excludedFromUS": null
  },
  {
   "code": "1015441000",
@@ -3285,8 +6057,19 @@
   "pdfPage": 52,
   "inrMrp": 650,
   "perPiece": false,
-  "usdMsrp": 16,
-  "usdWholesale": 8.0
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 8.55,
+  "landedBreakdown": {
+   "factory": 3.457,
+   "duty": 0.077,
+   "tariff": 0.346,
+   "freight": 4.55,
+   "fees": 0.116
+  },
+  "retailUsd": 29.99,
+  "wholesaleUsd": 14.99,
+  "excludedFromUS": null
  },
  {
   "code": "1015431600",
@@ -3298,8 +6081,19 @@
   "pdfPage": 53,
   "inrMrp": 650,
   "perPiece": false,
-  "usdMsrp": 16,
-  "usdWholesale": 8.0
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 8.55,
+  "landedBreakdown": {
+   "factory": 3.457,
+   "duty": 0.077,
+   "tariff": 0.346,
+   "freight": 4.55,
+   "fees": 0.116
+  },
+  "retailUsd": 29.99,
+  "wholesaleUsd": 14.99,
+  "excludedFromUS": null
  },
  {
   "code": "1015350700",
@@ -3311,8 +6105,19 @@
   "pdfPage": 53,
   "inrMrp": 850,
   "perPiece": false,
-  "usdMsrp": 21,
-  "usdWholesale": 10.5
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 9.77,
+  "landedBreakdown": {
+   "factory": 4.521,
+   "duty": 0.098,
+   "tariff": 0.452,
+   "freight": 4.55,
+   "fees": 0.151
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "1015381300",
@@ -3324,8 +6129,19 @@
   "pdfPage": 53,
   "inrMrp": 850,
   "perPiece": false,
-  "usdMsrp": 21,
-  "usdWholesale": 10.5
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 9.77,
+  "landedBreakdown": {
+   "factory": 4.521,
+   "duty": 0.098,
+   "tariff": 0.452,
+   "freight": 4.55,
+   "fees": 0.151
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "1216260300",
@@ -3337,8 +6153,19 @@
   "pdfPage": 54,
   "inrMrp": 850,
   "perPiece": false,
-  "usdMsrp": 21,
-  "usdWholesale": 10.5
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 9.77,
+  "landedBreakdown": {
+   "factory": 4.521,
+   "duty": 0.098,
+   "tariff": 0.452,
+   "freight": 4.55,
+   "fees": 0.151
+  },
+  "retailUsd": 34.99,
+  "wholesaleUsd": 17.5,
+  "excludedFromUS": null
  },
  {
   "code": "1016251400",
@@ -3350,8 +6177,19 @@
   "pdfPage": 54,
   "inrMrp": 1999,
   "perPiece": false,
-  "usdMsrp": 50,
-  "usdWholesale": 25.0
+  "pricingGroup": "Diary combos",
+  "hts": "4820.10.20 + 9608.10",
+  "landedUsd": 16.82,
+  "landedBreakdown": {
+   "factory": 10.633,
+   "duty": 0.221,
+   "tariff": 1.063,
+   "freight": 4.55,
+   "fees": 0.356
+  },
+  "retailUsd": 58.99,
+  "wholesaleUsd": 29.5,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-79-111",
@@ -3363,8 +6201,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-78-100",
@@ -3376,8 +6225,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-10-109",
@@ -3389,8 +6249,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-06-101",
@@ -3402,8 +6273,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-08-110",
@@ -3415,8 +6297,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-01-107",
@@ -3428,8 +6321,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-13-108",
@@ -3441,8 +6345,19 @@
   "pdfPage": 55,
   "inrMrp": 150,
   "perPiece": false,
-  "usdMsrp": 4.0,
-  "usdWholesale": 2.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.69,
+  "landedBreakdown": {
+   "factory": 0.798,
+   "duty": 0.014,
+   "tariff": 0.08,
+   "freight": 0.77,
+   "fees": 0.027
+  },
+  "retailUsd": 5.99,
+  "wholesaleUsd": 3.0,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-07-00",
@@ -3454,8 +6369,19 @@
   "pdfPage": 55,
   "inrMrp": 80,
   "perPiece": false,
-  "usdMsrp": 2.0,
-  "usdWholesale": 1.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.26,
+  "landedBreakdown": {
+   "factory": 0.426,
+   "duty": 0.008,
+   "tariff": 0.043,
+   "freight": 0.77,
+   "fees": 0.014
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "16-0012-01-00",
@@ -3467,8 +6393,19 @@
   "pdfPage": 55,
   "inrMrp": 80,
   "perPiece": false,
-  "usdMsrp": 2.0,
-  "usdWholesale": 1.0
+  "pricingGroup": "Ink Bottles",
+  "hts": "3215.90.50",
+  "landedUsd": 1.26,
+  "landedBreakdown": {
+   "factory": 0.426,
+   "duty": 0.008,
+   "tariff": 0.043,
+   "freight": 0.77,
+   "fees": 0.014
+  },
+  "retailUsd": 4.99,
+  "wholesaleUsd": 2.5,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-108",
@@ -3480,8 +6417,19 @@
   "pdfPage": 56,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-00",
@@ -3493,8 +6441,19 @@
   "pdfPage": 56,
   "inrMrp": 30,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.25,
+  "landedBreakdown": {
+   "factory": 0.16,
+   "duty": 0.008,
+   "tariff": 0.016,
+   "freight": 0.056,
+   "fees": 0.005
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-01-00",
@@ -3506,8 +6465,19 @@
   "pdfPage": 56,
   "inrMrp": 30,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.25,
+  "landedBreakdown": {
+   "factory": 0.16,
+   "duty": 0.008,
+   "tariff": 0.016,
+   "freight": 0.056,
+   "fees": 0.005
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0113-07-108",
@@ -3519,8 +6489,19 @@
   "pdfPage": 56,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0113-07-00",
@@ -3532,8 +6513,19 @@
   "pdfPage": 56,
   "inrMrp": 30,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.25,
+  "landedBreakdown": {
+   "factory": 0.16,
+   "duty": 0.008,
+   "tariff": 0.016,
+   "freight": 0.056,
+   "fees": 0.005
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0113-01-00",
@@ -3545,8 +6537,19 @@
   "pdfPage": 56,
   "inrMrp": 30,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.25,
+  "landedBreakdown": {
+   "factory": 0.16,
+   "duty": 0.008,
+   "tariff": 0.016,
+   "freight": 0.056,
+   "fees": 0.005
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0113-07-106",
@@ -3558,8 +6561,19 @@
   "pdfPage": 56,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-106",
@@ -3571,8 +6585,19 @@
   "pdfPage": 56,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-101",
@@ -3584,8 +6609,19 @@
   "pdfPage": 57,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-100",
@@ -3597,8 +6633,19 @@
   "pdfPage": 57,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-104",
@@ -3610,8 +6657,19 @@
   "pdfPage": 57,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-105",
@@ -3623,8 +6681,19 @@
   "pdfPage": 57,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-07-103",
@@ -3636,8 +6705,19 @@
   "pdfPage": 57,
   "inrMrp": 35,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.28,
+  "landedBreakdown": {
+   "factory": 0.186,
+   "duty": 0.009,
+   "tariff": 0.019,
+   "freight": 0.056,
+   "fees": 0.006
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0114-07-00",
@@ -3649,8 +6729,19 @@
   "pdfPage": 57,
   "inrMrp": 25,
   "perPiece": false,
-  "usdMsrp": 1,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.21,
+  "landedBreakdown": {
+   "factory": 0.133,
+   "duty": 0.008,
+   "tariff": 0.013,
+   "freight": 0.056,
+   "fees": 0.004
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0114-07-108",
@@ -3662,8 +6753,19 @@
   "pdfPage": 57,
   "inrMrp": 25,
   "perPiece": false,
-  "usdMsrp": 1,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.21,
+  "landedBreakdown": {
+   "factory": 0.133,
+   "duty": 0.008,
+   "tariff": 0.013,
+   "freight": 0.056,
+   "fees": 0.004
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0115-01-00",
@@ -3675,8 +6777,19 @@
   "pdfPage": 57,
   "inrMrp": 25,
   "perPiece": false,
-  "usdMsrp": 1,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.21,
+  "landedBreakdown": {
+   "factory": 0.133,
+   "duty": 0.008,
+   "tariff": 0.013,
+   "freight": 0.056,
+   "fees": 0.004
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0116-01-00",
@@ -3688,8 +6801,19 @@
   "pdfPage": 57,
   "inrMrp": 25,
   "perPiece": false,
-  "usdMsrp": 1,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.21,
+  "landedBreakdown": {
+   "factory": 0.133,
+   "duty": 0.008,
+   "tariff": 0.013,
+   "freight": 0.056,
+   "fees": 0.004
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0116-07-00",
@@ -3701,8 +6825,19 @@
   "pdfPage": 58,
   "inrMrp": 25,
   "perPiece": false,
-  "usdMsrp": 1,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.21,
+  "landedBreakdown": {
+   "factory": 0.133,
+   "duty": 0.008,
+   "tariff": 0.013,
+   "freight": 0.056,
+   "fees": 0.004
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0116-07-108",
@@ -3714,8 +6849,19 @@
   "pdfPage": 58,
   "inrMrp": 25,
   "perPiece": false,
-  "usdMsrp": 1,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.21,
+  "landedBreakdown": {
+   "factory": 0.133,
+   "duty": 0.008,
+   "tariff": 0.013,
+   "freight": 0.056,
+   "fees": 0.004
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0117-07-00",
@@ -3727,8 +6873,19 @@
   "pdfPage": 58,
   "inrMrp": 70,
   "perPiece": false,
-  "usdMsrp": 2.0,
-  "usdWholesale": 1.0
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.49,
+  "landedBreakdown": {
+   "factory": 0.372,
+   "duty": 0.014,
+   "tariff": 0.037,
+   "freight": 0.056,
+   "fees": 0.012
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0117-01-00",
@@ -3740,8 +6897,19 @@
   "pdfPage": 58,
   "inrMrp": 70,
   "perPiece": false,
-  "usdMsrp": 2.0,
-  "usdWholesale": 1.0
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.49,
+  "landedBreakdown": {
+   "factory": 0.372,
+   "duty": 0.014,
+   "tariff": 0.037,
+   "freight": 0.056,
+   "fees": 0.012
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0113-08-00",
@@ -3753,8 +6921,19 @@
   "pdfPage": 58,
   "inrMrp": 40,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.31,
+  "landedBreakdown": {
+   "factory": 0.213,
+   "duty": 0.01,
+   "tariff": 0.021,
+   "freight": 0.056,
+   "fees": 0.007
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "14-0112-08-00",
@@ -3766,8 +6945,19 @@
   "pdfPage": 58,
   "inrMrp": 40,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Refills",
+  "hts": "9608.60.00",
+  "landedUsd": 0.31,
+  "landedBreakdown": {
+   "factory": 0.213,
+   "duty": 0.01,
+   "tariff": 0.021,
+   "freight": 0.056,
+   "fees": 0.007
+  },
+  "retailUsd": 1.99,
+  "wholesaleUsd": 0.99,
+  "excludedFromUS": null
  },
  {
   "code": "16-0011-07-00",
@@ -3779,8 +6969,19 @@
   "pdfPage": 58,
   "inrMrp": 30,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Cartridges",
+  "hts": "9608.99",
+  "landedUsd": 0.29,
+  "landedBreakdown": {
+   "factory": 0.16,
+   "duty": 0.0,
+   "tariff": 0.016,
+   "freight": 0.105,
+   "fees": 0.005
+  },
+  "retailUsd": 2.99,
+  "wholesaleUsd": 1.5,
+  "excludedFromUS": null
  },
  {
   "code": "16-0011-01-00",
@@ -3792,7 +6993,18 @@
   "pdfPage": 58,
   "inrMrp": 30,
   "perPiece": false,
-  "usdMsrp": 1.0,
-  "usdWholesale": 0.5
+  "pricingGroup": "Cartridges",
+  "hts": "9608.99",
+  "landedUsd": 0.29,
+  "landedBreakdown": {
+   "factory": 0.16,
+   "duty": 0.0,
+   "tariff": 0.016,
+   "freight": 0.105,
+   "fees": 0.005
+  },
+  "retailUsd": 2.99,
+  "wholesaleUsd": 1.5,
+  "excludedFromUS": null
  }
 ]

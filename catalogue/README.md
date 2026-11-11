@@ -1,57 +1,64 @@
-# Submarine Pens catalogue 2026-27 (India original → US edition)
+# Submarine Pens USA: retail catalogue 2026-27
 
-The manufacturer's 2026-27 catalogue and a US edition built from it for **Submarine Pens USA**.
+**The catalogue to send customers:** [`us/Submarine-Pens-USA-Catalogue-2026-27.pdf`](us/Submarine-Pens-USA-Catalogue-2026-27.pdf).
+It is 38 pages and 3.5 MB, small enough to attach to an email.
 
-| File | What it is |
-|---|---|
-| `source/submarine-catalogue-2026-27-india.pdf` | The original, 60 pages, prices in ₹ M.R.P. The two halves you were sent (pages cover–37 and 38–back) are merged into one file. **Don't edit it; it is the input.** |
-| `products-2026-27.json` | All 292 products: code, section, packaging/description, NEW flag, page, ₹ M.R.P., US MSRP, US wholesale |
-| `us-price-list.csv` | The same as a spreadsheet, for Faire, wholesale buyers or `shop/products.json` |
-| `us/Submarine-Pens-USA-Catalogue-2026-27.pdf` | **The US catalogue**, about 12 MB, for email and web |
-| `us/…-print.pdf` | The same at full photo resolution (~40 MB) for a printer. Built locally and not committed (see `.gitignore`) |
-| `us-config.json` | Exchange rule, rounding, wholesale %, back-page text, per-code price overrides |
-| `build.py` | Rebuilds everything above from the source PDF and the config |
+It is built from the manufacturer's India catalogue (`source/`). Product photos and codes come from that file; names, layout and prices are new:
+
+- **Cover and brand page:** the original artwork with US text.
+- **How to Order:** what "landed" means, shipping ($5.99 flat, free over $49), how to order, and wholesale and corporate gifting. A table shows each section with its price range.
+- **Product pages:** Ball Pens, Roller Pens, Fountain Pens, Gift Sets, Diaries & Pen Sets, Inks, Refills & Cartridges. Each card has a photo, name, packaging, code, NEW flag and US retail price.
+- **Price List:** every code and price on a few pages, for quick ordering.
+- **Back cover:** Submarine Pens USA, Arlington, Virginia, and the manufacturer credit.
+
+## How retail prices are set: landed cost × 3.5
+
+```
+factory price  = India M.R.P. × 50%  ÷ ₹94 per $          (ASSUMPTION until you have Submarine's export prices)
++ US duty      = HTSUS rate for the product (pens 5.4% + 0.8¢ each, fountain pens 2.7% + 0.4¢, ink 1.8%, ...)
++ India tariff = 10% extra on goods from India
++ freight      = unit shipping weight × $7/kg air cargo     (ASSUMPTION)
++ fees         = customs processing fee 0.35% + broker, bank and insurance 3%
+= LANDED COST, delivered to Virginia, duty paid
+
+retail    = landed × 3.5, rounded up to .99   (minimum $3.99 a pen, $1.99 a refill)
+wholesale = 50% of retail                     (still about 1.75 × landed)
+```
+
+| Example | India M.R.P. | Landed | US retail |
+|---|---:|---:|---:|
+| Ball pen, blister card (`0109320100`) | ₹120 | $0.94 | $3.99 |
+| Roller pen, metal tin (`0315972043`) | ₹500 | $3.76 | $13.99 |
+| Roller & fountain pen set (`13401674112`) | ₹1,299 | $9.83 | $34.99 |
+| Scented ink (`16-0012-06-101`) | ₹150 | $1.69 | $5.99 |
+| Coffee diary & metal pen set (`1016251400`) | ₹1,999 | $16.82 | $58.99 |
+
+All of these inputs live in `us-config.json`: the exchange rate, factory price (a share of M.R.P., or exact prices per code in `factoryPriceInr`), freight per kg, unit weights, duty rates, tariff, markup, price floors, single-price overrides, shipping terms and contact details. Edit it and rebuild. **Replace the two ASSUMPTION inputs with real numbers before relying on the prices.** Ask your customs broker to confirm the HTS codes and the India tariff.
+
+`us-pricing-workbook.csv` itemizes each product's cost (factory, duty, tariff, freight, fees, landed, retail, wholesale). It is **internal: don't send it to customers.**
+
+## Left out of the US catalogue
+
+Four products carry NASA's logo, and NASA's name and insignia need NASA's permission on US products: `0130070100`, `0330070100`, `0330000700` and the Pluto Nasa set `3230070100`. They are listed under `excludeFromUS` in `us-config.json`. Delete a line to bring a product back.
+
+## Rebuild
 
 ```bash
 pip install pymupdf pillow
-python3 catalogue/build.py
+python3 catalogue/build.py        # needs Node with Playwright and Chromium for the PDF
 ```
 
-## What the US edition changes
+| File | What it does |
+|---|---|
+| `build.py` | Runs everything: products, prices, photos, HTML, PDF, data files |
+| `extract.py` | Reads codes, sections, packaging lines, NEW flags and ₹ M.R.P. from the source PDF |
+| `photos.py` | Cuts each product's photo out of the source, with all text removed so no ₹ prices appear |
+| `pricing.py` | Landed cost and retail price |
+| `catalogue.css`, `render.cjs` | Layout, and printing to US Letter PDF with Chromium |
+| `products-2026-27.json` | All 292 products with every field above |
 
-The original's photos and layout are kept as they are. Only text changes:
+## Still to check
 
-- **₹ M.R.P. → US MSRP** on all 292 prices, including the badges on the ink bottles, cartridges and diary set.
-  The ₹390 printed on the Navigator diary display box in its photo is covered with the US price.
-- **US spelling:** Customisation → Customization, Personalisation → Personalization.
-- **Back page:** the Mumbai address, +91 phone and .co.in email are replaced with Submarine Pens USA (Arlington, Virginia, @submarinepensusa). The page credits Submarine Pens Limited as the manufacturer and fixes "ISO 9001:205" to 9001:2015.
-- The printer's "Cover Page / COVER INSIDE / BACK PAGE" marks are removed.
-- Product codes, packaging descriptions and NEW flags are unchanged, so US orders map straight back to factory codes.
-
-## Pricing rule (proposed; confirm before you publish)
-
-```
-US MSRP = India M.R.P. ÷ 40, rounded to the nearest $0.50 below $10 and the nearest $1 from $10, minimum $1
-US wholesale = 50% of MSRP (Faire's standard keystone)
-```
-
-The divisor 40 makes the ₹500 roller pens **$13**, which matches the $13 MSRP already listed on Faire for the Brass Series Rollerball. At about ₹88 to the dollar that is about 2.2× the Indian retail price in dollars. The extra covers freight, US import duty and tariffs, and retailer margin.
-
-| Section | Items | India M.R.P. | US MSRP |
-|---|---:|---|---|
-| Ball Pens | 152 | ₹120 – ₹1,200 | $3 – $30 |
-| Roller Pens | 38 | ₹200 – ₹800 | $5 – $20 |
-| Fountain Pens | 23 | ₹300 – ₹1,090 | $7.50 – $27 |
-| Sets | 44 | ₹500 – ₹1,999 | $13 – $50 |
-| Diary Set (Navigator, pack of 10) | 1 | ₹390 per piece | $10 ea. |
-| Ink Bottles | 9 | ₹80 – ₹150 | $2 – $4 |
-| Refills & cartridges | 25 | ₹25 – ₹70 | $1 – $2 |
-
-To change prices, edit `us-config.json` and rebuild: change `inrPerUsd` for all of them, or add `"overrides": {"0109320100": 3.99}` for single products.
-
-## Check before sending to US customers
-
-- **NASA name:** `0330000700` (Nasa packaging) and `3230070100` ("Pluto Nasa Pen" set) use the NASA name, which NASA restricts on commercial products in the US. Consider dropping them or renaming them for the US.
-- **ISRO pens** (`2340015071`, `2340005071`) are an Indian space-agency theme. They are fine to sell but may not mean much to US buyers.
-- **Packaging photos** show the Indian retail packaging, which may carry ₹ M.R.P. stickers and Indian addresses. Goods sold in the US need US labelling, including "Made in India" country-of-origin marking.
-- Some product names exist only in the photos. `products-2026-27.json` gives the packaging line as the description; `name` is filled in where the catalogue prints one.
+- The Indian packaging shown in some photos may carry ₹ M.R.P. stickers. Goods you sell need US labels, including "Made in India".
+- Most pens have no model name in the source, so their cards say "Ball Pen" etc. with the packaging. To name one, add it to `NAMES` in `extract.py`.
+- Contact on the catalogue is Instagram only. Add an email, phone or website under `contact` in `us-config.json` and rebuild.

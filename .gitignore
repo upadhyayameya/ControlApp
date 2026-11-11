@@ -8,5 +8,6 @@ dist-ssr
 
 *.tsbuildinfo
 
-# catalogue: full-resolution print PDF is rebuilt locally (python3 catalogue/build.py)
-catalogue/us/*-print.pdf
+# catalogue build scratch (python3 catalogue/build.py)
+catalogue/.work/
+__pycache__/

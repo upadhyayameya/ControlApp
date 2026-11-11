@@ -1,373 +1,362 @@
 #!/usr/bin/env python3
-"""Build the Submarine Pens USA catalogue from the India 2026-27 catalogue.
+"""Build the Submarine Pens USA retail catalogue from the manufacturer's India catalogue.
 
-  pip install pymupdf pillow
+  pip install pymupdf pillow        (and Node with Playwright + Chromium, for the PDF)
   python3 catalogue/build.py
 
-Reads   catalogue/source/submarine-catalogue-2026-27-india.pdf  (the original, ₹ M.R.P.)
-        catalogue/us-config.json                                 (exchange rule, rounding, back page)
-Writes  catalogue/products-2026-27.json   every product: code, section, packaging, ₹ M.R.P., US MSRP, wholesale
-        catalogue/us-price-list.csv       the same as a spreadsheet
-        catalogue/us/Submarine-Pens-USA-Catalogue-2026-27.pdf        (~12 MB, for email and web)
-        catalogue/us/Submarine-Pens-USA-Catalogue-2026-27-print.pdf  (full-resolution photos, for a printer)
-                                          the original layout and photos, with ₹ M.R.P. changed to US MSRP,
-                                          US spelling, and a US back page
-
-The US PDF is made by editing the original's text layer, so photos and layout stay pixel-identical.
+Reads   source/submarine-catalogue-2026-27-india.pdf   the original (₹ M.R.P.); products and photos come from it
+        us-config.json                                  exchange rate, landed-cost inputs, markup, shipping, contact
+Writes  us/Submarine-Pens-USA-Catalogue-2026-27.pdf     the catalogue to send to customers (email-sized)
+        products-2026-27.json                           every product with its landed cost and US prices
+        us-pricing-workbook.csv                         the same as a spreadsheet: INTERNAL, shows your costs
 """
+import csv
+import html
 import io
 import json
-import math
-import re
+import shutil
+import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 import pymupdf
 from PIL import Image
 
+from extract import extract
+from photos import find, textless
+from pricing import price_all
+
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT / "source" / "submarine-catalogue-2026-27-india.pdf"
 CONFIG = json.loads((ROOT / "us-config.json").read_text())
-OUT_PDF = ROOT / "us" / "Submarine-Pens-USA-Catalogue-2026-27.pdf"            # 200 dpi photos, ~12 MB: email and web
-OUT_PRINT = ROOT / "us" / "Submarine-Pens-USA-Catalogue-2026-27-print.pdf"  # original photos, ~40 MB: printer (not committed)
+OUT_PDF = ROOT / "us" / "Submarine-Pens-USA-Catalogue-2026-27.pdf"
+WORK = ROOT / ".work"  # generated HTML and images (not committed)
 
-# The catalogue's fonts use private ligature glyphs; map them back to letters.
-LIGATURES = {"Ț": "ff", "ț": "ft", "ȝ": "tt", "\uf001": "fi", "ﬁ": "fi", "\uf002": "fl", "ﬂ": "fl", "Bottel": "Bottle"}
-
-# Product names that appear only as page headings, not under the code.
-NAMES = {
-    "0210330186": "Inkspire Black Fountain Pen Set (black)",
-    "0210330786": "Inkspire Black Fountain Pen Set (blue)",
-    "0216000100": "Lumen 18 Fountain Pen with 18 cartridges",
-    "0210505000": "Calligraphy Fountain Pen set (1.3 / 1.9 / 3.0 mm)",
-    "0112010100": "Thinx ultra-slim ball pen (black)",
-    "0112010400": "Thinx ultra-slim ball pen (silver)",
-    "0112010700": "Thinx ultra-slim ball pen (blue)",
-    "0112010600": "Thinx ultra-slim ball pen (red)",
-}
-
-# Fonts for replacement text. Inter is close to the catalogue's Franklin Gothic at these sizes;
-# Helvetica is the fallback when Inter isn't installed.
-FONT_FILES = {
-    "bold": ["/usr/share/fonts/opentype/inter/Inter-Bold.otf"],
-    "regular": ["/usr/share/fonts/opentype/inter/Inter-Regular.otf"],
-}
-FALLBACK = {"bold": "hebo", "regular": "helv"}
-
-
-def fix(text):
-    for k, v in LIGATURES.items():
-        text = text.replace(k, v)
-    return " ".join(text.split())
-
-
-def usd_price(inr, code=None):
-    p = CONFIG["pricing"]
-    if code in p.get("overrides", {}):
-        return float(p["overrides"][code])
-    raw = inr / p["inrPerUsd"]
-    step = p["roundBelow10"] if raw < 10 else p["roundFrom10"]
-    usd = math.floor(raw / step + 0.5) * step  # round half up
-    return max(usd, p["minimumUsd"])
-
-
-def money(usd):
-    return f"${usd:,.0f}" if usd == int(usd) else f"${usd:,.2f}"
-
-
-def spans_of(page):
-    out = []
-    for b in page.get_text("dict")["blocks"]:
-        for line in b.get("lines", []):
-            for s in line["spans"]:
-                if s["text"].strip():
-                    s["dir"] = line["dir"]
-                    out.append(s)
-    return out
-
-
-def mid_y(s):
-    return (s["bbox"][1] + s["bbox"][3]) / 2
-
-
-def rect_dist(r, x, y):
-    dx = max(r[0] - x, 0, x - r[2])
-    dy = max(r[1] - y, 0, y - r[3])
-    return math.hypot(dx, dy)
-
-
-def price_spans(spans):
-    """Each '₹' symbol with the bold amount that follows it."""
-    found = []
-    for s in spans:
-        if s["text"].strip() != "₹":
-            continue
-        amt = [x for x in spans if "Bold" in x["font"] and abs(mid_y(x) - mid_y(s)) < 5
-               and -1 <= x["bbox"][0] - s["bbox"][2] < 6 and re.match(r"\d", x["text"].strip())]
-        if amt:
-            found.append((s, amt[0]))
-    return found
-
-
-def extract(doc):
-    items = []
-    for pn, page in enumerate(doc):
-        spans = spans_of(page)
-        section = next((fix(s["text"]) for s in spans if s["size"] >= 20 and "Square721" in s["font"]), None)
-        folio = next((s["text"].strip() for s in spans if s["font"] == "Cambria"), None)
-        news = [s["bbox"] for s in spans if s["text"].strip() == "NEW"]
-        codes = []
-        for s in spans:
-            t = s["text"].strip()
-            if not t.startswith("Code:") or "(" in t:
-                continue
-            rest = t[5:].strip()
-            if rest:
-                codes.append(dict(code=rest, label=s["bbox"], cb=s["bbox"]))
-                continue
-            right = [x for x in spans if "Bold" in x["font"] and abs(mid_y(x) - mid_y(s)) < 4
-                     and -1 <= x["bbox"][0] - s["bbox"][2] < 8]
-            if not right:  # rotated or stacked layouts: nearest bold code number
-                right = sorted((x for x in spans if "Bold" in x["font"] and re.fullmatch(r"[\d-]{8,}", x["text"].strip())),
-                               key=lambda x: abs(x["bbox"][0] - s["bbox"][0]) + abs(x["bbox"][1] - s["bbox"][1]))[:1]
-            if right:
-                codes.append(dict(code=right[0]["text"].strip(), label=s["bbox"], cb=right[0]["bbox"]))
-        for c in codes:
-            x0, y0, _, y1 = c["label"]
-            first = [s for s in spans if -1 < s["bbox"][1] - y1 < 5 and abs(s["bbox"][0] - x0) < 3 and "Regula" in s["font"]]
-            line = sorted((s for s in spans if first and abs(s["bbox"][1] - first[0]["bbox"][1]) < 1
-                           and s["bbox"][0] >= x0 - 3 and "Regula" in s["font"]), key=lambda s: s["bbox"][0])
-            run = line[:1]
-            for s in line[1:]:  # stop at a gap: the next product's caption on grid pages
-                if s["bbox"][0] - run[-1]["bbox"][2] > 3:
-                    break
-                run.append(s)
-            c["desc"] = fix("".join(s["text"] for s in run)).rstrip("₹ ").strip()
-            c["new"] = any((abs(n[1] - y0) < 14 and 0 < n[0] - x0 < 160) or rect_dist(c["cb"], n[0], n[3]) < 25 for n in news)
-        prices = price_spans(spans)
-        # Pair codes and prices. On list pages the price is level with the code, far to the right; on grid
-        # pages it is in the same column, usually above the code (a badge on the photo).
-        def cost(c, p):
-            dx = abs(p[0]["bbox"][0] - c["label"][0])
-            dy = p[0]["bbox"][1] - c["label"][1]
-            if abs(dy) < 15:
-                return dx * 0.3
-            return dx + (-dy if dy < 0 else dy * 3)
-        pairs = sorted((cost(c, p), ci, pi) for ci, c in enumerate(codes) for pi, p in enumerate(prices))
-        match, used = {}, set()
-        for _, ci, pi in pairs:
-            if ci not in match and pi not in used:
-                match[ci] = pi
-                used.add(pi)
-        if len(codes) != len(prices):
-            print(f"! page {pn + 1}: {len(codes)} codes but {len(prices)} prices", file=sys.stderr)
-        for ci, c in enumerate(codes):
-            amount = prices[match[ci]][1]["text"].strip() if ci in match else None
-            inr = int(re.match(r"\d+", amount).group()) if amount else None
-            per_piece = bool(amount and "PP" in amount)
-            usd = usd_price(inr, c["code"]) if inr else None
-            items.append({
-                "code": c["code"],
-                "name": NAMES.get(c["code"]),
-                "section": section,
-                "description": c["desc"] or None,
-                "new": c["new"],
-                "page": int(folio) if folio and folio.isdigit() else None,
-                "pdfPage": pn + 1,
-                "inrMrp": inr,
-                "perPiece": per_piece,
-                "usdMsrp": usd,
-                "usdWholesale": round(usd * CONFIG["pricing"]["wholesaleFraction"], 2) if usd else None,
-            })
-    return items
-
-
-def font_for(page, weight):
-    for path in FONT_FILES[weight]:
-        if Path(path).exists():
-            name = f"us-{weight}"
-            page.insert_font(fontname=name, fontfile=path)
-            return name, pymupdf.Font(fontfile=path)
-    return FALLBACK[weight], pymupdf.Font(FALLBACK[weight])
-
-
-# Prices printed inside product photos (Indian packaging): (pdf page, rect, replacement text, fill colour).
-PHOTO_PATCHES = [
-    (50, (360.6, 135.2, 382.4, 143.2), "$10", (0.09, 0.09, 0.09)),  # "MRP ₹390" ribbon on the Navigator diary display box
+SECTIONS = [  # (heading, pricing groups, one-line intro)
+    ("Ball Pens", ["Ball Pens"], "Ballpoints for every day and every desk, from slim click pens to weighted metal writers."),
+    ("Roller Pens", ["Roller Pens"], "The glide of liquid ink with the convenience of a ballpoint."),
+    ("Fountain Pens", ["Fountain Pen"], "Steel nibs, smooth ink flow and metal bodies, plus starter sets with ink."),
+    ("Gift Sets", ["Sets"], "Matched pairs and multi-pen sets, boxed and ready to give."),
+    ("Diaries & Pen Sets", ["Diary combos", "Diary Set"], "Premium PU-leather diaries with a matching metal pen, in a gift box."),
+    ("Inks", ["Ink Bottles"], "Bottled fountain pen ink, including seven scented colors."),
+    ("Refills & Cartridges", ["Refills", "Cartridges"], "Genuine Submarine refills for every pen in this catalogue."),
+]
+SINGULAR = {"Ball Pens": "Ball Pen", "Roller Pens": "Roller Pen", "Fountain Pen": "Fountain Pen"}
+PACKAGING = [  # (text in the packaging line, how the US catalogue describes it)
+    ("Silver Tin", "Blister card with silver tin"), ("Transparent Tin", "Blister card with tin"),
+    ("Transparent FP", "Blister card"), ("Inner Blister", "Blister card"), ("Plastic Tin", "Gift tin"),
+    ("Metal Tin", "Metal gift tin"), ("P.A Box", "Gift box"), ("with Cartridges", "With ink cartridges"),
 ]
 
 
-def background(page, rect):
-    """Colour just outside the left edge of rect, for painting over text without a visible box."""
-    pix = page.get_pixmap(dpi=72, clip=pymupdf.Rect(rect.x0 - 3, rect.y0, rect.x0 - 1, rect.y1))
-    px = [pix.pixel(x, y) for x in range(pix.width) for y in range(pix.height)] or [(255, 255, 255)]
-    return tuple(sum(c[i] for c in px) / len(px) / 255 for i in range(3))
+# ---------------------------------------------------------------- names
 
 
-def redaction_is_clean(source, pn, rects):
-    """Some pages rewrite badly when text is removed (glyphs pile up). Try on a scratch copy and check
-    that every untouched span stays where it was."""
-    scratch = pymupdf.open(source)
-    page = scratch[pn]
-    keep = lambda spans: sorted((s["text"], round(s["origin"][0]), round(s["origin"][1])) for s in spans
-                                if not any(pymupdf.Rect(s["bbox"]).intersects(r) for r in rects))
-    before = keep(spans_of(page))
-    for r in rects:
-        page.add_redact_annot(r, fill=False)
-    page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE, graphics=pymupdf.PDF_REDACT_LINE_ART_NONE,
-                          text=pymupdf.PDF_REDACT_TEXT_REMOVE)
-    return keep(spans_of(page)) == before
+def title_and_note(it):
+    """What a US customer reads on the card: a product name and one short detail line."""
+    desc = it["description"] or ""
+    group = it["pricingGroup"]
+    if it["name"]:
+        return it["name"], ""
+    if group in SINGULAR:
+        note = next((us for key, us in PACKAGING if key in desc), "")
+        if desc.lower().startswith("coffee") or desc.lower().startswith("cofee"):
+            note = (note + " · Coffee edition").lstrip(" ·")
+        return SINGULAR[group], note
+    if group == "Sets":
+        name = desc[len("Sets of "):] if desc.startswith("Sets of ") else desc
+        note = ""
+        if "(" in name:
+            name, inner = name.split("(", 1)
+            inner = inner.rstrip(")").strip()
+            note = {"Ball Pen & Roller Pen": "Ball pen + roller pen",
+                    "Retail Blister hanging pack": "Space-themed pens, hanging pack"}.get(inner, inner.replace("Pcs", "pens"))
+        name = name.strip()
+        if name == "Roller Pen & Fountain Pen":
+            return "Roller & Fountain Pen Set", "Roller pen + fountain pen, gift box"
+        if name == "Roller Pen & Ball Pen":
+            return "Roller & Ball Pen Set", ""
+        if name.endswith(" Pen"):
+            name = name[:-4]
+        name = name.replace("Expresso", "Espresso").replace("ISRO Box", "ISRO Space Pens")
+        return f"{name} Set", note
+    if group == "Diary Set":
+        return "Navigator A5 Diary & Pen", "160 ruled pages · sold in packs of 10, price per set"
+    if group == "Diary combos":
+        name = desc.replace("Diary Pen Combo Set", "Diary & Pen Set")
+        note = "PU-leather diary, 180 pages, metal pen, gift box"
+        if "(" in name:
+            name, inner = name.split("(", 1)
+            note = inner.rstrip(")")
+        return name.strip(), note
+    if group == "Ink Bottles":
+        scented = (it["inrMrp"] or 0) >= 150
+        return desc.replace(" Ink Bottle", " Ink"), "Scented fountain pen ink" if scented else "Fountain pen ink"
+    if group == "Cartridges":
+        name, _, pack = desc.partition("(")
+        return f"Ink {name.strip()}s", pack.rstrip(")").replace("Pack", "pack")
+    return desc.replace("Lavendra", "Lavender"), ""
 
 
-def localise(doc):
-    """Edit the text layer: ₹ M.R.P. -> US MSRP, UK -> US spelling, US back page."""
-    labels = CONFIG["labels"]
-    spelling = [("CUSTOMISATION", "CUSTOMIZATION"), ("Customisation", "Customization"),
-                ("Personalisation", "Personalization"), ("personalisation", "personalization")]
-    changed = 0
-    for page in doc:
-        spans = spans_of(page)
-        edits = []  # (rect to clear, text, origin point, size, colour, weight, align)
-        for sym, amt in price_spans(spans):
-            inr = int(re.match(r"\d+", amt["text"].strip()).group())
-            text = money(usd_price(inr))
-            if "PP" in amt["text"]:
-                text += f" {labels['perPiece']}"
-            right = amt["bbox"][2]
-            edits.append((pymupdf.Rect(sym["bbox"]) | pymupdf.Rect(amt["bbox"]), text, right, amt["origin"][1],
-                          amt["size"], amt["color"], "bold", "right"))
-            changed += 1
-        for s in spans:
-            t = s["text"].strip()
-            if t == "M.R.P.":
-                edits.append((pymupdf.Rect(s["bbox"]), labels["priceLabel"], s["bbox"][2], s["origin"][1],
-                              s["size"], s["color"], "regular", "right"))
-            elif s["font"] == "ArialMT" and t in ("Cover Page", "COVER INSIDE", "BACK PAGE"):
-                edits.append((pymupdf.Rect(s["bbox"]), None, 0, 0, 0, 0, None, None))  # printer's marks
-            elif any(a in s["text"] for a, _ in spelling) and s["dir"] == (1.0, 0.0):
-                new = s["text"]
-                for a, b in spelling:
-                    new = new.replace(a, b)
-                edits.append((pymupdf.Rect(s["bbox"]), fix(new), s["bbox"][0], s["origin"][1], s["size"], s["color"],
-                              "bold" if "Bold" in s["font"] else "regular", "left"))
-        back = next((s for s in spans if "SUBMARINE PENS LIMITED" in s["text"]), None)
-        if back:
-            for s in spans:
-                if s["bbox"][1] >= back["bbox"][1] - 1 and s["color"] == 0xFFFFFF:
-                    edits.append((pymupdf.Rect(s["bbox"]), None, 0, 0, 0, 0, None, None))
-            for d in page.get_drawings():  # the phone and email icons beside the old contact line
-                r = d["rect"]
-                if d.get("fill") == (1.0, 1.0, 1.0) and r.y0 > back["bbox"][3] and r.width < 10 and r.height < 10:
-                    page.draw_rect(r + (-1, -1, 1, 1), color=None, fill=background(page, r), overlay=True)
-        rects = []
-        for rect, *_ in edits:
-            r = pymupdf.Rect(rect)
-            r.y0 += r.height * 0.2
-            r.y1 -= r.height * 0.2
-            rects.append(r)
-        if rects and redaction_is_clean(SOURCE, page.number, rects):
-            for r in rects:
-                page.add_redact_annot(r, fill=False)
-            page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE,
-                                  graphics=pymupdf.PDF_REDACT_LINE_ART_NONE,
-                                  text=pymupdf.PDF_REDACT_TEXT_REMOVE)
-        elif rects:  # paint over instead, in the surrounding colour
-            fills = [background(page, pymupdf.Rect(rect)) for rect, *_ in edits]
-            for (rect, *_), fill in zip(edits, fills):
-                page.draw_rect(pymupdf.Rect(rect) + (-0.5, -0.5, 0.5, 0.5), color=None, fill=fill, overlay=True)
-        for pno, rect, text, fill in PHOTO_PATCHES:
-            if page.number == pno - 1:
-                r = pymupdf.Rect(rect)
-                page.draw_rect(r, color=None, fill=fill, overlay=True)
-                if text:
-                    edits.append((r, text, (r.x0 + r.x1) / 2, r.y1 - 1.6, 6.5, 0xFFFFFF, "bold", "center"))
-        fonts = {}
-        for _, text, x, baseline, size, color, weight, align in edits:
-            if not text:
-                continue
-            if weight not in fonts:
-                fonts[weight] = font_for(page, weight)
-            fname, font = fonts[weight]
-            width = font.text_length(text, fontsize=size)
-            px = x - width if align == "right" else x - width / 2 if align == "center" else x
-            rgb = tuple(((color >> sh) & 255) / 255 for sh in (16, 8, 0))
-            page.insert_text((px, baseline), text, fontname=fname, fontsize=size, color=rgb)
-        if back:
-            bp = CONFIG["backPage"]
-            fname, font = font_for(page, "bold")
-            rname, rfont = font_for(page, "regular")
-            cx = page.rect.width / 2
-            y = back["origin"][1]
-            for text, f, fn, size, gap in [(bp["company"], font, fname, 12, 15), (bp["line1"], rfont, rname, 8, 11),
-                                           (bp["line2"], rfont, rname, 8, 16), (bp["line3"], rfont, rname, 9, 14),
-                                           (bp.get("contact", ""), rfont, rname, 9, 0)]:
-                if text:
-                    page.insert_text((cx - f.text_length(text, fontsize=size) / 2, y), text,
-                                     fontname=fn, fontsize=size, color=(1, 1, 1))
-                y += gap
-    return changed
+# ---------------------------------------------------------------- photos
 
 
-def shrink_photos(doc, dpi=200, quality=82):
-    """Re-encode photos at about 200 dpi as they are shown on the page, for a file small enough to email.
-    Only the photo stream changes; transparency masks stay as they are. CMYK photos become RGB."""
-    shown = {}
-    for page in doc:
-        for img in page.get_images(full=True):
-            for r in page.get_image_rects(img[0]):
-                shown[img[0]] = max(shown.get(img[0], 0), r.width / 72, r.height / 72)
-    for xref, inches in shown.items():
-        if doc.xref_get_key(xref, "Filter")[1] != "/DCTDecode" or inches == 0:
+def tidy(img):
+    """Whiten the catalogue's thin separator lines, then crop to the product with a small margin."""
+    img = img.convert("RGB")
+    g = img.convert("L")
+    w, h = g.size
+    px = g.load()
+    dark_rows = [sum(1 for x in range(w) if px[x, y] < 225) / w for y in range(h)]
+    y = 0
+    while y < h:
+        if dark_rows[y] > 0.2:
+            run = y
+            while run < h and dark_rows[run] > 0.2:
+                run += 1
+            if run - y <= 3:  # a hairline, not a pen
+                for yy in range(y, run):
+                    for x in range(w):
+                        px[x, yy] = 255
+                img.paste((255, 255, 255), (0, y, w, run))
+            y = run
+        else:
+            y += 1
+    dark_cols = [sum(1 for yy in range(h) if px[x, yy] < 225) / h for x in range(w)]
+    for x, frac in enumerate(dark_cols):
+        if frac > 0.5 and (x == 0 or dark_cols[x - 1] < 0.2 or x == w - 1 or dark_cols[x + 1] < 0.2):
+            img.paste((255, 255, 255), (x, 0, x + 1, h))
+    mask = img.convert("L").point(lambda v: 255 if v < 238 else 0)
+    box = mask.getbbox()
+    if box:
+        pad = 6
+        img = img.crop((max(box[0] - pad, 0), max(box[1] - pad, 0), min(box[2] + pad, w), min(box[3] + pad, h)))
+    return img
+
+
+def save_photos(items):
+    doc = pymupdf.open(SOURCE)
+    clean = textless(SOURCE)
+    where = find(doc)
+    out = WORK / "img"
+    out.mkdir(parents=True, exist_ok=True)
+    for it in items:
+        if it["code"] not in where:
             continue
-        before = len(doc.xref_stream_raw(xref))
-        pix = pymupdf.Pixmap(doc, xref)
-        if pix.alpha:
-            pix = pymupdf.Pixmap(pix, 0)
-        if pix.colorspace.n not in (1, 3):
-            pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
-        im = Image.frombytes("RGB" if pix.n == 3 else "L", (pix.width, pix.height), pix.samples)
-        scale = min(1.0, dpi * inches / max(pix.width, pix.height))
-        if scale < 1:
-            im = im.resize((max(1, round(pix.width * scale)), max(1, round(pix.height * scale))), Image.LANCZOS)
-        buf = io.BytesIO()
-        im.save(buf, "JPEG", quality=quality, optimize=True)
-        if len(buf.getvalue()) > before * 0.8:
-            continue
-        doc.update_stream(xref, buf.getvalue(), compress=False)
-        for key, value in (("Filter", "/DCTDecode"), ("DecodeParms", "null"), ("Decode", "null"),
-                           ("ColorSpace", "/DeviceRGB" if im.mode == "RGB" else "/DeviceGray"),
-                           ("Width", str(im.width)), ("Height", str(im.height))):
-            doc.xref_set_key(xref, key, value)
+        pn, rect = where[it["code"]]
+        pix = clean[pn].get_pixmap(dpi=200, clip=rect)
+        img = tidy(Image.open(io.BytesIO(pix.tobytes("png"))))
+        wide = img.width >= 3 * img.height
+        img.thumbnail((720, 140) if wide else (520, 520), Image.LANCZOS)
+        path = out / f"{it['code']}.jpg"
+        img.save(path, "JPEG", quality=80, optimize=True, progressive=True)
+        it["_photo"] = path.name
+        it["_wide"] = wide
+    # cover, brand and back-cover art, from the text-free source pages
+    trim = pymupdf.Rect(9.5, 9, 456.5, 601)  # the source pages carry bleed and crop marks outside this
+    clean[0].get_pixmap(dpi=170, clip=trim).pil_save(out / "cover.jpg", quality=82)
+    clean[1].get_pixmap(dpi=200, clip=pymupdf.Rect(222, 9, 456.5, 304)).pil_save(out / "nib.jpg", quality=82)
+    logo = clean[59].get_pixmap(dpi=200, clip=pymupdf.Rect(110, 400, 356, 480)).pil_tobytes("png")
+    grey = Image.open(io.BytesIO(logo)).convert("L")
+    white = Image.new("RGBA", grey.size, (255, 255, 255, 0))
+    white.putalpha(grey.point(lambda v: max(0, min(255, (v - 40) * 255 // 180))))  # white logo, see-through background
+    white.save(out / "logo-white.png")
+
+
+# ---------------------------------------------------------------- HTML
+
+e = html.escape
+
+
+def money(v):
+    return f"${v:,.2f}"
+
+
+def card(it):
+    title, note = title_and_note(it)
+    photo = f'<img src="img/{it["_photo"]}" alt="">' if it.get("_photo") else ""
+    new = '<span class="new">NEW</span>' if it["new"] else ""
+    return f'''<article class="card {'wide' if it.get('_wide') else 'square'}">
+  <div class="photo">{photo}</div>
+  <div class="info">
+    <h3>{e(title)}{new}</h3>
+    <p class="note">{e(note)}</p>
+    <div class="meta"><span class="code">{e(it["code"])}</span><span class="price">{money(it["retailUsd"])}</span></div>
+  </div>
+</article>'''
+
+
+def section_html(heading, intro, items):
+    blocks, run, shape = [], [], None
+    for it in items:  # keep catalogue order; group consecutive items of the same photo shape
+        s = "wide" if it.get("_wide") else "square"
+        if s != shape and run:
+            blocks.append((shape, run))
+            run = []
+        shape = s
+        run.append(it)
+    if run:
+        blocks.append((shape, run))
+    grids = "".join(f'<div class="grid {s}">{"".join(card(i) for i in r)}</div>' for s, r in blocks)
+    return f'''<section class="products">
+  <header class="sec"><h2>{e(heading)}</h2><p>{e(intro)}</p></header>
+  {grids}
+</section>'''
+
+
+def price_list_html(items_by_section):
+    rows = []
+    for heading, items in items_by_section:
+        rows.append(f'<li class="h">{e(heading)}</li>')
+        for it in items:
+            title, note = title_and_note(it)
+            label = title if not note or it["pricingGroup"] not in SINGULAR else f"{title}, {note.lower()}"
+            rows.append(f'<li><span class="c">{e(it["code"])}</span><span class="t">{e(label)}{" <b>NEW</b>" if it["new"] else ""}</span>'
+                        f'<span class="p">{money(it["retailUsd"])}</span></li>')
+    return f'''<section class="pricelist"><header class="sec"><h2>Price List</h2>
+<p>Every product in this catalogue by code. US retail prices in US dollars, landed: duty and freight included.</p></header>
+<ul>{"".join(rows)}</ul></section>'''
+
+
+def contact_lines():
+    c = CONFIG["contact"]
+    lines = [c["instagram"] and f"Instagram {c['instagram']}", c["email"], c["phone"], c["website"]]
+    return [l for l in lines if l]
+
+
+def overview_html(by_section):
+    rows = "".join(
+        f"<tr><td>{e(h)}</td><td>{len(its)}</td><td>{money(min(i['retailUsd'] for i in its))} – {money(max(i['retailUsd'] for i in its))}</td></tr>"
+        for h, _, its in by_section if its)
+    return f'''<div class="overview"><h4>The collection</h4>
+  <table><thead><tr><th>Section</th><th>Products</th><th>Retail prices</th></tr></thead><tbody>{rows}</tbody></table></div>'''
+
+
+def front_html(by_section):
+    ship = CONFIG["customerShipping"]
+    c = CONFIG["contact"]
+    contact = "".join(f"<li>{e(l)}</li>" for l in contact_lines())
+    return f'''
+<section class="cover">
+  <img class="bg" src="img/cover.jpg" alt="">
+  <div class="cover-text">
+    <p class="kicker">{e(c["business"])}</p>
+    <h1>USA Collection 2026–27</h1>
+    <p class="sub">Retail Catalogue · Prices in US dollars, landed</p>
+  </div>
+</section>
+<section class="brand">
+  <img class="nib" src="img/nib.jpg" alt="">
+  <div class="brand-text">
+    <p class="kicker">We don’t just make pens.</p>
+    <h1>We create<br><span>instruments</span><br>of <span>expression.</span></h1>
+    <p>Since 1995, Submarine has crafted premium writing instruments that inspire ideas, build connections and leave a lasting impression. Made in India by Submarine Pens Limited, an ISO 9001:2015 certified manufacturer, and brought to the United States by {e(c["business"])}.</p>
+  </div>
+  <div class="pillars">
+    <div><h4>Innovation</h4><p>Creative design and modern technology, reimagining the writing experience.</p></div>
+    <div><h4>Craftsmanship</h4><p>Every detail engineered, every pen carefully finished.</p></div>
+    <div><h4>Legacy</h4><p>Trusted since 1995, built on quality and integrity.</p></div>
+  </div>
+  <p class="tags">Premium writing instruments · Corporate gifting · Customization</p>
+</section>
+<section class="howto">
+  <header class="sec"><h2>How to Order</h2><p>Everything you need to know before you buy.</p></header>
+  <div class="howgrid">
+    <div class="box key"><h4>Landed prices: nothing more to pay</h4>
+      <p>Every price in this catalogue is a US retail price in US dollars, <b>landed</b>. Freight from our factory in India, US customs duty and import tariffs are already included, so there are no customs charges or surprise fees when your order arrives.</p></div>
+    <div class="box"><h4>Shipping</h4>
+      <p>{money(ship["flatRateUsd"])} flat rate anywhere in the US. <b>Free shipping on orders over {money(ship["freeOverUsd"]).replace(".00", "")}.</b></p>
+      <p>{e(ship["dispatch"])}, by {e(ship["method"])}.</p></div>
+    <div class="box"><h4>Ordering</h4>
+      <p>Quote the product code shown on each item. Order or ask a question:</p><ul>{contact}</ul></div>
+    <div class="box"><h4>Wholesale &amp; corporate gifting</h4>
+      <p>Retailers, offices and event organizers: ask for wholesale pricing, volume discounts and custom branding of pens and gift sets.</p></div>
+  </div>
+  {overview_html(by_section)}
+  <div class="legend">
+    <div><span class="new">NEW</span> New in the 2026–27 collection</div>
+    <div><span class="code">0109320100</span> Product code: quote it when you order</div>
+  </div>
+  <p class="small">Prices effective {date.today():%B %Y} and subject to change. Sales tax is added where it applies. Colors in photos may vary slightly from the product.
+  Packaging may differ from what is shown.</p>
+</section>'''
+
+
+def back_html():
+    c = CONFIG["contact"]
+    lines = "".join(f"<p>{e(l)}</p>" for l in [c["location"]] + contact_lines())
+    return f'''<section class="back">
+  <img class="logo" src="img/logo-white.png" alt="Submarine, Power to Express">
+  <h2>{e(c["business"])}</h2>{lines}
+  <p class="maker">Manufactured by Submarine Pens Limited, Mumbai, India · ISO 9001:2015 certified</p>
+</section>'''
+
+
+def page(body):
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Submarine Pens USA Catalogue 2026-27</title>
+<link rel="stylesheet" href="../catalogue.css"></head><body>{body}</body></html>'''
+
+
+# ---------------------------------------------------------------- main
 
 
 def main():
-    doc = pymupdf.open(SOURCE)
-    items = extract(doc)
-    missing = [i["code"] for i in items if i["usdMsrp"] is None]
-    (ROOT / "products-2026-27.json").write_text(json.dumps(items, indent=1, ensure_ascii=False) + "\n")
-    with open(ROOT / "us-price-list.csv", "w", newline="") as f:
-        import csv
-        w = csv.writer(f)
-        w.writerow(["Code", "Section", "Name / description", "New", "Catalogue page", "India MRP (INR)",
-                    "US MSRP (USD)", "US wholesale (USD)", "Per piece"])
-        for i in items:
-            w.writerow([i["code"], i["section"], i["name"] or i["description"] or "", "NEW" if i["new"] else "",
-                        i["page"] or "", i["inrMrp"] or "", f"{i['usdMsrp']:.2f}" if i["usdMsrp"] else "",
-                        f"{i['usdWholesale']:.2f}" if i["usdWholesale"] else "", "yes" if i["perPiece"] else ""])
-    changed = localise(doc)
-    leftover = [(pn + 1, s["text"]) for pn, p in enumerate(doc) for s in spans_of(p) if "₹" in s["text"] or "M.R.P" in s["text"]]
-    OUT_PDF.parent.mkdir(exist_ok=True)
-    doc.save(OUT_PRINT, garbage=4, deflate=True)
-    shrink_photos(doc)
-    doc.save(OUT_PDF, garbage=4, deflate=True)
-    print(f"{len(items)} products, {changed} prices converted")
-    for p in (OUT_PDF, OUT_PRINT):
-        print(f"  {p.relative_to(ROOT.parent)}  {p.stat().st_size / 1e6:.1f} MB")
+    items = extract(pymupdf.open(SOURCE))
+    price_all(items, CONFIG)
+    excluded = CONFIG["excludeFromUS"]
+    for it in items:
+        it["excludedFromUS"] = excluded.get(it["code"])
+    shutil.rmtree(WORK, ignore_errors=True)
+    WORK.mkdir()
+    us = [it for it in items if not it["excludedFromUS"] and it.get("retailUsd")]
+    save_photos(us)
+    missing = [it["code"] for it in us if not it.get("_photo")]
     if missing:
-        print(f"! no price found for: {', '.join(missing)}", file=sys.stderr)
-    if leftover:
-        print(f"! rupee text left in PDF: {leftover}", file=sys.stderr)
-        sys.exit(1)
+        print(f"! no photo for {missing}", file=sys.stderr)
+
+    by_section = [(h, intro, [it for it in us if it["pricingGroup"] in groups]) for h, groups, intro in SECTIONS]
+    (WORK / "front.html").write_text(page(front_html(by_section)))
+    (WORK / "body.html").write_text(page("".join(section_html(h, i, its) for h, i, its in by_section)
+                                         + price_list_html([(h, its) for h, _, its in by_section])))
+    (WORK / "back.html").write_text(page(back_html()))
+    footer = f'{e(CONFIG["contact"]["business"])} · USA Collection 2026–27 · Retail prices in USD, landed'
+    parts = []
+    for name, show_footer in (("front", False), ("body", True), ("back", False)):
+        out = WORK / f"{name}.pdf"
+        subprocess.run(["node", str(ROOT / "render.cjs"), str(WORK / f"{name}.html"), str(out),
+                        footer if show_footer else ""], check=True)
+        parts.append(out)
+    doc = pymupdf.open()
+    for p in parts:
+        doc.insert_pdf(pymupdf.open(p))
+    doc.set_metadata({"title": "Submarine Pens USA Catalogue 2026-27", "author": CONFIG["contact"]["business"],
+                      "subject": "Retail price catalogue, USD, landed"})
+    OUT_PDF.parent.mkdir(exist_ok=True)
+    doc.save(OUT_PDF, garbage=4, deflate=True)
+
+    for it in items:
+        it.pop("_photo", None)
+        it.pop("_wide", None)
+    (ROOT / "products-2026-27.json").write_text(json.dumps(items, indent=1, ensure_ascii=False) + "\n")
+    with open(ROOT / "us-pricing-workbook.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Code", "Section", "Product", "Detail", "New", "India MRP (INR)", "Factory (USD)", "Duty (USD)",
+                    "India tariff (USD)", "Freight (USD)", "Fees (USD)", "Landed (USD)", "Retail (USD)",
+                    "Wholesale (USD)", "Retail / landed", "HTS", "Weight (g)", "Left out of US catalogue"])
+        for it in items:
+            if not it.get("retailUsd"):
+                continue
+            b = it["landedBreakdown"]
+            title, note = title_and_note(it)
+            w.writerow([it["code"], it["section"], title, note, "NEW" if it["new"] else "", it["inrMrp"],
+                        f'{b["factory"]:.2f}', f'{b["duty"]:.2f}', f'{b["tariff"]:.2f}', f'{b["freight"]:.2f}',
+                        f'{b["fees"]:.2f}', f'{it["landedUsd"]:.2f}', f'{it["retailUsd"]:.2f}', f'{it["wholesaleUsd"]:.2f}',
+                        f'{it["retailUsd"] / it["landedUsd"]:.1f}', it["hts"],
+                        round(it["landedBreakdown"]["freight"] / CONFIG["landedCost"]["freightUsdPerKg"] * 1000),
+                        it["excludedFromUS"] or ""])
+    print(f"{len(us)} products in the US catalogue ({len(items) - len(us)} left out), {len(doc)} pages, "
+          f"{OUT_PDF.stat().st_size / 1e6:.1f} MB -> {OUT_PDF.relative_to(ROOT.parent)}")
 
 
 if __name__ == "__main__":
