@@ -1,0 +1,32 @@
+{% macro cell(c, cls='') -%}
+{%- if c.future -%}
+<td class="n future" title="Week has not started"><span class="dash">·</span></td>
+{%- elif c.count is none -%}
+<td class="n na {{ cls }}" title="{{ c.unavailable }}"><span class="dash">—</span><div class="why">unavailable</div></td>
+{%- else -%}
+<td class="n {{ cls }} {{ 'zero' if c.raw_count == 0 }}" {% if c.caveat %}title="{{ c.caveat }}"{% endif %}>
+  <a href="/drill?{{ c.drill|qs }}">
+    <span class="cnt">{{ c.count }}</span>
+    <span class="usd">{% if c.dollars_unavailable %}<span title="{{ c.dollars_unavailable }}">$ n/a</span>{% else %}{{ c.dollars|money }}{% endif %}</span>
+  </a>
+  {%- if c.corrected or c.repeats_flagged %}
+  <div class="raw" title="Raw monday items before correction">raw {{ c.raw_count }}{% if c.raw_dollars is not none and c.raw_dollars != c.dollars %} · {{ c.raw_dollars|money }}{% endif %}
+    {%- if c.dup_excluded %} · {{ c.dup_excluded }} dup{% endif %}
+    {%- if c.repeat_excluded %} · {{ c.repeat_excluded }} rpt{% elif c.repeats_flagged %} · {{ c.repeats_flagged }} rpt kept{% endif %}</div>
+  {%- endif %}
+  {%- if c.dollars_missing %}<div class="raw warn">{{ c.dollars_missing }} without $</div>{% endif %}
+  {%- if c.caveat %}<div class="raw warn">partial</div>{% endif %}
+</td>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro status(s) -%}
+{%- if s == 'on_pace' -%}<td class="st on">On pace</td>
+{%- elif s == 'watch' -%}<td class="st watch">Watch</td>
+{%- elif s == 'behind' -%}<td class="st behind">Behind</td>
+{%- else -%}<td class="st none">—</td>{%- endif -%}
+{%- endmacro %}
+
+{% macro monday_link(board_id, item_id) -%}
+<a class="ext" href="{{ item_url(board_id, item_id) }}" target="_blank" rel="noopener">#{{ item_id }}</a>
+{%- endmacro %}

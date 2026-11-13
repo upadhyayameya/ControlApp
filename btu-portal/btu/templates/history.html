@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block body %}
+<div class="pagehead">
+  <h1>History — {{ month }}</h1>
+  <div class="tabs">{% for s, l in STAGES %}<a class="{{ 'on' if s == stage }}" href="/history?{{ {'stage': s, 'month': month, 'dollars': dollars}|qs }}">{{ l }}</a>{% endfor %}</div>
+</div>
+<p class="stage-note">The scoreboard as computed after each refresh. Closed weeks are re-pulled every time, so a week's figure can move after it ends (corrected values, cleaned duplicates). This is where to see that it did.</p>
+{% if snaps %}
+<div class="scroll">
+<table class="board">
+  <thead><tr><th class="prog">Refresh</th>{% for w in snaps[0].weeks %}<th>Wk {{ loop.index }}<div class="sub">{{ w }}</div></th>{% endfor %}<th class="mtd">MTD (Total)</th></tr></thead>
+  <tbody>
+  {% for s in snaps %}
+    {% set t = s.stages[stage]['Total'] %}
+    {% set prev = snaps[loop.index] if loop.index < snaps|length else none %}
+    <tr><td class="prog">#{{ s.run_id }} · {{ s.at }}</td>
+    {% for wk in t.weeks %}
+      {% set pw = prev.stages[stage]['Total'].weeks[loop.index0] if prev and prev.stages[stage]['Total'].weeks|length > loop.index0 else none %}
+      <td class="n {{ 'moved' if pw and pw[0] != wk[0] }}">{{ wk[0] if wk[0] is not none else '—' }}<span class="usd">{{ wk[1]|money }}</span>{% if pw and pw[0] != wk[0] %}<div class="raw">was {{ pw[0] }}</div>{% endif %}</td>
+    {% endfor %}
+    <td class="n mtd">{{ t.mtd[0] if t.mtd[0] is not none else '—' }}<span class="usd">{{ t.mtd[1]|money }}</span></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="unavail">No snapshots for {{ month }} yet. One is saved after every refresh for the current month.</p>
+{% endif %}
+
+<section class="stage">
+  <h2>Refresh runs</h2>
+  <table class="list"><thead><tr><th>#</th><th>Started</th><th>Finished</th><th>Trigger</th><th>Status</th><th>Boards</th></tr></thead>
+  <tbody>{% for r in runs %}<tr class="{{ 'excluded' if r.status == 'failed' }}"><td>{{ r.id }}</td><td>{{ r.started_at }}</td><td>{{ r.finished_at or '' }}</td><td>{{ r.trigger }}</td><td>{{ r.status }}</td>
+  <td>{% if r.detail.error %}{{ r.detail.error }}{% endif %}{% for k, b in r.detail.get('boards', {}).items() %}<span class="pill {{ 'bad' if not b.ok }}">{{ k }}: {% if b.ok %}{{ b['items'] }} items (+{{ b.new }} new, {{ b.changed }} changed, {{ b.deleted }} gone){% else %}{{ b.error }}{% endif %}</span> {% endfor %}</td></tr>
+  {% else %}<tr><td colspan="6" class="unavail">No refreshes yet.</td></tr>{% endfor %}</tbody></table>
+</section>
+{% endblock %}

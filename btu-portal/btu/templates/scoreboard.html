@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import cell, status %}
+{% block title %}Scoreboard {{ month }}{% endblock %}
+{% block body %}
+<div class="pagehead">
+  <h1>Weekly scoreboard — {{ month }}</h1>
+  <div class="meta">
+    {{ board.pace.elapsed }} of {{ board.pace.total }} working days elapsed ({{ board.pace.fraction|pct }}).
+    Status colours judge <strong>pace to date</strong> (MTD vs goal × working days elapsed), not the latest week.
+  </div>
+</div>
+
+<div class="notes">
+  <div class="note">
+    <strong>Prescriptive caveat.</strong> Prescriptive records carry a project type (HVAC BTU / HVAC BPTU / HVAC Tune Up)
+    in the Utility field and no real utility, so every utility row (BGE Tune-Up, Pepco/WGL …) <em>excludes</em> prescriptive
+    work at that utility. Read the BGE line as "BGE non-prescriptive", not "all BGE work".
+    {% if board.prescriptive_count %}({{ board.prescriptive_count }} such records this month.){% endif %}
+  </div>
+  <div class="note">
+    <strong>Corrections.</strong> Counts are unique projects after de-duplication on (date, project, stage, program)
+    {%- if not repeats_policy %} and with repeat submissions counted once at first logging{% endif %}.
+    The small grey line shows the raw monday count beside it. Every number links to its items.
+  </div>
+  {% for stage, rr in board.repeat_rate.items() %}
+  <div class="kpi {{ 'bad' if rr.repeats else 'good' }}">
+    <div class="lbl">Repeat rate · {{ STAGE_LABEL[stage] }}</div>
+    <div class="val">{{ rr.rate|pct }}</div>
+    <div class="sub">{{ rr.repeats }} of {{ rr.submissions }} · target 0</div>
+  </div>
+  {% endfor %}
+</div>
+
+{% for stage, label in STAGES %}
+{% set rows = board.sections[stage] %}
+{% set total = board.totals[stage] %}
+<section class="stage">
+  <h2>{{ label }} {% if stage == 'co_approved' %}<span class="tag">monday proxy — not recognised revenue</span>{% endif %}</h2>
+  {% if STAGE_NOTES.get(stage) %}<p class="stage-note">{{ STAGE_NOTES[stage] }}</p>{% endif %}
+  <div class="scroll">
+  <table class="board fixed">
+    <thead><tr>
+      <th class="prog">Program</th>
+      {% for w in board.weeks %}<th>Wk {{ w.index }}<div class="sub">{{ w.label }}</div></th>{% endfor %}
+      {% if board.has_unassigned %}<th class="loud">Not in any week</th>{% endif %}
+      <th class="mtd">MTD</th><th>Goal</th><th>% to goal</th><th class="st-h">Pace</th>
+    </tr></thead>
+    <tbody>
+    {% for r in rows %}
+      {% if r.program not in ('Other', 'Unmapped') or r.mtd.raw_count or r.mtd.count is none %}
+      <tr class="{{ 'minor' if r.program in ('Other', 'Unmapped') }}">
+        <td class="prog">{{ r.program }}{% if r.program == 'Other' %}<div class="sub">Potomac Edison, Met ED, National Grid</div>{% elif r.program == 'Unmapped' %}<div class="sub">blank / unknown Utility</div>{% endif %}</td>
+        {% for c in r.weeks %}{{ cell(c) }}{% endfor %}
+        {% if board.has_unassigned %}{{ cell(r.unassigned, 'loud') }}{% endif %}
+        {{ cell(r.mtd, 'mtd') }}
+        <td class="n goal" title="{{ r.goal.reason or '' }}">{% if r.goal.count is not none %}{{ r.goal.count|num }}<span class="usd">{{ r.goal.dollars|money }}</span>{% else %}<span class="dash">—</span>{% endif %}</td>
+        <td class="n">{{ r.pct_count|pct }}{% if r.pct_dollars is not none %}<span class="usd">{{ r.pct_dollars|pct }} of $</span>{% endif %}</td>
+        {{ status(r.status) }}
+      </tr>
+      {% endif %}
+    {% endfor %}
+      <tr class="total">
+        <td class="prog">Total</td>
+        {% for c in total.weeks %}{{ cell(c) }}{% endfor %}
+        {% if board.has_unassigned %}{{ cell(total.unassigned, 'loud') }}{% endif %}
+        {{ cell(total.mtd, 'mtd') }}
+        <td class="n goal">{% if total.goal.count is not none %}{{ total.goal.count|num }}{% else %}<span class="dash">—</span>{% endif %}</td>
+        <td class="n">{{ total.pct_count|pct }}</td>
+        {{ status(total.status) }}
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  {% set reasons = [] %}
+  {% for r in rows + [total] %}{% if r.mtd.unavailable and r.mtd.unavailable not in reasons %}{% set _ = reasons.append(r.mtd.unavailable) %}{% endif %}{% endfor %}
+  {% for r in reasons %}<p class="unavail">Empty cells: {{ r }}</p>{% endfor %}
+</section>
+{% endfor %}
+
+<section class="stage">
+  <h2>Levels <span class="tag">latest reading — never summed across weeks</span></h2>
+  {% if levels %}
+  <table class="board">
+    <thead><tr><th class="prog">Metric</th>{% for w in board.weeks %}<th>Wk {{ w.index }}</th>{% endfor %}<th class="mtd">Latest</th><th>Target</th></tr></thead>
+    <tbody>
+    {% for l in levels %}
+      <tr><td class="prog">{{ l.metric }}</td>
+      {% for r in l.weeks %}<td class="n">{% if r %}{{ (r.value|pct) if l.kind == 'percent' else ((r.value|money) if l.kind == 'dollars' else (r.value|num)) }}<div class="sub">{{ r.date }}</div>{% else %}<span class="dash">—</span>{% endif %}</td>{% endfor %}
+      <td class="n mtd">{% if l.latest %}{{ (l.latest.value|pct) if l.kind == 'percent' else ((l.latest.value|money) if l.kind == 'dollars' else (l.latest.value|num)) }}<div class="sub">as of {{ l.latest.date }}{% if l.latest.source %} · {{ l.latest.source }}{% endif %}</div>{% else %}<span class="dash">—</span>{% endif %}</td>
+      <td class="n">{% if l.goal is not none %}{{ (l.goal|pct) if l.kind == 'percent' else l.goal|num }}{% else %}—{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="unavail">No level readings recorded. Utilization %, MRR and live contract counts are not monday numbers; add readings under [[levels]] in config.toml.</p>
+  {% endif %}
+</section>
+{% endblock %}

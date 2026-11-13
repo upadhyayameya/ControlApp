@@ -1,0 +1,30 @@
+{% from "_macros.html" import monday_link %}
+{% macro events_table(events, dollars, show_stage=False, show_week=None) %}
+<table class="list">
+  <thead><tr>
+    <th>Date</th>{% if show_week %}<th>Week</th>{% endif %}{% if show_stage %}<th>Stage</th>{% endif %}
+    <th>Project</th><th>Program</th><th>Utility</th><th>Source</th><th>Engineer</th>
+    <th class="n">Incentive</th><th class="n">HBS Share</th><th>Status</th><th>Item</th>
+  </tr></thead>
+  <tbody>
+  {% for e in events %}
+    <tr class="{{ 'excluded' if not e.counted }} {{ 'flag' if e.repeat_of and e.counted }}">
+      <td>{{ e.date }}</td>
+      {% if show_week %}<td>{{ show_week(e.date) }}</td>{% endif %}
+      {% if show_stage %}<td>{{ STAGE_LABEL[e.stage] }}</td>{% endif %}
+      <td>{{ e.name }}</td>
+      <td title="{{ e.program_basis }}">{{ e.program }}</td>
+      <td>{{ e.utility or '—' }}</td>
+      <td>{{ e.source or '' }}</td>
+      <td>{{ e.engineer or '' }}</td>
+      <td class="n {{ 'hl' if dollars == 'incentive' }}">{{ e.incentive|money }}</td>
+      <td class="n {{ 'hl' if dollars == 'share' }}">{{ e.share|money }}</td>
+      <td>{{ e.status_label }}</td>
+      <td>{{ monday_link(e.board_id, e.item_id) }} <a class="sub" href="/item/{{ e.board_key }}/{{ e.item_id }}">history</a></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="12" class="unavail">No items.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endmacro %}
