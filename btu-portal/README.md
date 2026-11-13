@@ -83,12 +83,25 @@ in the chosen week's column. Use `python -m btu inspect-excel <file>` to find th
 
 Caveat: openpyxl does not keep charts, images or pivot caches. If the workbook has any, export into a copy and paste the week column across.
 
-## Things to verify against the live boards
+## The claude.ai page
 
-These ids weren't in the brief. Run `python -m btu discover` and pin them in `config.toml`.
-Until then, the Data quality page shows how each one resolved:
+`artifact/btu-scoreboard.html` is the same scoreboard as a page on claude.ai. It reads monday.com
+through each viewer's own monday.com connector (read-only queries only) every time it opens, applies
+these same rules in the browser, and keeps the last pull in that browser so it opens instantly. It
+needs no server. Its configuration (weeks, goals, levels, column ids) is the `CONFIG` block at the
+top of the file. On the demo data it produces the same figures as the Python ETL.
 
-- **Trackers:** the status column, the closeout group ids, the Master TU utility column, and the incentive column (assumed `incentive_amount`, inferred from the Share column's id `dup__of_incentive_amount`).
-- **ICF tracker:** every column except the `lookup_mm70wevh` mirror. These are resolved by exact title until pinned.
-- **Goals, holidays and level readings:** none are pre-filled.
-- **Week config years:** the September–November boundaries are stored as 2026.
+## Column ids
+
+Every board, group and column id in `config.toml` was read from the live boards on 2026-11-13.
+Notes from that read:
+
+- The trackers keep Incentive in `numbers`. The Prescriptive tracker has no Incentive column; its
+  `numbers` column is HBS Share, so Prescriptive implementations show HBS Share only.
+- The BPTU and Master TU trackers have no "Tune Up Complete" status. Their own "work done" labels
+  are used instead ("Implementation & MV Complete", "Implemented. …", "CO Submitted").
+- Implementations also count when an item sits in Closeouts to Submit, Closeouts to Receive or Completed Projects.
+- The ICF tracker's RFI statuses are in its `status` column ("Current Status Summary").
+- The ICF tracker's empty formula cells come back as the text `"null"`. They are treated as empty.
+- Goals, holidays and level readings are not filled in.
+- The Sep–Nov week boundaries are stored as 2026.

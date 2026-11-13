@@ -1,0 +1,980 @@
+<title>BTU Scoreboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky control bar, then one working view at a time; stage tables scroll sideways on their own. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --ink: #18222d; --muted: #5d6b79; --line: #dde3e9; --soft: #eef2f6;
+  --accent: #1d5c8f; --accent-ink: #ffffff;
+  --good: #1b6e45; --good-bg: #e2f2e9; --watch: #8a5a00; --watch-bg: #fdf0d5; --bad: #a8261d; --bad-bg: #fbe5e2;
+  --loud-bg: #fde3df; --mtd: #e9f0f7;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11171d; --panel: #18212a; --ink: #e3e9ef; --muted: #93a1af; --line: #2a3541; --soft: #1f2933;
+  --accent: #6aa8dc; --accent-ink: #0d1620;
+  --good: #6fcf9a; --good-bg: #17331f; --watch: #f0c060; --watch-bg: #382b10; --bad: #ff8f84; --bad-bg: #3c1b18;
+  --loud-bg: #45201b; --mtd: #1c2a38; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11171d; --panel: #18212a; --ink: #e3e9ef; --muted: #93a1af; --line: #2a3541; --soft: #1f2933;
+  --accent: #6aa8dc; --accent-ink: #0d1620;
+  --good: #6fcf9a; --good-bg: #17331f; --watch: #f0c060; --watch-bg: #382b10; --bad: #ff8f84; --bad-bg: #3c1b18;
+  --loud-bg: #45201b; --mtd: #1c2a38; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--sans); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+a { color: var(--accent); }
+button, select { font: inherit; }
+button { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: 500; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+button:disabled { opacity: .55; cursor: default; }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+header.bar .inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 10px; }
+.brand { font-weight: 700; letter-spacing: .01em; }
+.brand span { color: var(--muted); font-weight: 500; }
+nav { display: flex; flex-wrap: wrap; gap: 4px; }
+nav a { text-decoration: none; color: var(--ink); padding: 5px 10px; border-radius: 6px; }
+nav a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+.ctl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); }
+.fresh { margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); }
+.banner { padding-block: 8px; font-weight: 500; }
+.banner.warn { background: var(--watch-bg); color: var(--watch); }
+.banner.loud { background: var(--loud-bg); color: var(--bad); font-weight: 600; }
+.banner.info { background: var(--soft); color: var(--muted); }
+main { padding-block: 16px 40px; max-width: 1560px; display: grid; gap: 14px; }
+h1 { font-size: 20px; margin: 0; text-wrap: balance; }
+h2 { font-size: 15px; margin: 0; text-wrap: balance; }
+.meta { color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; }
+.note { flex: 1 1 340px; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; min-width: 160px; flex: 0 1 auto; }
+.kpi .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.kpi .val { font: 600 24px/1.2 var(--mono); }
+.kpi .sub { font-size: 12px; color: var(--muted); }
+.kpi.good .val { color: var(--good); } .kpi.bad .val { color: var(--bad); }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.tag { font-size: 11px; color: var(--muted); background: var(--soft); padding: 2px 8px; border-radius: 10px; }
+.tag.warn { color: var(--watch); background: var(--watch-bg); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-align: top; }
+th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; text-align: left; white-space: nowrap; }
+th.n, td.n { text-align: right; }
+td.n, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+table.board { table-layout: fixed; min-width: 760px; }
+table.board th.prog { width: 170px; }
+table.board th.st { width: 82px; }
+td.prog { white-space: nowrap; font-family: var(--sans); text-align: left; }
+.cell { display: block; text-align: right; color: inherit; text-decoration: none; background: none; border: 0; padding: 0; width: 100%; cursor: pointer; font: inherit; }
+.cell:hover .cnt { text-decoration: underline; }
+.cnt { font-weight: 600; font-size: 15px; }
+.usd { display: block; font-size: 12px; color: var(--muted); }
+.raw { font-size: 11px; color: var(--muted); }
+.raw.warn { color: var(--watch); }
+.zero .cnt, .zero .usd { opacity: .45; }
+.dim { color: var(--muted); }
+.na { color: var(--muted); font-size: 11px; }
+.na b { color: var(--watch); font-weight: 500; }
+td.mtd, th.mtd { background: var(--mtd); }
+td.loud, th.loud { background: var(--loud-bg); }
+tr.total td { font-weight: 600; border-top: 2px solid var(--line); }
+td.status { text-align: center; font: 600 12px var(--sans); white-space: nowrap; }
+td.status.on { background: var(--good-bg); color: var(--good); }
+td.status.watch { background: var(--watch-bg); color: var(--watch); }
+td.status.behind { background: var(--bad-bg); color: var(--bad); }
+td.neg { color: var(--bad); }
+table.list td, table.list th { font-size: 13px; }
+tr.excluded td { color: var(--muted); opacity: .62; }
+tr.excluded td.nm { text-decoration: line-through; }
+tr.flag td { background: var(--watch-bg); }
+tr.grp td { border-top: 2px solid var(--line); }
+.sub { font-size: 11px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 3px 10px; font-size: 12px; }
+.tabs button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.issue { margin: 0; } .issue.error { color: var(--bad); font-weight: 600; } .issue.warning { color: var(--watch); }
+details summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+.progress { display: grid; gap: 6px; max-width: 560px; }
+.pbar { height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; }
+.pbar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.bucket-critical { color: var(--bad); font-weight: 600; } .bucket-watch { color: var(--watch); font-weight: 600; } .bucket-ok { color: var(--good); font-weight: 600; }
+.drill { border: 2px solid var(--accent); scroll-margin-top: 90px; }
+.empty { color: var(--muted); font-style: italic; }
+@media (prefers-reduced-motion: reduce) { .pbar i { transition: none; } }
+@media (max-width: 640px) { .fresh { margin-left: 0; } }
+</style>
+
+<header class="bar">
+  <div class="wrap inner">
+    <div class="brand">HBS BTU <span>Scoreboard</span></div>
+    <nav id="nav">
+      <a href="#scoreboard">Scoreboard</a>
+      <a href="#pace">Pace</a>
+      <a href="#submissions">Submissions</a>
+      <a href="#aging">Aging</a>
+      <a href="#quality">Data quality</a>
+    </nav>
+    <div class="ctl">
+      <label for="month">Month</label><select id="month"></select>
+      <label for="dollars">Dollars</label>
+      <select id="dollars"><option value="incentive">Incentive</option><option value="share">HBS Share</option></select>
+    </div>
+    <div class="fresh"><span id="fresh">Not loaded yet</span><button id="refresh" type="button">Refresh from monday</button></div>
+  </div>
+</header>
+<div id="banners"></div>
+<main class="wrap" id="main">
+  <section class="card"><h1>Weekly scoreboard</h1><p class="meta">Loading the scoreboard from monday.com…</p></section>
+</main>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------------------------------
+   Configuration. Everything the business owns lives here. Column and group ids were read from
+   the live boards on 2026-11-13. Week boundaries, goals, holidays and level readings are set by
+   the division; none are invented.
+------------------------------------------------------------------------------------------ */
+const CONFIG = {
+  server: "monday.com",
+  boards: { kpi: 1069742731, icf: 18424932045, master_tu: 1069746645, bptu: 6530139050, prescriptive: 18409151061 },
+  itemLimit: 10000,
+  // Monthly KPIs groups ARE the stages. Matched on group id only; titles have changed before.
+  stageGroups: {
+    group_mknza884: "audits", new_group53745: "pa_submitted", new_group85910: "pa_approved",
+    group_mm41h4cn: "impl_scheduled", new_group47105: "co_submitted", new_group30190: "co_approved",
+  },
+  kpiCols: { date: "date4", utility: "text", source: "text8", engineer: "person",
+             incentive: "numbers_2", share: "dup__of_incentive", program: "" },
+  // Implementations Completed: date passed AND the tracker shows the work done.
+  trackers: {
+    master_tu: { label: "Master TU Tracker", program: "", impl: "date_mm4b5x2", status: "status", utility: "text",
+                 incentive: "numbers", share: "dup__of_incentive_amount",
+                 done: ["Implementation & MV Complete", "Implemented. Pre-approval needed", "CO Submitted"],
+                 closeoutGroups: ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"] },
+    bptu: { label: "BGE BPTU Tracker", program: "BPTU", impl: "date_mm0whh86", status: "status", utility: "",
+            incentive: "numbers", share: "dup__of_incentive_amount",
+            done: ["Implementation & MV Complete", "Implemented. Need PA/RA", "CO Submitted"],
+            closeoutGroups: ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"] },
+    prescriptive: { label: "Prescriptive Tune Up Tracker", program: "Prescriptive", impl: "date_mm0r6qv7", status: "status",
+                    utility: "", incentive: "", share: "numbers",
+                    done: ["Tune Up Complete", "Tune Up Complete - Need PA", "CO Submitted"],
+                    closeoutGroups: ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"] },
+  },
+  icf: { status: "status", daysForResponse: "formula_mm5w1f2g", daysInPhase: "formula_mm6cpemz",
+         bucket: "formula_mm6c5jr1", value: "numeric_mm5whe76", icfEngineer: "dropdown_mm5wqe1v",
+         hbsEngineer: "multiple_person_mm5x8h0r", phase: "color_mm5wyfg2", rfiOverdueDays: 7,
+         loop: { "RFI Sent to HBS": { holder: "HBS", kind: "RFI" },
+                 "HBS Revising Submission": { holder: "HBS", kind: "Revision" },
+                 "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
+                 "HBS Resubmitted": { holder: "ICF", kind: "Resubmission" } } },
+  rules: { countRepeatsAsNew: false, repeatStages: ["pa_submitted", "co_submitted"], paceWatchRatio: 0.9,
+           paceBasis: "count", holidays: [] },
+  weeks: {
+    "2026-09": [["2026-09-01", "2026-09-06"], ["2026-09-07", "2026-09-13"], ["2026-09-14", "2026-09-20"], ["2026-09-21", "2026-09-30"]],
+    "2026-10": [["2026-10-01", "2026-10-11"], ["2026-10-12", "2026-10-18"], ["2026-10-19", "2026-10-25"], ["2026-10-26", "2026-10-31"]],
+    "2026-11": [["2026-11-01", "2026-11-08"], ["2026-11-09", "2026-11-15"], ["2026-11-16", "2026-11-22"], ["2026-11-23", "2026-11-30"]],
+  },
+  // goals["2026-11"].pa_submitted["BGE Tune-Up"] = { count, incentive, share }. None set yet.
+  goals: { repeatsCountedAsNew: false },
+  // Level readings (Utilization %, MRR, live contracts): { metric, kind: "percent"|"dollars"|"count", date, value, source }.
+  levels: [],
+};
+
+const PROGRAMS = ["Prescriptive", "BGE Tune-Up", "BPTU", "Pepco/WGL", "Delmarva", "SMECO", "Georgia", "Virginia/CGS"];
+const OTHER = "Other", UNMAPPED = "Unmapped";
+const ALL_ROWS = [...PROGRAMS, OTHER, UNMAPPED];
+const STAGES = [["audits", "Audits Performed"], ["pa_submitted", "Preapprovals Submitted"], ["pa_approved", "Preapprovals Approved"],
+  ["impl_scheduled", "Implementations Scheduled"], ["impl_completed", "Implementations Completed"],
+  ["co_submitted", "Closeouts Submitted"], ["co_approved", "Closeouts Approved"]];
+const STAGE_LABEL = Object.fromEntries(STAGES);
+const STAGE_NOTES = {
+  impl_completed: "From the project trackers' implementation dates (the KPI board has no such stage). Counted only once the date has passed and the tracker shows the work done.",
+  co_approved: "monday proxy for payments only, not recognised revenue. Payments and revenue are accounting figures owned by the Director of Accounting.",
+};
+const DOLLAR_LABEL = { incentive: "Incentive (total utility incentive)", share: "HBS Share (what HBS earns)" };
+
+/* ---------------------------------- small helpers ---------------------------------------- */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = (v) => v == null ? "—" : (v < 0 ? "-" : "") + "$" + Math.round(Math.abs(v)).toLocaleString("en-US");
+const num = (v, d = 0) => v == null ? "—" : Number(v).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (v) => v == null ? "—" : Math.round(v * 100) + "%";
+const pad = (n) => String(n).padStart(2, "0");
+const key = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const normName = (s) => String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+const PHASE_RE = /\(\s*phase\s*[12]\s*\)/i;
+const baseName = (s) => normName(String(s || "").replace(/\(\s*phase\s*[12]\s*\)/gi, " "));
+const sumOf = (vals) => { const v = vals.filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) : null; };
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+                set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } } };
+
+function todayNY() {
+  try { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+  catch { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+}
+const monthOf = (d) => d.slice(0, 7);
+function monthBounds(m) { const [y, mo] = m.split("-").map(Number); return [`${m}-01`, `${m}-${pad(new Date(Date.UTC(y, mo, 0)).getUTCDate())}`]; }
+function addDays(d, n) { const t = new Date(d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+const md = (d) => `${+d.slice(5, 7)}/${+d.slice(8, 10)}`;
+const isDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || "");
+
+function parseNumber(t) {
+  if (t == null || String(t).trim() === "" || String(t).trim().toLowerCase() === "null") return [null, null];
+  let total = 0;
+  for (const p of String(t).split(", ")) {
+    const s = p.replace(/[$,\s]/g, "");
+    if (!/^-?\d+(\.\d+)?$/.test(s)) return [null, `not a number: "${t}"`];
+    total += parseFloat(s);
+  }
+  return [total, null];
+}
+
+/* ---------------------------------- program rules ---------------------------------------- */
+const UTILITY_MAP = { bge: "BGE", pepco: "Pepco/WGL", washingtongas: "Pepco/WGL", delmarva: "Delmarva", smeco: "SMECO",
+  gapower: "Georgia", dominiontrc: "Virginia/CGS", potomacedison: OTHER, meted: OTHER, nationalgrid: OTHER };
+const TYPE_LABELS = new Set(["hvacbtu", "hvacbptu", "hvactuneup"]);
+const PROGRAM_KEYS = Object.fromEntries(ALL_ROWS.map((p) => [key(p), p]));
+const bgeSplit = (name) => PHASE_RE.test(name || "") ? "BPTU" : "BGE Tune-Up";
+
+function mapProgram(utility, name, programCol) {
+  const u = key(utility);
+  let nameRule = null;
+  if (u === "bge" || ["bgetuneup", "bptu"].includes(key(programCol))) nameRule = bgeSplit(name);
+  if (programCol && PROGRAM_KEYS[key(programCol)]) return { program: PROGRAM_KEYS[key(programCol)], basis: `Program column = "${programCol}"`, nameRule };
+  if (!u) return { program: UNMAPPED, basis: "Utility is blank", blank: true };
+  if (TYPE_LABELS.has(u)) return { program: "Prescriptive", basis: `Utility "${utility}" is a project type → Prescriptive`, isType: true };
+  const mapped = UTILITY_MAP[u];
+  if (!mapped) return { program: UNMAPPED, basis: `Utility "${utility}" has no mapping`, unknown: true };
+  if (mapped === "BGE") return { program: nameRule, basis: `Utility BGE; name ${nameRule === "BPTU" ? "has" : "has no"} (Phase 1)/(Phase 2) tag`, nameRule };
+  if (mapped === OTHER) return { program: OTHER, basis: `Utility "${utility}" has live work but no scoreboard row` };
+  return { program: mapped, basis: `Utility "${utility}" → ${mapped}` };
+}
+
+/* ---------------------------------- weeks & pace ----------------------------------------- */
+function validateWeeks(month, weeks) {
+  const [first, last] = monthBounds(month);
+  const probs = [], seen = {};
+  for (const w of weeks) {
+    if (w.start > w.end) { probs.push(`Week ${w.index} ends (${md(w.end)}) before it starts (${md(w.start)}).`); continue; }
+    if (w.start < first || w.end > last) probs.push(`Week ${w.index} (${w.label}) runs outside ${month}.`);
+    for (let d = w.start > first ? w.start : first; d <= (w.end < last ? w.end : last); d = addDays(d, 1)) {
+      if (seen[d]) probs.push(`${md(d)} is in both week ${seen[d]} and week ${w.index}.`);
+      seen[d] = w.index;
+    }
+  }
+  const gaps = [];
+  for (let d = first; d <= last; d = addDays(d, 1)) {
+    if (seen[d]) continue;
+    const g = gaps[gaps.length - 1];
+    if (g && addDays(g[1], 1) === d) g[1] = d; else gaps.push([d, d]);
+  }
+  for (const [a, b] of gaps.reverse())
+    probs.unshift(`${a === b ? md(a) : md(a) + "-" + md(b)} is not covered by any configured week for ${month}: events dated then fall out of every week column.`);
+  return probs;
+}
+function monthWeeks(month) {
+  const spec = CONFIG.weeks[month];
+  if (!spec) return { weeks: [], warnings: [`No week boundaries are set for ${month}, so week columns are empty. Boundaries are set by the business each month and are never derived.`] };
+  const weeks = spec.map(([a, b], i) => ({ index: i + 1, start: a, end: b, label: `${md(a)}–${md(b)}` }));
+  return { weeks, warnings: validateWeeks(month, weeks) };
+}
+const inWeek = (w, d) => w.start <= d && d <= w.end;
+function workingDays(a, b) {
+  const hol = new Set(CONFIG.rules.holidays), out = [];
+  for (let d = a; d <= b; d = addDays(d, 1)) { const w = new Date(d + "T00:00:00Z").getUTCDay(); if (w > 0 && w < 6 && !hol.has(d)) out.push(d); }
+  return out;
+}
+function paceInfo(month, today) {
+  const [f, l] = monthBounds(month), days = workingDays(f, l);
+  const elapsed = days.filter((d) => d <= today).length;
+  return { total: days.length, elapsed, remaining: days.length - elapsed, fraction: days.length ? elapsed / days.length : 0 };
+}
+function paceStatus(actual, goal, fraction) {
+  if (actual == null || goal == null) return null;
+  const expected = goal * fraction;
+  if (expected <= 0) return "on";
+  const r = actual / expected;
+  return r >= 1 ? "on" : r >= CONFIG.rules.paceWatchRatio ? "watch" : "behind";
+}
+
+/* ---------------------------------- monday access ---------------------------------------- */
+const COLS_FRAGMENT = `column_values(ids: $cols) { id text value ... on MirrorValue { display_value } ... on FormulaValue { display_value } ... on BoardRelationValue { display_value } }`;
+const Q_FIRST = `query ($b: [ID!], $cols: [String!], $limit: Int!) { boards(ids: $b) { id name items_count groups { id title } columns { id title }
+  items_page(limit: $limit) { cursor items { id name group { id title } ${COLS_FRAGMENT} } } } }`;
+const Q_NEXT = `query ($c: String!, $cols: [String!], $limit: Int!) { next_items_page(limit: $limit, cursor: $c) { cursor items { id name group { id title } ${COLS_FRAGMENT} } } }`;
+
+class MondayError extends Error { constructor(code, message, extra = {}) { super(message); this.code = code; Object.assign(this, extra); } }
+
+let mcp = null;
+async function gql(query, variables, attempt = 0) {
+  let res;
+  try {
+    res = await mcp.callTool(CONFIG.server, "all_api_read", { query, variables: JSON.stringify(variables || {}) }, { cache: false });
+  } catch (e) {
+    if (e && e.retryable && attempt === 0) {
+      await new Promise((r) => setTimeout(r, (e.retryAfterMs || 1500) + Math.random() * 1000));
+      return gql(query, variables, 1);
+    }
+    throw new MondayError(e?.code || "upstream_error", e?.message || String(e), { server: e?.server });
+  }
+  let p = res?.payload;
+  if (typeof p === "string") { try { p = JSON.parse(p); } catch { throw new MondayError("tool_error", p.slice(0, 300)); } }
+  if (p && p.errors && p.errors.length) throw new MondayError("tool_error", p.errors.map((x) => x.message).join("; "));
+  if (p && p.error_message) throw new MondayError("tool_error", p.error_message);
+  if (p && p.data) p = p.data;
+  if (!p || typeof p !== "object") throw new MondayError("tool_error", "monday returned an empty answer");
+  return p;
+}
+
+function normItem(raw) {
+  const c = {};
+  for (const cv of raw.column_values || []) {
+    let v = null;
+    if (cv.value && typeof cv.value === "string" && cv.value.startsWith("{")) {
+      try { const j = JSON.parse(cv.value); if (j && j.date) v = j.date.slice(0, 10); } catch { /* not a date */ }
+    }
+    if (v == null) {
+      const dv = cv.display_value;
+      if (dv != null && String(dv).trim() !== "" && String(dv).trim().toLowerCase() !== "null") v = String(dv).trim();
+      else if (cv.text != null && String(cv.text).trim() !== "") v = String(cv.text).trim();
+    }
+    c[cv.id] = v;
+  }
+  return { id: String(raw.id), name: (raw.name || "").trim(), gid: raw.group?.id || null, gt: raw.group?.title || null, c };
+}
+
+function colsFor(k) {
+  if (k === "kpi") return Object.values(CONFIG.kpiCols).filter(Boolean);
+  if (k === "icf") return [CONFIG.icf.status, CONFIG.icf.daysForResponse, CONFIG.icf.daysInPhase, CONFIG.icf.bucket, CONFIG.icf.value, CONFIG.icf.icfEngineer, CONFIG.icf.hbsEngineer, CONFIG.icf.phase].filter(Boolean);
+  const t = CONFIG.trackers[k];
+  return [t.impl, t.status, t.utility, t.incentive, t.share].filter(Boolean);
+}
+
+async function pullBoard(k, onProgress) {
+  const cols = colsFor(k), limit = k === "icf" ? 100 : 500;
+  const first = await gql(Q_FIRST, { b: [String(CONFIG.boards[k])], cols, limit });
+  const b = (first.boards || [])[0];
+  if (!b) throw new MondayError("tool_error", "board not found or not visible to your monday account");
+  const items = b.items_page.items.map(normItem);
+  let cursor = b.items_page.cursor;
+  const total = b.items_count || items.length;
+  onProgress(k, items.length, total);
+  while (cursor) {
+    const nx = await gql(Q_NEXT, { c: cursor, cols, limit });
+    const page = nx.next_items_page;
+    items.push(...page.items.map(normItem));
+    cursor = page.cursor;
+    onProgress(k, items.length, total);
+  }
+  const seen = new Set();
+  const unique = items.filter((i) => !seen.has(i.id) && seen.add(i.id));
+  return { meta: { id: String(b.id), name: b.name, items_count: b.items_count, groups: b.groups }, colIds: (b.columns || []).map((c) => c.id), items: unique };
+}
+
+/* ---------------------------------- ETL -------------------------------------------------- */
+function compute(D, today) {
+  const M = { events: [], issues: [], corrections: [], unavail: {}, dUnavail: {}, byStageMonth: new Map() };
+  for (const [k, msg] of Object.entries(D.errors || {}))
+    M.issues.push({ kind: "refresh_error", sev: "error", msg: `Last refresh of ${boardLabel(k)} failed: ${msg}${D.boards[k] ? ` Showing the previous pull from ${fmtTime(D.boards[k].at)}.` : ""}` });
+  buildKpi(D, M);
+  buildImpl(D, M, today);
+  applyDedup(M);
+  applyRepeats(M);
+  for (const e of M.events) {
+    const k = e.stage + "|" + e.month;
+    if (!M.byStageMonth.has(k)) M.byStageMonth.set(k, []);
+    M.byStageMonth.get(k).push(e);
+  }
+  return M;
+}
+const boardLabel = (k) => ({ kpi: "Monthly KPIs", icf: "ICF/HBS Project Tracker", master_tu: "Master TU Tracker", bptu: "BGE BPTU Tracker", prescriptive: "Prescriptive Tune Up Tracker" }[k] || k);
+const unavailFor = (M, stage, program) => M.unavail[stage + "|" + program] || M.unavail[stage + "|*"] || null;
+const dUnavailFor = (M, stage, program, mode) => M.dUnavail[`${stage}|${program}|${mode}`] || M.dUnavail[`${stage}|*|${mode}`] || null;
+const ref = (b, it, detail = "") => ({ b: b.meta.id, id: it.id, name: it.name, detail });
+
+function mkEvent(o) {
+  return Object.assign({ duplicateOf: null, dupGroup: 1, repeatOf: null, repeatFirst: null, counted: true }, o, { month: monthOf(o.date) });
+}
+
+function buildKpi(D, M) {
+  const b = D.boards.kpi, stages = Object.values(CONFIG.stageGroups), C = CONFIG.kpiCols;
+  if (!b) { for (const s of stages) M.unavail[s + "|*"] = D.errors?.kpi ? `Monthly KPIs board could not be read: ${D.errors.kpi}` : "Monthly KPIs board has not been loaded."; return; }
+  const has = (id) => !!id && b.colIds.includes(id);
+  if (!has(C.date)) { for (const s of stages) M.unavail[s + "|*"] = `Completion Date column (${C.date}) is not on the KPI board.`; return; }
+  for (const mode of ["incentive", "share"]) if (!has(C[mode])) for (const s of stages) M.dUnavail[`${s}|*|${mode}`] = `${mode} column (${C[mode]}) is not on the KPI board.`;
+  const bp = D.boards.bptu;
+  const bptuBase = bp ? new Set(bp.items.map((i) => baseName(i.name))) : null;
+  const bptuFull = bp ? new Set(bp.items.map((i) => normName(i.name))) : null;
+  const unmapped = {}, missingDate = [], blank = [], unknown = [], badNum = [], typeUtil = [], phase = [];
+  for (const it of b.items) {
+    const stage = CONFIG.stageGroups[it.gid];
+    if (!stage) { const g = `${it.gid} (${it.gt})`; (unmapped[g] = unmapped[g] || []).push(ref(b, it)); continue; }
+    const d = it.c[C.date];
+    if (!isDate(d)) { missingDate.push(ref(b, it, STAGE_LABEL[stage])); continue; }
+    const utility = it.c[C.utility] || null;
+    const programCol = C.program ? it.c[C.program] : null;
+    const pr = mapProgram(utility, it.name, programCol);
+    const vals = {};
+    for (const f of ["incentive", "share"]) {
+      const [v, problem] = parseNumber(it.c[C[f]]);
+      if (problem) badNum.push(ref(b, it, `${f}: ${problem}`));
+      vals[f] = v;
+    }
+    const ev = mkEvent({ board: "kpi", boardId: b.meta.id, id: it.id, name: it.name, stage, program: pr.program, basis: pr.basis, date: d,
+      utility, source: it.c[C.source] || null, engineer: it.c[C.engineer] || null, isType: !!pr.isType, ...vals });
+    M.events.push(ev);
+    if (pr.blank) blank.push(ref(b, it, `${STAGE_LABEL[stage]} ${d}`));
+    if (pr.unknown) unknown.push(ref(b, it, `Utility "${utility}"`));
+    if (pr.isType) typeUtil.push(ref(b, it, `Utility "${utility}"`));
+    if (pr.nameRule && programCol && pr.program !== pr.nameRule) phase.push(ref(b, it, `Program column says ${pr.program}; name rule says ${pr.nameRule}`));
+    if (pr.nameRule && bptuBase) {
+      const onBoard = bptuFull.has(normName(it.name)) || bptuBase.has(baseName(it.name));
+      if (pr.nameRule === "BPTU" && !onBoard) phase.push(ref(b, it, "Name has a Phase tag (→ BPTU) but there is no matching project on the BPTU tracker"));
+      else if (pr.nameRule === "BGE Tune-Up" && onBoard) phase.push(ref(b, it, "No Phase tag (→ BGE Tune-Up) but this building is on the BPTU tracker"));
+    }
+  }
+  const I = M.issues;
+  for (const [g, refs] of Object.entries(unmapped))
+    I.push({ kind: "unmapped_group", sev: "error", msg: `${refs.length} KPI items sit in group ${g}, which is not a stage. Groups are matched by id only.`, items: refs });
+  if (missingDate.length) I.push({ kind: "missing_date", sev: "error", msg: `${missingDate.length} KPI items have no Completion Date and cannot be placed in any week. Creation and update logs are never used instead.`, items: missingDate });
+  if (blank.length) I.push({ kind: "blank_utility", sev: "warning", msg: `${blank.length} records have a blank Utility. They are shown in the Unmapped row.`, items: blank });
+  if (unknown.length) I.push({ kind: "unknown_utility", sev: "warning", msg: `${unknown.length} records have a Utility value with no program mapping. They are shown in the Unmapped row.`, items: unknown });
+  if (badNum.length) I.push({ kind: "unparseable_number", sev: "warning", msg: `${badNum.length} dollar values could not be read and are left empty.`, items: badNum });
+  if (typeUtil.length) I.push({ kind: "utility_is_type", sev: "info", msg: `${typeUtil.length} records carry a project type (HVAC BTU / HVAC BPTU / HVAC Tune Up) in the Utility field and were routed to Prescriptive. They have no real utility, so they are absent from every utility's totals.`, items: typeUtil });
+  if (!bp) I.push({ kind: "phase_check_unavailable", sev: "warning", msg: "Phase-rule check skipped: the BGE BPTU Tracker could not be read." });
+  if (phase.length) I.push({ kind: "phase_rule_disagreement", sev: "warning", msg: `${phase.length} BGE records where the (Phase 1)/(Phase 2) name rule disagrees with the BPTU tracker or the Program column.`, items: phase });
+}
+
+function buildImpl(D, M, today) {
+  const stage = "impl_completed";
+  for (const [tk, t] of Object.entries(CONFIG.trackers)) {
+    const affected = t.program ? [t.program] : ALL_ROWS.filter((p) => p !== "BPTU" && p !== "Prescriptive");
+    const unavailable = (r) => { for (const p of affected) M.unavail[stage + "|" + p] = r; };
+    const b = D.boards[tk];
+    if (!b) { unavailable(D.errors?.[tk] ? `${t.label} could not be read: ${D.errors[tk]}` : `${t.label} has not been loaded.`); continue; }
+    const has = (id) => !!id && b.colIds.includes(id);
+    if (!has(t.impl)) { unavailable(`${t.label}: implementation date column (${t.impl}) not found.`); continue; }
+    if (!has(t.status) && !t.closeoutGroups.length) { unavailable(`${t.label}: no status column or closeout groups, so completion cannot be confirmed.`); continue; }
+    if (!t.program && !has(t.utility)) { unavailable(`${t.label}: utility column not found, so the program cannot be determined.`); continue; }
+    for (const mode of ["incentive", "share"])
+      if (!has(t[mode])) for (const p of affected) M.dUnavail[`${stage}|${p}|${mode}`] = `${t.label} has no ${mode === "incentive" ? "Incentive" : "HBS Share"} column.`;
+    const done = new Set(t.done.map((s) => s.toLowerCase())), closeout = new Set(t.closeoutGroups);
+    const stale = [];
+    for (const it of b.items) {
+      const d = it.c[t.impl];
+      if (!isDate(d) || d > today) continue;
+      const status = it.c[t.status] || null;
+      if (!(done.has((status || "").toLowerCase()) || closeout.has(it.gid))) { stale.push(ref(b, it, `${d} · status "${status || ""}" · group "${it.gt}"`)); continue; }
+      let program, basis, utility = null, isType = false;
+      if (t.program) { program = t.program; basis = `On the ${t.label}`; }
+      else { utility = it.c[t.utility] || null; const pr = mapProgram(utility, it.name); program = pr.program; basis = pr.basis + ` (from ${t.label})`; isType = !!pr.isType; }
+      M.events.push(mkEvent({ board: tk, boardId: b.meta.id, id: it.id, name: it.name, stage, program, basis, date: d, utility, isType,
+        incentive: has(t.incentive) ? parseNumber(it.c[t.incentive])[0] : null, share: has(t.share) ? parseNumber(it.c[t.share])[0] : null,
+        source: status ? `status "${status}"` : `group "${it.gt}"` }));
+    }
+    if (stale.length) M.issues.push({ kind: "impl_past_not_complete", sev: "warning", msg: `${t.label}: ${stale.length} items have a past implementation date but the tracker does not show the work done. Not counted as complete.`, items: stale });
+  }
+}
+
+function applyDedup(M) {
+  const groups = new Map();
+  for (const e of M.events) {
+    if (e.board !== "kpi") continue;
+    const k = [e.date, normName(e.name), e.stage, e.program].join("\u0001");
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(e);
+  }
+  const conflicts = [];
+  for (const evs of groups.values()) {
+    if (evs.length < 2) continue;
+    evs.sort((a, b) => a.id.length - b.id.length || (a.id < b.id ? -1 : 1));
+    const canon = evs[0];
+    for (const e of evs) e.dupGroup = evs.length;
+    for (const e of evs.slice(1)) {
+      e.duplicateOf = canon.id; e.counted = false;
+      M.corrections.push({ rule: "duplicate", id: e.id });
+      if (e.incentive !== canon.incentive || e.share !== canon.share)
+        conflicts.push({ b: e.boardId, id: e.id, name: e.name, detail: `duplicate of #${canon.id}: incentive ${money(e.incentive)} vs ${money(canon.incentive)}; the first item's values are used` });
+    }
+  }
+  if (conflicts.length) M.issues.push({ kind: "duplicate_value_conflict", sev: "warning", msg: `${conflicts.length} duplicates carry different dollar values from the item they duplicate.`, items: conflicts });
+}
+
+function applyRepeats(M) {
+  const stages = new Set(CONFIG.rules.repeatStages);
+  const canon = M.events.filter((e) => stages.has(e.stage) && !e.duplicateOf)
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id.length - b.id.length || (a.id < b.id ? -1 : 1)));
+  const first = new Map();
+  for (const e of canon) {
+    if (e.incentive == null) continue;
+    const k = [e.stage, normName(e.name), e.program, Math.round(e.incentive * 100)].join("\u0001");
+    const prior = first.get(k);
+    if (!prior) first.set(k, e);
+    else if (prior.date < e.date) {
+      e.repeatOf = prior.id; e.repeatFirst = prior.date; e.counted = CONFIG.rules.countRepeatsAsNew;
+      M.corrections.push({ rule: "repeat", id: e.id });
+    }
+  }
+}
+
+function statusLabel(e) {
+  if (e.duplicateOf) return `Duplicate of #${e.duplicateOf}`;
+  if (e.repeatOf) return `Repeat of #${e.repeatOf}, first logged ${e.repeatFirst}` + (e.counted ? " (counted by policy)" : "");
+  return "Counted";
+}
+const dollarsOf = (e, mode) => mode === "incentive" ? e.incentive : e.share;
+
+/* ---------------------------------- views ------------------------------------------------ */
+function makeCell(evs, mode, unavail, dUnavail, drill) {
+  if (unavail) return { count: null, raw: evs.length, unavail, drill };
+  const counted = evs.filter((e) => e.counted);
+  const dollars = dUnavail ? null : counted.length ? sumOf(counted.map((e) => dollarsOf(e, mode))) : 0;
+  const rawDollars = dUnavail ? null : evs.length ? sumOf(evs.map((e) => dollarsOf(e, mode))) : 0;
+  return { count: counted.length, raw: evs.length, dollars, rawDollars, dUnavail,
+    missing: counted.filter((e) => dollarsOf(e, mode) == null).length,
+    dup: evs.filter((e) => e.duplicateOf).length,
+    rptEx: evs.filter((e) => e.repeatOf && !e.duplicateOf && !e.counted).length,
+    rpt: evs.filter((e) => e.repeatOf && !e.duplicateOf).length, drill };
+}
+function goalFor(month, stage, program, mode) {
+  const g = CONFIG.goals[month]?.[stage]?.[program];
+  if (g == null) return { count: null, dollars: null, reason: "No goal set" };
+  if (!!CONFIG.goals.repeatsCountedAsNew !== !!CONFIG.rules.countRepeatsAsNew)
+    return { count: null, dollars: null, reason: "Goal hidden: it was set on a different repeat-counting basis from the current rule." };
+  return { count: g.count ?? null, dollars: g[mode] ?? null, reason: null };
+}
+function buildRow(M, stage, program, month, mode, weeks, evs, pace, today) {
+  const ua = program === "Total" ? null : unavailFor(M, stage, program);
+  const du = program === "Total" ? dUnavailFor(M, stage, "*", mode) : dUnavailFor(M, stage, program, mode);
+  const base = { stage, program, month };
+  const wk = weeks.map((w) => {
+    const c = makeCell(evs.filter((e) => inWeek(w, e.date)), mode, ua, du, { ...base, week: String(w.index) });
+    c.future = w.start > today && !c.raw;
+    return c;
+  });
+  const orphans = evs.filter((e) => !weeks.some((w) => inWeek(w, e.date)));
+  const un = weeks.length ? makeCell(orphans, mode, ua, du, { ...base, week: "none" }) : null;
+  const mtd = makeCell(evs, mode, ua, du, { ...base, week: "mtd" });
+  const goal = goalFor(month, stage, program, mode);
+  const basisCount = CONFIG.rules.paceBasis === "count";
+  return { stage, program, weeks: wk, un, mtd, goal,
+    pctCount: mtd.count != null && goal.count ? mtd.count / goal.count : null,
+    pctDollars: mtd.dollars != null && goal.dollars ? mtd.dollars / goal.dollars : null,
+    status: paceStatus(basisCount ? mtd.count : mtd.dollars, basisCount ? goal.count : goal.dollars, pace.fraction),
+    expCount: goal.count == null ? null : goal.count * pace.fraction,
+    expDollars: goal.dollars == null ? null : goal.dollars * pace.fraction };
+}
+function scoreboard(M, month, mode, today) {
+  const { weeks, warnings } = monthWeeks(month);
+  const pace = paceInfo(month, today);
+  const sections = {}, totals = {}, repeat = {};
+  let hasUn = false;
+  for (const [stage] of STAGES) {
+    const evs = M.byStageMonth.get(stage + "|" + month) || [];
+    const rows = ALL_ROWS.map((p) => buildRow(M, stage, p, month, mode, weeks, evs.filter((e) => e.program === p), pace, today));
+    const total = buildRow(M, stage, "Total", month, mode, weeks, evs, pace, today);
+    const missing = rows.filter((r) => r.mtd.unavail);
+    if (missing.length === rows.length) {
+      const reason = [...new Set(missing.map((r) => r.mtd.unavail))].join(" ");
+      const blank = (c) => c && makeCell([], mode, reason, null, c.drill);
+      total.weeks = total.weeks.map(blank); total.mtd = blank(total.mtd); total.un = blank(total.un);
+      total.status = total.pctCount = total.pctDollars = null;
+    } else if (missing.length) {
+      total.caveat = `Excludes ${missing.map((r) => r.program).join(", ")}: source unavailable`;
+    }
+    sections[stage] = rows; totals[stage] = total;
+    hasUn = hasUn || rows.some((r) => r.un && r.un.raw);
+    if (CONFIG.rules.repeatStages.includes(stage)) {
+      const uniq = evs.filter((e) => !e.duplicateOf);
+      repeat[stage] = { repeats: uniq.filter((e) => e.repeatOf).length, subs: uniq.length };
+    }
+  }
+  const presc = M.events.filter((e) => e.month === month && e.isType).length;
+  return { month, mode, weeks, warnings, pace, sections, totals, repeat, hasUn, presc };
+}
+function drillEvents(M, stage, program, month, week) {
+  const { weeks } = monthWeeks(month);
+  let evs = (stage ? [stage] : STAGES.map((s) => s[0])).flatMap((s) => M.byStageMonth.get(s + "|" + month) || []);
+  if (program && program !== "Total") evs = evs.filter((e) => e.program === program);
+  if (week === "none") evs = evs.filter((e) => !weeks.some((w) => inWeek(w, e.date)));
+  else if (week && week !== "mtd") { const w = weeks.find((x) => String(x.index) === week); evs = w ? evs.filter((e) => inWeek(w, e.date)) : []; }
+  return evs.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.program.localeCompare(b.program) || a.name.localeCompare(b.name)));
+}
+function weekLabelOf(weeks, d) { const w = weeks.find((x) => inWeek(x, d)); return w ? `Week ${w.index} (${w.label})` : "Not in any week"; }
+
+function levelRows(month, weeks, today) {
+  const [, last] = monthBounds(month);
+  const goals = CONFIG.goals[month]?.levels || {};
+  const all = CONFIG.levels.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
+  const metrics = [...new Set(all.map((r) => r.metric))];
+  const asOf = (rs, d, from) => { const c = rs.filter((r) => r.date <= d && (!from || r.date >= from)); return c[c.length - 1] || null; };
+  return metrics.map((m) => {
+    const rs = all.filter((r) => r.metric === m);
+    return { metric: m, kind: rs[rs.length - 1].kind || "count",
+      weeks: weeks.map((w) => (w.start > today ? null : asOf(rs, w.end < today ? w.end : today, w.start))),
+      latest: asOf(rs, last < today ? last : today), goal: goals[m] ?? null };
+  });
+}
+
+function aging(D) {
+  const b = D.boards.icf, A = CONFIG.icf;
+  if (!b) return { ok: false, reason: D.errors?.icf ? `ICF/HBS Project Tracker could not be read: ${D.errors.icf}` : "ICF/HBS Project Tracker has not been loaded." };
+  if (!b.colIds.includes(A.status)) return { ok: false, reason: `Status column (${A.status}) not found on the ICF tracker.` };
+  const loop = Object.fromEntries(Object.entries(A.loop).map(([k, v]) => [k.toLowerCase(), v]));
+  const items = b.items.map((it) => {
+    const st = it.c[A.status] || null, role = loop[(st || "").toLowerCase()] || {};
+    return { id: it.id, name: it.name, status: st, holder: role.holder || null, kind: role.kind || null,
+      dfr: parseNumber(it.c[A.daysForResponse])[0], dip: parseNumber(it.c[A.daysInPhase])[0], bucket: it.c[A.bucket] || null,
+      value: parseNumber(it.c[A.value])[0], icf: it.c[A.icfEngineer] || null, hbs: it.c[A.hbsEngineer] || null, phase: it.c[A.phase] || null };
+  });
+  const inLoop = items.filter((x) => x.holder);
+  const agg = (xs) => [xs.length, sumOf(xs.map((x) => x.value)) || 0];
+  const byKind = {}, byHolder = {}, people = {};
+  for (const x of inLoop) {
+    (byKind[x.kind] = byKind[x.kind] || []).push(x);
+    (byHolder[x.holder] = byHolder[x.holder] || []).push(x);
+    const person = (x.holder === "HBS" ? x.hbs : x.icf) || "(unassigned)";
+    const k = x.holder + "\u0001" + person;
+    (people[k] = people[k] || []).push(x);
+  }
+  const rfis = inLoop.filter((x) => x.kind === "RFI");
+  const order = { critical: 0, watch: 1, ok: 2 };
+  const bk = {};
+  for (const x of items) if (x.bucket) (bk[x.bucket] = bk[x.bucket] || []).push(x);
+  return { ok: true, boardId: b.meta.id, at: b.at, items, loop: inLoop,
+    byKind: Object.fromEntries(Object.entries(byKind).map(([k, v]) => [k, agg(v)])),
+    byHolder: Object.fromEntries(Object.entries(byHolder).map(([k, v]) => [k, agg(v)])),
+    byPerson: Object.entries(people).map(([k, v]) => { const [h, p] = k.split("\u0001"); return [h, p, ...agg(v), Math.max(0, ...v.map((x) => x.dfr || 0))]; })
+      .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : b[2] - a[2])),
+    rfiCount: rfis.length,
+    overdue: rfis.filter((x) => (x.dfr || 0) > A.rfiOverdueDays).sort((a, b) => (b.dfr || 0) - (a.dfr || 0)),
+    buckets: Object.entries(bk).map(([k, v]) => [k, ...agg(v)]).sort((a, b) => (order[a[0].toLowerCase()] ?? 9) - (order[b[0].toLowerCase()] ?? 9)),
+    missingValue: inLoop.filter((x) => x.value == null).length };
+}
+
+/* ---------------------------------- rendering -------------------------------------------- */
+const state = { view: "scoreboard", month: null, mode: "incentive", subStage: "pa_submitted", drill: null };
+let DATA = null, MODEL = null, TODAY = todayNY(), ACCOUNT = null, LOADING = null;
+
+const itemUrl = (b, id) => `https://${ACCOUNT ? ACCOUNT + "." : ""}monday.com/boards/${b}/pulses/${id}`;
+const itemLink = (b, id) => `<a href="${esc(itemUrl(b, id))}" target="_blank" rel="noopener" class="mono">#${esc(id)}</a>`;
+function fmtTime(ms) { if (!ms) return "never"; const d = new Date(ms); return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+
+function cellHtml(c, cls = "") {
+  if (!c) return `<td></td>`;
+  if (c.future) return `<td class="n dim ${cls}" title="Week has not started">·</td>`;
+  if (c.count == null) return `<td class="n ${cls}" title="${esc(c.unavail)}"><span class="na">—<br><b>unavailable</b></span></td>`;
+  const parts = [];
+  if (c.dup || c.rpt) parts.push(`raw ${c.raw}${c.rawDollars != null && c.rawDollars !== c.dollars ? " · " + money(c.rawDollars) : ""}${c.dup ? ` · ${c.dup} dup` : ""}${c.rptEx ? ` · ${c.rptEx} rpt` : c.rpt ? ` · ${c.rpt} rpt kept` : ""}`);
+  return `<td class="n ${cls} ${c.raw ? "" : "zero"}"${c.caveat ? ` title="${esc(c.caveat)}"` : ""}>
+    <button type="button" class="cell" data-drill="${esc(JSON.stringify(c.drill))}">
+      <span class="cnt">${c.count}</span><span class="usd">${c.dUnavail ? `<span title="${esc(c.dUnavail)}">$ n/a</span>` : money(c.dollars)}</span></button>
+    ${parts.map((p) => `<div class="raw">${esc(p)}</div>`).join("")}
+    ${c.missing ? `<div class="raw warn">${c.missing} without $</div>` : ""}${c.caveat ? `<div class="raw warn">partial</div>` : ""}</td>`;
+}
+const statusHtml = (s) => s === "on" ? `<td class="status on">On pace</td>` : s === "watch" ? `<td class="status watch">Watch</td>` : s === "behind" ? `<td class="status behind">Behind</td>` : `<td class="status dim">—</td>`;
+
+function renderScoreboard() {
+  const B = scoreboard(MODEL, state.month, state.mode, TODAY);
+  const levels = levelRows(state.month, B.weeks, TODAY);
+  let h = `<section class="card"><div class="card-head"><h1>Weekly scoreboard · ${esc(state.month)}</h1>
+    <span class="tag">Working day ${B.pace.elapsed} of ${B.pace.total} (${pct(B.pace.fraction)})</span></div>
+    <p class="meta" style="margin:0">Status colours judge pace to date: month-to-date against goal × share of working days gone, never the latest week. Every number opens the monday items behind it.</p></section>
+    <div class="row"><div class="note"><b>Prescriptive caveat.</b> Prescriptive records carry a project type (HVAC BTU / HVAC BPTU / HVAC Tune Up) in the Utility field and no real utility. Every utility row therefore excludes prescriptive work at that utility: read the BGE line as BGE non-prescriptive, not all BGE work.${B.presc ? ` (${B.presc} such records this month.)` : ""}</div>
+    <div class="note"><b>Corrections.</b> Counts are unique projects after removing duplicates on (date, project, stage, program)${CONFIG.rules.countRepeatsAsNew ? "" : ", with repeat submissions counted once at first logging"}. The grey line under a figure is the raw monday count.</div>`;
+  for (const [stage, r] of Object.entries(B.repeat)) {
+    const rate = r.subs ? r.repeats / r.subs : null;
+    h += `<div class="kpi ${r.repeats ? "bad" : "good"}"><div class="lbl">Repeat rate · ${esc(STAGE_LABEL[stage])}</div><div class="val">${pct(rate)}</div><div class="sub">${r.repeats} of ${r.subs} · target 0</div></div>`;
+  }
+  h += `</div>`;
+  for (const [stage, label] of STAGES) {
+    const rows = B.sections[stage], total = B.totals[stage];
+    const head = `<tr><th class="prog">Program</th>${B.weeks.map((w) => `<th class="n">Wk ${w.index}<div class="sub">${esc(w.label)}</div></th>`).join("")}
+      ${B.hasUn ? `<th class="n loud">Not in any week</th>` : ""}<th class="n mtd">MTD</th><th class="n">Goal</th><th class="n">% to goal</th><th class="st">Pace</th></tr>`;
+    const body = [...rows.filter((r) => !(r.program === OTHER || r.program === UNMAPPED) || r.mtd.raw || r.mtd.count == null), total].map((r) => {
+      const note = r.program === OTHER ? `<div class="sub">Potomac Edison, Met ED, National Grid</div>` : r.program === UNMAPPED ? `<div class="sub">blank or unknown Utility</div>` : "";
+      return `<tr class="${r.program === "Total" ? "total" : ""}"><td class="prog">${esc(r.program)}${note}</td>
+        ${r.weeks.map((c) => cellHtml(c)).join("")}${B.hasUn ? cellHtml(r.un, "loud") : ""}${cellHtml(r.mtd, "mtd")}
+        <td class="n" title="${esc(r.goal.reason || "")}">${r.goal.count != null ? num(r.goal.count) + `<span class="usd">${money(r.goal.dollars)}</span>` : `<span class="dim">—</span>`}</td>
+        <td class="n">${pct(r.pctCount)}${r.pctDollars != null ? `<span class="usd">${pct(r.pctDollars)} of $</span>` : ""}</td>${statusHtml(r.status)}</tr>`;
+    }).join("");
+    const reasons = [...new Set([...rows, total].map((r) => r.mtd.unavail).filter(Boolean))];
+    h += `<section class="card"><div class="card-head"><h2>${esc(label)}</h2>${stage === "co_approved" ? `<span class="tag warn">monday proxy, not recognised revenue</span>` : ""}</div>
+      ${STAGE_NOTES[stage] ? `<p class="meta" style="margin:0">${esc(STAGE_NOTES[stage])}</p>` : ""}
+      <div class="scroll"><table class="board"><thead>${head}</thead><tbody>${body}</tbody></table></div>
+      ${reasons.map((r) => `<p class="meta" style="margin:0"><i>Empty cells:</i> ${esc(r)}</p>`).join("")}</section>`;
+  }
+  h += `<section class="card"><div class="card-head"><h2>Levels</h2><span class="tag">latest reading, never summed across weeks</span></div>`;
+  if (levels.length) {
+    const fmt = (k, v) => k === "percent" ? pct(v) : k === "dollars" ? money(v) : num(v);
+    h += `<div class="scroll"><table class="board"><thead><tr><th class="prog">Metric</th>${B.weeks.map((w) => `<th class="n">Wk ${w.index}</th>`).join("")}<th class="n mtd">Latest</th><th class="n">Target</th></tr></thead><tbody>
+      ${levels.map((l) => `<tr><td class="prog">${esc(l.metric)}</td>${l.weeks.map((r) => `<td class="n">${r ? fmt(l.kind, r.value) + `<div class="sub">${esc(r.date)}</div>` : `<span class="dim">—</span>`}</td>`).join("")}
+        <td class="n mtd">${l.latest ? fmt(l.kind, l.latest.value) + `<div class="sub">as of ${esc(l.latest.date)}</div>` : "—"}</td><td class="n">${l.goal != null ? fmt(l.kind, l.goal) : "—"}</td></tr>`).join("")}
+      </tbody></table></div>`;
+  } else h += `<p class="empty" style="margin:0">No readings recorded yet. Utilization %, MRR and live contract counts are not monday numbers; send Claude the readings to add them.</p>`;
+  h += `</section>`;
+  return h;
+}
+
+function renderPace() {
+  const B = scoreboard(MODEL, state.month, state.mode, TODAY);
+  const weeksLeft = B.weeks.filter((w) => w.end >= TODAY).length;
+  let rows = "";
+  for (const [stage] of STAGES) for (const r of [...B.sections[stage], B.totals[stage]]) {
+    if (r.program !== "Total" && r.goal.count == null && r.goal.dollars == null && !r.mtd.raw) continue;
+    const c = r.mtd.count, d = r.mtd.dollars;
+    if (r.mtd.unavail) { rows += `<tr class="${r.program === "Total" ? "total" : ""}"><td>${esc(STAGE_LABEL[stage])}</td><td>${esc(r.program)}</td><td colspan="9" class="na">— ${esc(r.mtd.unavail)}</td></tr>`; continue; }
+    const gapC = r.expCount == null ? null : c - r.expCount, gapD = r.expDollars == null || d == null ? null : d - r.expDollars;
+    const leftC = r.goal.count == null ? null : Math.max(r.goal.count - c, 0), leftD = r.goal.dollars == null || d == null ? null : Math.max(r.goal.dollars - d, 0);
+    rows += `<tr class="${r.program === "Total" ? "total" : ""}"><td>${esc(STAGE_LABEL[stage])}</td><td>${esc(r.program)}</td>
+      <td class="n"><button type="button" class="cell" data-drill="${esc(JSON.stringify(r.mtd.drill))}"><span class="cnt">${c}</span><span class="usd">${money(d)}</span></button></td>
+      <td class="n" title="${esc(r.goal.reason || "")}">${num(r.goal.count)}<span class="usd">${money(r.goal.dollars)}</span></td>
+      <td class="n">${num(r.expCount, 1)}</td><td class="n ${gapC != null && gapC < 0 ? "neg" : ""}">${num(gapC, 1)}<span class="usd">${money(gapD)}</span></td>
+      <td class="n">${B.pace.elapsed ? num(c / B.pace.elapsed, 2) : "—"}</td><td class="n">${weeksLeft}</td>
+      <td class="n">${leftC == null || !weeksLeft ? "—" : num(leftC / weeksLeft, 1)}<span class="usd">${leftD == null || !weeksLeft ? "" : money(leftD / weeksLeft)}</span></td>
+      <td class="n">${leftC == null || !B.pace.remaining ? "—" : num(leftC / B.pace.remaining, 2)}</td>${statusHtml(r.status)}</tr>`;
+  }
+  return `<section class="card"><div class="card-head"><h1>Pace · ${esc(state.month)}</h1><span class="tag">Working day ${B.pace.elapsed} of ${B.pace.total} · ${pct(B.pace.fraction)} of the month</span></div>
+    <p class="meta" style="margin:0">Expected to date = goal × share of working days gone (weekdays${CONFIG.rules.holidays.length ? " minus " + CONFIG.rules.holidays.length + " holidays" : "; no company holidays set yet"}). Gap = MTD minus expected. Needed per week spreads what's left of the goal over the ${weeksLeft} configured week(s) not yet ended. Rows without a goal show actuals only.</p>
+    <div class="scroll"><table class="list"><thead><tr><th>Stage</th><th>Program</th><th class="n">MTD</th><th class="n">Goal</th><th class="n">Expected</th><th class="n">Gap</th><th class="n">Per working day</th><th class="n">Weeks left</th><th class="n">Needed / week</th><th class="n">Needed / day</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+}
+
+function eventsTable(evs, showStage, showWeek) {
+  if (!evs.length) return `<p class="empty" style="margin:0">No items.</p>`;
+  return `<div class="scroll"><table class="list"><thead><tr><th>Date</th>${showWeek ? "<th>Week</th>" : ""}${showStage ? "<th>Stage</th>" : ""}<th>Project</th><th>Program</th><th>Utility</th><th>Source</th><th>Engineer</th><th class="n">Incentive</th><th class="n">HBS Share</th><th>Status</th><th>Item</th></tr></thead><tbody>
+    ${evs.map((e) => `<tr class="${e.counted ? (e.repeatOf ? "flag" : "") : "excluded"}"><td class="mono">${esc(e.date)}</td>${showWeek ? `<td>${esc(showWeek(e.date))}</td>` : ""}${showStage ? `<td>${esc(STAGE_LABEL[e.stage])}</td>` : ""}
+      <td class="nm">${esc(e.name)}</td><td title="${esc(e.basis)}">${esc(e.program)}</td><td>${esc(e.utility || "—")}</td><td>${esc(e.source || "")}</td><td>${esc(e.engineer || "")}</td>
+      <td class="n">${money(e.incentive)}</td><td class="n">${money(e.share)}</td><td>${esc(statusLabel(e))}</td><td>${itemLink(e.boardId, e.id)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function renderSubmissions() {
+  const { weeks } = monthWeeks(state.month);
+  const evs = drillEvents(MODEL, state.subStage, null, state.month, null);
+  const groups = new Map(weeks.map((w) => [`Week ${w.index} (${w.label})`, []]));
+  for (const e of evs) { const k = weekLabelOf(weeks, e.date); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); }
+  const reason = unavailFor(MODEL, state.subStage, "*");
+  let h = `<section class="card"><h1>Submissions log · ${esc(state.month)}</h1>
+    <div class="tabs" role="group" aria-label="Stage">${STAGES.map(([s, l]) => `<button type="button" data-substage="${s}" aria-pressed="${s === state.subStage}">${esc(l)}</button>`).join("")}</div>
+    <p class="meta" style="margin:0">Every item logged at this stage, by week. Duplicates and repeats stay in the list, greyed out, with the item they duplicate.</p>
+    ${reason ? `<p class="issue warning">${esc(reason)}</p>` : ""}</section>`;
+  for (const [label, list] of groups) {
+    const counted = list.filter((e) => e.counted);
+    h += `<section class="card"><div class="card-head"><h2>${esc(label)}</h2><span class="tag">${counted.length} counted · ${list.length} raw · ${money(sumOf(counted.map((e) => dollarsOf(e, state.mode))) || 0)} ${state.mode === "incentive" ? "Incentive" : "HBS Share"}</span></div>${eventsTable(list, false, null)}</section>`;
+  }
+  return h;
+}
+
+function renderDrill() {
+  const d = state.drill;
+  const { weeks } = monthWeeks(d.month);
+  const evs = drillEvents(MODEL, d.stage, d.program, d.month, d.week);
+  const counted = evs.filter((e) => e.counted);
+  const wl = d.week === "mtd" ? "Month to date" : d.week === "none" ? "Not in any week" : (() => { const w = weeks.find((x) => String(x.index) === d.week); return w ? `Week ${w.index} (${w.label})` : d.week; })();
+  const reason = d.program !== "Total" ? unavailFor(MODEL, d.stage, d.program) : null;
+  return `<section class="card drill" id="drill"><div class="card-head"><h2>${esc(STAGE_LABEL[d.stage])} · ${esc(d.program)} · ${esc(wl)} · ${esc(d.month)}</h2>
+    <button type="button" class="ghost" id="closeDrill" style="margin-left:auto">Close</button></div>
+    <p class="meta" style="margin:0"><b>${counted.length}</b> counted of ${evs.length} raw monday items · ${money(sumOf(counted.map((e) => e.incentive)) || 0)} Incentive · ${money(sumOf(counted.map((e) => e.share)) || 0)} HBS Share</p>
+    ${reason ? `<p class="issue warning">${esc(reason)}</p>` : ""}${STAGE_NOTES[d.stage] ? `<p class="meta" style="margin:0">${esc(STAGE_NOTES[d.stage])}</p>` : ""}
+    ${eventsTable(evs, false, (x) => weekLabelOf(weeks, x))}</section>`;
+}
+
+function renderAging() {
+  const a = aging(DATA);
+  if (!a.ok) return `<section class="card"><h1>Aging</h1><p class="issue warning">${esc(a.reason)}</p></section>`;
+  const v = (o, k) => o[k] || [0, 0];
+  const ratio = a.rfiCount ? (a.loop.length / a.rfiCount).toFixed(1) + "×" : "";
+  return `<section class="card"><h1>Aging · ICF/HBS Project Tracker</h1><p class="meta" style="margin:0">Current state, not month-bound. Days and buckets are read from the tracker's own formula columns, never recomputed. Pulled ${fmtTime(a.at)}.</p></section>
+  <div class="row">
+    <div class="kpi"><div class="lbl">Ball in HBS's court</div><div class="val">${v(a.byHolder, "HBS")[0]}</div><div class="sub">${money(v(a.byHolder, "HBS")[1])}</div></div>
+    <div class="kpi"><div class="lbl">Ball in ICF's court</div><div class="val">${v(a.byHolder, "ICF")[0]}</div><div class="sub">${money(v(a.byHolder, "ICF")[1])}</div></div>
+    <div class="kpi"><div class="lbl">In the RFI loop</div><div class="val">${a.loop.length}</div><div class="sub">vs ${a.rfiCount} open RFIs alone ${ratio ? "· " + ratio : ""}</div></div>
+    <div class="kpi ${a.overdue.length ? "bad" : "good"}"><div class="lbl">RFIs past ${CONFIG.icf.rfiOverdueDays} days</div><div class="val">${a.overdue.length}</div><div class="sub">${money(sumOf(a.overdue.map((x) => x.value)) || 0)}</div></div>
+  </div>
+  ${a.missingValue ? `<p class="meta" style="margin:0">${a.missingValue} loop items have no Total Incentive; dollar totals leave them out.</p>` : ""}
+  <section class="card"><h2>Both sides of the loop</h2><div class="scroll"><table class="list"><thead><tr><th>Status</th><th>Ball with</th><th>Kind</th><th class="n">Items</th><th class="n">Total Incentive</th></tr></thead><tbody>
+    ${Object.entries(CONFIG.icf.loop).map(([s, r]) => `<tr><td>${esc(s)}</td><td>${r.holder}</td><td>${esc(r.kind)}</td><td class="n">${v(a.byKind, r.kind)[0]}</td><td class="n">${money(v(a.byKind, r.kind)[1])}</td></tr>`).join("")}</tbody></table></div></section>
+  <section class="card"><h2>Who is holding the work</h2><div class="scroll"><table class="list"><thead><tr><th>Side</th><th>Person</th><th class="n">Items</th><th class="n">Total Incentive</th><th class="n">Max days for response</th></tr></thead><tbody>
+    ${a.byPerson.map(([h, p, n, d, mx]) => `<tr><td>${h}</td><td>${esc(p)}</td><td class="n">${n}</td><td class="n">${money(d)}</td><td class="n">${num(mx)}</td></tr>`).join("") || `<tr><td colspan="5" class="empty">Nothing in the loop.</td></tr>`}</tbody></table></div>
+    <p class="meta" style="margin:0">HBS-side items are attributed to the HBS Engineer, ICF-side items to the ICF Engineer.</p></section>
+  <section class="card"><h2>Aging bucket</h2><p class="meta" style="margin:0">From the tracker's Aging Bucket formula (Critical: over 60 days in phase; Watch: over 30).</p><div class="scroll"><table class="list"><thead><tr><th>Bucket</th><th class="n">Projects</th><th class="n">Total Incentive</th></tr></thead><tbody>
+    ${a.buckets.map(([b, n, d]) => `<tr><td class="bucket-${esc(key(b))}">${esc(b)}</td><td class="n">${n}</td><td class="n">${money(d)}</td></tr>`).join("") || `<tr><td colspan="3" class="empty">No bucket values.</td></tr>`}</tbody></table></div></section>
+  <section class="card"><h2>RFIs past ${CONFIG.icf.rfiOverdueDays} days</h2>${agingTable(a.overdue, a.boardId)}</section>
+  <section class="card"><h2>Every item in the loop</h2>${agingTable(a.loop.slice().sort((x, y) => (y.dfr || 0) - (x.dfr || 0)), a.boardId, true)}</section>`;
+}
+function agingTable(xs, boardId, withStatus) {
+  if (!xs.length) return `<p class="empty" style="margin:0">None.</p>`;
+  return `<div class="scroll"><table class="list"><thead><tr><th>Project</th>${withStatus ? "<th>Status</th><th>Ball with</th>" : ""}<th>Phase</th><th class="n">Days for response</th><th class="n">Days in phase</th><th>Bucket</th><th>ICF engineer</th><th>HBS engineer</th><th class="n">Total Incentive</th><th>Item</th></tr></thead><tbody>
+    ${xs.map((x) => `<tr><td>${esc(x.name)}</td>${withStatus ? `<td>${esc(x.status)}</td><td>${x.holder}</td>` : ""}<td>${esc(x.phase || "")}</td><td class="n">${num(x.dfr)}</td><td class="n">${num(x.dip)}</td><td class="bucket-${esc(key(x.bucket))}">${esc(x.bucket || "")}</td><td>${esc(x.icf || "")}</td><td>${esc(x.hbs || "")}</td><td class="n">${money(x.value)}</td><td>${itemLink(boardId, x.id)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function renderQuality() {
+  const month = state.month, M = MODEL;
+  const kpi = DATA.boards.kpi;
+  const count = kpi ? (kpi.meta.items_count ?? kpi.items.length) : null;
+  const perMonth = {};
+  for (const e of M.events) if (e.board === "kpi") perMonth[e.month] = (perMonth[e.month] || 0) + 1;
+  const prev = []; let [y, m] = TODAY.slice(0, 7).split("-").map(Number);
+  for (let i = 0; i < 3; i++) { m--; if (!m) { y--; m = 12; } prev.push(`${y}-${pad(m)}`); }
+  const rates = prev.map((p) => perMonth[p]).filter(Boolean);
+  const rate = rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null;
+  const left = count != null && rate ? (CONFIG.itemLimit - count) / rate : null;
+  const dupGroups = new Map();
+  for (const e of M.events) if (e.month === month && e.dupGroup > 1) { const k = e.duplicateOf || e.id; if (!dupGroups.has(k)) dupGroups.set(k, []); dupGroups.get(k).push(e); }
+  const dups = [...dupGroups.values()].map((g) => g.sort((a, b) => (a.duplicateOf ? 1 : 0) - (b.duplicateOf ? 1 : 0))).sort((a, b) => (a[0].date < b[0].date ? -1 : 1));
+  const repeats = M.events.filter((e) => e.repeatOf && !e.duplicateOf && e.month === month).sort((a, b) => (a.date < b.date ? -1 : 1));
+  const weekIssues = [...new Set([...Object.keys(CONFIG.weeks), month])].sort().map((mo) => [mo, monthWeeks(mo).warnings]).filter(([, w]) => w.length);
+  let h = `<section class="card"><h1>Data quality · ${esc(month)}</h1><p class="meta" style="margin:0">Every correction the scoreboard makes, and every reason a number might be wrong.</p></section>
+  <div class="row"><div class="kpi ${left != null && left < 3 ? "bad" : ""}"><div class="lbl">KPI board items vs ${num(CONFIG.itemLimit)} limit</div><div class="val">${num(count)}</div>
+    <div class="sub">${count != null ? `${num(CONFIG.itemLimit - count)} left${left != null ? ` · about ${num(left, 1)} months at ${num(rate)} a month` : ""}` : "board not loaded"}</div></div>
+    <div class="kpi"><div class="lbl">Duplicates removed</div><div class="val">${M.corrections.filter((c) => c.rule === "duplicate").length}</div><div class="sub">all months</div></div>
+    <div class="kpi"><div class="lbl">Repeats flagged</div><div class="val">${M.corrections.filter((c) => c.rule === "repeat").length}</div><div class="sub">all months</div></div></div>`;
+  for (const [mo, ws] of weekIssues) h += `<p class="issue error">Week setup for ${esc(mo)}: ${ws.map(esc).join(" ")}</p>`;
+  h += `<section class="card"><h2>Raw vs unique, ${esc(month)}</h2><div class="scroll"><table class="list"><thead><tr><th>Stage</th><th class="n">Raw items</th><th class="n">Unique projects</th><th class="n">Duplicates removed</th></tr></thead><tbody>
+    ${STAGES.map(([s, l]) => { const evs = M.byStageMonth.get(s + "|" + month) || []; const u = evs.filter((e) => !e.duplicateOf).length; return `<tr><td>${esc(l)}</td><td class="n">${evs.length}</td><td class="n">${u}</td><td class="n">${evs.length - u}</td></tr>`; }).join("")}</tbody></table></div></section>`;
+  h += `<section class="card"><h2>Duplicates, ${esc(month)} (${dups.length} groups)</h2><p class="meta" style="margin:0">Same completion date, project, stage and program. The first item is kept; the rest are greyed out.</p>
+    ${dups.length ? `<div class="scroll"><table class="list"><thead><tr><th>Date</th><th>Stage</th><th>Project</th><th>Program</th><th class="n">Incentive</th><th class="n">HBS Share</th><th>Item</th><th>Status</th></tr></thead><tbody>
+    ${dups.flatMap((g) => g.map((e, i) => `<tr class="${e.duplicateOf ? "excluded" : ""} ${i === 0 ? "grp" : ""}"><td class="mono">${e.date}</td><td>${esc(STAGE_LABEL[e.stage])}</td><td class="nm">${esc(e.name)}</td><td>${esc(e.program)}</td><td class="n">${money(e.incentive)}</td><td class="n">${money(e.share)}</td><td>${itemLink(e.boardId, e.id)}</td><td>${esc(statusLabel(e))}</td></tr>`)).join("")}</tbody></table></div>` : `<p class="empty" style="margin:0">None.</p>`}</section>`;
+  h += `<section class="card"><h2>Repeat submissions, ${esc(month)} (${repeats.length})</h2><p class="meta" style="margin:0">Same project, program and incentive as a submission logged on an earlier date. Current rule: ${CONFIG.rules.countRepeatsAsNew ? "counted as new work" : "counted once, at first logging"}.</p>
+    ${repeats.length ? `<div class="scroll"><table class="list"><thead><tr><th>Date</th><th>Stage</th><th>Project</th><th>Program</th><th class="n">Incentive</th><th>First logged</th><th>Item</th></tr></thead><tbody>
+    ${repeats.map((e) => `<tr class="${e.counted ? "" : "excluded"}"><td class="mono">${e.date}</td><td>${esc(STAGE_LABEL[e.stage])}</td><td class="nm">${esc(e.name)}</td><td>${esc(e.program)}</td><td class="n">${money(e.incentive)}</td><td class="mono">${e.repeatFirst} (#${e.repeatOf})</td><td>${itemLink(e.boardId, e.id)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty" style="margin:0">None.</p>`}</section>`;
+  const titles = { refresh_error: "Refresh errors", unmapped_group: "KPI items in groups that aren't stages", missing_date: "KPI items without a Completion Date",
+    phase_rule_disagreement: "Phase-rule disagreements (BGE Tune-Up vs BPTU)", phase_check_unavailable: "Phase-rule check", blank_utility: "Blank Utility",
+    unknown_utility: "Utility values with no mapping", impl_past_not_complete: "Past implementation date, not shown as done",
+    duplicate_value_conflict: "Duplicates with conflicting values", unparseable_number: "Unreadable numbers", utility_is_type: "Project types in the Utility field (routed to Prescriptive)" };
+  for (const kind of Object.keys(titles)) {
+    const iss = M.issues.filter((i) => i.kind === kind);
+    if (!iss.length) continue;
+    h += `<section class="card"><h2>${esc(titles[kind])}</h2>${iss.map((i) => `<p class="issue ${i.sev}">${esc(i.msg)}</p>${i.items && i.items.length ? `<details><summary>Show ${i.items.length} items</summary><div class="scroll"><table class="list"><tbody>
+      ${i.items.slice(0, 400).map((r) => `<tr><td>${esc(r.name)}</td><td>${esc(r.detail)}</td><td>${itemLink(r.b, r.id)}</td></tr>`).join("")}</tbody></table></div>${i.items.length > 400 ? `<p class="meta">First 400 shown.</p>` : ""}</details>` : ""}`).join("")}</section>`;
+  }
+  return h;
+}
+
+function renderBanners() {
+  const out = [];
+  const { warnings } = monthWeeks(state.month);
+  for (const w of warnings) out.push(`<div class="banner loud wrap">⚠ ${esc(w)}</div>`);
+  if (MODEL) for (const i of MODEL.issues.filter((x) => x.kind === "refresh_error")) out.push(`<div class="banner warn wrap">${esc(i.msg)}</div>`);
+  if (LOADING) out.push(LOADING);
+  $("#banners").innerHTML = out.join("");
+}
+
+function render() {
+  for (const a of document.querySelectorAll("#nav a")) { if (a.getAttribute("href") === "#" + state.view) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
+  renderBanners();
+  $("#fresh").textContent = DATA ? `Pulled ${fmtTime(DATA.at)}` : "Not loaded yet";
+  if (!MODEL) return;
+  const views = { scoreboard: renderScoreboard, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
+  $("#main").innerHTML = (state.drill ? renderDrill() : "") + (views[state.view] || renderScoreboard)();
+}
+
+function fillMonths() {
+  const months = new Set(Object.keys(CONFIG.weeks)); months.add(monthOf(TODAY));
+  if (MODEL) for (const e of MODEL.events) if (e.date >= addDays(TODAY, -400)) months.add(e.month);
+  const sorted = [...months].sort().reverse();
+  $("#month").innerHTML = sorted.map((m) => `<option value="${m}" ${m === state.month ? "selected" : ""}>${m}</option>`).join("");
+}
+
+/* ---------------------------------- loading ---------------------------------------------- */
+const CACHE_KEY = "btu-scoreboard-v1";
+function loadCache() { try { const s = store.get(CACHE_KEY); return s ? JSON.parse(s) : null; } catch { return null; } }
+function saveCache(d) { try { store.set(CACHE_KEY, JSON.stringify(d)); } catch { /* storage full or blocked: page still works */ } }
+
+function useData(d) {
+  DATA = d; ACCOUNT = d.account || ACCOUNT;
+  TODAY = todayNY();
+  MODEL = compute(DATA, TODAY);
+  fillMonths(); render();
+}
+
+const ERROR_COPY = {
+  needs_reauth: "Your monday.com connection has expired. Reconnect monday.com in claude.ai Settings → Connectors, then press Refresh.",
+  server_not_connected: "monday.com isn't connected to your Claude account. Add it in claude.ai Settings → Connectors, then press Refresh.",
+  selection_required: "You have more than one monday.com connector. Choose which one this page should use when claude.ai asks, then press Refresh.",
+  not_in_manifest: "This page isn't allowed to use your monday.com connector. Allow it from the page's Permissions menu, then press Refresh.",
+  approval_required: "This page needs your approval to read monday.com. Press Refresh and choose Allow.",
+  blocked_by_policy: "Your organisation's policy blocks this page from reading monday.com.",
+  not_granted: "Connector access isn't available in this view. Open the page on claude.ai while signed in.",
+  capability_disabled: "Connector access isn't available in this view. Open the page on claude.ai while signed in.",
+};
+
+async function refresh() {
+  const btn = $("#refresh");
+  if (!mcp) { LOADING = `<div class="banner warn wrap">Live data needs this page open on claude.ai while you're signed in with monday.com connected.${DATA ? " Showing your last pull." : ""}</div>`; render(); return; }
+  btn.disabled = true;
+  const keys = Object.keys(CONFIG.boards);
+  const prog = Object.fromEntries(keys.map((k) => [k, [0, 0]]));
+  const draw = () => {
+    const done = keys.reduce((a, k) => a + prog[k][0], 0), tot = keys.reduce((a, k) => a + (prog[k][1] || 1), 0);
+    LOADING = `<div class="banner info wrap"><div class="progress"><div>Reading monday.com… ${keys.map((k) => `${esc(boardLabel(k))} ${num(prog[k][0])}${prog[k][1] ? "/" + num(prog[k][1]) : ""}`).join(" · ")}</div><div class="pbar"><i style="width:${Math.min(100, Math.round((done / tot) * 100))}%"></i></div></div></div>`;
+    renderBanners();
+  };
+  draw();
+  const prev = DATA || { boards: {}, errors: {} };
+  const next = { at: Date.now(), account: prev.account || null, boards: {}, errors: {} };
+  try { const acc = await gql("query { account { slug } }", {}); next.account = acc?.account?.slug || next.account; } catch { /* links fall back to monday.com */ }
+  const results = await Promise.allSettled(keys.map((k) => pullBoard(k, (kk, n, t) => { prog[kk] = [n, t]; draw(); })));
+  const codes = [];
+  results.forEach((r, i) => {
+    const k = keys[i];
+    if (r.status === "fulfilled") next.boards[k] = { ...r.value, at: next.at };
+    else {
+      const e = r.reason || {};
+      codes.push(e.code);
+      next.errors[k] = ERROR_COPY[e.code] || e.message || "unknown error";
+      if (prev.boards[k]) next.boards[k] = prev.boards[k];   // keep last good pull, flagged stale
+    }
+  });
+  LOADING = null;
+  if (codes.length === keys.length && new Set(codes).size === 1 && ERROR_COPY[codes[0]]) {
+    LOADING = `<div class="banner warn wrap">${esc(ERROR_COPY[codes[0]])}</div>`;
+    next.errors = {};
+    if (!Object.keys(prev.boards).length) { btn.disabled = false; render(); if (!DATA) $("#main").innerHTML = `<section class="card"><h1>Weekly scoreboard</h1><p class="meta">${esc(ERROR_COPY[codes[0]])}</p></section>`; return; }
+    next.boards = prev.boards; next.at = prev.at;
+  }
+  btn.disabled = false;
+  useData(next);
+  if (!Object.keys(next.errors).length) saveCache(next);
+}
+
+/* ---------------------------------- wiring ----------------------------------------------- */
+state.month = monthOf(TODAY);
+const VIEWS = ["scoreboard", "pace", "submissions", "aging", "quality"];
+function fromHash() { const h = (location.hash || "").slice(1); state.view = VIEWS.includes(h) ? h : "scoreboard"; }
+fromHash();
+try { const p = JSON.parse(store.get("btu-scoreboard-prefs") || "{}"); if (p.mode === "share" || p.mode === "incentive") state.mode = p.mode; } catch { /* default */ }
+$("#dollars").value = state.mode;
+window.addEventListener("hashchange", () => { fromHash(); state.drill = null; render(); window.scrollTo(0, 0); });
+$("#month").addEventListener("change", (e) => { state.month = e.target.value; state.drill = null; render(); });
+$("#dollars").addEventListener("change", (e) => { state.mode = e.target.value; store.set("btu-scoreboard-prefs", JSON.stringify({ mode: state.mode })); render(); });
+$("#refresh").addEventListener("click", () => refresh());
+document.addEventListener("click", (e) => {
+  const cell = e.target.closest("[data-drill]");
+  if (cell) { state.drill = JSON.parse(cell.getAttribute("data-drill")); render(); document.getElementById("drill")?.scrollIntoView({ block: "start" }); return; }
+  if (e.target.closest("#closeDrill")) { state.drill = null; render(); return; }
+  const sb = e.target.closest("[data-substage]");
+  if (sb) { state.subStage = sb.getAttribute("data-substage"); render(); }
+});
+
+fillMonths();
+const cached = loadCache();
+if (cached && cached.boards) useData(cached); else render();
+
+(async () => {
+  try { mcp = window.claude && typeof window.claude.use === "function" ? await window.claude.use("mcp") : null; } catch { mcp = null; }
+  if (!mcp) {
+    LOADING = `<div class="banner warn wrap">Live data needs this page open on claude.ai while you're signed in with monday.com connected.${DATA ? ` Showing your last pull from ${esc(fmtTime(DATA.at))}.` : ""}</div>`;
+    render();
+    if (!DATA) $("#main").innerHTML = `<section class="card"><h1>Weekly scoreboard</h1><p class="meta">Open this page on claude.ai while signed in, with the monday.com connector added, to load the scoreboard.</p></section>`;
+    return;
+  }
+  // Re-pull on every open: closed weeks are never treated as settled.
+  refresh();
+})();
+</script>

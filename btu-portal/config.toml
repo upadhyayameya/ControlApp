@@ -119,57 +119,60 @@ repeats_counted_as_new = false
 # trackers. Counted only when the implementation date has passed AND the tracker shows the work
 # done (status in complete_statuses, or the item sits in one of closeout_group_ids).
 #
-# Ids marked VERIFY were not in the brief. If a column can't be resolved on the board, the
-# affected cells are left empty with the reason rather than guessed.
+# Column and group ids below were read from the live boards on 2026-11-13. If a column can't be
+# resolved, the affected cells are left empty with the reason rather than guessed.
 [trackers.master_tu]
 board = "master_tu"
 program = ""                 # blank = map from the utility column with the standard rules
-complete_statuses = ["Tune Up Complete", "Complete-Need PA", "CO Submitted"]
-closeout_group_ids = []      # VERIFY: add the closeout group ids from `python -m btu discover`
+# The tracker's own labels for "work done" (its board has no "Tune Up Complete" label).
+complete_statuses = ["Implementation & MV Complete", "Implemented. Pre-approval needed", "CO Submitted"]
+# Closeouts to Submit, Closeouts to Receive, Completed Projects
+closeout_group_ids = ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"]
 [trackers.master_tu.columns]
 impl_date = { id = "date_mm4b5x2" }
 share = { id = "dup__of_incentive_amount" }
-incentive = { id = "incentive_amount", title = "Incentive Amount" }   # VERIFY (inferred from the Share column's id)
-status = { id = "", title = "Status" }                                 # VERIFY
-utility = { id = "", title = "Utility" }                               # VERIFY
+incentive = { id = "numbers", title = "Incentive Amount" }
+status = { id = "status" }
+utility = { id = "text" }
 
 [trackers.bptu]
 board = "bptu"
 program = "BPTU"
-complete_statuses = ["Tune Up Complete", "Complete-Need PA", "CO Submitted"]
-closeout_group_ids = []
+complete_statuses = ["Implementation & MV Complete", "Implemented. Need PA/RA", "CO Submitted"]
+closeout_group_ids = ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"]
 [trackers.bptu.columns]
 impl_date = { id = "date_mm0whh86" }
 share = { id = "dup__of_incentive_amount" }
-incentive = { id = "incentive_amount", title = "Incentive Amount" }
-status = { id = "", title = "Status" }
+incentive = { id = "numbers", title = "Incentive Amount" }
+status = { id = "status" }
 
 [trackers.prescriptive]
 board = "prescriptive"
 program = "Prescriptive"
-complete_statuses = ["Tune Up Complete", "Complete-Need PA", "CO Submitted"]
-closeout_group_ids = []
+complete_statuses = ["Tune Up Complete", "Tune Up Complete - Need PA", "CO Submitted"]
+closeout_group_ids = ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"]
 [trackers.prescriptive.columns]
 impl_date = { id = "date_mm0r6qv7", title = "Tune Up Date" }
-share = { id = "dup__of_incentive_amount" }
-incentive = { id = "incentive_amount", title = "Incentive Amount" }
-status = { id = "", title = "Status" }
+share = { id = "numbers", title = "HBS Share" }
+# This board has no Incentive column, so Prescriptive implementations show HBS Share only.
+incentive = { id = "" }
+status = { id = "status" }
 
 # ---------------------------------------------------------------------------------------------
 # ICF/HBS Project Tracker — aging. Its own formula columns do the aging maths; the portal reads
-# them and never recomputes them.
+# them and never recomputes them. Ids read from the live board on 2026-11-13.
 [icf]
 rfi_overdue_days = 7
 [icf.columns]
-status = { id = "", title = "Status" }
-days_for_response = { id = "", title = "Days for Response" }
-days_in_phase = { id = "", title = "Days In Current Phase" }
-aging_bucket = { id = "", title = "Aging Bucket" }
-last_update = { id = "", title = "Last Update Date" }
-value = { id = "", title = "Incentive Amount" }       # VERIFY: the dollar column
-icf_engineer = { id = "", title = "ICF Engineer" }    # VERIFY
-hbs_engineer = { id = "", title = "HBS Engineer" }    # VERIFY
-program = { id = "lookup_mm70wevh" }                  # mirror; read via MirrorValue.display_value
+status = { id = "status", title = "Current Status Summary" }
+days_for_response = { id = "formula_mm5w1f2g", title = "Days for Response" }
+days_in_phase = { id = "formula_mm6cpemz", title = "Days In Current Phase" }
+aging_bucket = { id = "formula_mm6c5jr1", title = "Aging Bucket" }
+last_update = { id = "date_mm5w20p4", title = "Last Update Date" }
+value = { id = "numeric_mm5whe76", title = "Total Incentive" }
+icf_engineer = { id = "dropdown_mm5wqe1v", title = "ICF Engineer" }
+hbs_engineer = { id = "multiple_person_mm5x8h0r", title = "HBS Engineer" }
+program = { id = "" }
 
 # Status -> which side of the RFI loop holds the work. "Responed" (sic) is the data's spelling.
 [icf.loop]

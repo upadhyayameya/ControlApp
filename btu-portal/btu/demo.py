@@ -101,7 +101,7 @@ def build(seed: int = 7, today: date = date(2026, 11, 13)):
     kpi.append({"id": "599999", "name": "Template row", "group": {"id": "topics", "title": "Archive me"},
                 "column_values": []})
 
-    kpi_meta = {"id": "1069742731", "name": "Monthly KPIs", "items_count": 8600,
+    kpi_meta = {"id": "1069742731", "name": "Monthly KPIs", "items_count": 6027,
                 "groups": [{"id": g, "title": t} for g, t, _ in KPI_GROUPS] + [{"id": "topics", "title": "Archive me"}],
                 "columns": [{"id": "date4", "title": "Completion Date", "type": "date"},
                             {"id": "text", "title": "Utility", "type": "text"},

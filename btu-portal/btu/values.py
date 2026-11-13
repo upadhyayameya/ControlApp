@@ -32,7 +32,8 @@ def text_of(item: Item, cid: str | None) -> str | None:
         return None
     for key in ("display_value", "text"):
         v = c.get(key)
-        if v is not None and str(v).strip() != "":
+        # Empty formula columns come back as the literal text "null".
+        if v is not None and str(v).strip() != "" and str(v).strip().lower() != "null":
             return str(v).strip()
     return None
 
