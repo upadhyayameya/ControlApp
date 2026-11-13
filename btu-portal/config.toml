@@ -1,0 +1,198 @@
+# HBS BTU Scoreboard Portal — configuration.
+#
+# Everything that the business owns and that changes (week boundaries, goals, the repeat
+# policy, column ids) lives here, not in code. Edit, then reload the page; no restart needed
+# for anything except [schedule].
+#
+# Column specs are { id = "...", title = "..." }. An id always wins. If the id is blank the
+# column is resolved by exact title on the board, and the Data quality page tells you which id
+# it resolved to so you can pin it here. Run `python -m btu discover` to list every board's
+# groups and columns.
+
+[monday]
+api_url = "https://api.monday.com/v2"
+api_version = "2025-04"
+token_env = "MONDAY_API_KEY"
+page_size = 500
+item_url = "https://monday.com/boards/{board_id}/pulses/{item_id}"
+board_item_limit = 10000
+
+[boards]
+kpi = 1069742731            # Monthly KPIs — the event log
+icf = 18424932045           # ICF/HBS Project Tracker — aging source
+master_tu = 1069746645      # Master TU Tracker — project master, non-BPTU programs
+bptu = 6530139050           # BGE BPTU Tracker — project master, BPTU only
+prescriptive = 18409151061  # Prescriptive Tune Up Tracker
+pa_workload = 9889346356    # Preapproval Workload (not pulled: aging uses the ICF tracker)
+co_workload = 10030690180   # Closeout Workload (not pulled)
+
+# Boards pulled on every refresh.
+[refresh]
+pull = ["kpi", "icf", "master_tu", "bptu", "prescriptive"]
+# Per-board page size override. Boards whose formula columns are read (ICF aging) use smaller
+# pages to stay inside monday's per-query complexity limits.
+page_size = { icf = 100 }
+
+[schedule]
+enabled = true
+timezone = "America/New_York"
+# Each weekday evening, plus Monday morning before the leadership meeting.
+weekday_evening = { day_of_week = "mon-fri", hour = 18, minute = 30 }
+monday_morning = { day_of_week = "mon", hour = 6, minute = 30 }
+
+# ---------------------------------------------------------------------------------------------
+# Monthly KPIs board. Groups ARE the pipeline stages. Matched on group id only — titles have
+# been renamed once ("Closeouts Received" -> "Closeouts Approved") and will be again.
+[kpi.stage_groups]
+group_mknza884 = "audits"
+new_group53745 = "pa_submitted"
+new_group85910 = "pa_approved"
+group_mm41h4cn = "impl_scheduled"
+new_group47105 = "co_submitted"
+new_group30190 = "co_approved"
+
+[kpi.columns]
+date = { id = "date4" }                   # Completion Date — THE event date. Never creation/updated logs.
+utility = { id = "text" }
+source = { id = "text8" }
+engineer = { id = "person" }
+incentive = { id = "numbers_2" }
+share = { id = "dup__of_incentive" }
+energy = { id = "numbers5" }
+# If a Program column is ever added to the KPI board, put its id here. It is then preferred
+# over the "(Phase 1)/(Phase 2)" name rule, which remains the fallback.
+program = { id = "" }
+
+# ---------------------------------------------------------------------------------------------
+[rules]
+# Repeat submissions (same project + program + incentive logged on an earlier date).
+# false = count once, at first logging (default). The business has not decided whether a
+# resubmission after an ICF RFI is new work. Goals must be set on the same basis — see [goals].
+count_repeats_as_new = false
+repeat_stages = ["pa_submitted", "co_submitted"]
+# "incentive" (numbers_2, total utility incentive) or "share" (HBS Share). UI toggle default.
+default_dollars = "incentive"
+# Pace status: on pace at >= 100% of expected-to-date, watch at >= this ratio, else behind.
+pace_watch_ratio = 0.9
+# What the status colour is judged on: "count" or "dollars".
+pace_basis = "count"
+# Non-working days excluded from the working-day pace calculation. Add company holidays here.
+holidays = []
+
+# ---------------------------------------------------------------------------------------------
+# Week boundaries are set per month by the business and change every month. They are NOT
+# derived. A month with no entry shows no week columns and says so. Any day of the month left
+# uncovered raises a loud warning on every page.
+[weeks]
+"2026-09" = [["2026-09-01", "2026-09-06"], ["2026-09-07", "2026-09-13"], ["2026-09-14", "2026-09-20"], ["2026-09-21", "2026-09-30"]]
+"2026-10" = [["2026-10-01", "2026-10-11"], ["2026-10-12", "2026-10-18"], ["2026-10-19", "2026-10-25"], ["2026-10-26", "2026-10-31"]]
+"2026-11" = [["2026-11-01", "2026-11-08"], ["2026-11-09", "2026-11-15"], ["2026-11-16", "2026-11-22"], ["2026-11-23", "2026-11-30"]]
+
+# ---------------------------------------------------------------------------------------------
+# Goals. No goals are pre-filled: the portal never invents a number. Add them per month, stage
+# and program. `incentive` / `share` are dollar goals for the matching dollar toggle.
+#
+# repeats_counted_as_new records the basis the goals were set on. If it differs from
+# rules.count_repeats_as_new the goal is hidden (with the reason) rather than compared on
+# mismatched bases.
+[goals]
+repeats_counted_as_new = false
+
+# Example:
+# [goals."2026-11".pa_submitted]
+# "BGE Tune-Up" = { count = 20, incentive = 150000 }
+# "Prescriptive" = { count = 60, incentive = 200000 }
+
+# ---------------------------------------------------------------------------------------------
+# Levels (Utilization %, MRR, live contracts) — readings, never summed across weeks and never
+# pro-rated. They are not monday numbers; record readings here as they are taken.
+# kind = "percent" | "dollars" | "count"
+# [[levels]]
+# metric = "Utilization %"
+# kind = "percent"
+# date = "2026-11-07"
+# value = 0.78
+# source = "Resource plan, week ending 11/7"
+
+# ---------------------------------------------------------------------------------------------
+# Implementations Completed. There is no such stage on the KPI board; it comes from the project
+# trackers. Counted only when the implementation date has passed AND the tracker shows the work
+# done (status in complete_statuses, or the item sits in one of closeout_group_ids).
+#
+# Column and group ids below were read from the live boards on 2026-11-13. If a column can't be
+# resolved, the affected cells are left empty with the reason rather than guessed.
+[trackers.master_tu]
+board = "master_tu"
+program = ""                 # blank = map from the utility column with the standard rules
+# The tracker's own labels for "work done" (its board has no "Tune Up Complete" label).
+complete_statuses = ["Implementation & MV Complete", "Implemented. Pre-approval needed", "CO Submitted"]
+# Closeouts to Submit, Closeouts to Receive, Completed Projects
+closeout_group_ids = ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"]
+[trackers.master_tu.columns]
+impl_date = { id = "date_mm4b5x2" }
+share = { id = "dup__of_incentive_amount" }
+incentive = { id = "numbers", title = "Incentive Amount" }
+status = { id = "status" }
+utility = { id = "text" }
+
+[trackers.bptu]
+board = "bptu"
+program = "BPTU"
+complete_statuses = ["Implementation & MV Complete", "Implemented. Need PA/RA", "CO Submitted"]
+closeout_group_ids = ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"]
+[trackers.bptu.columns]
+impl_date = { id = "date_mm0whh86" }
+share = { id = "dup__of_incentive_amount" }
+incentive = { id = "numbers", title = "Incentive Amount" }
+status = { id = "status" }
+
+[trackers.prescriptive]
+board = "prescriptive"
+program = "Prescriptive"
+complete_statuses = ["Tune Up Complete", "Tune Up Complete - Need PA", "CO Submitted"]
+closeout_group_ids = ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"]
+[trackers.prescriptive.columns]
+impl_date = { id = "date_mm0r6qv7", title = "Tune Up Date" }
+share = { id = "numbers", title = "HBS Share" }
+# This board has no Incentive column, so Prescriptive implementations show HBS Share only.
+incentive = { id = "" }
+status = { id = "status" }
+
+# ---------------------------------------------------------------------------------------------
+# ICF/HBS Project Tracker — aging. Its own formula columns do the aging maths; the portal reads
+# them and never recomputes them. Ids read from the live board on 2026-11-13.
+[icf]
+rfi_overdue_days = 7
+[icf.columns]
+status = { id = "status", title = "Current Status Summary" }
+days_for_response = { id = "formula_mm5w1f2g", title = "Days for Response" }
+days_in_phase = { id = "formula_mm6cpemz", title = "Days In Current Phase" }
+aging_bucket = { id = "formula_mm6c5jr1", title = "Aging Bucket" }
+last_update = { id = "date_mm5w20p4", title = "Last Update Date" }
+value = { id = "numeric_mm5whe76", title = "Total Incentive" }
+icf_engineer = { id = "dropdown_mm5wqe1v", title = "ICF Engineer" }
+hbs_engineer = { id = "multiple_person_mm5x8h0r", title = "HBS Engineer" }
+program = { id = "" }
+
+# Status -> which side of the RFI loop holds the work. "Responed" (sic) is the data's spelling.
+[icf.loop]
+"RFI Sent to HBS" = { holder = "HBS", kind = "RFI" }
+"HBS Revising Submission" = { holder = "HBS", kind = "Revision" }
+"RFI Responed by HBS" = { holder = "ICF", kind = "RFI response" }
+"HBS Resubmitted" = { holder = "ICF", kind = "Resubmission" }
+
+# ---------------------------------------------------------------------------------------------
+# Excel export. Writes one week column of the existing workbook. Only cells listed in [excel.rows]
+# are touched; cells holding formulas are never overwritten; rows whose label matches
+# protected_row_labels (payments / revenue — owned by the Director of Accounting) are refused
+# even if a mapping points at them. Run `python -m btu inspect-excel <file>` to see row labels.
+[excel]
+sheet = "Scoreboard"
+label_column = "A"
+week_columns = ["C", "D", "E", "F", "G"]   # week 1, 2, 3, 4, 5
+protected_row_labels = ["payment", "revenue", "invoice", "collected"]
+protected_rows = []
+# Key = "<stage>|<program>|<metric>", metric = count | raw_count | incentive | share.
+# [excel.rows]
+# "pa_submitted|BGE Tune-Up|count" = 6
+# "pa_submitted|BGE Tune-Up|incentive" = 7
