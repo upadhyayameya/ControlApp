@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_events.html" import events_table %}
+{% block title %}Drill-through{% endblock %}
+{% block body %}
+{% set counted = events|selectattr('counted')|list %}
+<div class="pagehead">
+  <h1>{{ STAGE_LABEL.get(stage, 'All stages') }} · {{ program or 'All programs' }} · {{ week_label }} · {{ month }}</h1>
+  <div class="meta">
+    <strong>{{ counted|length }}</strong> counted of {{ events|length }} raw monday items ·
+    {{ counted|map(attribute='incentive')|select('number')|sum|money }} Incentive ·
+    {{ counted|map(attribute='share')|select('number')|sum|money }} HBS Share
+  </div>
+</div>
+{% if reason %}<div class="banner warn">This figure is unavailable: {{ reason }}</div>{% endif %}
+{% if STAGE_NOTES.get(stage) %}<p class="stage-note">{{ STAGE_NOTES[stage] }}</p>{% endif %}
+{{ events_table(events, dollars, show_stage=not stage, show_week=week_of) }}
+{% endblock %}

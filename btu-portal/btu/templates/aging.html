@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "_macros.html" import monday_link %}
+{% block title %}Aging{% endblock %}
+{% block body %}
+<div class="pagehead">
+  <h1>Aging — ICF/HBS Project Tracker</h1>
+  <div class="meta">Current state, not month-bound. Aging figures are read from the tracker's own formula columns, never recomputed.
+    {% if a.pulled_at %}Pulled {{ a.pulled_at }}.{% endif %}</div>
+</div>
+{% if not a.available %}
+<div class="banner warn">Aging is unavailable: {{ a.reason }}</div>
+{% else %}
+
+<div class="notes">
+  {% for h in ['HBS', 'ICF'] %}
+  {% set v = a.by_holder.get(h, (0, 0)) %}
+  <div class="kpi"><div class="lbl">Ball in {{ h }}'s court</div><div class="val">{{ v[0] }}</div><div class="sub">{{ v[1]|money }}</div></div>
+  {% endfor %}
+  <div class="kpi"><div class="lbl">In the RFI loop (all four statuses)</div><div class="val">{{ a.loop|length }}</div>
+    <div class="sub">vs {{ a.rfi_count }} open RFIs alone{% if a.rfi_count %} — {{ '%.1f'|format(a.loop|length / a.rfi_count) }}×{% endif %}</div></div>
+  <div class="kpi {{ 'bad' if a.rfi_overdue else 'good' }}"><div class="lbl">RFIs past {{ a.overdue_days }} days</div><div class="val">{{ a.rfi_overdue|length }}</div>
+    <div class="sub">{{ a.rfi_overdue|map(attribute='value')|select('number')|sum|money }}</div></div>
+</div>
+{% if a.missing_value %}<p class="unavail">{{ a.missing_value }} loop items have no dollar value; dollar totals exclude them.</p>{% endif %}
+
+<section class="stage">
+  <h2>Both sides of the loop</h2>
+  <table class="list">
+    <thead><tr><th>Status</th><th>Holder</th><th>Kind</th><th class="n">Items</th><th class="n">Dollars</th></tr></thead>
+    <tbody>
+    {% for status, role in cfg.icf.loop.items() %}
+      {% set v = a.by_kind.get(role.kind, (0, 0)) %}
+      <tr><td>{{ status }}</td><td>{{ role.holder }}</td><td>{{ role.kind }}</td><td class="n">{{ v[0] }}</td><td class="n">{{ v[1]|money }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="stage">
+  <h2>Who is holding the work</h2>
+  <table class="list">
+    <thead><tr><th>Side</th><th>Person</th><th class="n">Items</th><th class="n">Dollars</th><th class="n">Max days for response</th></tr></thead>
+    <tbody>{% for h, p, n, d, mx in a.by_person %}<tr><td>{{ h }}</td><td>{{ p }}</td><td class="n">{{ n }}</td><td class="n">{{ d|money }}</td><td class="n">{{ mx|num }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <p class="stage-note">HBS-side items are attributed to the HBS engineer, ICF-side items to the ICF engineer (when those columns resolve).</p>
+</section>
+
+<section class="stage">
+  <h2>Aging bucket (Days In Current Phase: Critical &gt; 60, Watch &gt; 30)</h2>
+  <table class="list">
+    <thead><tr><th>Bucket</th><th class="n">Projects</th><th class="n">Dollars</th></tr></thead>
+    <tbody>{% for b, n, d in a.buckets %}<tr class="bucket-{{ b|lower }}"><td>{{ b }}</td><td class="n">{{ n }}</td><td class="n">{{ d|money }}</td></tr>
+    {% else %}<tr><td colspan="3" class="unavail">Aging Bucket column has no values (or did not resolve — see Data quality).</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+
+<section class="stage">
+  <h2>RFIs past {{ a.overdue_days }} days</h2>
+  <table class="list">
+    <thead><tr><th>Project</th><th class="n">Days for response</th><th class="n">Days in phase</th><th>Bucket</th><th>ICF engineer</th><th>HBS engineer</th><th class="n">Value</th><th>Item</th></tr></thead>
+    <tbody>{% for x in a.rfi_overdue %}<tr><td>{{ x.name }}</td><td class="n">{{ x.days_for_response|num }}</td><td class="n">{{ x.days_in_phase|num }}</td><td>{{ x.bucket or '' }}</td><td>{{ x.icf_engineer or '' }}</td><td>{{ x.hbs_engineer or '' }}</td><td class="n">{{ x.value|money }}</td><td>{{ monday_link(a.board_id, x.item_id) }}</td></tr>
+    {% else %}<tr><td colspan="8" class="unavail">None.</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+
+<section class="stage">
+  <h2>Every item in the loop</h2>
+  <table class="list">
+    <thead><tr><th>Project</th><th>Status</th><th>Holder</th><th class="n">Days for response</th><th class="n">Days in phase</th><th>Bucket</th><th>ICF engineer</th><th>HBS engineer</th><th class="n">Value</th><th>Item</th></tr></thead>
+    <tbody>{% for x in a.loop|sort(attribute='days_for_response', reverse=True) %}<tr><td>{{ x.name }}</td><td>{{ x.status }}</td><td>{{ x.holder }}</td><td class="n">{{ x.days_for_response|num }}</td><td class="n">{{ x.days_in_phase|num }}</td><td>{{ x.bucket or '' }}</td><td>{{ x.icf_engineer or '' }}</td><td>{{ x.hbs_engineer or '' }}</td><td class="n">{{ x.value|money }}</td><td>{{ monday_link(a.board_id, x.item_id) }}</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

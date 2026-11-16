@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Excel export{% endblock %}
+{% block body %}
+<div class="pagehead"><h1>Excel export</h1></div>
+<p class="stage-note">Upload the existing scoreboard workbook. The portal fills one week column (sheet <code>{{ cfg.excel.sheet }}</code>,
+columns {{ cfg.excel.week_columns|join(', ') }} for weeks 1–{{ cfg.excel.week_columns|length }}) and returns a copy. It only writes the cells mapped in
+<code>[excel.rows]</code>; it never overwrites formulas, and it refuses any row labelled
+{{ cfg.excel.protected_row_labels|join(' / ') }} — payments and revenue stay with accounting.
+The workbook stays the monthly record; the portal is the live view.</p>
+{% if not cfg.excel.get('rows') %}<div class="banner warn">No cell mapping configured yet ([excel.rows] in config.toml). Run <code>python -m btu inspect-excel &lt;workbook&gt;</code> to list row labels, then map them.</div>{% endif %}
+{% if error %}<div class="banner warn">Export failed: {{ error }}</div>{% endif %}
+<form method="post" action="/export?{{ {'month': month, 'dollars': dollars}|qs }}" enctype="multipart/form-data" class="exportform">
+  <label>Workbook <input type="file" name="workbook" accept=".xlsx,.xlsm" required></label>
+  <label>Month <input name="month" value="{{ month }}"></label>
+  <label>Week <select name="week">{% for c in cfg.excel.week_columns %}<option value="{{ loop.index }}">Week {{ loop.index }} (column {{ c }})</option>{% endfor %}</select></label>
+  <button name="preview" value="1">Preview what would change</button>
+  <button>Export</button>
+</form>
+{% if report %}
+<section class="stage"><h2>Preview</h2>
+<p>Protected rows detected: {{ report.protected_rows|join(', ') or 'none' }}</p>
+<table class="list"><thead><tr><th>Cell</th><th>Mapping</th><th>Result</th></tr></thead><tbody>
+{% for n in report.written %}<tr><td>{{ n.cell }}</td><td>{{ n.key }}</td><td>write {{ n.reason }}</td></tr>{% endfor %}
+{% for n in report.skipped %}<tr class="excluded"><td>{{ n.cell }}</td><td>{{ n.key }}</td><td>skipped: {{ n.reason }}</td></tr>{% endfor %}
+{% for n in report.refused %}<tr class="excluded"><td>{{ n.cell }}</td><td>{{ n.key }}</td><td>refused: {{ n.reason }}</td></tr>{% endfor %}
+</tbody></table></section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}BTU Scoreboard{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">HBS BTU <span>Scoreboard</span></div>
+  <nav>
+    {% set navq = {'month': month, 'dollars': dollars} %}
+    <a href="/?{{ navq|qs }}" class="{{ 'on' if path == '/' }}">Scoreboard</a>
+    <a href="/pace?{{ navq|qs }}" class="{{ 'on' if path == '/pace' }}">Pace</a>
+    <a href="/submissions?{{ navq|qs }}" class="{{ 'on' if path == '/submissions' }}">Submissions</a>
+    <a href="/aging?{{ navq|qs }}" class="{{ 'on' if path == '/aging' }}">Aging</a>
+    <a href="/quality?{{ navq|qs }}" class="{{ 'on' if path == '/quality' }}">Data quality</a>
+    <a href="/history?{{ navq|qs }}" class="{{ 'on' if path == '/history' }}">History</a>
+    <a href="/export?{{ navq|qs }}" class="{{ 'on' if path == '/export' }}">Excel export</a>
+  </nav>
+  <form class="controls" method="get">
+    {% for k, v in request.query_params.items() if k not in ('month', 'dollars') %}
+      <input type="hidden" name="{{ k }}" value="{{ v }}">
+    {% endfor %}
+    <label>Month
+      <select name="month" onchange="this.form.submit()">
+        {% for m in months %}<option value="{{ m }}" {{ 'selected' if m == month }}>{{ m }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Dollars
+      <select name="dollars" onchange="this.form.submit()">
+        <option value="incentive" {{ 'selected' if dollars == 'incentive' }}>Incentive</option>
+        <option value="share" {{ 'selected' if dollars == 'share' }}>HBS Share</option>
+      </select>
+    </label>
+  </form>
+  <div class="refresh">
+    <div>Last refreshed: <strong>{{ refreshed_at or 'never' }}</strong></div>
+    <form method="post" action="/refresh">
+      <button {{ 'disabled' if refreshing or not has_token }} title="{{ '' if has_token else 'MONDAY_API_KEY is not set' }}">
+        {{ 'Refreshing…' if refreshing else 'Refresh now' }}
+      </button>
+    </form>
+  </div>
+</header>
+
+{% if demo %}
+<div class="banner demo">DEMO DATA — synthetic records generated to show the portal. Nothing on this page comes from monday.</div>
+{% endif %}
+{% if not has_token and not demo %}
+<div class="banner warn">MONDAY_API_KEY is not set, so the portal cannot pull from monday. Figures below are from the last successful pull, if any.</div>
+{% endif %}
+{% for w in week_warnings %}
+<div class="banner loud">⚠ {{ w }}</div>
+{% endfor %}
+{% for i in refresh_errors %}
+<div class="banner warn">{{ i.message }}</div>
+{% endfor %}
+
+<main>
+{% block body %}{% endblock %}
+</main>
+<footer>
+  Dollars showing: <strong>{{ DOLLAR_LABELS[dollars] }}</strong> ·
+  Repeats: <strong>{{ 'counted as new work' if repeats_policy else 'counted once, at first logging' }}</strong> (config) ·
+  Today: {{ today }}
+</footer>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import monday_link %}
+{% block title %}Data quality{% endblock %}
+{% block body %}
+<div class="pagehead"><h1>Data quality — {{ month }}</h1></div>
+
+<div class="notes">
+  {% set cap = q.capacity %}
+  <div class="kpi {{ 'bad' if cap.months_left is not none and cap.months_left < 3 else '' }}">
+    <div class="lbl">KPI board items vs {{ cap.limit|num }} limit</div>
+    <div class="val">{{ cap.items_count|num }}</div>
+    <div class="sub">{% if cap.items_count is not none %}{{ (cap.limit - cap.items_count)|num }} left{% if cap.months_left is not none %} · ~{{ cap.months_left|num(1) }} months at {{ cap.monthly_rate|num }}/month{% endif %}{% else %}board not pulled{% endif %}</div>
+  </div>
+  {% for rule, n in q.corrections.items() %}
+  <div class="kpi"><div class="lbl">Corrections: {{ rule }}</div><div class="val">{{ n }}</div><div class="sub">all months</div></div>
+  {% endfor %}
+</div>
+
+{% for mo, ws in q.week_warnings.items() %}
+<div class="banner loud">Week configuration {{ mo }}: {% for w in ws %}{{ w }} {% endfor %}</div>
+{% endfor %}
+
+<section class="stage">
+  <h2>Raw vs unique, {{ month }}</h2>
+  <table class="list"><thead><tr><th>Stage</th><th class="n">Raw items</th><th class="n">Unique projects</th><th class="n">Duplicates removed</th></tr></thead>
+  <tbody>{% for s, l in STAGES %}{% set v = q.raw_vs_unique[s] %}<tr><td>{{ l }}</td><td class="n">{{ v[0] }}</td><td class="n">{{ v[1] }}</td><td class="n">{{ v[0] - v[1] }}</td></tr>{% endfor %}</tbody></table>
+</section>
+
+<section class="stage">
+  <h2>Duplicates, {{ month }} ({{ q.duplicates|length }} groups)</h2>
+  <p class="stage-note">Same completion date, project, stage and program. The first item is kept; the rest are greyed.</p>
+  <table class="list"><thead><tr><th>Date</th><th>Stage</th><th>Project</th><th>Program</th><th class="n">Incentive</th><th class="n">Share</th><th>Item</th><th>Status</th></tr></thead>
+  <tbody>{% for g in q.duplicates %}{% for e in g %}<tr class="{{ 'excluded' if e.duplicate_of }} {{ 'grpstart' if loop.first }}"><td>{{ e.date }}</td><td>{{ STAGE_LABEL[e.stage] }}</td><td>{{ e.name }}</td><td>{{ e.program }}</td><td class="n">{{ e.incentive|money }}</td><td class="n">{{ e.share|money }}</td><td>{{ monday_link(e.board_id, e.item_id) }}</td><td>{{ e.status_label }}</td></tr>{% endfor %}
+  {% else %}<tr><td colspan="8" class="unavail">None.</td></tr>{% endfor %}</tbody></table>
+</section>
+
+<section class="stage">
+  <h2>Repeat submissions, {{ month }} ({{ q.repeats|length }})</h2>
+  <p class="stage-note">Same project, program and incentive as a submission logged on an earlier date. Policy: {{ 'counted as new work' if repeats_policy else 'counted once, at first logging' }} (rules.count_repeats_as_new).</p>
+  <table class="list"><thead><tr><th>Date</th><th>Stage</th><th>Project</th><th>Program</th><th class="n">Incentive</th><th>First logged</th><th>Item</th></tr></thead>
+  <tbody>{% for e in q.repeats %}<tr class="{{ 'excluded' if not e.counted }}"><td>{{ e.date }}</td><td>{{ STAGE_LABEL[e.stage] }}</td><td>{{ e.name }}</td><td>{{ e.program }}</td><td class="n">{{ e.incentive|money }}</td><td>{{ e.repeat_first_date }} (#{{ e.repeat_of }})</td><td>{{ monday_link(e.board_id, e.item_id) }}</td></tr>
+  {% else %}<tr><td colspan="7" class="unavail">None.</td></tr>{% endfor %}</tbody></table>
+</section>
+
+{% set order = ['refresh_error', 'unmapped_group', 'missing_date', 'column_missing', 'phase_rule_disagreement', 'phase_check_unavailable', 'blank_utility', 'unknown_utility', 'impl_past_not_complete', 'duplicate_value_conflict', 'unparseable_number', 'column_resolved_by_title', 'utility_is_type'] %}
+{% set titles = {'refresh_error': 'Refresh errors', 'unmapped_group': 'KPI items in unmapped groups', 'missing_date': 'KPI items without a Completion Date', 'column_missing': 'Columns that did not resolve', 'phase_rule_disagreement': 'Phase-rule disagreements (BGE Tune-Up vs BPTU)', 'phase_check_unavailable': 'Phase-rule check', 'blank_utility': 'Blank Utility', 'unknown_utility': 'Utility values with no mapping', 'impl_past_not_complete': 'Past implementation date, not shown as done', 'duplicate_value_conflict': 'Duplicates with conflicting values', 'unparseable_number': 'Unreadable numbers', 'column_resolved_by_title': 'Columns resolved by title (pin their ids)', 'utility_is_type': 'Project types in the Utility field (→ Prescriptive)'} %}
+{% for kind in order %}{% if q.issues_by_kind.get(kind) %}
+{% set issues = q.issues_by_kind[kind] %}
+<section class="stage">
+  <h2>{{ titles[kind] }} ({{ issues|sum(attribute='items', start=[])|length or issues|length }})</h2>
+  {% if kind == 'phase_rule_disagreement' %}
+  <table class="list"><thead><tr><th>Project</th><th>Why</th><th>Item</th></tr></thead><tbody>
+  {% for i in issues %}{% for r in i.items %}<tr><td>{{ r.name }}</td><td>{{ r.detail }}</td><td>{{ monday_link(r.board_id, r.item_id) }}</td></tr>{% endfor %}{% endfor %}
+  </tbody></table>
+  {% else %}
+  {% for i in issues %}
+    <p class="issue {{ i.severity }}">{{ i.message }}</p>
+    {% if i.items %}
+    <details><summary>{{ i.items|length }} items</summary>
+      <table class="list"><tbody>{% for r in i.items[:500] %}<tr><td>{{ r.name }}</td><td>{{ r.detail }}</td><td>{{ monday_link(r.board_id, r.item_id) }}</td></tr>{% endfor %}</tbody></table>
+      {% if i.items|length > 500 %}<p class="unavail">First 500 shown.</p>{% endif %}
+    </details>
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+</section>
+{% endif %}{% endfor %}
+{% for i in aging_issues if i.severity != 'info' %}<p class="issue {{ i.severity }}">Aging: {{ i.message }}</p>{% endfor %}
+
+<section class="stage">
+  <h2>Column resolution</h2>
+  <table class="list"><thead><tr><th>Board</th><th>Field</th><th>Configured id</th><th>Title</th><th>Resolved id</th><th>How</th></tr></thead>
+  <tbody>{% for board, cols in (q.columns|dictsort) + [('icf', aging_columns)] %}{% for name, r in cols.items() %}
+    <tr class="{{ 'excluded' if not r.id }}"><td>{{ board }}</td><td>{{ name }}</td><td>{{ r.configured_id or '—' }}</td><td>{{ r.title or r.get('found_title') or '' }}</td><td>{{ r.id or '—' }}</td><td>{{ r.how }}</td></tr>
+  {% endfor %}{% endfor %}</tbody></table>
+</section>
+{% endblock %}
