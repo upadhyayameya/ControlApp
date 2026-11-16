@@ -6,10 +6,13 @@ window.PUBLIC_WORKS_DATA = {
     subtitle: "Government projects in Mumbai: status, cost, who funds them, and the MLAs for each area",
     lastUpdated: "2026-11-16",
     notice: "Compiled from news reports and official releases up to November 2026. Each project links its sources. Verify before citing, and send corrections.",
-    sourceNote: "MLAs are from the November 2024 Maharashtra Assembly election results (ECI / Wikipedia), checked against the 15th Maharashtra Assembly member list.",
+    sourceNote: "Projects are compiled from official releases, lender documents and news reports up to November 2026; every project links its sources. MLAs are from the November 2024 Maharashtra Assembly election, checked against the 15th Assembly member list. Ward officers are from BMC\u2019s published list (July 2026) and later transfer reports. Tenders are pulled from the state e-tender portal.",
     sources: [
       { name: "2024 Maharashtra Legislative Assembly election", url: "https://en.wikipedia.org/wiki/2024_Maharashtra_Legislative_Assembly_election" },
       { name: "ECI results, Maharashtra 2024", url: "https://results.eci.gov.in/ResultAcGenNov2024/partywiseresult-S13.htm" },
+      { name: "BMC list of Assistant Municipal Commissioners", url: "https://portal.mcgm.gov.in/irj/portal/anonymous/qlListofAsstMC", note: "ward officers" },
+      { name: "Mahatenders (Government of Maharashtra eProcurement)", url: "https://mahatenders.gov.in/nicgep/app?page=FrontEndTendersByOrganisation&service=page", note: "live tenders, scraped" },
+      { name: "Free Press Journal, ThePrint, Business Today, Swarajya and others", note: "project status; each project links its own articles" },
     ],
   },
   mlas: [

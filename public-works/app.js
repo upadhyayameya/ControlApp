@@ -75,6 +75,13 @@
   });
   function wardsOf(p) { return Object.keys(WARD_PARTS[p.id] || {}).filter(function (w) { return w !== "outside"; }); }
 
+  var TENDERS = window.PUBLIC_WORKS_TENDERS || { items: [] };
+  // Newer BMC wards that sit inside an older ward on the 24-ward map.
+  var WARD_PARENT = { "K/N": "K/E", "K/S": "K/E", "P/E": "P/N" };
+  function tenderMapWard(t) { return t.ward ? WARD_PARENT[t.ward] || t.ward : null; }
+  function openTenders() { return TENDERS.items.filter(function (t) { return t.status === "Open"; }); }
+  function fmtDT(s) { if (!s) return "—"; var d = s.slice(0, 10); return fmtDate(d) + (s.length > 10 ? " " + s.slice(11, 16) : ""); }
+
   var AGENCY_HEADS = DATA.agencyHeads || [];
   function headsFor(p) {
     return AGENCY_HEADS.filter(function (h) { return (p.agency || "").indexOf(h.agency) !== -1; });
@@ -356,6 +363,55 @@
     return info.assistantCommissioner ? esc(info.assistantCommissioner) + '<span style="color:var(--muted)">' + (/Engineer/.test(info.assistantCommissioner) ? "" : ", Assistant Commissioner") + (info.asOf ? " (as of " + fmtDate(info.asOf) + ")" : "") + (info.confidence === "low" ? ", unconfirmed" : "") + "</span>" : '<span style="color:var(--muted)">Assistant Commissioner not on file</span>';
   }
 
+  function tenderBlock(w) {
+    var ts = openTenders().filter(function (t) { return tenderMapWard(t) === w; });
+    if (!ts.length) return "";
+    return '<details style="margin:0 0 12px"><summary style="cursor:pointer;font-size:14px"><b>' + ts.length + " open tender" + (ts.length === 1 ? "" : "s") + "</b> for works in this ward right now</summary>" +
+      '<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">' + ts.slice(0, 12).map(function (t) {
+        return "<li>" + esc(t.title) + ' <span style="color:var(--muted)">· ' + esc(t.dept || t.org) + (t.ward !== w ? " · ward " + esc(t.ward) : "") + " · closes " + fmtDT(t.closing) + "</span></li>";
+      }).join("") + "</ul>" + (ts.length > 12 ? '<a href="#/tenders" data-tender-ward="' + esc(w) + '" style="font-size:13.5px">All ' + ts.length + " →</a>" : "") + "</details>";
+  }
+
+  var tstate = { q: "", org: "", ward: "", status: "Open" };
+  function viewTenders() {
+    var all = TENDERS.items;
+    var list = all.filter(function (t) {
+      if (tstate.status && t.status !== tstate.status) return false;
+      if (tstate.org && t.org !== tstate.org) return false;
+      if (tstate.ward === "_none" ? t.ward : tstate.ward && tenderMapWard(t) !== tstate.ward) return false;
+      if (tstate.q) {
+        var hay = [t.title, t.ref, t.id, t.dept, t.unit, t.org, t.ward].join(" ").toLowerCase();
+        if (!tstate.q.toLowerCase().split(/\s+/).every(function (x) { return hay.indexOf(x) !== -1; })) return false;
+      }
+      return true;
+    });
+    var byOrg = {};
+    openTenders().forEach(function (t) { byOrg[t.org] = (byOrg[t.org] || 0) + 1; });
+    var orgs = Object.keys(byOrg).sort(function (a, b) { return byOrg[b] - byOrg[a]; });
+    function opt(v, label, cur) { return '<option value="' + esc(v) + '"' + (v === cur ? " selected" : "") + ">" + esc(label) + "</option>"; }
+    var shown = list.slice(0, ui.limit);
+    app.innerHTML = '<div class="kpis"><div class="kpi"><div class="label">Open tenders</div><div class="value">' + openTenders().length + '</div><div class="sub">Mumbai bodies on Mahatenders</div></div>' +
+      orgs.map(function (o) { return '<div class="kpi"><div class="label">' + esc(o) + '</div><div class="value">' + byOrg[o] + '</div><div class="sub">open now</div></div>'; }).join("") + "</div>" +
+      '<div class="panel"><h2>Live government tenders</h2><p class="hint">Every work BMC, BEST, MMRDA and Mumbai PWD put out to tender on the state e-tender portal, pulled automatically (last fetched ' + esc(fmtDT((TENDERS.fetchedAt || "").replace("Z", ""))) + ' UTC). These are the day-to-day works: road beats, repairs, hospital supplies, drains. Tenders that close stay listed as history. Search a tender ID on <a href="' + esc(safeUrl(TENDERS.searchUrl)) + '" target="_blank" rel="noopener">Mahatenders</a> for the full documents.</p>' +
+      '<div class="filters"><input class="search" type="search" id="t-q" placeholder="Search work, department, reference or tender ID…" value="' + esc(tstate.q) + '" />' +
+      '<select id="t-status">' + opt("Open", "Open now", tstate.status) + opt("Closed", "Closed (history)", tstate.status) + opt("", "Open and closed", tstate.status) + "</select>" +
+      '<select id="t-org">' + opt("", "All bodies", tstate.org) + orgs.map(function (o) { return opt(o, o, tstate.org); }).join("") + "</select>" +
+      '<select id="t-ward">' + opt("", "All wards", tstate.ward) + opt("_none", "No ward (citywide / department)", tstate.ward) + WARD_NAMES.map(function (w) { return opt(w, "Ward " + w, tstate.ward); }).join("") + "</select></div>" +
+      '<div class="toolbar"><span>' + list.length + " tenders</span></div>" +
+      (list.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Work</th><th>Body / department</th><th>Ward</th><th>Published</th><th>Closes</th></tr></thead><tbody>' + shown.map(function (t) {
+        return "<tr><td><b>" + esc(t.title) + '</b><div style="font-size:12px;color:var(--muted)">' + esc(t.id) + (t.ref ? " · " + esc(t.ref) : "") + (t.status === "Closed" ? " · closed, last seen " + fmtDate(t.lastSeen) : "") + '</div></td><td style="font-size:13px">' + esc(t.org) + '<div style="color:var(--muted)">' + esc(t.unit || "") + "</div></td><td>" + esc(t.ward || "—") + '</td><td style="font-size:13px;white-space:nowrap">' + fmtDT(t.published) + '</td><td style="font-size:13px;white-space:nowrap">' + fmtDT(t.closing) + "</td></tr>";
+      }).join("") + "</tbody></table></div>" : '<div class="empty">No tenders match.</div>') +
+      (list.length > shown.length ? '<div style="text-align:center;margin-top:14px"><button class="btn" id="t-more">Show more</button></div>' : "") + "</div>";
+    var q = document.getElementById("t-q");
+    q.addEventListener("input", debounce(function () { tstate.q = q.value; var pos = q.selectionStart; viewTenders(); var n = document.getElementById("t-q"); n.focus(); n.setSelectionRange(pos, pos); }, 200));
+    ["status", "org", "ward"].forEach(function (k) { document.getElementById("t-" + k).addEventListener("change", function (e) { tstate[k] = e.target.value; ui.limit = 60; viewTenders(); }); });
+    var more = document.getElementById("t-more"); if (more) more.addEventListener("click", function () { ui.limit += 60; viewTenders(); });
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-tender-ward]");
+    if (a) { tstate.ward = a.dataset.tenderWard; tstate.status = "Open"; tstate.q = ""; }
+  });
+
   function viewWards() {
     var citywide = PROJECTS.filter(function (p) { return p.citywide; });
     var q = state.q.toLowerCase();
@@ -374,6 +430,7 @@
         (info.zonalDmc ? '<div style="font-size:14px;margin-bottom:4px"><b>Zone ' + esc(info.zone) + ' Deputy Commissioner:</b> ' + esc(info.zonalDmc) + "</div>" : "") +
         (info.office || info.phone ? '<div class="hint" style="margin:0 0 6px">' + esc([info.office, info.phone].filter(Boolean).join(" · ")) + "</div>" : "") +
         (info.note ? '<div class="delay" style="margin:6px 0 10px">' + esc(info.note) + "</div>" : '<div style="height:6px"></div>') +
+        tenderBlock(w) +
         (rows ? '<div class="table-scroll"><table class="data"><thead><tr><th>Project and the part in this ward</th><th>Status</th><th>Run by</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="hint">No mapped projects in this ward yet.</p>') +
         "</div>";
     }).join("");
@@ -576,7 +633,7 @@
     var tab = (h.match(/^#\/(\w+)/) || [])[1] || "projects";
     document.querySelectorAll("nav.tabs a").forEach(function (a) { a.classList.toggle("active", a.dataset.tab === tab); });
     if (tab !== "map" && leafletMap) { leafletMap.remove(); leafletMap = null; }
-    ({ projects: viewProjects, map: viewMap, wards: viewWards, mlas: viewMlas, funders: viewFunders, about: viewAbout }[tab] || viewProjects)();
+    ({ projects: viewProjects, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewMlas, funders: viewFunders, about: viewAbout }[tab] || viewProjects)();
   }
 
   // ---------- boot ----------
