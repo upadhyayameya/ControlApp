@@ -203,6 +203,57 @@ tr.grouph td { background: var(--surface-2); font-weight: 600; font-size: 13px; 
 .filters input, .filters select { border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 10px; background: var(--surface); min-width: 0; }
 .filters input { flex: 1 1 260px; max-width: 420px; }
 details.how.wk summary { display: flex; align-items: center; gap: 8px; }
+.tile { gap: 3px; }
+.tile.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tile .step { text-transform: none; letter-spacing: 0; font-size: 12px; color: var(--ink-2); font-weight: 600; min-height: 2.6em; line-height: 1.3; }
+.tile .big { font-size: 30px; margin-top: 2px; }
+.tile .usd { font-size: 13px; color: var(--ink-2); }
+.tbar { position: relative; display: block; height: 6px; border-radius: 3px; background: var(--track); margin-top: 8px; }
+.tbar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--series); }
+.tbar i.behind { background: var(--bad-mark); } .tbar i.watch { background: var(--warn-mark); } .tbar i.on { background: var(--good-mark); }
+.tbar b { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.tfoot { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); margin-top: 4px; min-height: 22px; }
+.tfoot .chip { font-size: 11px; padding: 1px 6px; }
+.delta { font-size: 12px; font-weight: 500; }
+.delta.up { color: var(--good); } .delta.down { color: var(--bad); } .delta.flat { color: var(--muted); }
+.chartrow { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 1000px) { .chartrow { grid-template-columns: minmax(0, 1fr); } }
+svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+svg.chart .grid { stroke: var(--line); stroke-width: 1; }
+svg.chart .axl { stroke: var(--line-2); stroke-width: 1; }
+svg.chart .ax { fill: var(--muted); font-size: 11px; }
+svg.chart .ln-act { fill: none; stroke: var(--series); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+svg.chart .dot-act { fill: var(--series); stroke: var(--surface); stroke-width: 2; }
+svg.chart .lbl-act { fill: var(--ink); font-size: 13px; font-weight: 600; }
+svg.chart .ln-pace { fill: none; stroke: var(--ink-2); stroke-width: 1.5; opacity: .7; }
+svg.chart .lbl-pace { fill: var(--ink-2); font-size: 11px; }
+svg.chart .ln-last { fill: none; stroke: var(--muted); stroke-width: 2; opacity: .45; }
+svg.chart .today { stroke: var(--line-2); stroke-width: 1; }
+svg.chart .hit { fill: transparent; }
+svg.chart .hit:hover { fill: var(--accent); fill-opacity: .06; }
+svg.chart .bar { fill: var(--series); }
+svg.chart .bar-cur { fill: var(--series); fill-opacity: .45; }
+svg.chart .goaltick { stroke: var(--ink); stroke-width: 2; }
+svg.chart .vlbl { fill: var(--ink-2); font-size: 10px; font-weight: 600; }
+.legend i.lg-pace { height: 2px; width: 14px; border-radius: 0; background: var(--ink-2); vertical-align: 3px; }
+.legend i.lg-last { height: 2px; width: 14px; border-radius: 0; background: var(--muted); opacity: .6; vertical-align: 3px; }
+.legend i.lg-goal { height: 10px; width: 2px; border-radius: 0; background: var(--ink); }
+.ranked { display: grid; gap: 2px; }
+.rk { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 5px 6px; border-radius: 6px; text-decoration: none; color: inherit; }
+.rk:hover { background: var(--surface-2); }
+.rk-l { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rk-b { position: relative; height: 12px; background: var(--track); border-radius: 3px; }
+.rk-b i { position: absolute; inset: 0 auto 0 0; background: var(--series); border-radius: 3px; }
+.rk-b b { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); }
+.rk-v { font-size: 13px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.trends { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 1200px) { .trends { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .trends { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.trend { background: none; border: 1px solid transparent; border-radius: 10px; padding: 6px 4px 2px; cursor: pointer; text-align: left; display: grid; gap: 2px; }
+.trend:hover { background: var(--surface-2); }
+.trend.sel { border-color: var(--accent); }
+.trend .tl { font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 0 4px; min-height: 2.6em; }
+.seg.small button { font-size: 12px; padding: 3px 8px; }
 details.whyrow { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
 details.whyrow > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(200px, 1.1fr) minmax(170px, 1fr) minmax(220px, 2fr) 16px; gap: 8px 18px; align-items: center; padding: 12px 18px; }
 details.whyrow > summary::-webkit-details-marker { display: none; }
@@ -887,7 +938,7 @@ function aging(D) {
 
 
 /* ---------------------------------- rendering -------------------------------------------- */
-const state = { view: "overview", month: null, mode: "incentive", stage: "pa_submitted", program: "BGE Tune-Up", whyProg: "all", subQuery: "", subProg: "all", subStage: "pa_submitted", showRaw: false, drill: null };
+const state = { view: "overview", month: null, mode: "incentive", stage: "pa_submitted", program: "BGE Tune-Up", chartStage: "pa_submitted", chartMeasure: null, whyProg: "all", subQuery: "", subProg: "all", subStage: "pa_submitted", showRaw: false, drill: null };
 let DATA = null, MODEL = null, TODAY = todayNY(), ACCOUNT = null, REFRESHING = false, PROGRESS = 0, ALERT = null;
 
 const itemUrl = (b, id) => `https://${ACCOUNT ? ACCOUNT + "." : ""}monday.com/boards/${b}/pulses/${id}`;
@@ -963,6 +1014,151 @@ const hasGoal = (r) => r.goal.count != null || r.goal.dollars != null;
 
 function visibleRows(rows) { return rows.filter((r) => !(r.program === OTHER || r.program === UNMAPPED) || r.mtd.raw || r.mtd.count == null); }
 
+/* ---------------------------------- charts ---------------------------------------------- */
+/* Hand-drawn SVG: one series colour, hairline grid, labels in text ink, exact values in tooltips and in the tables below. */
+const prevMonthOf = (m) => monthsBefore(m, 1)[0];
+function evsFor(stage, program, month) { return (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => e.counted && (program === "Total" || e.program === program)); }
+const measureOf = (e, measure) => measure === "count" ? 1 : (dollarsOf(e, state.mode) || 0);
+const sumMeasure = (evs, measure) => evs.reduce((a, e) => a + measureOf(e, measure), 0);
+function goalFigure(stage, program, month, measure) {
+  const g = CONFIG.goals[month]?.[stage]?.[program];
+  if (!g || !!CONFIG.goals.repeatsCountedAsNew !== !!CONFIG.rules.countRepeatsAsNew) return null;
+  return measure === "count" ? g.count ?? null : g[state.mode] ?? null;
+}
+function autoMeasure(stage, program, month) {
+  if (state.chartMeasure) return state.chartMeasure;
+  const g = CONFIG.goals[month]?.[stage]?.[program] || CONFIG.goals[month]?.[stage]?.Total;
+  return g && g.count == null && g.incentive != null ? "dollars" : "count";
+}
+const fmtM = (measure, v) => measure === "count" ? num(v, v % 1 && v < 10 ? 1 : 0) : shortMoney(v);
+const fmtExact = (measure, v) => measure === "count" ? num(v, v % 1 ? 1 : 0) : money(v);
+/* Same point last month: after the same number of working days (or the whole month, for a finished month). */
+function samePointLastMonth(stage, program, month, measure) {
+  const pm = prevMonthOf(month);
+  const [pf, pl] = monthBounds(pm);
+  const closed = TODAY > monthBounds(month)[1];
+  let cutoff = pl;
+  if (!closed) { const wd = workingDays(pf, pl), n = paceInfo(month, TODAY).elapsed; cutoff = n <= 0 ? null : wd[Math.min(n, wd.length) - 1]; }
+  return cutoff ? sumMeasure(evsFor(stage, program, pm).filter((e) => e.date <= cutoff), measure) : 0;
+}
+function niceMax(v) { if (v <= 0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * e >= v) return m * e; return 10 * e; }
+
+/* Running total through the month, with the goal's working-day pace and last month for comparison. */
+function burnupSvg(stage, program, month, measure) {
+  const [f, l] = monthBounds(month), days = +l.slice(8), pm = prevMonthOf(month), plDays = +monthBounds(pm)[1].slice(8);
+  const cum = (evs, upto) => { const by = new Array(33).fill(0); for (const e of evs) by[+e.date.slice(8)] += measureOf(e, measure); const out = []; let c = 0; for (let d = 1; d <= upto; d++) { c += by[d]; out.push(c); } return out; };
+  const todayDay = TODAY < f ? 0 : TODAY > l ? days : +TODAY.slice(8);
+  const actual = cum(evsFor(stage, program, month), todayDay);
+  const last = cum(evsFor(stage, program, pm), Math.min(plDays, days));
+  const goal = goalFigure(stage, program, month, measure);
+  const wd = workingDays(f, l);
+  const pace = goal == null ? null : Array.from({ length: days }, (_, i) => goal * wd.filter((x) => x <= `${month}-${pad(i + 1)}`).length / (wd.length || 1));
+  const ymax = niceMax(Math.max(1, ...actual, ...last, goal || 0) * 1.05);
+  const W = 640, H = 240, L = 50, R = 70, T = 16, Bm = 28;
+  const x = (d) => L + (d - 1) / Math.max(1, days - 1) * (W - L - R), y = (v) => T + (1 - v / ymax) * (H - T - Bm);
+  const path = (arr) => arr.map((v, i) => `${i ? "L" : "M"}${x(i + 1).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  let g = "";
+  for (let k = 0; k <= 4; k++) { const v = ymax * k / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${L - 8}" y="${y(v) + 4}" class="ax" text-anchor="end">${fmtM(measure, v)}</text>`; }
+  for (const w of monthWeeks(month).weeks) { const d = +w.start.slice(8); g += `<text x="${x(d)}" y="${H - 8}" class="ax" text-anchor="middle">${esc(md(w.start))}</text><line x1="${x(d)}" x2="${x(d)}" y1="${H - Bm}" y2="${H - Bm + 4}" class="axl"/>`; }
+  g += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" class="axl"/>`;
+  if (last.length) g += `<path d="${path(last)}" class="ln-last"/>`;
+  if (pace) g += `<path d="${path(pace)}" class="ln-pace"/><text x="${W - R + 6}" y="${y(pace[days - 1]) + 4}" class="lbl-pace">Goal ${fmtM(measure, goal)}</text>`;
+  if (actual.length) {
+    const ld = actual.length, lv = actual[ld - 1];
+    g += `<path d="${path(actual)}" class="ln-act"/><circle cx="${x(ld)}" cy="${y(lv)}" r="4.5" class="dot-act"/>`;
+    g += `<text x="${Math.min(x(ld) + 8, W - R + 6)}" y="${y(lv) - 8}" class="lbl-act">${fmtM(measure, lv)}</text>`;
+  }
+  if (todayDay > 0 && todayDay < days) g += `<line x1="${x(todayDay)}" x2="${x(todayDay)}" y1="${T}" y2="${H - Bm}" class="today"/><text x="${x(todayDay)}" y="${T - 4}" class="ax" text-anchor="middle">today</text>`;
+  // Hover targets: one column per day.
+  const colW = (W - L - R) / Math.max(1, days - 1);
+  for (let d = 1; d <= days; d++) {
+    const tip = [`${md(`${month}-${pad(d)}`)}`, d <= actual.length ? `so far ${fmtExact(measure, actual[d - 1])}` : "", pace ? `goal pace ${fmtExact(measure, pace[d - 1])}` : "", d <= last.length ? `${shortMonth(pm)} ${fmtExact(measure, last[d - 1])}` : ""].filter(Boolean).join(" · ");
+    g += `<rect x="${x(d) - colW / 2}" y="${T}" width="${colW}" height="${H - T - Bm}" class="hit"><title>${esc(tip)}</title></rect>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(`${STAGE_LABEL[stage]} month to date: ${actual.length ? fmtExact(measure, actual[actual.length - 1]) : 0}${goal != null ? ` of a ${fmtExact(measure, goal)} goal` : ""}`)}">${g}</svg>`;
+}
+
+/* Last six months for one stage, small enough to sit seven to a row. */
+function trendSvg(stage, program, month, measure, wide) {
+  const months = [...monthsBefore(month, 5), month];
+  const vals = months.map((mo) => sumMeasure(evsFor(stage, program, mo), measure));
+  const goals = months.map((mo) => goalFigure(stage, program, mo, measure));
+  const ymax = niceMax(Math.max(1, ...vals, ...goals.filter((v) => v != null)));
+  const W = wide ? 460 : 200, H = wide ? 190 : 96, T = 16, Bm = 18, bw = wide ? 44 : 22, gap = (W - bw * 6) / 7;
+  const y = (v) => T + (1 - v / ymax) * (H - T - Bm);
+  let g = `<line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" class="axl"/>`;
+  months.forEach((mo, i) => {
+    const x = gap + i * (bw + gap), v = vals[i], cur = i === 5 && TODAY <= monthBounds(mo)[1];
+    const hgt = Math.max(v ? 2 : 0, y(0) - y(v));
+    g += `<path d="M${x},${y(0)} v${-hgt + 3} q0,-3 3,-3 h${bw - 6} q3,0 3,3 v${hgt - 3} z" class="${cur ? "bar-cur" : "bar"}"${hgt < 3 ? ` style="display:none"` : ""}/>`;
+    if (goals[i] != null) g += `<line x1="${x - 3}" x2="${x + bw + 3}" y1="${y(goals[i])}" y2="${y(goals[i])}" class="goaltick"/>`;
+    g += `<text x="${x + bw / 2}" y="${y(v) - 3}" class="vlbl" text-anchor="middle">${fmtM(measure, v)}</text>`;
+    g += `<text x="${x + bw / 2}" y="${H - 3}" class="ax" text-anchor="middle">${shortMonth(mo).slice(0, 3)}</text>`;
+    g += `<rect x="${x - gap / 2}" y="0" width="${bw + gap}" height="${H}" class="hit"><title>${esc(`${monthName(mo)}: ${fmtExact(measure, v)}${cur ? " so far" : ""}${goals[i] != null ? ` · goal ${fmtExact(measure, goals[i])}` : ""}`)}</title></rect>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(`${STAGE_LABEL[stage]}, last six months: ${months.map((mo, i) => `${shortMonth(mo)} ${fmtExact(measure, vals[i])}`).join(", ")}`)}">${g}</svg>`;
+}
+
+/* Seven stage tiles for one program (or Total): big number, dollars, goal progress, change vs last month. */
+function stageTiles(B, program) {
+  const rowOf = (s) => program === "Total" ? B.totals[s] : B.sections[s].find((x) => x.program === program);
+  return `<div class="pipeline">${STAGES.map(([stage, label], i) => {
+    const r = rowOf(stage), c = r.mtd, sel = stage === state.chartStage;
+    if (c.count == null) return `<button type="button" class="tile na ${sel ? "sel" : ""}" data-chartstage="${stage}" title="${esc(c.unavail)}"><span class="step">${i + 1} · ${esc(label)}</span><span class="big">n/a</span><span class="usd small">source unavailable</span></button>`;
+    const g = goalView(r);
+    const measure = g && g.dollar ? "dollars" : "count";
+    const now = measure === "count" ? c.count : (c.dollars || 0);
+    const prev = samePointLastMonth(stage, program, state.month, measure);
+    const d = now - prev;
+    const dTxt = prev === 0 && now === 0 ? "same as last month" : `${d > 0 ? "+" : d < 0 ? "−" : "±"}${fmtM(measure, Math.abs(d))} vs ${shortMonth(prevMonthOf(state.month))}`;
+    const dCls = d > 0 ? "up" : d < 0 ? "down" : "flat";
+    return `<button type="button" class="tile ${sel ? "sel" : ""}" data-chartstage="${stage}" aria-pressed="${sel}" title="Chart ${esc(label)}">
+      <span class="step">${i + 1} · ${esc(label)}</span>
+      <span class="big">${g && g.dollar ? shortMoney(c.dollars) : c.count}</span>
+      <span class="usd">${g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
+      ${g ? `<span class="tbar" title="${esc(`${pct(g.pct)} of the ${g.fmt(g.goal)} goal; the tick is where pace says you should be today`)}"><i class="${r.status || ""}" style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:${Math.round(B.pace.fraction * 100)}%"></b></span>
+        <span class="tfoot"><span>${pct(g.pct)} of ${g.dollar ? shortMoney(g.goal) : num(g.goal)}</span>${chip(r.status)}</span>` : `<span class="tfoot muted">no goal</span>`}
+      <span class="delta ${dCls}" title="${esc(`At this point in ${monthName(prevMonthOf(state.month))}: ${fmtExact(measure, prev)}`)}">${dTxt}</span></button>`;
+  }).join("")}</div>`;
+}
+
+/* The chart row under the tiles: running total for the selected stage, plus its split by utility (Total) or its trend (one utility). */
+function chartRow(B, program) {
+  const stage = state.chartStage, month = state.month;
+  const measure = autoMeasure(stage, program, month);
+  const goal = goalFigure(stage, program, month, measure);
+  const prog = program === "Total" ? "all utilities" : program;
+  const seg = `<div class="seg small" role="group" aria-label="Measure"><button type="button" data-measure="count" aria-pressed="${measure === "count"}">Count</button><button type="button" data-measure="dollars" aria-pressed="${measure === "dollars"}">${state.mode === "incentive" ? "Incentive $" : "HBS Share $"}</button></div>`;
+  const legend = `<div class="legend" style="margin:0"><span><i style="background:var(--series)"></i>This month so far</span>${goal != null ? `<span><i class="lg-pace"></i>Goal pace (working days)</span>` : ""}<span><i class="lg-last"></i>${esc(shortMonth(prevMonthOf(month)))}</span></div>`;
+  let side;
+  if (program === "Total") {
+    const rows = ALL_ROWS.map((p) => ({ p, v: sumMeasure(evsFor(stage, p, month), measure), g: goalFigure(stage, p, month, measure) })).filter((x) => x.v || x.g);
+    const max = Math.max(1, ...rows.map((x) => Math.max(x.v, x.g || 0)));
+    rows.sort((a, b) => b.v - a.v);
+    side = `<section class="card"><div class="card-h"><h2>By utility</h2><span class="sub">${esc(STAGE_LABEL[stage])} · ${measure === "count" ? "count" : "dollars"} so far</span></div><div class="card-b ranked">
+      ${rows.length ? rows.map((x) => `<a href="#weekly" data-proglink="${esc(x.p)}" class="rk" title="${esc(`${x.p}: ${fmtExact(measure, x.v)}${x.g != null ? ` of ${fmtExact(measure, x.g)} goal` : ""}`)}">
+        <span class="rk-l">${esc(x.p)}</span><span class="rk-b"><i style="width:${(x.v / max) * 100}%"></i>${x.g != null ? `<b style="left:${(x.g / max) * 100}%"></b>` : ""}</span>
+        <span class="rk-v">${fmtM(measure, x.v)}${x.g != null ? `<span class="muted"> / ${fmtM(measure, x.g)}</span>` : ""}</span></a>`).join("") : `<div class="empty">Nothing logged yet.</div>`}
+      ${rows.some((x) => x.g != null) ? `<div class="legend"><span><i style="background:var(--series)"></i>So far</span><span><i class="lg-goal"></i>Monthly goal</span></div>` : ""}</div></section>`;
+  } else {
+    side = `<section class="card"><div class="card-h"><h2>Last six months</h2><span class="sub">${esc(STAGE_LABEL[stage])} · ${esc(prog)}</span></div><div class="card-b">
+      ${trendSvg(stage, program, month, measure, true)}
+      <div class="legend"><span><i style="background:var(--series)"></i>Month total</span><span><i style="background:var(--series);opacity:.45"></i>This month so far</span><span><i class="lg-goal"></i>Goal</span></div></div></section>`;
+  }
+  return `<div class="chartrow">
+    <section class="card"><div class="card-h"><h2>${esc(STAGE_LABEL[stage])} <span class="sub">· ${esc(prog)}, running total</span></h2><div class="right">${seg}</div></div>
+      <div class="card-b">${legend}${burnupSvg(stage, program, month, measure)}
+      <div class="small muted">Click a stage above to chart it. <button type="button" class="linkbtn" data-drill="${esc(JSON.stringify({ stage, program, month, week: "mtd" }))}">See the items →</button></div></div></section>
+    ${side}</div>`;
+}
+
+/* Six-month trend for every stage. */
+function trendGrid(program) {
+  const month = state.month;
+  return `<section class="card"><div class="card-h"><h2>Last six months</h2><span class="sub">${program === "Total" ? "all utilities" : esc(program)} · this month so far in a lighter shade · line = goal</span></div>
+    <div class="card-b trends">${STAGES.map(([s, l]) => { const m = autoMeasure(s, program, month); return `<button type="button" class="trend ${s === state.chartStage ? "sel" : ""}" data-chartstage="${s}"><span class="tl">${esc(l)}${m === "dollars" ? ` <span class="muted">($)</span>` : ""}</span>${trendSvg(s, program, month, m)}</button>`; }).join("")}</div></section>`;
+}
+
 function renderOverview() {
   const B = scoreboard(MODEL, state.month, state.mode, TODAY);
   const dl = state.mode === "incentive" ? "Incentive" : "HBS Share";
@@ -975,27 +1171,7 @@ function renderOverview() {
     h += `<div class="alert ${behind ? "bad" : watch ? "warn" : "info"}">${ICON.warn}<span><b>${behind} KPI${behind === 1 ? "" : "s"} behind pace, ${watch} to watch</b> out of ${goalRows.length} with a goal. ${list ? `Open a utility to see why: ${list}` : ""}</span></div>`;
   }
 
-  // Pipeline tiles
-  h += `<div class="pipeline">`;
-  STAGES.forEach(([stage, label], i) => {
-    const t = B.totals[stage];
-    const c = t.mtd;
-    if (c.count == null) {
-      h += `<button type="button" class="tile na" data-stage="${stage}"><span class="step">Stage ${i + 1}</span><span class="name">${esc(label)}</span>
-        <span class="big">Not available</span><span class="usd small" title="${esc(c.unavail)}">${esc(c.unavail.length > 70 ? c.unavail.slice(0, 68) + "…" : c.unavail)}</span></button>`;
-      return;
-    }
-    const counts = t.weeks.map((w) => (w.future ? null : w.count || 0));
-    const max = Math.max(1, ...counts.filter((x) => x != null));
-    const bars = t.weeks.map((w, j) => w.future ? `<i class="future" title="Week ${j + 1}: not started"></i>`
-      : `<i class="${w.count ? "" : "zero"}" style="height:${Math.max(2, Math.round(((w.count || 0) / max) * 26))}px" title="Week ${j + 1} (${esc(B.weeks[j].label)}): ${w.count ?? "n/a"}"></i>`).join("");
-    const fixes = c.dup + c.rptEx;
-    h += `<button type="button" class="tile" data-stage="${stage}" title="See the items behind ${esc(label)}">
-      <span class="step">Stage ${i + 1}</span><span class="name">${esc(label)}</span>
-      <span class="big">${c.count}</span><span class="usd">${c.dUnavail ? "$ n/a" : money(c.dollars)}${c.caveat ? " · partial" : ""}</span>
-      <span class="foot"><span class="spark" aria-hidden="true">${bars}</span>${chip(t.status) || (fixes ? `<span class="fixtag">${fixes} corrected</span>` : "")}</span></button>`;
-  });
-  h += `</div>`;
+  h += stageTiles(B, "Total") + chartRow(B, "Total") + trendGrid("Total");
 
   // Month at a glance: programs × stages
   const progs = ALL_ROWS.filter((p) => p !== OTHER && p !== UNMAPPED || STAGES.some(([s]) => { const r = B.sections[s].find((x) => x.program === p); return r.mtd.raw; }));
@@ -1050,6 +1226,7 @@ function renderWeekly() {
   h += `<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
     <div class="stagepick" role="group" aria-label="Utility">${[...progs, "Total"].map((p) => { const oc = offs[p]; return `<button type="button" data-pickprog="${esc(p)}" aria-pressed="${p === prog}" title="${oc ? `${oc.behind} behind, ${oc.watch} to watch` : ""}">${p === "Total" ? "All utilities" : esc(p)}${oc && oc.behind ? ` <span class="cnt-b">${oc.behind}</span>` : ""}</button>`; }).join("")}</div>
     <label class="switch"><input type="checkbox" id="showRaw" ${state.showRaw ? "checked" : ""}>Show raw counts</label></div>`;
+  h += stageTiles(B, prog) + chartRow(B, prog);
   const cols = B.weeks.map((w) => `<th class="n">Week ${w.index}<span class="sub">${esc(w.label)}</span></th>`).join("");
   const goalCell = (r) => {
     const g = goalView(r);
@@ -1066,7 +1243,7 @@ function renderWeekly() {
       ${anyGoal ? goalCell(r) + `<td>${isOff(r) ? `<a href="#why-${r.stage}" class="jump" data-jump="why-${r.stage}" title="See why">${chip(r.status)}<span class="small">Why?</span></a>` : chip(r.status) || `<span class="muted small">—</span>`}</td>` : ""}</tr>`).join("");
   const reasons = [...new Set(rows.map((r) => r.mtd.unavail).filter(Boolean))];
   const src = CONFIG.goals.sources?.[state.month];
-  h += `<section class="card"><div class="card-b scroll"><table><thead><tr><th>KPI</th>${cols}${B.hasUn ? `<th class="n orph">Not in any week</th>` : ""}<th class="n mtd">Month to date</th>
+  h += `<section class="card"><div class="card-h"><h2>Week by week</h2></div><div class="card-b scroll"><table><thead><tr><th>KPI</th>${cols}${B.hasUn ? `<th class="n orph">Not in any week</th>` : ""}<th class="n mtd">Month to date</th>
       ${anyGoal ? `<th>Goal</th><th>Pace</th>` : ""}</tr></thead><tbody>${body}</tbody></table></div>
     ${reasons.length ? `<div class="card-note">n/a: ${reasons.map(esc).join("<br>n/a: ")}</div>` : ""}
     ${anyGoal ? (src ? `<div class="card-note">${esc(src)} Dollar goals are Incentive.</div>` : "")
@@ -1657,6 +1834,10 @@ document.addEventListener("click", (e) => {
   const cell = e.target.closest("[data-drill]");
   if (cell) { openDrawer(JSON.parse(cell.getAttribute("data-drill"))); return; }
   if (e.target.closest("#closeDrawer")) { closeDrawer(); return; }
+  const cs = e.target.closest("[data-chartstage]");
+  if (cs) { state.chartStage = cs.dataset.chartstage; state.chartMeasure = null; render(); return; }
+  const ms = e.target.closest("[data-measure]");
+  if (ms) { state.chartMeasure = ms.dataset.measure; render(); return; }
   const tile = e.target.closest("[data-stage]");
   if (tile) { openDrawer({ stage: tile.dataset.stage, program: "Total", month: state.month, week: "mtd" }); return; }
   const pl = e.target.closest("[data-proglink]");
