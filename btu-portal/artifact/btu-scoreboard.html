@@ -139,6 +139,8 @@ th.n, td.n { text-align: right; }
 th .sub { display: block; font-weight: 400; font-size: 11px; }
 tr.total td { font-weight: 600; background: var(--surface-2); border-top: 1px solid var(--line-2); }
 td.rowh { font-weight: 500; white-space: nowrap; }
+td.rowh a { color: inherit; text-decoration: none; border-bottom: 1px dashed var(--line-2); }
+td.rowh a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 td.rowh .sub { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
 .v { display: block; text-align: right; background: none; border: 0; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; cursor: pointer; width: calc(100% + 12px); }
 .v:hover { background: var(--accent-soft); }
@@ -235,7 +237,8 @@ details.how .body p { margin: 0; }
       <span>BTU Scoreboard<small>HBS Solutions · Building Tune-Up</small></span></div>
     <nav class="tabs" id="nav" aria-label="Views">
       <a href="#overview">Overview</a>
-      <a href="#weekly">Weekly detail</a>
+      <a href="#weekly">By utility</a>
+      <a href="#why">Why we're behind</a>
       <a href="#pace">Pace</a>
       <a href="#submissions">Submissions</a>
       <a href="#aging">Aging</a>
@@ -270,6 +273,31 @@ details.how .body p { margin: 0; }
    the live boards on 2026-11-13. Week boundaries, goals, holidays and level readings are set by
    the division; none are invented.
 ------------------------------------------------------------------------------------------ */
+// Monthly goals from "HBS Weekly Scoreboard_Oct 26.xlsx", Tune-Up Factory tab (October 2026).
+// Dollar goals there are Incentive. Payments/Revenue rows are accounting figures and are not here.
+const OCT_2026_GOALS = {
+  audits: { "Prescriptive": { count: 8 }, "BGE Tune-Up": { count: 40 }, "BPTU": { count: 5 }, "Pepco/WGL": { count: 10 },
+            "Delmarva": { count: 3 }, "SMECO": { count: 2 }, "Georgia": { count: 2 }, "Virginia/CGS": { count: 3 } },
+  pa_submitted: { "Prescriptive": { count: 45, incentive: 80000 }, "BGE Tune-Up": { count: 40, incentive: 240000 }, "BPTU": { count: 4, incentive: 386700 },
+                  "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 2, incentive: 60000 }, "SMECO": { count: 2, incentive: 5000 },
+                  "Georgia": { count: 2, incentive: 49000 }, "Virginia/CGS": { count: 3, incentive: 1000 } },
+  pa_approved: { "Prescriptive": { count: 40 }, "BGE Tune-Up": { count: 24 }, "BPTU": { count: 4 }, "Pepco/WGL": { count: 9 },
+                 "Delmarva": { count: 8 }, "SMECO": { count: 2 }, "Georgia": { count: 3 }, "Virginia/CGS": { count: 4 } },
+  impl_scheduled: { "Prescriptive": { incentive: 80000 }, "BGE Tune-Up": { incentive: 240000 }, "BPTU": { incentive: 300000 }, "Pepco/WGL": { incentive: 240000 },
+                    "Delmarva": { incentive: 200000 }, "SMECO": { incentive: 5000 }, "Georgia": { incentive: 49000 }, "Virginia/CGS": { incentive: 5000 } },
+  impl_completed: { "Prescriptive": { count: 25 }, "BGE Tune-Up": { count: 10 }, "BPTU": { count: 4 }, "Pepco/WGL": { count: 4 },
+                    "Delmarva": { count: 3 }, "SMECO": { count: 3 }, "Georgia": { count: 2 }, "Virginia/CGS": { count: 15 } },
+  co_submitted: { "Prescriptive": { count: 48 }, "BGE Tune-Up": { count: 25, incentive: 240000 }, "BPTU": { count: 3, incentive: 300000 },
+                  "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 4, incentive: 200000 }, "SMECO": { count: 3, incentive: 5000 },
+                  "Georgia": { count: 3 }, "Virginia/CGS": { count: 5, incentive: 5000 } },
+};
+// A Total goal exists only where every program has one.
+for (const st of Object.values(OCT_2026_GOALS)) {
+  const vals = Object.values(st), t = {};
+  for (const f of ["count", "incentive"]) if (vals.length === 8 && vals.every((g) => g[f] != null)) t[f] = vals.reduce((a, g) => a + g[f], 0);
+  if (Object.keys(t).length) st.Total = t;
+}
+
 const CONFIG = {
   server: "monday.com",
   boards: { kpi: 1069742731, icf: 18424932045, master_tu: 1069746645, bptu: 6530139050, prescriptive: 18409151061 },
@@ -298,7 +326,7 @@ const CONFIG = {
   },
   icf: { status: "status", daysForResponse: "formula_mm5w1f2g", daysInPhase: "formula_mm6cpemz",
          bucket: "formula_mm6c5jr1", value: "numeric_mm5whe76", icfEngineer: "dropdown_mm5wqe1v",
-         hbsEngineer: "multiple_person_mm5x8h0r", phase: "color_mm5wyfg2", rfiOverdueDays: 7,
+         hbsEngineer: "multiple_person_mm5x8h0r", phase: "color_mm5wyfg2", utility: "dropdown_mm5w3gg4", rfiOverdueDays: 7,
          loop: { "RFI Sent to HBS": { holder: "HBS", kind: "RFI" },
                  "HBS Revising Submission": { holder: "HBS", kind: "Revision" },
                  "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
@@ -311,7 +339,15 @@ const CONFIG = {
     "2026-11": [["2026-11-01", "2026-11-08"], ["2026-11-09", "2026-11-15"], ["2026-11-16", "2026-11-22"], ["2026-11-23", "2026-11-30"]],
   },
   // goals["2026-11"].pa_submitted["BGE Tune-Up"] = { count, incentive, share }. None set yet.
-  goals: { repeatsCountedAsNew: false },
+  goals: {
+    repeatsCountedAsNew: false,
+    "2026-10": OCT_2026_GOALS,
+    "2026-11": OCT_2026_GOALS,
+    sources: {
+      "2026-10": "October goals from the HBS Weekly Scoreboard workbook (Tune-Up Factory tab).",
+      "2026-11": "No November goals have been set, so October's goals from the HBS Weekly Scoreboard workbook are used.",
+    },
+  },
   // Level readings (Utilization %, MRR, live contracts): { metric, kind: "percent"|"dollars"|"count", date, value, source }.
   levels: [],
 };
@@ -481,7 +517,7 @@ function normItem(raw) {
 
 function colsFor(k) {
   if (k === "kpi") return Object.values(CONFIG.kpiCols).filter(Boolean);
-  if (k === "icf") return [CONFIG.icf.status, CONFIG.icf.daysForResponse, CONFIG.icf.daysInPhase, CONFIG.icf.bucket, CONFIG.icf.value, CONFIG.icf.icfEngineer, CONFIG.icf.hbsEngineer, CONFIG.icf.phase].filter(Boolean);
+  if (k === "icf") return [CONFIG.icf.status, CONFIG.icf.daysForResponse, CONFIG.icf.daysInPhase, CONFIG.icf.bucket, CONFIG.icf.value, CONFIG.icf.icfEngineer, CONFIG.icf.hbsEngineer, CONFIG.icf.phase, CONFIG.icf.utility].filter(Boolean);
   const t = CONFIG.trackers[k];
   return [t.impl, t.status, t.utility, t.incentive, t.share].filter(Boolean);
 }
@@ -509,7 +545,7 @@ async function pullBoard(k, onProgress) {
 
 /* ---------------------------------- ETL -------------------------------------------------- */
 function compute(D, today) {
-  const M = { events: [], issues: [], corrections: [], unavail: {}, dUnavail: {}, byStageMonth: new Map() };
+  const M = { events: [], issues: [], corrections: [], unavail: {}, dUnavail: {}, byStageMonth: new Map(), stale: {} };
   for (const [k, msg] of Object.entries(D.errors || {}))
     M.issues.push({ kind: "refresh_error", sev: "error", msg: `Last refresh of ${boardLabel(k)} failed: ${msg}${D.boards[k] ? ` Showing the previous pull from ${fmtTime(D.boards[k].at)}.` : ""}` });
   buildKpi(D, M);
@@ -600,10 +636,14 @@ function buildImpl(D, M, today) {
       const d = it.c[t.impl];
       if (!isDate(d) || d > today) continue;
       const status = it.c[t.status] || null;
-      if (!(done.has((status || "").toLowerCase()) || closeout.has(it.gid))) { stale.push(ref(b, it, `${d} · status "${status || ""}" · group "${it.gt}"`)); continue; }
       let program, basis, utility = null, isType = false;
       if (t.program) { program = t.program; basis = `On the ${t.label}`; }
       else { utility = it.c[t.utility] || null; const pr = mapProgram(utility, it.name); program = pr.program; basis = pr.basis + ` (from ${t.label})`; isType = !!pr.isType; }
+      if (!(done.has((status || "").toLowerCase()) || closeout.has(it.gid))) {
+        const r = ref(b, it, `${d} · status "${status || ""}" · group "${it.gt}"`);
+        stale.push(r); (M.stale[program] = M.stale[program] || []).push({ ...r, date: d, status });
+        continue;
+      }
       M.events.push(mkEvent({ board: tk, boardId: b.meta.id, id: it.id, name: it.name, stage, program, basis, date: d, utility, isType,
         incentive: has(t.incentive) ? parseNumber(it.c[t.incentive])[0] : null, share: has(t.share) ? parseNumber(it.c[t.share])[0] : null,
         source: status ? `status "${status}"` : `group "${it.gt}"` }));
@@ -692,7 +732,7 @@ function buildRow(M, stage, program, month, mode, weeks, evs, pace, today) {
   const un = weeks.length ? makeCell(orphans, mode, ua, du, { ...base, week: "none" }) : null;
   const mtd = makeCell(evs, mode, ua, du, { ...base, week: "mtd" });
   const goal = goalFor(month, stage, program, mode);
-  const basisCount = CONFIG.rules.paceBasis === "count";
+  const basisCount = CONFIG.rules.paceBasis === "count" ? goal.count != null : goal.dollars == null;
   return { stage, program, weeks: wk, un, mtd, goal,
     pctCount: mtd.count != null && goal.count ? mtd.count / goal.count : null,
     pctDollars: mtd.dollars != null && goal.dollars ? mtd.dollars / goal.dollars : null,
@@ -761,7 +801,8 @@ function aging(D) {
     const st = it.c[A.status] || null, role = loop[(st || "").toLowerCase()] || {};
     return { id: it.id, name: it.name, status: st, holder: role.holder || null, kind: role.kind || null,
       dfr: parseNumber(it.c[A.daysForResponse])[0], dip: parseNumber(it.c[A.daysInPhase])[0], bucket: it.c[A.bucket] || null,
-      value: parseNumber(it.c[A.value])[0], icf: it.c[A.icfEngineer] || null, hbs: it.c[A.hbsEngineer] || null, phase: it.c[A.phase] || null };
+      value: parseNumber(it.c[A.value])[0], icf: it.c[A.icfEngineer] || null, hbs: it.c[A.hbsEngineer] || null, phase: it.c[A.phase] || null,
+      program: it.c[A.utility] ? mapProgram(it.c[A.utility], it.name).program : null };
   });
   const inLoop = items.filter((x) => x.holder);
   const agg = (xs) => [xs.length, sumOf(xs.map((x) => x.value)) || 0];
@@ -790,7 +831,7 @@ function aging(D) {
 
 
 /* ---------------------------------- rendering -------------------------------------------- */
-const state = { view: "overview", month: null, mode: "incentive", stage: "pa_submitted", subStage: "pa_submitted", showRaw: false, drill: null };
+const state = { view: "overview", month: null, mode: "incentive", stage: "pa_submitted", program: "BGE Tune-Up", whyProg: "all", subStage: "pa_submitted", showRaw: false, drill: null };
 let DATA = null, MODEL = null, TODAY = todayNY(), ACCOUNT = null, REFRESHING = false, PROGRESS = 0, ALERT = null;
 
 const itemUrl = (b, id) => `https://${ACCOUNT ? ACCOUNT + "." : ""}monday.com/boards/${b}/pulses/${id}`;
@@ -856,12 +897,23 @@ function pageHead(title, sub, B) {
       <div class="track"><i style="width:${Math.round(p.fraction * 100)}%"></i></div></div></div>`;
 }
 
+/* One view of a row's goal: by count when there's a count goal, else by dollars (Incentive goals only). */
+function goalView(r) {
+  if (r.goal.count != null) return { dollar: false, actual: r.mtd.count, goal: r.goal.count, pct: r.mtd.count == null ? null : r.mtd.count / r.goal.count, fmt: (v) => num(v) };
+  if (r.goal.dollars != null) return { dollar: true, actual: r.mtd.dollars, goal: r.goal.dollars, pct: r.mtd.dollars == null ? null : r.mtd.dollars / r.goal.dollars, fmt: (v) => money(v) };
+  return null;
+}
+const hasGoal = (r) => r.goal.count != null || r.goal.dollars != null;
+
 function visibleRows(rows) { return rows.filter((r) => !(r.program === OTHER || r.program === UNMAPPED) || r.mtd.raw || r.mtd.count == null); }
 
 function renderOverview() {
   const B = scoreboard(MODEL, state.month, state.mode, TODAY);
   const dl = state.mode === "incentive" ? "Incentive" : "HBS Share";
   let h = pageHead(monthName(state.month), `Month to date by pipeline stage · dollars shown as ${dl}`, B);
+  const goalRows = STAGES.flatMap(([s]) => [...B.sections[s], B.totals[s]]).filter((r) => hasGoal(r) && r.status);
+  const behind = goalRows.filter((r) => r.status === "behind").length, watch = goalRows.filter((r) => r.status === "watch").length;
+  if (goalRows.length) h += `<a href="#why" class="alert ${behind ? "bad" : watch ? "warn" : "info"}" style="text-decoration:none">${ICON.warn}<span><b>${behind} KPI${behind === 1 ? "" : "s"} behind pace, ${watch} to watch</b> out of ${goalRows.length} with a goal. See why →</span></a>`;
 
   // Pipeline tiles
   h += `<div class="pipeline">`;
@@ -878,7 +930,7 @@ function renderOverview() {
     const bars = t.weeks.map((w, j) => w.future ? `<i class="future" title="Week ${j + 1}: not started"></i>`
       : `<i class="${w.count ? "" : "zero"}" style="height:${Math.max(2, Math.round(((w.count || 0) / max) * 26))}px" title="Week ${j + 1} (${esc(B.weeks[j].label)}): ${w.count ?? "n/a"}"></i>`).join("");
     const fixes = c.dup + c.rptEx;
-    h += `<button type="button" class="tile" data-stage="${stage}" title="Open the weekly detail for ${esc(label)}">
+    h += `<button type="button" class="tile" data-stage="${stage}" title="See the items behind ${esc(label)}">
       <span class="step">Stage ${i + 1}</span><span class="name">${esc(label)}</span>
       <span class="big">${c.count}</span><span class="usd">${c.dUnavail ? "$ n/a" : money(c.dollars)}${c.caveat ? " · partial" : ""}</span>
       <span class="foot"><span class="spark" aria-hidden="true">${bars}</span>${chip(t.status) || (fixes ? `<span class="fixtag">${fixes} corrected</span>` : "")}</span></button>`;
@@ -891,11 +943,11 @@ function renderOverview() {
   h += `<section class="card"><div class="card-h"><h2>Month at a glance <span class="sub">· count and ${dl}, month to date</span></h2>
       <div class="right small muted"><span class="fix" aria-hidden="true"></span>corrected for duplicates or repeats</div></div>
     <div class="card-b scroll"><table><thead><tr><th>Program</th>${STAGES.map(([, l]) => `<th class="n">${esc(l)}</th>`).join("")}</tr></thead><tbody>
-    ${progs.map((p) => `<tr><td class="rowh">${esc(p)}${p === OTHER ? `<span class="sub">Potomac Edison, Met ED, National Grid</span>` : p === UNMAPPED ? `<span class="sub">blank or unknown Utility</span>` : p === "BGE Tune-Up" ? `<span class="sub">excludes prescriptive work</span>` : ""}</td>
+    ${progs.map((p) => `<tr><td class="rowh"><a href="#weekly" data-proglink="${esc(p)}">${esc(p)}</a>${p === OTHER ? `<span class="sub">Potomac Edison, Met ED, National Grid</span>` : p === UNMAPPED ? `<span class="sub">blank or unknown Utility</span>` : p === "BGE Tune-Up" ? `<span class="sub">excludes prescriptive work</span>` : ""}</td>
       ${STAGES.map(([s]) => valueCell(rowOf(s, p).mtd)).join("")}</tr>`).join("")}
-    <tr class="total"><td class="rowh">All programs</td>${STAGES.map(([s]) => valueCell(B.totals[s].mtd)).join("")}</tr>
+    <tr class="total"><td class="rowh"><a href="#weekly" data-proglink="Total">All programs</a></td>${STAGES.map(([s]) => valueCell(B.totals[s].mtd)).join("")}</tr>
     </tbody></table></div>
-    <div class="card-note">Click any number to see the monday items behind it. Programs with nothing logged this month in Other or Unmapped are hidden.</div></section>`;
+    <div class="card-note">Click a utility for its week-by-week view, or any number to see the monday items behind it. Programs with nothing logged this month in Other or Unmapped are hidden.</div></section>`;
 
   // Repeat rate + levels
   const rr = Object.entries(B.repeat);
@@ -924,29 +976,40 @@ function howItsCounted(B) {
 
 function renderWeekly() {
   const B = scoreboard(MODEL, state.month, state.mode, TODAY);
-  const stage = state.stage, rows = B.sections[stage], total = B.totals[stage];
-  const anyGoal = [...rows, total].some((r) => r.goal.count != null);
-  let h = pageHead(`${STAGE_LABEL[stage]} · ${monthName(state.month)}`, STAGE_NOTES[stage] ? esc(STAGE_NOTES[stage]) : "Week by week, with the goal and pace for each program.", B);
+  const prog = state.program;
+  const rowFor = (stage) => prog === "Total" ? B.totals[stage] : B.sections[stage].find((x) => x.program === prog);
+  const rows = STAGES.map(([s]) => rowFor(s));
+  const anyGoal = rows.some(hasGoal);
+  const progs = ALL_ROWS.filter((p) => !(p === OTHER || p === UNMAPPED) || STAGES.some(([s]) => B.sections[s].find((x) => x.program === p).mtd.raw));
+  const title = prog === "Total" ? "All utilities" : prog;
+  const sub = prog === "Prescriptive" ? "Prescriptive HVAC tune-ups (records whose Utility field holds HVAC BTU, HVAC BPTU or HVAC Tune Up)."
+    : prog === "BGE Tune-Up" ? "BGE projects without a (Phase 1)/(Phase 2) tag. Excludes prescriptive work at BGE."
+    : prog === OTHER ? "Potomac Edison, Met ED and National Grid." : prog === UNMAPPED ? "Records with a blank or unknown Utility." : "Each KPI week by week, with the goal and pace.";
+  let h = pageHead(`${title} · ${monthName(state.month)}`, esc(sub), B);
   h += `<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
-    <div class="stagepick" role="group" aria-label="Stage">${STAGES.map(([s, l]) => `<button type="button" data-pickstage="${s}" aria-pressed="${s === stage}">${esc(l)}</button>`).join("")}</div>
+    <div class="stagepick" role="group" aria-label="Utility">${[...progs, "Total"].map((p) => `<button type="button" data-pickprog="${esc(p)}" aria-pressed="${p === prog}">${p === "Total" ? "All utilities" : esc(p)}</button>`).join("")}</div>
     <label class="switch"><input type="checkbox" id="showRaw" ${state.showRaw ? "checked" : ""}>Show raw counts</label></div>`;
   const cols = B.weeks.map((w) => `<th class="n">Week ${w.index}<span class="sub">${esc(w.label)}</span></th>`).join("");
   const goalCell = (r) => {
-    if (r.goal.count == null) return `<td class="n"><span class="muted small" title="${esc(r.goal.reason || "")}">—</span></td>`;
-    const pctv = r.pctCount == null ? 0 : Math.min(1, r.pctCount);
+    const g = goalView(r);
+    if (!g) return `<td class="n"><span class="muted small" title="${esc(r.goal.reason || (state.mode === "share" ? "Goals are set in Incentive dollars" : ""))}">—</span></td>`;
+    const pctv = g.pct == null ? 0 : Math.min(1, g.pct);
     const exp = Math.min(1, B.pace.fraction);
-    return `<td><div style="display:grid;gap:4px;min-width:150px"><div class="small tnum" style="display:flex;justify-content:space-between"><span>${r.mtd.count ?? "—"} of ${num(r.goal.count)}</span><span class="muted">${pct(r.pctCount)}</span></div>
+    const dollarGoal = !g.dollar && r.goal.dollars != null ? `<span class="muted"> · ${money(r.goal.dollars)} goal</span>` : "";
+    return `<td><div style="display:grid;gap:4px;min-width:170px"><div class="small tnum" style="display:flex;justify-content:space-between;gap:8px"><span>${g.actual == null ? "—" : g.fmt(g.actual)} of ${g.fmt(g.goal)}${dollarGoal}</span><span class="muted">${pct(g.pct)}</span></div>
       <div class="bullet" title="Bar: month to date. Tick: where pace says you should be today."><i style="width:${Math.round(pctv * 100)}%"></i><b style="left:calc(${Math.round(exp * 100)}% - 1px)"></b></div></div></td>`;
   };
-  const body = [...visibleRows(rows), total].map((r) => `<tr class="${r.program === "Total" ? "total" : ""}">
-      <td class="rowh">${r.program === "Total" ? "All programs" : esc(r.program)}${r.program === OTHER ? `<span class="sub">Potomac Edison, Met ED, National Grid</span>` : r.program === UNMAPPED ? `<span class="sub">blank or unknown Utility</span>` : ""}</td>
+  const body = rows.map((r, i) => `<tr>
+      <td class="rowh">${esc(STAGES[i][1])}${r.goal.count == null && r.goal.dollars != null ? `<span class="sub">goal in Incentive $</span>` : r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>
       ${r.weeks.map((c) => valueCell(c)).join("")}${B.hasUn ? valueCell(r.un, "orph") : ""}${valueCell(r.mtd, "mtd")}
       ${anyGoal ? goalCell(r) + `<td>${chip(r.status) || `<span class="muted small">—</span>`}</td>` : ""}</tr>`).join("");
-  const reasons = [...new Set([...rows, total].map((r) => r.mtd.unavail).filter(Boolean))];
-  h += `<section class="card"><div class="card-b scroll"><table><thead><tr><th>Program</th>${cols}${B.hasUn ? `<th class="n orph">Not in any week</th>` : ""}<th class="n mtd">Month to date</th>
+  const reasons = [...new Set(rows.map((r) => r.mtd.unavail).filter(Boolean))];
+  const src = CONFIG.goals.sources?.[state.month];
+  h += `<section class="card"><div class="card-b scroll"><table><thead><tr><th>KPI</th>${cols}${B.hasUn ? `<th class="n orph">Not in any week</th>` : ""}<th class="n mtd">Month to date</th>
       ${anyGoal ? `<th>Goal</th><th>Pace</th>` : ""}</tr></thead><tbody>${body}</tbody></table></div>
-    ${reasons.length ? `<div class="card-note">${reasons.map((r) => `n/a: ${esc(r)}`).join("<br>")}</div>` : ""}
-    ${anyGoal ? "" : `<div class="card-note">No goals are set for ${esc(monthName(state.month))}, so there is no pace status yet. Send Claude the month's goals to add them.</div>`}</section>`;
+    ${reasons.length ? `<div class="card-note">n/a: ${reasons.map(esc).join("<br>n/a: ")}</div>` : ""}
+    ${anyGoal ? (src ? `<div class="card-note">${esc(src)}${rows.some((r) => r.status === "behind" || r.status === "watch") ? ` <a href="#why">See why KPIs are behind →</a>` : ""}</div>` : "")
+      : `<div class="card-note">No goals are set for ${esc(prog === "Total" ? "all utilities" : prog)} in ${esc(monthName(state.month))}, so there is no pace status.</div>`}</section>`;
   const levels = levelRows(state.month, B.weeks, TODAY);
   if (levels.length) h += `<section class="card"><div class="card-h"><h2>Levels <span class="sub">· readings, never summed across weeks</span></h2></div><div class="card-b scroll"><table><thead><tr><th>Metric</th>${B.weeks.map((w) => `<th class="n">Week ${w.index}</th>`).join("")}<th class="n mtd">Latest</th><th class="n">Target</th></tr></thead><tbody>
     ${levels.map((l) => `<tr><td class="rowh">${esc(l.metric)}</td>${l.weeks.map((r) => `<td class="n">${r ? fmtLevel(l.kind, r.value) : `<span class="future">·</span>`}</td>`).join("")}<td class="n mtd">${l.latest ? fmtLevel(l.kind, l.latest.value) : "—"}</td><td class="n">${l.goal != null ? fmtLevel(l.kind, l.goal) : "—"}</td></tr>`).join("")}</tbody></table></div></section>`;
@@ -959,21 +1022,21 @@ function renderPace() {
   let h = pageHead(`Pace · ${monthName(state.month)}`, `Where each stage stands against its goal, judged on working days gone (${pct(B.pace.fraction)}), with ${B.pace.remaining} working day${B.pace.remaining === 1 ? "" : "s"} and ${weeksLeft} week${weeksLeft === 1 ? "" : "s"} left.`, B);
   const withGoal = [], without = [];
   for (const [stage] of STAGES) for (const r of [...B.sections[stage], B.totals[stage]]) {
-    if (r.goal.count != null) withGoal.push(r);
+    if (hasGoal(r)) withGoal.push(r);
     else if (r.program === "Total") without.push(r);
   }
   if (withGoal.length) {
     h += `<section class="card"><div class="card-h"><h2>Against goal</h2><div class="right small muted">Bar: month to date · Tick: where you should be today</div></div><div class="card-b scroll"><table><thead><tr>
       <th>Stage</th><th>Program</th><th style="min-width:200px">Progress</th><th class="n">Gap to pace</th><th class="n">Needed per week</th><th class="n">Needed per working day</th><th>Status</th></tr></thead><tbody>
       ${withGoal.map((r) => {
-        const c = r.mtd.count;
-        if (c == null) return `<tr><td>${esc(STAGE_LABEL[r.stage])}</td><td class="rowh">${esc(r.program)}</td><td colspan="5"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`;
-        const gap = c - r.expCount, left = Math.max(r.goal.count - c, 0);
+        const g = goalView(r), c = g.actual;
+        if (r.mtd.count == null) return `<tr><td>${esc(STAGE_LABEL[r.stage])}</td><td class="rowh">${esc(r.program)}</td><td colspan="5"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`;
+        const exp = g.goal * B.pace.fraction, gap = (c || 0) - exp, left = Math.max(g.goal - (c || 0), 0);
         return `<tr class="${r.program === "Total" ? "total" : ""}"><td>${esc(STAGE_LABEL[r.stage])}</td><td class="rowh">${r.program === "Total" ? "All programs" : esc(r.program)}</td>
-          <td><div style="display:grid;gap:4px"><div class="small" style="display:flex;justify-content:space-between"><span><b>${c}</b> of ${num(r.goal.count)} · ${money(r.mtd.dollars)}</span><span class="muted">${pct(r.pctCount)}</span></div>
-          <div class="bullet"><i style="width:${Math.round(Math.min(1, r.pctCount || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div></div></td>
-          <td class="n" style="color:${gap < 0 ? "var(--bad)" : "var(--good)"}">${gap >= 0 ? "+" : ""}${num(gap, 1)}</td>
-          <td class="n">${weeksLeft ? num(left / weeksLeft, 1) : "—"}</td><td class="n">${B.pace.remaining ? num(left / B.pace.remaining, 2) : "—"}</td><td>${chip(r.status)}</td></tr>`;
+          <td><div style="display:grid;gap:4px"><div class="small" style="display:flex;justify-content:space-between"><span><b>${g.fmt(c)}</b> of ${g.fmt(g.goal)}${g.dollar ? "" : " · " + money(r.mtd.dollars)}</span><span class="muted">${pct(g.pct)}</span></div>
+          <div class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div></div></td>
+          <td class="n" style="color:${gap < 0 ? "var(--bad)" : "var(--good)"}">${gap >= 0 ? "+" : "-"}${g.dollar ? money(Math.abs(gap)) : num(Math.abs(gap), 1)}</td>
+          <td class="n">${weeksLeft ? (g.dollar ? money(left / weeksLeft) : num(left / weeksLeft, 1)) : "—"}</td><td class="n">${B.pace.remaining ? (g.dollar ? money(left / B.pace.remaining) : num(left / B.pace.remaining, 2)) : "—"}</td><td>${chip(r.status)}</td></tr>`;
       }).join("")}</tbody></table></div></section>`;
   } else {
     h += `<section class="card"><div class="empty"><b>No goals set for ${esc(monthName(state.month))}</b>Pace needs a goal per stage and program. Send Claude the month's goals and this page will show progress bars, the gap to pace and the run rate needed for the weeks left.</div></section>`;
@@ -1101,6 +1164,181 @@ function renderQuality() {
   return h;
 }
 
+/* ---------------------------------- why we're behind ------------------------------------- */
+const STAGE_IDX = Object.fromEntries(STAGES.map(([s], i) => [s, i]));
+function monthsBefore(month, n) { let [y, m] = month.split("-").map(Number); const out = []; for (let i = 0; i < n; i++) { m--; if (!m) { y--; m = 12; } out.push(`${y}-${pad(m)}`); } return out.reverse(); }
+const daysBetween = (a, b) => Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000);
+const median = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const shortMonth = (m) => new Date(m + "-01T00:00:00Z").toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + "s")}`;
+
+/* Each project's first date at each stage, as of a date. Duplicates are left out; a repeat counts at first logging. */
+function projectIndex(asOf) {
+  const P = new Map();
+  for (const e of MODEL.events) {
+    if (e.duplicateOf || e.date > asOf) continue;
+    const k = normName(e.name) + "\u0001" + e.program;
+    let p = P.get(k);
+    if (!p) { p = { name: e.name, program: e.program, at: {}, ev: {} }; P.set(k, p); }
+    if (!p.at[e.stage] || e.date < p.at[e.stage]) { p.at[e.stage] = e.date; p.ev[e.stage] = e; }
+  }
+  for (const p of P.values()) {
+    let best = -1;
+    for (const st in p.at) best = Math.max(best, STAGE_IDX[st]);
+    p.furthest = best; p.furthestDate = p.at[STAGES[best][0]];
+  }
+  return P;
+}
+
+/* Reasons a KPI (stage × program) is off pace, each backed by monday data and, where possible, a list of items. */
+function reasonsFor(r, ctx) {
+  const { B, P, ag, month, asOf } = ctx;
+  const stage = r.stage, prog = r.program, idx = STAGE_IDX[stage];
+  const g = goalView(r);
+  const out = [];
+  const fmt = g.dollar ? (v) => money(v) : (v) => num(v);
+  const exp = g.goal * B.pace.fraction, short = Math.max(0, exp - (g.actual || 0)), left = Math.max(0, g.goal - (g.actual || 0));
+  const closed = TODAY > monthBounds(month)[1];
+  const weeksLeft = closed ? 0 : B.weeks.filter((w) => w.end >= asOf).length;
+  const pick = (e) => e.program === prog || prog === "Total";
+  const sumVal = (evs) => g.dollar ? (sumOf(evs.map((e) => e.incentive)) || 0) : evs.length;
+
+  // 1. Is the goal in line with what this program normally does?
+  const hm = monthsBefore(month, 3);
+  const hist = hm.map((mo) => sumVal((MODEL.byStageMonth.get(stage + "|" + mo) || []).filter((e) => pick(e) && e.counted)));
+  const avg = hist.reduce((a, b) => a + b, 0) / hist.length;
+  const histTxt = hm.map((mo, i) => `${shortMonth(mo)} ${fmt(hist[i])}`).join(", ");
+  if (avg === 0) out.push({ kind: "Goal vs. history", sev: 2, text: `Nothing was logged here in the last three months (${histTxt}), so the goal of ${fmt(g.goal)} assumes work that hasn't been flowing at all.` });
+  else if (g.goal >= avg * 1.5) out.push({ kind: "Goal vs. history", sev: 2, text: `The goal of ${fmt(g.goal)} is ${(g.goal / avg).toFixed(1)}× the recent monthly average of ${fmt(avg)} (${histTxt}). Hitting it needs a step up, not just a normal month.` });
+  else if (avg >= g.goal) out.push({ kind: "Goal vs. history", sev: 1, text: `This usually reaches the goal: the last three months averaged ${fmt(avg)} (${histTxt}). This month is running below its own normal, so look for what changed.` });
+  else out.push({ kind: "Goal vs. history", sev: 1, text: `Recent months averaged ${fmt(avg)} (${histTxt}) against a goal of ${fmt(g.goal)}.` });
+
+  // 2. Supply waiting at the previous step, and how long that step takes.
+  if (idx > 0 && stage !== "impl_completed") {
+    const prev = STAGES[idx - 1][0];
+    const waiting = [...P.values()].filter((p) => (p.program === prog || prog === "Total") && p.furthest === idx - 1 && daysBetween(p.furthestDate, asOf) <= 180);
+    const ages = waiting.map((p) => daysBetween(p.furthestDate, asOf));
+    const lagsP = [...P.values()].filter((p) => (p.program === prog || prog === "Total") && p.at[prev] && p.at[stage] && p.at[stage] >= p.at[prev]).map((p) => daysBetween(p.at[prev], p.at[stage]));
+    const lagsAll = lagsP.length >= 5 ? lagsP : [...P.values()].filter((p) => p.at[prev] && p.at[stage] && p.at[stage] >= p.at[prev]).map((p) => daysBetween(p.at[prev], p.at[stage]));
+    const lag = median(lagsAll);
+    const items = waiting.map((p) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, detail: `${STAGE_LABEL[prev]} ${p.furthestDate} · waiting ${daysBetween(p.furthestDate, asOf)} days` }));
+    const waitVal = g.dollar ? sumOf(waiting.map((p) => p.ev[prev].incentive)) || 0 : waiting.length;
+    let text;
+    if (!waiting.length) text = `No projects are waiting at ${STAGE_LABEL[prev]} (last 6 months), so there is nothing in the pipeline to turn into ${STAGE_LABEL[stage].toLowerCase()} this month. The gap starts upstream.`;
+    else if (waitVal < left) text = `Only ${plural(waiting.length, "project")}${g.dollar ? ` (${money(waitVal)})` : ""} ${waiting.length === 1 ? "is" : "are"} waiting at ${STAGE_LABEL[prev]}. Even if all of them moved this month, the goal would still be ${fmt(left - waitVal)} short. The pipeline is too thin.`;
+    else text = `${plural(waiting.length, "project")}${g.dollar ? ` (${money(waitVal)})` : ""} ${waiting.length === 1 ? "is" : "are"} waiting at ${STAGE_LABEL[prev]}, enough to cover what's left of the goal. The work exists; it isn't moving to the next step. The oldest has waited ${Math.max(...ages)} days.`;
+    out.push({ kind: "Pipeline", sev: waitVal < left ? 3 : 2, text, items });
+    if (lag != null) {
+      const daysLeft = daysBetween(asOf, monthBounds(month)[1]);
+      const late = !closed && lag > daysLeft;
+      out.push({ kind: "Lead time", sev: late ? 2 : 0, text: `Projects typically take ${Math.round(lag)} days from ${STAGE_LABEL[prev]} to ${STAGE_LABEL[stage]}${lagsP.length >= 5 ? "" : " (all programs; too few for this one alone)"}.${late ? ` With ${daysLeft} days left in the month, work reaching ${STAGE_LABEL[prev]} from now on mostly lands next month.` : closed ? ` Work reaching ${STAGE_LABEL[prev]} in the last ${Math.round(lag)} days of a month mostly lands in the next one.` : ""}` });
+    }
+  }
+
+  // 3. Implementations past their date but not marked done.
+  if (stage === "impl_completed") {
+    const st = prog === "Total" ? Object.values(MODEL.stale).flat() : MODEL.stale[prog] || [];
+    const thisMonth = st.filter((x) => monthOf(x.date) === month);
+    if (st.length) out.push({ kind: "Not marked done", sev: 3, text: `${plural(st.length, "implementation")} on the trackers ${st.length === 1 ? "has" : "have"} a date that has passed but ${st.length === 1 ? "isn't" : "aren't"} marked done${thisMonth.length ? ` (${thisMonth.length} dated this month)` : ""}. If the work happened, updating the tracker status counts ${st.length === 1 ? "it" : "them"}.`, items: st });
+  }
+
+  // 4. ICF / HBS holding work in the RFI loop.
+  if (ag && ag.ok && ["pa_approved", "co_approved", "pa_submitted", "co_submitted"].includes(stage)) {
+    const phase = stage.startsWith("pa") ? /pre-?approval/i : /closeout/i;
+    const loop = ag.loop.filter((x) => (prog === "Total" || x.program === prog) && phase.test(x.phase || ""));
+    const icf = loop.filter((x) => x.holder === "ICF"), hbs = loop.filter((x) => x.holder === "HBS");
+    const toItems = (xs) => xs.map((x) => ({ b: ag.boardId, id: x.id, name: x.name, detail: `${x.status} · ${x.dfr ?? "?"} days waiting` }));
+    if (stage.endsWith("approved") && icf.length) out.push({ kind: "Waiting on ICF", sev: 2, text: `${plural(icf.length, "project")} in this phase ${icf.length === 1 ? "is" : "are"} with ICF after an RFI response or resubmission (${money(sumOf(icf.map((x) => x.value)) || 0)}). Approvals depend on ICF clearing ${icf.length === 1 ? "it" : "them"}.`, items: toItems(icf) });
+    if (hbs.length) out.push({ kind: "Waiting on HBS", sev: 3, text: `${plural(hbs.length, "project")} in this phase ${hbs.length === 1 ? "is" : "are"} waiting on HBS: open RFIs or revisions (${money(sumOf(hbs.map((x) => x.value)) || 0)}). These are in HBS's control to move.`, items: toItems(hbs) });
+    if (!ag.items.some((x) => x.program)) out.push({ kind: "Waiting on ICF", sev: 0, text: "The ICF tracker hasn't been read with its Utility column yet. Press Refresh to include RFI loop counts here." });
+  }
+
+  // 5. Timing: nothing logged recently.
+  const cur = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => pick(e) && e.counted);
+  const last = cur.map((e) => e.date).sort().pop();
+  const since = last ? daysBetween(last, asOf) : daysBetween(monthBounds(month)[0], asOf);
+  if (since >= 7) out.push({ kind: "Activity", sev: 2, text: last ? `Nothing has been logged here since ${md(last)} (${since} days).` : `Nothing has been logged here yet this month (${since} days in).` });
+
+  // 6. Dollars vs count: are the projects smaller than the goal assumes?
+  if (r.goal.count != null && r.goal.dollars != null && r.mtd.count) {
+    const avgVal = (r.mtd.dollars || 0) / r.mtd.count, goalAvg = r.goal.dollars / r.goal.count;
+    const pc = r.mtd.count / r.goal.count, pdol = (r.mtd.dollars || 0) / r.goal.dollars;
+    if (pdol < pc * 0.75) out.push({ kind: "Project size", sev: 2, text: `Count is ${pct(pc)} of goal but dollars are ${pct(pdol)}: the average project is ${money(avgVal)}, against ${money(goalAvg)} per project in the goal. The mix has shifted to smaller jobs.` });
+    else if (pc < pdol * 0.75) out.push({ kind: "Project size", sev: 1, text: `Dollars (${pct(pdol)} of goal) are ahead of count (${pct(pc)}): fewer, larger projects (${money(avgVal)} average vs ${money(goalAvg)} in the goal).` });
+  }
+
+  // 7. Data: corrections and records that can't be placed.
+  const all = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter(pick);
+  const dups = all.filter((e) => e.duplicateOf).length, reps = all.filter((e) => e.repeatOf && !e.duplicateOf && !e.counted).length;
+  if (dups || reps) out.push({ kind: "Data", sev: 1, text: `monday has ${all.length} rows here; ${[dups ? plural(dups, "duplicate") : "", reps ? plural(reps, "repeat submission") : ""].filter(Boolean).join(" and ")} ${dups + reps === 1 ? "was" : "were"} removed. A hand-built count of raw rows would show ${dups + reps} more.` });
+  if (prog !== "Total") {
+    const un = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => e.program === UNMAPPED && e.counted);
+    if (un.length) out.push({ kind: "Data", sev: 1, text: `${plural(un.length, "record")} at this stage this month ${un.length === 1 ? "has" : "have"} a blank or unknown Utility and can't be counted to any program. Some may belong here.`, items: un.map((e) => ({ b: e.boardId, id: e.id, name: e.name, detail: `Utility "${e.utility || ""}"` })) });
+  }
+  return { r, g, exp, short, left, weeksLeft, closed, reasons: out.sort((a, b) => b.sev - a.sev) };
+}
+
+function renderWhy() {
+  const month = state.month;
+  const B = scoreboard(MODEL, month, "incentive", TODAY);
+  const [, last] = monthBounds(month);
+  const asOf = last < TODAY ? last : TODAY;
+  const src = CONFIG.goals.sources?.[month];
+  const closedMonth = TODAY > last;
+  let h = pageHead(`${closedMonth ? "Why we missed" : "Why we're behind"} · ${monthName(month)}`, closedMonth ? "Every KPI that finished the month short of its goal, with the reasons the monday data shows." : "Every KPI with a goal that is off pace, with the reasons the monday data shows. Judged on working days gone, not the latest week.", B);
+  const rows = STAGES.flatMap(([s]) => [...B.sections[s], B.totals[s]]).filter((r) => hasGoal(r) && r.mtd.count != null);
+  if (!rows.length) return h + `<section class="card"><div class="empty"><b>No goals for ${esc(monthName(month))}</b>Send Claude the month's goals and this page will explain every KPI that's behind.</div></section>`;
+  if (src) h += `<div class="alert ${/No November|No .* goals have been set/.test(src) ? "warn" : "info"}">${ICON.info}<span><b>Goals.</b> ${esc(src)} Dollar goals are Incentive.</span></div>`;
+  const P = projectIndex(asOf), ag = aging(DATA);
+  const ctx = { B, P, ag, month, asOf };
+  const off = rows.filter((r) => r.status === "behind" || r.status === "watch");
+  const on = rows.filter((r) => r.status === "on");
+  const nb = off.filter((r) => r.status === "behind").length, nw = off.length - nb;
+  h += `<div class="kpis">
+    <div class="kpi ${nb ? "bad" : "good"}"><div class="lbl">${closedMonth ? "KPIs that missed" : "KPIs behind pace"}</div><div class="val">${nb}</div><div class="sub">more than 10% under where they should be</div></div>
+    <div class="kpi"><div class="lbl">KPIs to watch</div><div class="val">${nw}</div><div class="sub">within 10% of pace</div></div>
+    <div class="kpi good"><div class="lbl">KPIs on pace</div><div class="val">${on.length}</div><div class="sub">of ${rows.length} with a goal</div></div></div>`;
+  const order = [...ALL_ROWS, "Total"];
+  const diag = off.map((r) => reasonsFor(r, ctx)).sort((a, b) => order.indexOf(a.r.program) - order.indexOf(b.r.program) || STAGE_IDX[a.r.stage] - STAGE_IDX[b.r.stage]);
+  // Common causes across programs, so the meeting starts with the pattern, not 30 cards.
+  const pipelineThin = diag.filter((d) => d.reasons.some((x) => x.kind === "Pipeline" && x.sev === 3)).length;
+  const stuck = diag.filter((d) => d.reasons.some((x) => x.kind === "Pipeline" && x.sev === 2)).length;
+  const stretch = diag.filter((d) => d.reasons.some((x) => x.kind === "Goal vs. history" && x.sev === 2)).length;
+  const hbsHeld = diag.filter((d) => d.reasons.some((x) => x.kind === "Waiting on HBS")).length;
+  const notDone = diag.filter((d) => d.reasons.some((x) => x.kind === "Not marked done")).length;
+  const pattern = [
+    stretch && `<li><b>${plural(stretch, "KPI")}</b> ${stretch === 1 ? "has a goal" : "have goals"} at least 1.5× what the program has recently done in a month, or the program logged nothing recently.</li>`,
+    pipelineThin && `<li><b>${plural(pipelineThin, "KPI")}</b> can't reach goal even if every project waiting at the previous step moves: the pipeline upstream is too thin.</li>`,
+    stuck && `<li><b>${plural(stuck, "KPI")}</b> ${stuck === 1 ? "has" : "have"} enough projects waiting at the previous step to cover the goal, but they aren't moving.</li>`,
+    hbsHeld && `<li><b>${plural(hbsHeld, "KPI")}</b> ${hbsHeld === 1 ? "has" : "have"} projects waiting on HBS in the ICF RFI loop.</li>`,
+    notDone && `<li><b>${plural(notDone, "KPI")}</b> ${notDone === 1 ? "has" : "have"} implementations past their date that aren't marked done on the tracker.</li>`,
+  ].filter(Boolean);
+  if (pattern.length) h += `<section class="card"><div class="card-h"><h2>The pattern</h2><span class="sub">across the ${off.length} KPIs off pace</span></div><div class="card-b"><ul style="margin:0;padding-left:20px;display:grid;gap:6px">${pattern.join("")}</ul></div></section>`;
+  const offBy = (p) => diag.filter((d) => d.r.program === p).length;
+  const pickable = order.filter((p) => rows.some((r) => r.program === p));
+  if (state.whyProg !== "all" && !pickable.includes(state.whyProg)) state.whyProg = "all";
+  h += `<div class="stagepick" role="group" aria-label="Utility"><button type="button" data-whyprog="all" aria-pressed="${state.whyProg === "all"}">All (${diag.length})</button>
+    ${pickable.map((p) => `<button type="button" data-whyprog="${esc(p)}" aria-pressed="${state.whyProg === p}">${p === "Total" ? "All utilities combined" : esc(p)} (${offBy(p)})</button>`).join("")}</div>`;
+  let lastProg = null;
+  for (const d of diag.filter((x) => state.whyProg === "all" || x.r.program === state.whyProg)) {
+    const { r, g } = d;
+    if (r.program !== lastProg) { lastProg = r.program; h += `<h2 style="margin:6px 0 -6px;font-size:17px">${r.program === "Total" ? "All utilities combined" : esc(r.program)}</h2>`; }
+    const reasonsHtml = d.reasons.map((x, i) => `<div class="qrow"><span class="sev ${x.sev >= 3 ? "error" : x.sev === 2 ? "warning" : "info"}"></span><div><h3>${esc(x.kind)}</h3><p>${esc(x.text)}</p>
+      ${x.items && x.items.length ? `<details><summary>Show the ${plural(x.items.length, "item")}</summary><div class="scroll"><table class="list"><tbody>${x.items.slice(0, 200).map((it) => `<tr><td class="name">${esc(it.name)}</td><td class="small muted">${esc(it.detail || "")}</td><td style="white-space:nowrap">${itemLink(it.b, it.id)}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div><span></span></div>`).join("");
+    h += `<section class="card"><div class="card-h"><h2>${esc(STAGE_LABEL[r.stage])}${g.dollar ? ` <span class="sub">· Incentive $</span>` : ""} <span class="sub">· ${r.program === "Total" ? "all utilities" : esc(r.program)}</span></h2><div class="right">${chip(r.status)}</div></div>
+      <div class="card-b" style="display:grid;gap:8px">
+        <div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px"><span><b style="font-size:16px">${g.actual == null ? "—" : g.fmt(g.actual)}</b> of ${g.fmt(g.goal)} (${pct(g.pct)})</span>
+          ${d.closed ? `<span style="color:var(--bad)">missed the goal by <b>${g.fmt(d.left)}</b></span>` : `<span>should be <b>${g.dollar ? money(d.exp) : num(d.exp, d.exp < 10 ? 1 : 0)}</b> by today</span><span style="color:var(--bad)"><b>${g.dollar ? money(d.short) : num(d.short, d.short < 10 ? 1 : 0)}</b> short of pace</span>`}
+          ${d.weeksLeft ? `<span>needs <b>${g.fmt(d.left / d.weeksLeft)}</b> a week for the ${plural(d.weeksLeft, "week")} left</span>` : ""}</div>
+        <div class="bullet" style="max-width:520px"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div>
+      </div><div style="border-top:1px solid var(--line)">${reasonsHtml || `<div class="empty">No cause found in the monday data.</div>`}</div>
+      <div class="card-note" style="padding-top:10px"><button type="button" class="iconbtn" data-drill="${esc(JSON.stringify(r.mtd.drill))}">See this month's items</button></div></section>`;
+  }
+  if (on.length) h += `<details class="how"><summary>On pace (${on.length})</summary><div class="body" style="max-width:none"><div class="scroll"><table><thead><tr><th>Stage</th><th>Program</th><th class="n">Month to date</th><th class="n">Goal</th></tr></thead><tbody>
+    ${on.map((r) => { const g = goalView(r); return `<tr><td>${esc(STAGE_LABEL[r.stage])}</td><td class="rowh">${r.program === "Total" ? "All programs" : esc(r.program)}</td><td class="n">${g.fmt(g.actual)}</td><td class="n">${g.fmt(g.goal)}</td></tr>`; }).join("")}</tbody></table></div></div></details>`;
+  return h;
+}
+
 /* ---------------------------------- drawer ----------------------------------------------- */
 let lastFocus = null;
 function openDrawer(d) {
@@ -1147,7 +1385,7 @@ function render() {
   for (const b of document.querySelectorAll(".seg button")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   renderAlerts(); renderFresh();
   if (!MODEL) return;
-  const views = { overview: renderOverview, weekly: renderWeekly, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
+  const views = { overview: renderOverview, weekly: renderWeekly, why: renderWhy, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
   const main = $("#main");
   main.innerHTML = (views[state.view] || renderOverview)();
   main.classList.toggle("busy", REFRESHING);
@@ -1216,11 +1454,11 @@ async function refresh() {
 
 /* ---------------------------------- wiring ----------------------------------------------- */
 state.month = monthOf(TODAY);
-const VIEWS = ["overview", "weekly", "pace", "submissions", "aging", "quality"];
+const VIEWS = ["overview", "weekly", "why", "pace", "submissions", "aging", "quality"];
 function fromHash() { const h = (location.hash || "").slice(1); state.view = VIEWS.includes(h) ? h : "overview"; }
 fromHash();
-try { const p = JSON.parse(store.get("btu-scoreboard-prefs") || "{}"); if (p.mode === "share" || p.mode === "incentive") state.mode = p.mode; if (p.stage && STAGE_LABEL[p.stage]) state.stage = p.stage; } catch { /* defaults */ }
-const savePrefs = () => store.set("btu-scoreboard-prefs", JSON.stringify({ mode: state.mode, stage: state.stage }));
+try { const p = JSON.parse(store.get("btu-scoreboard-prefs") || "{}"); if (p.mode === "share" || p.mode === "incentive") state.mode = p.mode; if (p.stage && STAGE_LABEL[p.stage]) state.stage = p.stage; if (p.program && (ALL_ROWS.includes(p.program) || p.program === "Total")) state.program = p.program; } catch { /* defaults */ }
+const savePrefs = () => store.set("btu-scoreboard-prefs", JSON.stringify({ mode: state.mode, stage: state.stage, program: state.program }));
 window.addEventListener("hashchange", () => { fromHash(); render(); window.scrollTo(0, 0); });
 $("#month").addEventListener("change", (e) => { state.month = e.target.value; render(); });
 $("#refresh").addEventListener("click", () => refresh());
@@ -1234,7 +1472,13 @@ document.addEventListener("click", (e) => {
   if (cell) { openDrawer(JSON.parse(cell.getAttribute("data-drill"))); return; }
   if (e.target.closest("#closeDrawer")) { closeDrawer(); return; }
   const tile = e.target.closest("[data-stage]");
-  if (tile) { state.stage = tile.dataset.stage; savePrefs(); location.hash = "weekly"; return; }
+  if (tile) { openDrawer({ stage: tile.dataset.stage, program: "Total", month: state.month, week: "mtd" }); return; }
+  const pl = e.target.closest("[data-proglink]");
+  if (pl) { e.preventDefault(); state.program = pl.dataset.proglink; savePrefs(); location.hash = "weekly"; return; }
+  const wp = e.target.closest("[data-whyprog]");
+  if (wp) { state.whyProg = wp.dataset.whyprog; render(); return; }
+  const pp = e.target.closest("[data-pickprog]");
+  if (pp) { state.program = pp.dataset.pickprog; savePrefs(); render(); return; }
   const ps = e.target.closest("[data-pickstage]");
   if (ps) { state.stage = ps.dataset.pickstage; savePrefs(); render(); return; }
   const sb = e.target.closest("[data-substage]");
