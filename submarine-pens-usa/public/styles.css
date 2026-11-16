@@ -123,6 +123,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .card-body h3 { font-size: .98rem; font-weight: 500; margin: 4px 0 10px; flex: 1; }
 .card-body h3 a { color: var(--ink); text-decoration: none; }
 .card-body h3 a:hover { text-decoration: underline; }
+.new-badge { background: var(--navy); color: #fff; font-size: .62rem; padding: 2px 6px; border-radius: 4px; margin-left: 4px; letter-spacing: .08em; }
 .tag { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--gold); font-weight: 700; }
 .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .price { font-weight: 600; color: var(--ink); }

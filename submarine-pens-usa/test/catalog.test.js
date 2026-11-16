@@ -1,10 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseCsv, toCsv } from "../lib/csv.js";
 import { createCatalog, productSummary } from "../lib/catalog.js";
+import { suggestedPriceCents } from "../lib/pricing.js";
+
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const PRICING = {
+  inr_per_usd: 95, min_multiple_of_india_price: 3, export_cost_pct_of_mrp: 0.3, freight_per_unit_usd: 0.35,
+  duty_pct: 0.154, duty_per_unit_usd: 0.008, clearance_pct: 0.05, fulfilment_per_unit_usd: 1.0,
+  card_fee_pct: 0.029, card_fee_per_unit_usd: 0.15, target_margin: 0.5,
+};
 
 test("csv round-trips quotes, commas and newlines", () => {
   const rows = [{ a: 'Pen "Lion", gold', b: "line1\nline2", c: "" }];
@@ -12,69 +21,73 @@ test("csv round-trips quotes, commas and newlines", () => {
 });
 
 test("csv handles BOM and CRLF from Excel", () => {
-  assert.deepEqual(parseCsv("﻿variant_id,usd_price\r\n1,9.99\r\n"), [{ variant_id: "1", usd_price: "9.99" }]);
+  assert.deepEqual(parseCsv("﻿code,inr_mrp\r\n1,150\r\n"), [{ code: "1", inr_mrp: "150" }]);
 });
 
-async function fixture({ prices, config = {} }) {
+test("pricing matches the planner spreadsheet", () => {
+  // values verified against the LibreOffice-recalculated planner
+  assert.equal(suggestedPriceCents(120, 3, PRICING), 1199);
+  assert.equal(suggestedPriceCents(600, 1, PRICING), 1899);
+  assert.equal(suggestedPriceCents(700, 1, PRICING), 2299);
+  assert.equal(suggestedPriceCents(1299, 1, PRICING), 4199);
+  assert.equal(suggestedPriceCents(150, 1, PRICING), 499); // cost-based beats the 3x floor for cheap items
+  assert.equal(suggestedPriceCents("", 1, PRICING), null);
+});
+
+test("a change in India M.R.P. or exchange rate moves the price", () => {
+  assert.ok(suggestedPriceCents(800, 1, PRICING) > suggestedPriceCents(600, 1, PRICING));
+  assert.ok(suggestedPriceCents(600, 1, { ...PRICING, inr_per_usd: 80 }) > suggestedPriceCents(600, 1, PRICING));
+});
+
+async function fixture(csv) {
   const root = await mkdtemp(path.join(tmpdir(), "subpens-"));
   await mkdir(path.join(root, "data"));
-  const products = [
-    {
-      id: "lion-pen",
-      name: "Lion Pen",
-      category: "Fountain Pens",
-      summary: "s",
-      description_html: "<p>d</p>",
-      images: [{ src: "https://example.com/a.png", alt: "" }],
-      options: ["Color"],
-      variants: [
-        { id: "1", sku: "A", title: "Black", options: ["Black"], available: true, image: null },
-        { id: "2", sku: "B", title: "Gold", options: ["Gold"], available: true, image: null },
-        { id: "3", sku: "C", title: "Red", options: ["Red"], available: false, image: null },
-      ],
-    },
-    {
-      id: "unpriced",
-      name: "Unpriced",
-      category: "Ball Pens",
-      summary: "",
-      description_html: "",
-      images: [],
-      options: [],
-      variants: [{ id: "9", sku: "", title: "", options: [], available: true, image: null }],
-    },
-  ];
-  await writeFile(path.join(root, "data", "products.json"), JSON.stringify(products));
-  await writeFile(path.join(root, "data", "prices.csv"), prices);
-  await writeFile(path.join(root, "site.config.json"), JSON.stringify({ store_name: "T", ...config }));
+  await writeFile(path.join(root, "data", "us-range.csv"), csv);
+  await writeFile(path.join(root, "data", "catalogue-2026-27.json"), JSON.stringify({
+    products: { A1: { image: "/img/products/A1.jpg", packaging: "Gift box", details: "Metal body; Medium nib" }, A2: { image: "/img/products/A2.jpg", new: true } },
+    india_website_match: {},
+  }));
+  await writeFile(path.join(root, "data", "india-website.json"), "[]");
+  await writeFile(path.join(root, "site.config.json"), JSON.stringify({ store_name: "T", pricing: PRICING }));
   return createCatalog(root);
 }
 
-test("merges USD prices; unpriced or out-of-stock variants are not purchasable", async () => {
-  const cat = await fixture({ prices: "variant_id,usd_price\n1,24.99\n2,$30\n3,10\n" });
+const HDR = "code,include,product,colour,category,inr_mrp,pack_size,usd_price_override,notes\n";
+
+test("rows with the same product name become one product with colour options", async () => {
+  const cat = await fixture(HDR + "A1,yes,Lion Pen,Black,Fountain Pens,600,1,,\nA2,yes,Lion Pen,Gold,Fountain Pens,800,1,,\n");
+  const { products, variantIndex } = await cat.get();
+  assert.equal(products.length, 1);
+  const p = products[0];
+  assert.equal(p.id, "lion-pen");
+  assert.deepEqual(p.options, ["Colour"]);
+  assert.deepEqual(p.variants.map((v) => v.title), ["Black", "Gold"]);
+  assert.equal(variantIndex.get("A1").variant.price_cents, 1899);
+  assert.equal(p.min_price_cents, 1899);
+  assert.equal(p.new, true);
+  assert.match(p.description_html, /Metal body/);
+  assert.equal(productSummary(p).variants.length, 2);
+});
+
+test("include=no hides a row; override wins; missing M.R.P. isn't buyable", async () => {
+  const cat = await fixture(
+    HDR + "A1,yes,Pen A,,Ball Pens,600,1,24.50,\nA2,no,Pen B,,Ball Pens,600,1,,\nA3,yes,Pen C,,Ball Pens,,1,,\n"
+  );
   const { byId, variantIndex } = await cat.get();
-  const p = byId.get("lion-pen");
-  assert.equal(variantIndex.get("1").variant.price_cents, 2499);
-  assert.equal(variantIndex.get("2").variant.price_cents, 3000);
-  assert.equal(variantIndex.get("3").variant.purchasable, false); // priced but sold out
-  assert.equal(p.min_price_cents, 2499);
-  assert.equal(p.max_price_cents, 3000);
-  assert.equal(p.purchasable, true);
-  assert.equal(byId.get("unpriced").purchasable, false);
-  assert.equal(byId.get("unpriced").min_price_cents, null);
-  assert.equal(productSummary(p).variants.length, 3);
+  assert.equal(variantIndex.get("A1").variant.price_cents, 2450);
+  assert.ok(!variantIndex.has("A2"));
+  assert.equal(byId.get("pen-c").purchasable, false);
 });
 
-test("ignores invalid prices", async () => {
-  const cat = await fixture({ prices: "variant_id,usd_price\n1,abc\n2,-5\n" });
-  const { variantIndex } = await cat.get();
-  assert.equal(variantIndex.get("1").variant.price_cents, null);
-  assert.equal(variantIndex.get("2").variant.price_cents, null);
-});
-
-test("hide_unpriced_products hides products with no USD price", async () => {
-  const cat = await fixture({ prices: "variant_id,usd_price\n1,5\n", config: { hide_unpriced_products: true } });
-  const { byId } = await cat.get();
-  assert.ok(byId.has("lion-pen"));
-  assert.ok(!byId.has("unpriced"));
+test("the real US range loads, every included item has a price and a photo", async () => {
+  const { products, variantIndex } = await createCatalog(ROOT).get();
+  assert.ok(products.length > 100);
+  for (const { product, variant } of variantIndex.values()) {
+    assert.ok(variant.price_cents > 0, `${product.name} ${variant.title} has no price`);
+    assert.ok(variant.image, `${product.name} has no photo`);
+  }
+  const ids = products.map((p) => p.id);
+  assert.equal(new Set(ids).size, ids.length, "product ids are unique");
+  const range = parseCsv(await readFile(path.join(ROOT, "data", "us-range.csv"), "utf8"));
+  assert.equal(new Set(range.map((r) => r.code)).size, range.length, "codes are unique in us-range.csv");
 });

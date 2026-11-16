@@ -1,18 +1,21 @@
 # Submarine Pens USA — online store
 
-The US storefront for Submarine Pens. The catalog (photos, descriptions, colours
-and pack sizes) is imported from the Indian store at submarinepens.com. You set
-**US-dollar prices** in a spreadsheet, and customers pay on **Square's secure
-hosted checkout**.
+The US storefront for Submarine Pens. The range comes from the **2026–27 catalogue**
+(both PDF parts): 288 catalogue codes, grouped into ~190 products with colour options,
+with photos cut from the catalogue pages. **US prices are calculated from the India
+M.R.P.** (at least 3× the India price, covering duty, freight and fees), so when ₹ prices
+change you just update the M.R.P. Customers pay on **Square's secure hosted checkout**.
 
 **Pages:** Shop (filters, search, sort) · Product pages (gallery, colour/pack
 options) · Cart drawer with free-shipping progress · About · Contact (form) ·
 Shipping, Returns, Privacy and Terms policies · Order confirmation · 404 · `sitemap.xml`.
 
 ```
-data/products.json   ← catalog imported from the Indian site (npm run import)
-data/prices.csv      ← YOUR US prices, one row per colour/pack size
-site.config.json     ← shipping rates, return window, contact details, policy wording
+data/us-range.csv           ← THE US RANGE (edit this): one row per catalogue code
+data/catalogue-2026-27.json ← catalogue facts per code: photo, packaging, details, page, NEW
+data/india-website.json     ← products from submarinepens.com, used for extra photos/descriptions
+site.config.json            ← pricing assumptions, shipping, returns, contact details, policy wording
+public/img/products/        ← product photos cut from the catalogue
 public/              ← the website (HTML, CSS, JS, logo)
 server.js            ← serves the site, re-checks prices at checkout, talks to Square
 ```
@@ -30,7 +33,7 @@ runs in **demo mode**: checkout skips payment and goes straight to the thank-you
 
 ## Before launch: checklist
 
-1. **Set US prices** in `data/prices.csv` (see below).
+1. **Review the range** in `data/us-range.csv`: rename placeholder products, check colours, confirm your real export cost % and exchange rate in `site.config.json` (see below).
 2. **Fill in every `[REVIEW: …]` value** in `site.config.json`: where orders ship from,
    delivery time, who pays US import duties, who pays return shipping, governing law
    and the policy effective date. Until you do, the text shows on the policy pages
@@ -41,39 +44,52 @@ runs in **demo mode**: checkout skips payment and goes straight to the thank-you
 5. Connect **Square** (payment gateway: next step).
 6. **Deploy** and point a domain at it.
 
-## Setting US prices
+## The US range and prices: `data/us-range.csv`
 
-Open `data/prices.csv` in Excel or Google Sheets. There's one row per sellable
-variant (colour / pack size):
+Open it in Excel or Google Sheets. One row per catalogue code:
 
-| variant_id | sku | product | variant | in_stock | inr_price | usd_price |
-|---|---|---|---|---|---|---|
-| 51179557945620 | 01-2060-21-00 | Royale Black & Gold Ball Pen | | yes | 600 | **19.99** |
+| column | what it does |
+|---|---|
+| `code` | catalogue code (don't change) |
+| `include` | `yes` to sell it in the US, `no` to hide it |
+| `product` | product name. Rows with the **same name become one product** with a colour choice |
+| `colour` | the option name shown to customers (Black, Gold, Rose Gold…) |
+| `category` | Fountain Pens, Roller Pens, Ball Pens, Gift Sets, Ink & Refills |
+| `inr_mrp` | India M.R.P. in ₹. **Update this when Indian prices change**; the US price follows |
+| `pack_size` | pens per listing (cheap ball pens are sold as 3-packs) |
+| `usd_price_override` | type a USD price here to override the calculated one (e.g. `24.99`) |
+| `notes` | things to check: placeholder names, NASA/ISRO licence |
 
-- Fill in **only** the `usd_price` column (e.g. `19.99`). Don't edit `variant_id`.
-- `inr_price` is the Indian price, for reference. You can use a formula, e.g. `=ROUND(F2/45,0)-0.01`, then paste as values.
-- A product without a USD price shows **"Price coming soon"** and can't be bought.
-  To hide unpriced products completely, set `"hide_unpriced_products": true` in `site.config.json`.
-- Save as CSV. The site picks up changes automatically, with no restart needed.
+Save as CSV. The site picks up changes automatically, with no restart.
 
-## Updating the catalog from the Indian site
+**Things to tidy:** part 1 of the catalogue has no product names, so ~115 products have
+placeholder names like "Submarine Ball Pen 0917" (marked in `notes`). Colour names come
+from the code (digits 7–8: 01 Black, 03 Gold, 05 Rose Gold, 06 Red, 07 Blue…), and a few
+products have "Style 1/2" where the colour isn't known. Rename them in the CSV.
+NASA/ISRO-branded items are set to `include = no` until the US licence is confirmed.
+
+### How prices are calculated
+
+Settings are in `site.config.json` → `pricing` (the same formula as the Range & Pricing
+Planner spreadsheet):
+
+- **Cost-based price** = (your export cost + freight + US duty + clearance + US fulfilment + card fees)
+  at your target margin
+- **Floor** = India M.R.P. × pack size ÷ exchange rate × `min_multiple_of_india_price` (now **3×**)
+- **US price** = the higher of the two, rounded up to .99
+
+Change `min_multiple_of_india_price` to move every price at once, and update `inr_per_usd`
+as the exchange rate moves. Check `export_cost_pct_of_mrp` (30% placeholder) and
+`duty_pct` (15.4%: 5.4% pen duty + 10% Section 301 on Indian goods, Nov 2026).
+
+### Refreshing data from the Indian website
 
 ```bash
-npm run import          # in-stock products only
-npm run import -- --all # include sold-out products as well
+npm run import
 ```
 
-This refreshes `data/products.json` (names, photos, descriptions, stock) and adds
-new variants to `prices.csv`. **Your USD prices are kept.** Products whose titles
-match `import.exclude_title_patterns` in `site.config.json` are skipped (by default:
-mystery gifts and customisation charges, which are India-only).
-
-Categories (Fountain / Roller / Ball Pens, Gift Sets, Ink & Refills, Kids, More)
-are guessed from product titles. To change the rules, edit `CATEGORY_RULES` in
-`scripts/import-india.mjs`.
-
-Product photos load straight from `submarinepens.com/cdn/shop/...`, so the US site
-always shows the same photos as the Indian one.
+This updates `data/india-website.json`. Products on both the catalogue and the website use
+the website's description and extra photos.
 
 ## Contact form
 
@@ -104,7 +120,7 @@ so turn on email.
 > The access token works like a password to your Square account. `.env` is
 > git-ignored. Never commit it or paste it into a chat.
 
-At checkout, the server recalculates every price from `prices.csv`, so prices can't be
+At checkout, the server recalculates every price from `us-range.csv` and the pricing settings, so prices can't be
 changed in the browser. Square collects the shipping address, emails the receipt, and
 lists the order in your Square Dashboard.
 

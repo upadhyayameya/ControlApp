@@ -52,7 +52,7 @@ function card(p) {
       ${p.image2 ? `<img class="alt" src="${esc(img(p.image2, 480))}" alt="" loading="lazy" width="480" height="480" />` : ""}
     </a>
     <div class="card-body">
-      <span class="tag">${esc(p.category)}</span>
+      <span class="tag">${esc(p.category)}${p.new ? ` <b class="new-badge">New</b>` : ""}</span>
       <h3><a href="/products/${esc(p.id)}">${esc(p.name)}</a></h3>
       <div class="card-foot">
         <span class="price ${p.min_price_cents == null ? "muted" : ""}">${esc(priceLabel(p))}</span>

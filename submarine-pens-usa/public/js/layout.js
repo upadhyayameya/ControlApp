@@ -1,6 +1,6 @@
 // Shared header, footer, cart drawer and helpers for every page.
 
-const CART_KEY = "subpens-cart-v2"; // { [variantId]: qty }
+const CART_KEY = "subpens-cart-v3"; // { [variantId]: qty }
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const usd = (cents) => (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
 export const esc = (s) =>

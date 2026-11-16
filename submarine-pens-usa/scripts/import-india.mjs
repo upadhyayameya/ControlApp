@@ -1,5 +1,6 @@
-// Imports the catalog from the Indian Shopify store into data/products.json
-// and adds any new variants to data/prices.csv (keeping USD prices you already entered).
+// Refreshes data/india-website.json from the Indian Shopify store (submarinepens.com).
+// The US range itself comes from the 2026-27 catalogue (data/us-range.csv); the website data is used
+// for richer descriptions and extra photos of products that exist on both.
 //
 //   npm run import                 # from https://www.submarinepens.com
 //   npm run import -- --all        # include out-of-stock products too
@@ -9,15 +10,12 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseCsv, toCsv } from "../lib/csv.js";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const config = JSON.parse(await readFile(path.join(ROOT, "site.config.json"), "utf8"));
 const SOURCE = (config.import?.source_url || "https://www.submarinepens.com").replace(/\/$/, "");
 const EXCLUDE = (config.import?.exclude_title_patterns || []).map((p) => new RegExp(p, "i"));
 const includeAll = process.argv.includes("--all");
-
-const PRICE_HEADER = ["variant_id", "sku", "product", "variant", "in_stock", "inr_price", "usd_price"];
 
 async function fetchAll() {
   const out = [];
@@ -115,34 +113,12 @@ for (const p of raw) {
   products.push(mapProduct(p));
 }
 
-// Merge into prices.csv: keep existing USD prices, add new variants, drop vanished ones.
-const pricesPath = path.join(ROOT, "data", "prices.csv");
-let existing = [];
-try { existing = parseCsv(await readFile(pricesPath, "utf8")); } catch {}
-const usdById = new Map(existing.map((r) => [r.variant_id, r.usd_price]));
-const rows = products.flatMap((p) =>
-  p.variants.map((v) => ({
-    variant_id: v.id,
-    sku: v.sku,
-    product: p.name,
-    variant: v.title,
-    in_stock: v.available ? "yes" : "no",
-    inr_price: v.inr_price,
-    usd_price: usdById.get(v.id) ?? "",
-  }))
-);
-const keptIds = new Set(rows.map((r) => r.variant_id));
-const dropped = existing.filter((r) => !keptIds.has(r.variant_id) && r.usd_price);
-
-await writeFile(path.join(ROOT, "data", "products.json"), JSON.stringify(products, null, 2) + "\n");
-await writeFile(pricesPath, toCsv(PRICE_HEADER, rows));
+await writeFile(path.join(ROOT, "data", "india-website.json"), JSON.stringify(products, null, 2) + "\n");
 
 const byCat = products.reduce((m, p) => ((m[p.category] = (m[p.category] || 0) + 1), m), {});
 const reviewDesc = products.filter((p) => /₹|\bindia\b|\bINR\b|\bRs\.?\s?\d/i.test(textOf(p.description_html)));
-console.log(`Imported ${products.length} products (${rows.length} variants) from ${SOURCE}`);
+console.log(`Imported ${products.length} products from ${SOURCE} into data/india-website.json`);
 console.log("By category:", byCat);
-console.log(`Priced in USD: ${rows.filter((r) => r.usd_price).length}/${rows.length} variants`);
 if (excluded.length) console.log(`Excluded by site.config.json (${excluded.length}):`, excluded.join(" | "));
-if (dropped.length) console.log(`Note: ${dropped.length} priced variants no longer on the Indian site were removed from prices.csv`);
 if (reviewDesc.length)
   console.log("Descriptions mentioning ₹/India (review for US wording):", reviewDesc.map((p) => p.id).join(", "));
