@@ -225,7 +225,20 @@ svg.chart .ax { fill: var(--muted); font-size: 11px; }
 svg.chart .ln-act { fill: none; stroke: var(--series); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 svg.chart .dot-act { fill: var(--series); stroke: var(--surface); stroke-width: 2; }
 svg.chart .lbl-act { fill: var(--ink); font-size: 13px; font-weight: 600; }
-svg.chart .ln-pace { fill: none; stroke: var(--ink-2); stroke-width: 1.5; opacity: .7; }
+svg.chart .ln-pace { fill: none; stroke: var(--ink-2); stroke-width: 1.75; opacity: .8; }
+svg.chart .dot-pace { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.5; }
+svg.chart .lbl-pace.b { font-weight: 600; fill: var(--ink); }
+svg.chart .lbl-last { fill: var(--muted); font-size: 11px; }
+svg.chart .lbl-gap { font-size: 12px; font-weight: 600; }
+svg.chart .lbl-gap.neg { fill: var(--bad); } svg.chart .lbl-gap.pos { fill: var(--good); }
+svg.chart .wkband { fill: var(--surface-2); }
+svg.chart .wkline { stroke: var(--line-2); stroke-width: 1; }
+svg.chart .wklbl { fill: var(--ink-2); font-size: 11px; font-weight: 600; }
+svg.chart .wkadd { fill: var(--muted); font-size: 11px; }
+.legend i.lg-band { background: var(--surface-2); border: 1px solid var(--line-2); }
+table.wkstrip { margin-top: 6px; }
+table.wkstrip td, table.wkstrip th { padding: 5px 10px; font-size: 12px; }
+table.wkstrip td:first-child { color: var(--ink-2); white-space: nowrap; }
 svg.chart .lbl-pace { fill: var(--ink-2); font-size: 11px; }
 svg.chart .ln-last { fill: none; stroke: var(--muted); stroke-width: 2; opacity: .45; }
 svg.chart .today { stroke: var(--line-2); stroke-width: 1; }
@@ -1018,17 +1031,18 @@ function visibleRows(rows) { return rows.filter((r) => !(r.program === OTHER || 
 /* Hand-drawn SVG: one series colour, hairline grid, labels in text ink, exact values in tooltips and in the tables below. */
 const prevMonthOf = (m) => monthsBefore(m, 1)[0];
 function evsFor(stage, program, month) { return (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => e.counted && (program === "Total" || e.program === program)); }
-const measureOf = (e, measure) => measure === "count" ? 1 : (dollarsOf(e, state.mode) || 0);
+const dollarKey = (measure) => measure === "dollars" ? state.mode : measure;
+const measureOf = (e, measure) => measure === "count" ? 1 : (e[dollarKey(measure)] || 0);
 const sumMeasure = (evs, measure) => evs.reduce((a, e) => a + measureOf(e, measure), 0);
 function goalFigure(stage, program, month, measure) {
   const g = CONFIG.goals[month]?.[stage]?.[program];
   if (!g || !!CONFIG.goals.repeatsCountedAsNew !== !!CONFIG.rules.countRepeatsAsNew) return null;
-  return measure === "count" ? g.count ?? null : g[state.mode] ?? null;
+  return measure === "count" ? g.count ?? null : g[dollarKey(measure)] ?? null;
 }
 function autoMeasure(stage, program, month) {
   if (state.chartMeasure) return state.chartMeasure;
   const g = CONFIG.goals[month]?.[stage]?.[program] || CONFIG.goals[month]?.[stage]?.Total;
-  return g && g.count == null && g.incentive != null ? "dollars" : "count";
+  return g && g.count == null && g.incentive != null ? "incentive" : "count";
 }
 const fmtM = (measure, v) => measure === "count" ? num(v, v % 1 && v < 10 ? 1 : 0) : shortMoney(v);
 const fmtExact = (measure, v) => measure === "count" ? num(v, v % 1 ? 1 : 0) : money(v);
@@ -1043,39 +1057,83 @@ function samePointLastMonth(stage, program, month, measure) {
 }
 function niceMax(v) { if (v <= 0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * e >= v) return m * e; return 10 * e; }
 
-/* Running total through the month, with the goal's working-day pace and last month for comparison. */
-function burnupSvg(stage, program, month, measure) {
+/* Running total through the month: this month, the ideal line to the goal (by working days), last month,
+   and each configured week as a band with what it added. Returns the SVG and the week-by-week figures. */
+function burnupData(stage, program, month, measure) {
   const [f, l] = monthBounds(month), days = +l.slice(8), pm = prevMonthOf(month), plDays = +monthBounds(pm)[1].slice(8);
   const cum = (evs, upto) => { const by = new Array(33).fill(0); for (const e of evs) by[+e.date.slice(8)] += measureOf(e, measure); const out = []; let c = 0; for (let d = 1; d <= upto; d++) { c += by[d]; out.push(c); } return out; };
   const todayDay = TODAY < f ? 0 : TODAY > l ? days : +TODAY.slice(8);
   const actual = cum(evsFor(stage, program, month), todayDay);
-  const last = cum(evsFor(stage, program, pm), Math.min(plDays, days));
+  const lastFull = cum(evsFor(stage, program, pm), plDays);
+  const last = lastFull.slice(0, days);
   const goal = goalFigure(stage, program, month, measure);
   const wd = workingDays(f, l);
-  const pace = goal == null ? null : Array.from({ length: days }, (_, i) => goal * wd.filter((x) => x <= `${month}-${pad(i + 1)}`).length / (wd.length || 1));
-  const ymax = niceMax(Math.max(1, ...actual, ...last, goal || 0) * 1.05);
-  const W = 640, H = 240, L = 50, R = 70, T = 16, Bm = 28;
+  const ideal = goal == null ? null : Array.from({ length: days }, (_, i) => goal * wd.filter((x) => x <= `${month}-${pad(i + 1)}`).length / (wd.length || 1));
+  const weeks = monthWeeks(month).weeks.map((w) => {
+    const sd = +w.start.slice(8), ed = +w.end.slice(8), started = sd <= todayDay, endIdx = Math.min(ed, todayDay);
+    const total = started ? actual[endIdx - 1] : null, before = sd > 1 ? actual[sd - 2] ?? null : 0;
+    return { ...w, sd, ed, started, done: ed <= todayDay, added: started && before != null ? total - before : null, total,
+             idealEnd: ideal ? ideal[ed - 1] : null, idealNow: ideal && started ? ideal[endIdx - 1] : null };
+  });
+  return { days, todayDay, actual, last, lastTotal: lastFull[lastFull.length - 1] || 0, pm, goal, ideal, weeks };
+}
+function burnupSvg(stage, program, month, measure, D) {
+  D = D || burnupData(stage, program, month, measure);
+  const { days, todayDay, actual, last, goal, ideal, weeks, pm } = D;
+  const ymax = niceMax(Math.max(1, ...actual, ...last, goal || 0) * 1.08);
+  const W = 680, H = 300, L = 54, R = 92, T = 34, Bm = 30;
   const x = (d) => L + (d - 1) / Math.max(1, days - 1) * (W - L - R), y = (v) => T + (1 - v / ymax) * (H - T - Bm);
   const path = (arr) => arr.map((v, i) => `${i ? "L" : "M"}${x(i + 1).toFixed(1)},${y(v).toFixed(1)}`).join("");
   let g = "";
+  // Week bands, alternating, with a label and what each week added.
+  weeks.forEach((w, i) => {
+    const x0 = w.sd === 1 ? L : (x(w.sd - 1) + x(w.sd)) / 2, x1 = w.ed === days ? W - R : (x(w.ed) + x(w.ed + 1)) / 2;
+    if (i % 2 === 0) g += `<rect x="${x0}" y="${T - 22}" width="${x1 - x0}" height="${H - Bm - T + 22}" class="wkband"/>`;
+    if (i > 0) g += `<line x1="${x0}" x2="${x0}" y1="${T - 22}" y2="${H - Bm}" class="wkline"/>`;
+    const cx = (x0 + x1) / 2;
+    g += `<text x="${cx}" y="${T - 10}" class="wklbl" text-anchor="middle">Wk ${w.index}</text>`;
+    g += `<text x="${cx}" y="${T + 2}" class="wkadd" text-anchor="middle">${w.added == null ? "" : `+${fmtM(measure, w.added)}`}</text>`;
+  });
   for (let k = 0; k <= 4; k++) { const v = ymax * k / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${L - 8}" y="${y(v) + 4}" class="ax" text-anchor="end">${fmtM(measure, v)}</text>`; }
-  for (const w of monthWeeks(month).weeks) { const d = +w.start.slice(8); g += `<text x="${x(d)}" y="${H - 8}" class="ax" text-anchor="middle">${esc(md(w.start))}</text><line x1="${x(d)}" x2="${x(d)}" y1="${H - Bm}" y2="${H - Bm + 4}" class="axl"/>`; }
+  for (const w of weeks) g += `<text x="${x(w.sd)}" y="${H - 10}" class="ax" text-anchor="middle">${esc(md(w.start))}</text><line x1="${x(w.sd)}" x2="${x(w.sd)}" y1="${H - Bm}" y2="${H - Bm + 4}" class="axl"/>`;
+  g += `<text x="${x(days)}" y="${H - 10}" class="ax" text-anchor="middle">${esc(md(`${month}-${pad(days)}`))}</text>`;
   g += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" class="axl"/>`;
-  if (last.length) g += `<path d="${path(last)}" class="ln-last"/>`;
-  if (pace) g += `<path d="${path(pace)}" class="ln-pace"/><text x="${W - R + 6}" y="${y(pace[days - 1]) + 4}" class="lbl-pace">Goal ${fmtM(measure, goal)}</text>`;
+  // Right-edge labels, nudged apart so they never overlap.
+  const rl = [];
+  if (last.length) { g += `<path d="${path(last)}" class="ln-last"/>`; rl.push({ y: y(last[last.length - 1]) + 4, h: 14, html: (yy) => `<text x="${W - R + 6}" y="${yy}" class="lbl-last">${esc(shortMonth(pm))} ${fmtM(measure, last[last.length - 1])}</text>` }); }
+  if (ideal) rl.push({ y: y(goal) - 4, h: 28, html: (yy) => `<text x="${W - R + 6}" y="${yy}" class="lbl-pace">Goal</text><text x="${W - R + 6}" y="${yy + 14}" class="lbl-pace b">${fmtM(measure, goal)}</text>` });
+  rl.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < rl.length; i++) { const prev = rl[i - 1]; if (rl[i].y < prev.y + prev.h) rl[i].y = prev.y + prev.h; }
+  if (rl.length && rl[rl.length - 1].y > H - Bm) { const shift = rl[rl.length - 1].y - (H - Bm); rl.forEach((r) => (r.y -= shift)); }
+  if (ideal) {
+    g += `<path d="${path(ideal)}" class="ln-pace"/>`;
+    for (const w of weeks) g += `<circle cx="${x(w.ed)}" cy="${y(w.idealEnd)}" r="3.5" class="dot-pace"><title>${esc(`Ideal by end of week ${w.index} (${md(w.end)}): ${fmtExact(measure, w.idealEnd)}`)}</title></circle>`;
+  }
   if (actual.length) {
     const ld = actual.length, lv = actual[ld - 1];
-    g += `<path d="${path(actual)}" class="ln-act"/><circle cx="${x(ld)}" cy="${y(lv)}" r="4.5" class="dot-act"/>`;
-    g += `<text x="${Math.min(x(ld) + 8, W - R + 6)}" y="${y(lv) - 8}" class="lbl-act">${fmtM(measure, lv)}</text>`;
+    g += `<path d="${path(actual)}" class="ln-act"/><circle cx="${x(ld)}" cy="${y(lv)}" r="5" class="dot-act"/>`;
+    const gap = ideal ? lv - ideal[ld - 1] : null;
+    const lx = x(ld) + 10, anchor = lx > W - R - 90 ? "end" : "start", tx = anchor === "end" ? x(ld) - 10 : lx;
+    g += `<text x="${tx}" y="${y(lv) - 12}" class="lbl-act" text-anchor="${anchor}">${fmtM(measure, lv)}</text>`;
+    if (gap != null) g += `<text x="${tx}" y="${y(lv) + 20}" class="lbl-gap ${gap < 0 ? "neg" : "pos"}" text-anchor="${anchor}">${gap < 0 ? "▼" : "▲"} ${fmtM(measure, Math.abs(gap))} ${gap < 0 ? "behind" : "ahead of"} ideal</text>`;
   }
-  if (todayDay > 0 && todayDay < days) g += `<line x1="${x(todayDay)}" x2="${x(todayDay)}" y1="${T}" y2="${H - Bm}" class="today"/><text x="${x(todayDay)}" y="${T - 4}" class="ax" text-anchor="middle">today</text>`;
-  // Hover targets: one column per day.
+  g += rl.map((r) => r.html(r.y)).join("");
+  if (todayDay > 0 && todayDay < days) g += `<line x1="${x(todayDay)}" x2="${x(todayDay)}" y1="${T - 22}" y2="${H - Bm}" class="today"/><text x="${x(todayDay)}" y="${H - Bm - 4}" class="ax" text-anchor="end" dx="-4">today</text>`;
   const colW = (W - L - R) / Math.max(1, days - 1);
   for (let d = 1; d <= days; d++) {
-    const tip = [`${md(`${month}-${pad(d)}`)}`, d <= actual.length ? `so far ${fmtExact(measure, actual[d - 1])}` : "", pace ? `goal pace ${fmtExact(measure, pace[d - 1])}` : "", d <= last.length ? `${shortMonth(pm)} ${fmtExact(measure, last[d - 1])}` : ""].filter(Boolean).join(" · ");
-    g += `<rect x="${x(d) - colW / 2}" y="${T}" width="${colW}" height="${H - T - Bm}" class="hit"><title>${esc(tip)}</title></rect>`;
+    const tip = [md(`${month}-${pad(d)}`), d <= actual.length ? `so far ${fmtExact(measure, actual[d - 1])}` : "", ideal ? `ideal ${fmtExact(measure, ideal[d - 1])}` : "", d <= last.length ? `${shortMonth(pm)} ${fmtExact(measure, last[d - 1])}` : ""].filter(Boolean).join(" · ");
+    g += `<rect x="${x(d) - colW / 2}" y="${T - 22}" width="${colW}" height="${H - T - Bm + 22}" class="hit"><title>${esc(tip)}</title></rect>`;
   }
   return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(`${STAGE_LABEL[stage]} month to date: ${actual.length ? fmtExact(measure, actual[actual.length - 1]) : 0}${goal != null ? ` of a ${fmtExact(measure, goal)} goal` : ""}`)}">${g}</svg>`;
+}
+function weekStrip(D, measure) {
+  const f = (v) => v == null ? "—" : fmtM(measure, v);
+  return `<div class="scroll"><table class="wkstrip"><thead><tr><th></th>${D.weeks.map((w) => `<th class="n">Wk ${w.index}<span class="sub">${esc(w.label)}</span></th>`).join("")}</tr></thead><tbody>
+    <tr><td>Added that week</td>${D.weeks.map((w) => `<td class="n">${w.started ? `<b>${f(w.added)}</b>${w.done ? "" : ` <span class="muted small">so far</span>`}` : `<span class="future">·</span>`}</td>`).join("")}</tr>
+    <tr><td>Running total</td>${D.weeks.map((w) => `<td class="n">${w.started ? f(w.total) : `<span class="future">·</span>`}</td>`).join("")}</tr>
+    ${D.ideal ? `<tr><td>Ideal by week end</td>${D.weeks.map((w) => `<td class="n muted">${f(w.idealEnd)}</td>`).join("")}</tr>
+    <tr><td>vs ideal</td>${D.weeks.map((w) => { if (!w.started) return `<td class="n"><span class="future">·</span></td>`; const gp = w.total - w.idealNow; return `<td class="n" style="color:${gp < 0 ? "var(--bad)" : "var(--good)"}">${gp < 0 ? "−" : "+"}${fmtM(measure, Math.abs(gp))}</td>`; }).join("")}</tr>` : ""}
+  </tbody></table></div>`;
 }
 
 /* Last six months for one stage, small enough to sit seven to a row. */
@@ -1128,8 +1186,12 @@ function chartRow(B, program) {
   const measure = autoMeasure(stage, program, month);
   const goal = goalFigure(stage, program, month, measure);
   const prog = program === "Total" ? "all utilities" : program;
-  const seg = `<div class="seg small" role="group" aria-label="Measure"><button type="button" data-measure="count" aria-pressed="${measure === "count"}">Count</button><button type="button" data-measure="dollars" aria-pressed="${measure === "dollars"}">${state.mode === "incentive" ? "Incentive $" : "HBS Share $"}</button></div>`;
-  const legend = `<div class="legend" style="margin:0"><span><i style="background:var(--series)"></i>This month so far</span>${goal != null ? `<span><i class="lg-pace"></i>Goal pace (working days)</span>` : ""}<span><i class="lg-last"></i>${esc(shortMonth(prevMonthOf(month)))}</span></div>`;
+  const seg = `<div class="seg small" role="group" aria-label="Measure">${[["count", "Count"], ["incentive", "Incentive $"], ["share", "HBS Share $"]].map(([k, l]) => `<button type="button" data-measure="${k}" aria-pressed="${measure === k}">${l}</button>`).join("")}</div>`;
+  const D = burnupData(stage, program, month, measure);
+  const noIdeal = goal == null ? (measure === "share" && goalFigure(stage, program, month, "incentive") != null ? "Goals are set in Incentive dollars, so there's no ideal line for HBS Share. Switch to Incentive $ to see it."
+    : measure === "count" && goalFigure(stage, program, month, "incentive") != null ? "This stage's goal is in Incentive dollars. Switch to Incentive $ to see the ideal line."
+    : measure === "incentive" && goalFigure(stage, program, month, "count") != null ? "This stage's goal is a count. Switch to Count to see the ideal line." : "No goal is set for this stage, so there's no ideal line.") : null;
+  const legend = `<div class="legend" style="margin:0"><span><i style="background:var(--series)"></i>This month so far</span>${goal != null ? `<span><i class="lg-pace"></i>Ideal (goal spread over working days) · dots: by week end</span>` : ""}<span><i class="lg-last"></i>${esc(shortMonth(prevMonthOf(month)))}</span><span><i class="lg-band"></i>Configured weeks</span></div>`;
   let side;
   if (program === "Total") {
     const rows = ALL_ROWS.map((p) => ({ p, v: sumMeasure(evsFor(stage, p, month), measure), g: goalFigure(stage, p, month, measure) })).filter((x) => x.v || x.g);
@@ -1147,7 +1209,8 @@ function chartRow(B, program) {
   }
   return `<div class="chartrow">
     <section class="card"><div class="card-h"><h2>${esc(STAGE_LABEL[stage])} <span class="sub">· ${esc(prog)}, running total</span></h2><div class="right">${seg}</div></div>
-      <div class="card-b">${legend}${burnupSvg(stage, program, month, measure)}
+      <div class="card-b">${legend}${noIdeal ? `<div class="small" style="color:var(--warn)">${esc(noIdeal)}</div>` : ""}${burnupSvg(stage, program, month, measure, D)}
+      ${weekStrip(D, measure)}
       <div class="small muted">Click a stage above to chart it. <button type="button" class="linkbtn" data-drill="${esc(JSON.stringify({ stage, program, month, week: "mtd" }))}">See the items →</button></div></div></section>
     ${side}</div>`;
 }
