@@ -102,6 +102,7 @@ window.PUBLIC_WORKS_DATA = {
     {"agency": "Dharavi Redevelopment Project", "role": "CEO, Adani Navbharat Developers (SPV)", "name": "Anil Sardana", "asOf": "2026-10", "source": "https://www.adani.com/newsroom/media-releases/puja-performed-for-dharavi-rehabilitation-homes"},
     {"agency": "SRA", "role": "Chief Executive Officer", "name": "Dr. Mahendra Kalyankar", "asOf": "2026-10", "source": "https://www.adani.com/newsroom/media-releases/puja-performed-for-dharavi-rehabilitation-homes"},
     {"agency": "MahaRail", "role": "Managing Director", "name": "Rajesh Kumar Jaiswal", "asOf": "2026-07", "source": "https://www.freepressjournal.in/lifestyle/fpj-98th-anniversary-maharail-md-rajesh-kumar-jaiswal-the-man-behind-maharashtras-next-infrastructure-leap"},
+    {"agency": "MRIDC", "role": "Managing Director", "name": "Rajesh Kumar Jaiswal", "asOf": "2026-07", "source": "https://www.freepressjournal.in/lifestyle/fpj-98th-anniversary-maharail-md-rajesh-kumar-jaiswal-the-man-behind-maharashtras-next-infrastructure-leap"},
   ],
   projects: [
     {
