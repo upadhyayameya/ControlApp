@@ -112,7 +112,7 @@ later changes we found. Re-check it after any by-election.
 
 ### Wards
 
-BMC now has 26 administrative wards. The boundary file has the older 24; K/North and
+BMC has added wards since the boundary file (24 wards) was made. K/North and
 K/South (split from K/East) and P/East (from P/North) are shown under their parent ward.
 Project points are placed in wards by point-in-polygon; points just offshore (coastal road,
 sea links) snap to the nearest ward within 1.2 km, and anything further is "outside BMC limits".
