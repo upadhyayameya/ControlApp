@@ -353,13 +353,20 @@ def build_impl_events(cfg, ds: Dataset, model: Model, today: date) -> None:
 def apply_dedup(model: Model) -> None:
     groups: dict[tuple, list[Event]] = defaultdict(list)
     for e in model.events:
-        if e.board_key == "kpi":
+        if e.board_key != "kpi":
+            continue
+        if e.stage == "audits" and e.program == "BPTU":
+            # One BPTU audit is logged once per phase ("(Phase 1)" and "(Phase 2)"); a building counts once a month.
+            groups[("bptu-audit", e.month, rules.base_name(e.name), e.stage, e.program)].append(e)
+        else:
             groups[(e.date, norm_name(e.name), e.stage, e.program)].append(e)
     conflicts = []
-    for (d, _, stage, program), evs in groups.items():
+    for key, evs in groups.items():
+        stage, program = key[-2], key[-1]
+        d = key[0] if key[0] != "bptu-audit" else evs[0].date
         if len(evs) < 2:
             continue
-        evs.sort(key=lambda e: (len(e.item_id), e.item_id))
+        evs.sort(key=lambda e: (e.date, rules.PHASE_RE.search(e.name).group(0) if rules.PHASE_RE.search(e.name) else "", len(e.item_id), e.item_id))
         canon = evs[0]
         for e in evs:
             e.dup_group_size = len(evs)

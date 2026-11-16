@@ -384,7 +384,7 @@ details.how .body p { margin: 0; }
 const OCT_2026_GOALS = {
   audits: { "Prescriptive": { count: 8 }, "BGE Tune-Up": { count: 40 }, "BPTU": { count: 5 }, "Pepco/WGL": { count: 10 },
             "Delmarva": { count: 3 }, "SMECO": { count: 2 }, "Georgia": { count: 2 }, "Virginia/CGS": { count: 3 } },
-  pa_submitted: { "Prescriptive": { count: 45, incentive: 80000 }, "BGE Tune-Up": { count: 40, incentive: 240000 }, "BPTU": { count: 4, incentive: 386700 },
+  pa_submitted: { "Prescriptive": { count: 45, incentive: 80000 }, "BGE Tune-Up": { count: 40, incentive: 240000 }, "BPTU": { count: 4, incentive: 300000 },
                   "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 2, incentive: 60000 }, "SMECO": { count: 2, incentive: 5000 },
                   "Georgia": { count: 2, incentive: 49000 }, "Virginia/CGS": { count: 3, incentive: 1000 } },
   pa_approved: { "Prescriptive": { count: 40 }, "BGE Tune-Up": { count: 24 }, "BPTU": { count: 4 }, "Pepco/WGL": { count: 9 },
@@ -397,8 +397,12 @@ const OCT_2026_GOALS = {
                   "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 4, incentive: 200000 }, "SMECO": { count: 3, incentive: 5000 },
                   "Georgia": { count: 3 }, "Virginia/CGS": { count: 5, incentive: 5000 } },
 };
+// BPTU Phase 1 is the audit incentive. On the KPI board it is logged as a Phase 1 closeout, not a preapproval,
+// so the workbook's "Phase-1 Applications Submitted" goal is tracked against Phase 1 Closeouts Submitted.
+OCT_2026_GOALS.bptu_phase1 = { incentive: 86700 };
 // A Total goal exists only where every program has one.
-for (const st of Object.values(OCT_2026_GOALS)) {
+for (const [k, st] of Object.entries(OCT_2026_GOALS)) {
+  if (k === "bptu_phase1") continue;
   const vals = Object.values(st), t = {};
   for (const f of ["count", "incentive"]) if (vals.length === 8 && vals.every((g) => g[f] != null)) t[f] = vals.reduce((a, g) => a + g[f], 0);
   if (Object.keys(t).length) st.Total = t;
@@ -699,7 +703,8 @@ function buildKpi(D, M) {
       if (problem) badNum.push(ref(b, it, `${f}: ${problem}`));
       vals[f] = v;
     }
-    const ev = mkEvent({ board: "kpi", boardId: b.meta.id, id: it.id, name: it.name, stage, program: pr.program, basis: pr.basis, date: d,
+    const phm = it.name.match(/\(\s*phase\s*([12])\s*\)/i);
+    const ev = mkEvent({ board: "kpi", boardId: b.meta.id, id: it.id, name: it.name, stage, program: pr.program, basis: pr.basis, date: d, phase: phm ? +phm[1] : null,
       utility, source: it.c[C.source] || null, engineer: it.c[C.engineer] || null, isType: !!pr.isType, ...vals });
     M.events.push(ev);
     if (pr.blank) blank.push(ref(b, it, `${STAGE_LABEL[stage]} ${d}`));
@@ -763,18 +768,20 @@ function applyDedup(M) {
   const groups = new Map();
   for (const e of M.events) {
     if (e.board !== "kpi") continue;
-    const k = [e.date, normName(e.name), e.stage, e.program].join("\u0001");
+    const bptuAudit = e.stage === "audits" && e.program === "BPTU";
+    const k = bptuAudit ? ["bptu-audit", e.month, baseName(e.name)].join("\u0001") : [e.date, normName(e.name), e.stage, e.program].join("\u0001");
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(e);
   }
   const conflicts = [];
   for (const evs of groups.values()) {
     if (evs.length < 2) continue;
-    evs.sort((a, b) => a.id.length - b.id.length || (a.id < b.id ? -1 : 1));
+    evs.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0) || (a.phase || 9) - (b.phase || 9) || a.id.length - b.id.length || (a.id < b.id ? -1 : 1));
     const canon = evs[0];
     for (const e of evs) e.dupGroup = evs.length;
     for (const e of evs.slice(1)) {
       e.duplicateOf = canon.id; e.counted = false;
+      if (e.stage === "audits" && e.program === "BPTU") e.dupReason = e.date === canon.date ? "the other phase of the same audit" : `same building audited again (first ${md(canon.date)})`;
       M.corrections.push({ rule: "duplicate", id: e.id });
       if (e.incentive !== canon.incentive || e.share !== canon.share)
         conflicts.push({ b: e.boardId, id: e.id, name: e.name, detail: `duplicate of #${canon.id}: incentive ${money(e.incentive)} vs ${money(canon.incentive)}; the first item's values are used` });
@@ -801,7 +808,7 @@ function applyRepeats(M) {
 }
 
 function statusLabel(e) {
-  if (e.duplicateOf) return `Duplicate of #${e.duplicateOf}`;
+  if (e.duplicateOf) return e.dupReason ? `Counted once: ${e.dupReason}` : `Duplicate of #${e.duplicateOf}`;
   if (e.repeatOf) return `Repeat of #${e.repeatOf}, first logged ${e.repeatFirst}` + (e.counted ? " (counted by policy)" : "");
   return "Counted";
 }
@@ -1300,8 +1307,31 @@ function renderWeekly() {
     return `<td><div style="display:grid;gap:4px;min-width:170px"><div class="small tnum" style="display:flex;justify-content:space-between;gap:8px"><span>${g.actual == null ? "—" : g.fmt(g.actual)} of ${g.fmt(g.goal)}${dollarGoal}</span><span class="muted">${pct(g.pct)}</span></div>
       <div class="bullet" title="Bar: month to date. Tick: where pace says you should be today."><i style="width:${Math.round(pctv * 100)}%"></i><b style="left:calc(${Math.round(exp * 100)}% - 1px)"></b></div></div></td>`;
   };
+  const phaseLine = (stage) => {
+    if (prog !== "BPTU") return "";
+    if (stage === "audits") { const all = (MODEL.byStageMonth.get("audits|" + state.month) || []).filter((e) => e.program === "BPTU"); return all.length ? `<span class="sub">${plural(all.filter((e) => e.counted).length, "building")} · ${all.length} rows in monday (one per phase)</span>` : ""; }
+    const evs = evsFor(stage, "BPTU", state.month);
+    if (!evs.some((e) => e.phase)) return "";
+    const part = (n) => { const xs = evs.filter((e) => e.phase === n); return xs.length ? `Ph ${n}: ${xs.length} · ${shortMoney(sumOf(xs.map((e) => dollarsOf(e, state.mode))) || 0)}` : ""; };
+    return `<span class="sub">${[part(1), part(2)].filter(Boolean).join(" &nbsp;|&nbsp; ")}${stage === "audits" ? " (buildings)" : ""}</span>`;
+  };
+  if (prog === "BPTU") {
+    const p1 = evsFor("co_submitted", "BPTU", state.month).filter((e) => e.phase === 1), p1a = evsFor("co_approved", "BPTU", state.month).filter((e) => e.phase === 1);
+    const g1 = CONFIG.goals[state.month]?.bptu_phase1?.incentive ?? null;
+    const v1 = sumOf(p1.map((e) => e.incentive)) || 0;
+    const auditEvs = (MODEL.byStageMonth.get("audits|" + state.month) || []).filter((e) => e.program === "BPTU");
+    h += `<section class="card"><div class="card-h"><h2>BPTU phases</h2><span class="sub">Phase 1 = audit incentive · Phase 2 = PA incentive</span></div><div class="card-b">
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Buildings audited</div><div class="val">${auditEvs.filter((e) => e.counted).length}</div><div class="sub">${auditEvs.length} rows in monday: each audit is logged once per phase</div></div>
+        <div class="kpi"><div class="lbl">Phase 1 audit incentive submitted</div><div class="val">${shortMoney(v1)}</div><div class="sub">${p1.length} application${p1.length === 1 ? "" : "s"}${g1 != null ? ` · ${pct(v1 / g1)} of the ${shortMoney(g1)} goal` : ""}</div>
+          ${g1 != null ? `<div class="bullet" style="margin-top:8px"><i style="width:${Math.round(Math.min(1, v1 / g1) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div>` : ""}</div>
+        <div class="kpi"><div class="lbl">Phase 1 approved</div><div class="val">${shortMoney(sumOf(p1a.map((e) => e.incentive)) || 0)}</div><div class="sub">${p1a.length} approved</div></div>
+        <div class="kpi"><div class="lbl">Phase 2 preapprovals submitted</div><div class="val">${shortMoney(sumOf(evsFor("pa_submitted", "BPTU", state.month).filter((e) => e.phase !== 1).map((e) => e.incentive)) || 0)}</div><div class="sub">${evsFor("pa_submitted", "BPTU", state.month).length} submitted · the PA incentive</div></div>
+      </div>
+      <p class="small muted" style="margin:8px 0 0">On the KPI board, Phase 1 goes straight from the audit to Closeouts (the audit-incentive application and its approval). Phase 2 goes through Preapprovals, Implementation and Closeouts. Closeout counts and dollars below include both phases; the split is under each KPI.</p></div></section>`;
+  }
   const body = rows.map((r, i) => `<tr>
-      <td class="rowh">${esc(STAGES[i][1])}${r.goal.count == null && r.goal.dollars != null ? `<span class="sub">goal in Incentive $</span>` : r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>
+      <td class="rowh">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.goal.count == null && r.goal.dollars != null ? `<span class="sub">goal in Incentive $</span>` : r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>
       ${r.weeks.map((c) => valueCell(c)).join("")}${B.hasUn ? valueCell(r.un, "orph") : ""}${valueCell(r.mtd, "mtd")}
       ${anyGoal ? goalCell(r) + `<td>${isOff(r) ? `<a href="#why-${r.stage}" class="jump" data-jump="why-${r.stage}" title="See why">${chip(r.status)}<span class="small">Why?</span></a>` : chip(r.status) || `<span class="muted small">—</span>`}</td>` : ""}</tr>`).join("");
   const reasons = [...new Set(rows.map((r) => r.mtd.unavail).filter(Boolean))];
@@ -1373,10 +1403,11 @@ function eventRows(evs, showStage, weekOf) {
   if (!evs.length) return `<div class="empty"><b>No items</b>Nothing was logged here.</div>`;
   return `<table class="list"><thead><tr><th>Date</th>${weekOf ? "<th>Week</th>" : ""}${showStage ? "<th>Stage</th>" : ""}<th>Project</th><th>Program</th><th>Utility</th><th>Engineer</th><th class="n">Incentive</th><th class="n">HBS Share</th><th>Counted?</th><th></th></tr></thead><tbody>
     ${evs.map((e) => `<tr class="${e.counted ? "" : "excluded"}"><td class="tnum" style="white-space:nowrap">${esc(e.date)}</td>${weekOf ? `<td class="small muted" style="white-space:nowrap">${esc(weekOf(e.date))}</td>` : ""}${showStage ? `<td>${esc(STAGE_LABEL[e.stage])}</td>` : ""}
-      <td class="name">${esc(e.name)}</td><td title="${esc(e.basis)}">${esc(e.program)}</td><td>${esc(e.utility || "—")}</td><td>${esc(e.engineer || "")}</td>
+      <td class="name">${esc(e.name)}</td><td title="${esc(e.basis)}">${esc(e.program)}${e.phase ? ` <span class="pill">Ph ${e.phase}</span>` : ""}</td><td>${esc(e.utility || "—")}</td><td>${esc(e.engineer || "")}</td>
       <td class="n">${money(e.incentive)}</td><td class="n">${money(e.share)}</td><td>${statusPill(e)}</td><td style="white-space:nowrap">${itemLink(e.boardId, e.id)}</td></tr>`).join("")}</tbody></table>`;
 }
 function statusPill(e) {
+  if (e.duplicateOf && e.dupReason) return `<span class="pill mute" title="${esc(`Counted once with #${e.duplicateOf}: ${e.dupReason}`)}">${/other phase/.test(e.dupReason) ? "Same audit" : "Re-logged"}</span>`;
   if (e.duplicateOf) return `<span class="pill mute" title="Same date, project, stage and program as #${esc(e.duplicateOf)}">Duplicate</span>`;
   if (e.repeatOf) return `<span class="pill warn" title="First logged ${esc(e.repeatFirst)} as #${esc(e.repeatOf)}">Repeat${e.counted ? " · counted" : ""}</span>`;
   return `<span class="pill">Yes</span>`;
@@ -1493,7 +1524,10 @@ function renderQuality() {
     unknown_utility: "Utility values with no program", impl_past_not_complete: "Past implementation date, not shown as done",
     duplicate_value_conflict: "Duplicates with different dollar values", unparseable_number: "Unreadable dollar values", utility_is_type: "Project types in the Utility field" };
   const order = { error: 0, warning: 1, info: 2 };
+  const bpa = M.events.filter((e) => e.month === month && e.dupReason);
+  if (bpa.length) titles.bptu_audits = "BPTU audits counted once per building";
   let issues = M.issues.filter((i) => titles[i.kind]);
+  if (bpa.length) issues.push({ kind: "bptu_audits", sev: "info", msg: `${plural(bpa.length, "BPTU audit row")} ${bpa.length === 1 ? "was" : "were"} counted together with another row for the same building this month: the Phase 1 and Phase 2 rows of one audit, or the same building logged again.`, items: bpa.map((e) => ({ b: e.boardId, id: e.id, name: e.name, detail: `${e.date} · ${e.dupReason}` })) });
   const past = issues.filter((i) => i.kind === "impl_past_not_complete");
   if (past.length > 1) {
     const by = past.map((i) => `${i.msg.split(":")[0]} ${i.items.length}`).join(", ");

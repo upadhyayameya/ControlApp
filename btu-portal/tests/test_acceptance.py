@@ -394,3 +394,22 @@ def test_never_use_creation_or_update_logs_as_dates():
     model = etl.compute(cfg(), dataset([it]), TODAY)
     assert model.events == []
     assert any(i.kind == "missing_date" for i in model.issues)
+
+
+def test_bptu_audit_counts_once_per_building_not_once_per_phase():
+    items = [
+        kpi_item("audits", "12500 Clarksville Pike - St Louis Church (Phase 1)", date(2026, 11, 6), "BGE", item_id=61),
+        kpi_item("audits", "12500 Clarksville Pike - St Louis Church (Phase 2)", date(2026, 11, 6), "BGE", item_id=62),
+        kpi_item("audits", "6325 Woodside Ct - Medical Building (phase 1)", date(2026, 11, 2), "BGE", item_id=63),
+        kpi_item("audits", "6325 Woodside Ct - Medical Building (phase 2)", date(2026, 11, 2), "BGE", item_id=64),
+        kpi_item("audits", "6325 Woodside Ct - Medical Building (phase 1)", date(2026, 11, 5), "BGE", item_id=65),
+        # Phase 1 and Phase 2 preapproval-stage rows are separate incentives and both count.
+        kpi_item("co_submitted", "12500 Clarksville Pike - St Louis Church (Phase 1)", date(2026, 11, 13), "BGE", 7225, item_id=66),
+        kpi_item("pa_submitted", "12500 Clarksville Pike - St Louis Church (Phase 2)", date(2026, 11, 13), "BGE", 48683, item_id=67),
+    ]
+    model = etl.compute(cfg(), dataset(items), TODAY)
+    board = views.scoreboard(model, cfg(), "2026-11", "incentive", TODAY)
+    audits = board.row("audits", "BPTU").mtd
+    assert (audits.count, audits.raw_count) == (2, 5)
+    assert board.row("co_submitted", "BPTU").mtd.count == 1
+    assert board.row("pa_submitted", "BPTU").mtd.count == 1
