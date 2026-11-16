@@ -1201,6 +1201,37 @@ function projectIndex(asOf) {
   return P;
 }
 
+/* Where each project stands on the project trackers, by name. Used to tell real waiting work from
+   projects that were cancelled, finished, put on hold, or carried on under another program. */
+const TRACKER_GROUPS = { cancelled: "new_group11955", onHold: "new_group92794", completed: "new_group" };
+const HOLD_STATUS = /stuck|on hold|waiting on info|waiting on others/i;
+function trackerIndex() {
+  const idx = new Map();
+  for (const [tk, t] of Object.entries(CONFIG.trackers)) {
+    const b = DATA.boards[tk];
+    if (!b) continue;
+    for (const it of b.items) {
+      const rec = { tracker: t.label, status: it.c[t.status] || null, gid: it.gid, group: it.gt };
+      for (const k of [normName(it.name), baseName(it.name)]) { if (!idx.has(k)) idx.set(k, []); idx.get(k).push(rec); }
+    }
+  }
+  return idx;
+}
+function trackerState(T, name) {
+  const recs = T.get(normName(name)) || T.get(baseName(name)) || [];
+  if (!recs.length) return { kind: "unknown", label: "not found on the trackers" };
+  // A building can sit on more than one tracker; any live record wins over cancelled or finished ones.
+  const live = recs.filter((r) => r.gid !== TRACKER_GROUPS.cancelled && r.gid !== TRACKER_GROUPS.completed && !/cancel/i.test(r.status || ""));
+  const show = (r) => `${r.tracker}: ${r.status || "no status"} (${r.group})`;
+  if (!live.length) {
+    const r = recs[0];
+    return r.gid === TRACKER_GROUPS.completed ? { kind: "completed", label: show(r) } : { kind: "cancelled", label: show(r) };
+  }
+  const r = live[0];
+  if (r.gid === TRACKER_GROUPS.onHold || HOLD_STATUS.test(r.status || "")) return { kind: "hold", label: show(r) };
+  return { kind: "active", label: show(r) };
+}
+
 /* Reasons a KPI (stage × program) is off pace, each backed by monday data and, where possible, a list of items. */
 function reasonsFor(r, ctx) {
   const { B, P, ag, month, asOf } = ctx;
@@ -1227,18 +1258,46 @@ function reasonsFor(r, ctx) {
   // 2. Supply waiting at the previous step, and how long that step takes.
   if (idx > 0 && stage !== "impl_completed") {
     const prev = STAGES[idx - 1][0];
-    const waiting = [...P.values()].filter((p) => (p.program === prog || prog === "Total") && p.furthest === idx - 1 && daysBetween(p.furthestDate, asOf) <= 180);
-    const ages = waiting.map((p) => daysBetween(p.furthestDate, asOf));
+    const candidates = [...P.values()].filter((p) => (p.program === prog || prog === "Total") && p.furthest === idx - 1 && daysBetween(p.furthestDate, asOf) <= 180);
+    // Same building carried further under another program (e.g. audited as BGE, then submitted as HVAC BTU)?
+    const furthestByName = new Map();
+    for (const p of P.values()) { const k = normName(p.name); furthestByName.set(k, Math.max(furthestByName.get(k) ?? -1, p.furthest)); }
+    const T = ctx.T || (ctx.T = trackerIndex());
+    const groups = { active: [], hold: [], unknown: [], cancelled: [], completed: [], movedOn: [] };
+    for (const p of candidates) {
+      const st = trackerState(T, p.name);
+      const moved = furthestByName.get(normName(p.name)) > p.furthest;
+      const key = st.kind === "cancelled" || st.kind === "completed" ? st.kind : moved ? "movedOn" : st.kind;
+      groups[key].push({ p, st, moved });
+    }
+    const waiting = [...groups.active, ...groups.hold, ...groups.unknown];
+    const ages = waiting.map(({ p }) => daysBetween(p.furthestDate, asOf));
     const lagsP = [...P.values()].filter((p) => (p.program === prog || prog === "Total") && p.at[prev] && p.at[stage] && p.at[stage] >= p.at[prev]).map((p) => daysBetween(p.at[prev], p.at[stage]));
     const lagsAll = lagsP.length >= 5 ? lagsP : [...P.values()].filter((p) => p.at[prev] && p.at[stage] && p.at[stage] >= p.at[prev]).map((p) => daysBetween(p.at[prev], p.at[stage]));
     const lag = median(lagsAll);
-    const items = waiting.map((p) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, detail: `${STAGE_LABEL[prev]} ${p.furthestDate} · waiting ${daysBetween(p.furthestDate, asOf)} days` }));
-    const waitVal = g.dollar ? sumOf(waiting.map((p) => p.ev[prev].incentive)) || 0 : waiting.length;
-    let text;
-    if (!waiting.length) text = `No projects are waiting at ${STAGE_LABEL[prev]} (last 6 months), so there is nothing in the pipeline to turn into ${STAGE_LABEL[stage].toLowerCase()} this month. The gap starts upstream.`;
-    else if (waitVal < left) text = `Only ${plural(waiting.length, "project")}${g.dollar ? ` (${money(waitVal)})` : ""} ${waiting.length === 1 ? "is" : "are"} waiting at ${STAGE_LABEL[prev]}. Even if all of them moved this month, the goal would still be ${fmt(left - waitVal)} short. The pipeline is too thin.`;
-    else text = `${plural(waiting.length, "project")}${g.dollar ? ` (${money(waitVal)})` : ""} ${waiting.length === 1 ? "is" : "are"} waiting at ${STAGE_LABEL[prev]}, enough to cover what's left of the goal. The work exists; it isn't moving to the next step. The oldest has waited ${Math.max(...ages)} days.`;
-    out.push({ kind: "Pipeline", sev: waitVal < left ? 3 : 2, text, items });
+    const tag = { active: "In progress", hold: "On hold / waiting on info", unknown: "Not on any tracker", cancelled: "Cancelled — excluded", completed: "Completed — excluded", movedOn: "Moved on under another program — excluded" };
+    const order = ["active", "hold", "unknown", "movedOn", "cancelled", "completed"];
+    const items = order.flatMap((k) => groups[k].map(({ p, st }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name,
+      detail: `${tag[k]} · ${STAGE_LABEL[prev]} ${p.furthestDate} (${daysBetween(p.furthestDate, asOf)} days) · ${st.label}` })));
+    const active = groups.active, val = (xs) => g.dollar ? sumOf(xs.map(({ p }) => p.ev[prev].incentive)) || 0 : xs.length;
+    const activeVal = val(active);
+    const excluded = groups.cancelled.length + groups.completed.length + groups.movedOn.length;
+    const tr = [groups.cancelled.length && `${groups.cancelled.length} ${groups.cancelled.length === 1 ? "is" : "are"} cancelled`, groups.completed.length && `${groups.completed.length} ${groups.completed.length === 1 ? "is" : "are"} completed`].filter(Boolean);
+    const why = [tr.length && `${tr.join(" and ")} on the trackers`,
+      groups.movedOn.length && `${groups.movedOn.length} carried on under another program in the KPI log (for example audited as BGE, then submitted as a prescriptive tune-up)`].filter(Boolean);
+    const head = candidates.length
+      ? `${plural(candidates.length, "project")} reached ${STAGE_LABEL[prev]} in the last 6 months with nothing after it in the KPI log.${excluded ? ` Of these, ${why.join(", and ")}, so ${excluded === 1 ? "it isn't" : "they aren't"} really waiting.` : ""}`
+      : "";
+    let text, sev;
+    if (!waiting.length) { text = `${head} ${candidates.length ? "None are still open, so" : "Nothing is waiting at " + STAGE_LABEL[prev] + ", so"} there is nothing in the pipeline to turn into ${STAGE_LABEL[stage].toLowerCase()} this month. The gap starts upstream.`; sev = 3; }
+    else {
+      const holdTxt = groups.hold.length ? `, ${groups.hold.length} ${groups.hold.length === 1 ? "is" : "are"} on hold or waiting on information` : "";
+      const unkTxt = groups.unknown.length ? `, ${groups.unknown.length} ${groups.unknown.length === 1 ? "isn't" : "aren't"} on any tracker` : "";
+      const still = `Of the ${waiting.length} still open, ${active.length} ${active.length === 1 ? "is" : "are"} in progress${g.dollar && active.length ? ` (${money(activeVal)})` : ""}${holdTxt}${unkTxt}.`;
+      if (activeVal >= left) { text = `${head} ${still} The ones in progress could cover what's left of the goal if they move this month. The oldest open one has waited ${Math.max(...ages)} days.`; sev = 2; }
+      else { text = `${head} ${still} Even if every project in progress moved this month, the goal would still be ${fmt(left - activeVal)} short: the pipeline is too thin.`; sev = 3; }
+    }
+    out.push({ kind: "Pipeline", sev, text: text.trim(), items });
     if (lag != null) {
       const daysLeft = daysBetween(asOf, monthBounds(month)[1]);
       const late = !closed && lag > daysLeft;
