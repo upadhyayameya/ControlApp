@@ -1,0 +1,95 @@
+{
+  "_read_me": "Every number that decides a US price is here. Edit, then run: python3 catalogue/build.py. Values marked ASSUMPTION are placeholders until you have the real figure.",
+
+  "landedCost": {
+    "inrPerUsd": 94,
+    "_inrPerUsd": "Mid-market rate, early November 2026 (about 93.7 to 94.5). Use the rate your bank gives you.",
+
+    "factoryPriceShareOfMrp": 0.5,
+    "_factoryPriceShareOfMrp": "ASSUMPTION. What Submarine charges you, as a share of the Indian M.R.P. M.R.P. includes Indian GST and retail margin, which an export price doesn't. Replace with their export price list when you have it, or put exact prices in factoryPriceInr.",
+    "factoryPriceInr": {},
+
+    "freightUsdPerKg": 7.0,
+    "_freightUsdPerKg": "ASSUMPTION. Consolidated air cargo India to Virginia, door to door. Sea freight is far cheaper per kg but takes 5 to 7 weeks.",
+
+    "indiaAdditionalTariffPct": 10,
+    "_indiaAdditionalTariffPct": "Extra US tariff on most goods from India, on top of the normal duty, as reported by tariff sites in November 2026. Confirm with your customs broker; it has changed several times.",
+
+    "merchandiseProcessingFeePct": 0.3464,
+    "brokerBankAndOtherPct": 3,
+    "_brokerBankAndOtherPct": "Customs broker, bank transfer and insurance, as a % of factory price. ASSUMPTION.",
+
+    "duty": {
+      "_note": "Normal US duty (HTSUS general rate): % of factory value plus US cents per piece. Check codes with your broker.",
+      "Ball Pens":    {"hts": "9608.10.00", "pct": 5.4, "centsEach": 0.8},
+      "Roller Pens":  {"hts": "9608.10.00", "pct": 5.4, "centsEach": 0.8},
+      "Fountain Pen": {"hts": "9608.30.00", "pct": 2.7, "centsEach": 0.4},
+      "Sets":         {"hts": "9608.50.00", "pct": 5.4, "centsEach": 0.8, "_": "pen sets pay the rate of each pen in them"},
+      "Diary Set":    {"hts": "4820.10.20 + 9608.10", "pct": 2.0, "centsEach": 0.8, "_": "diaries are duty-free; the pen is not. Blended."},
+      "Diary combos": {"hts": "4820.10.20 + 9608.10", "pct": 2.0, "centsEach": 0.8},
+      "Ink Bottles":  {"hts": "3215.90.50", "pct": 1.8, "centsEach": 0},
+      "Refills":      {"hts": "9608.60.00", "pct": 2.7, "centsEach": 0.4},
+      "Cartridges":   {"hts": "9608.99", "pct": 0, "centsEach": 0}
+    },
+
+    "weightGrams": {
+      "_note": "Shipping weight of one unit in its retail packaging. ASSUMPTION; weigh a few and correct.",
+      "Inner Blister": 25,
+      "P.A Box": 45,
+      "Plastic Tin": 60,
+      "Metal Tin": 85,
+      "Silver Tin": 70,
+      "Transparent Tin": 55,
+      "Transparent FP": 40,
+      "Ball Pens": 50,
+      "Roller Pens": 55,
+      "Fountain Pen": 90,
+      "Sets": 230,
+      "Sets (Pcs)": 150,
+      "Diary Set": 320,
+      "Diary combos": 650,
+      "Ink Bottles": 110,
+      "Refills": 8,
+      "Cartridges": 15
+    }
+  },
+
+  "retail": {
+    "mode": "markup",
+    "_mode": "How prices are set: \"markup\" (landed × markupOnLanded), \"margin\" (profit after the card fee = targetMarginPct of retail) or \"profit\" (landed + targetProfitUsd + card fee). Then rounded up to .99.",
+    "targetMarginPct": 70,
+    "targetProfitUsd": 3.0,
+    "cardFeePct": 2.9,
+    "markupOnLanded": 3.5,
+    "_markupOnLanded": "Retail = landed cost × this. 3.5 leaves room for a 50% wholesale price and still about 1.75× landed at wholesale.",
+    "minimumUsd": {"default": 3.99, "Refills": 1.99, "Cartridges": 2.99},
+    "priceEnding": 0.99,
+    "wholesaleShareOfRetail": 0.5,
+    "overrides": {}
+  },
+
+  "excludeFromUS": {
+    "_note": "Left out of the US catalogue and price list. Remove a code here to bring it back.",
+    "0130070100": "NASA logo on the pen: NASA's name and insignia need NASA's permission on US products",
+    "0330070100": "NASA logo on the pen",
+    "3230070100": "Pluto Nasa set: NASA logo on the pens",
+    "0330000700": "NASA logo on the pen and its packaging"
+  },
+
+  "customerShipping": {
+    "_note": "Shown on the 'How to order' page. Your call; these are suggestions.",
+    "flatRateUsd": 5.99,
+    "freeOverUsd": 49,
+    "method": "USPS Ground Advantage, usually 2 to 5 business days",
+    "dispatch": "Orders ship from Arlington, Virginia within 1 to 2 business days"
+  },
+
+  "contact": {
+    "business": "Submarine Pens USA",
+    "location": "Arlington, Virginia",
+    "instagram": "@submarinepensusa",
+    "email": "",
+    "phone": "",
+    "website": ""
+  }
+}

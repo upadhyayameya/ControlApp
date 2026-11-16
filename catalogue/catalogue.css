@@ -1,0 +1,118 @@
+/* Submarine Pens USA catalogue: US Letter, printed by Chromium (render.cjs). */
+@font-face { font-family: "Inter"; src: url("file:///usr/share/fonts/opentype/inter/Inter-Regular.otf"); font-weight: 400; }
+@font-face { font-family: "Inter"; src: url("file:///usr/share/fonts/opentype/inter/Inter-Medium.otf"); font-weight: 500; }
+@font-face { font-family: "Inter"; src: url("file:///usr/share/fonts/opentype/inter/Inter-SemiBold.otf"); font-weight: 600; }
+@font-face { font-family: "Inter"; src: url("file:///usr/share/fonts/opentype/inter/Inter-Bold.otf"); font-weight: 700; }
+@font-face { font-family: "Inter Display"; src: url("file:///usr/share/fonts/opentype/inter/InterDisplay-Light.otf"); font-weight: 300; }
+@font-face { font-family: "Inter Display"; src: url("file:///usr/share/fonts/opentype/inter/InterDisplay-Medium.otf"); font-weight: 500; }
+
+:root {
+  --navy: #0b2a5b;      /* the catalogue's section-title blue */
+  --gold: #a8834f;      /* the brand page's bronze */
+  --ink: #1b1d22;
+  --muted: #6b7280;
+  --line: #e7e2d9;
+  --paper: #ffffff;
+  --tint: #f7f4ee;
+}
+
+@page { size: Letter; margin: 0.5in 0.55in 0.55in; }
+@page bleed { size: Letter; margin: 0; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: "Inter", Helvetica, Arial, sans-serif; color: var(--ink); background: var(--paper);
+       font-size: 9pt; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+h1, h2, h3, h4 { margin: 0; }
+
+/* ---------- cover ---------- */
+.cover { page: bleed; position: relative; width: 8.5in; height: 11in; background: #000; overflow: hidden; break-after: page; }
+.cover .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.cover-text { position: absolute; left: 0; right: 0; bottom: 1.05in; text-align: center; color: #fff; }
+.cover .kicker { font-size: 10pt; letter-spacing: 0.32em; text-transform: uppercase; color: var(--gold); margin: 0 0 10px; }
+.cover h1 { font-family: "Inter Display", "Inter", sans-serif; font-weight: 300; font-size: 34pt; letter-spacing: 0.04em; }
+.cover .sub { font-size: 10.5pt; letter-spacing: 0.08em; color: #d6d6d6; margin: 12px 0 0; }
+
+/* ---------- brand page ---------- */
+.brand { page: bleed; position: relative; width: 8.5in; height: 11in; background: #000; color: #fff; overflow: hidden;
+         break-after: page; padding: 1in 0.8in 0.8in; }
+.brand .nib { position: absolute; top: 0; right: 0; width: 4.6in; }
+.brand-text { position: relative; width: 3.55in; margin-top: 0.6in; }
+.brand .kicker { font-size: 9pt; letter-spacing: 0.18em; text-transform: uppercase; color: #cfcfcf; margin: 0 0 14px; }
+.brand h1 { font-family: "Times New Roman", Georgia, serif; font-weight: 400; font-size: 40pt; line-height: 1.05; letter-spacing: 0.01em; }
+.brand h1 span { color: var(--gold); }
+.brand-text p:last-child { margin-top: 28px; font-size: 10pt; line-height: 1.6; color: #e5e5e5; }
+.pillars { position: absolute; left: 0.8in; right: 0.8in; bottom: 1.5in; display: grid; grid-template-columns: repeat(3, 1fr);
+           border-top: 1px solid #5b4a33; border-bottom: 1px solid #5b4a33; padding: 22px 0; }
+.pillars div { padding: 0 18px; text-align: center; }
+.pillars div + div { border-left: 1px solid #5b4a33; }
+.pillars h4 { font-family: "Times New Roman", Georgia, serif; font-weight: 400; font-size: 13pt; color: var(--gold);
+              letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.pillars p { margin: 0; font-size: 8.5pt; color: #ddd; line-height: 1.5; }
+.brand .tags { position: absolute; left: 0; right: 0; bottom: 0.75in; text-align: center; font-size: 8pt;
+               letter-spacing: 0.16em; text-transform: uppercase; color: #cfcfcf; }
+
+/* ---------- section headers ---------- */
+.sec { margin: 0 0 16px; padding-bottom: 10px; border-bottom: 2px solid var(--gold); }
+.sec h2 { font-family: "Inter Display", "Inter", sans-serif; font-weight: 500; font-size: 24pt; color: var(--navy); letter-spacing: 0.01em; }
+.sec p { margin: 4px 0 0; color: var(--muted); font-size: 9.5pt; }
+.products, .pricelist { break-before: page; }
+
+/* ---------- how to order ---------- */
+.howgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
+.box { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+.box.key { grid-column: 1 / -1; background: var(--navy); color: #fff; border: none; }
+.box.key h4 { color: #fff; }
+.box.key p { color: #e3e8f2; font-size: 10.5pt; }
+.box h4 { font-size: 11.5pt; color: var(--navy); margin-bottom: 6px; }
+.box p { margin: 0 0 6px; font-size: 9.5pt; }
+.box ul { margin: 4px 0 0; padding-left: 16px; font-size: 9.5pt; font-weight: 600; }
+.legend { display: flex; gap: 28px; margin: 20px 0 0; font-size: 9pt; color: var(--muted); align-items: center; }
+.legend div { display: flex; gap: 8px; align-items: center; }
+.small { margin-top: 18px; font-size: 8pt; color: var(--muted); }
+
+/* ---------- product cards ---------- */
+.grid { display: grid; gap: 9px 12px; margin-bottom: 9px; }
+.grid.wide { grid-template-columns: 1fr 1fr; }
+.grid.square { grid-template-columns: repeat(3, 1fr); }
+.card { border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px 7px; break-inside: avoid; display: flex;
+        flex-direction: column; background: #fff; }
+.photo { display: flex; align-items: center; justify-content: center; }
+.wide .photo { height: 0.62in; }
+.square .photo { height: 1.55in; }
+.photo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.info { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 5px; }
+.info h3 { font-size: 9.5pt; font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px; }
+.note { margin: 1px 0 0; font-size: 7.5pt; color: var(--muted); min-height: 1.4em; }
+.meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px; }
+.code { font-family: "DejaVu Sans Mono", Menlo, monospace; font-size: 7.5pt; color: #4b5563; letter-spacing: 0.02em; }
+.price { font-size: 12.5pt; font-weight: 700; color: var(--ink); }
+.new { display: inline-block; background: #e8762c; color: #fff; font-size: 6.5pt; font-weight: 700; letter-spacing: 0.08em;
+       padding: 1.5px 5px; border-radius: 3px; }
+
+/* ---------- price list ---------- */
+.pricelist ul { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 26px; font-size: 7.6pt; }
+.pricelist li { display: flex; gap: 8px; padding: 1.6px 0; border-bottom: 1px solid #f0ece5; break-inside: avoid; }
+.pricelist li.h { border: none; font-weight: 700; color: var(--navy); font-size: 9pt; padding: 9px 0 3px; break-after: avoid; }
+.pricelist li.h:first-child { padding-top: 0; }
+.pricelist .c { font-family: "DejaVu Sans Mono", Menlo, monospace; width: 0.95in; flex: none; color: #4b5563; }
+.pricelist .t { flex: 1; }
+.pricelist .t b { color: #e8762c; font-size: 6.5pt; }
+.pricelist .p { font-weight: 600; flex: none; }
+
+/* ---------- back cover ---------- */
+.back { page: bleed; width: 8.5in; height: 11in; background: #000; color: #e5e5e5; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; }
+.back .logo { width: 3.4in; margin-bottom: 30px; }
+.back h2 { font-size: 15pt; font-weight: 700; color: #fff; letter-spacing: 0.06em; margin-bottom: 10px; }
+.back p { margin: 3px 0; font-size: 10pt; }
+.back .maker { margin-top: 26px; font-size: 8pt; color: #9a9a9a; }
+
+.overview { margin-top: 18px; }
+.overview h4 { font-size: 11.5pt; color: var(--navy); margin-bottom: 6px; }
+.overview table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+.overview th { text-align: left; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+               font-weight: 600; border-bottom: 2px solid var(--gold); padding: 4px 0; }
+.overview td { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.overview td:nth-child(2), .overview th:nth-child(2) { text-align: center; }
+.overview td:last-child, .overview th:last-child { text-align: right; font-weight: 600; }

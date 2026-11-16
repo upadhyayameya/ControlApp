@@ -1,0 +1,46 @@
+{
+  "store": {
+    "name": "Submarine Pens USA",
+    "tagline": "Power to express",
+    "instagram": "submarinepensusa",
+    "logo": "images/logo.png",
+    "location": "Arlington, Virginia",
+    "contactEmail": "REPLACE-with-your-store-email@example.com",
+    "shipsNote": "Ships within the US. REPLACE with your shipping & returns policy.",
+    "currency": "USD",
+    "siteUrl": "REPLACE-with-the-URL-where-you-host-this-shop"
+  },
+  "products": [
+    {
+      "id": "brass-series-rollerball",
+      "name": "Brass Series Rollerball",
+      "category": "Rollerball",
+      "price": 13.0,
+      "description": "REPLACE: finish, ink colour and tip size (price is the $13 MSRP listed on Faire; confirm).",
+      "image": "images/brass-series-rollerball.jpg",
+      "buyUrl": "REPLACE-with-Stripe-payment-link",
+      "available": true,
+      "featured": true
+    },
+    {
+      "id": "caduceus-clip-ballpoint",
+      "name": "Caduceus Clip Retractable Ballpoint",
+      "category": "Ballpoint",
+      "price": 0,
+      "description": "REPLACE: finish, ink colour and tip size.",
+      "image": "images/caduceus-clip-ballpoint.jpg",
+      "buyUrl": "REPLACE-with-Stripe-payment-link",
+      "available": true
+    },
+    {
+      "id": "gift-set",
+      "name": "REPLACE: Gift set name (or delete this product)",
+      "category": "Sets",
+      "price": 0,
+      "description": "REPLACE: what's in the box.",
+      "image": "images/gift-set.jpg",
+      "buyUrl": "REPLACE-with-Stripe-payment-link",
+      "available": true
+    }
+  ]
+}

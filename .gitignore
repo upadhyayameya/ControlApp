@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+*.log
+
+*.tsbuildinfo
+
+# catalogue build scratch (python3 catalogue/build.py)
+catalogue/.work/
+__pycache__/
