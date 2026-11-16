@@ -267,6 +267,21 @@ svg.chart .vlbl { fill: var(--ink-2); font-size: 10px; font-weight: 600; }
 .trend.sel { border-color: var(--accent); }
 .trend .tl { font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 0 4px; min-height: 2.6em; }
 .seg.small button { font-size: 12px; padding: 3px 8px; }
+.need { font-size: 12px; color: var(--ink); }
+.need b { color: var(--bad); font-weight: 600; }
+.path { margin: 0 18px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: grid; gap: 8px; }
+.pathhead, .whyhead, .pathsub { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.whyhead { padding: 6px 18px 6px; }
+.pathnums { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--ink-2); }
+.pathnums b { color: var(--ink); font-size: 15px; }
+b.ok { color: var(--good) !important; } b.no { color: var(--bad) !important; }
+.bridge { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; background: var(--track); }
+.bridge span { display: block; height: 100%; }
+.bridge .sure { background: var(--series); } .bridge .likely { background: var(--series); opacity: .45; } .bridge .gapseg { background: var(--bad-mark); opacity: .35; }
+.verdict { margin: 0; font-size: 13px; }
+.plist { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; }
+.plist li.act::marker { content: "→ "; color: var(--accent); }
+.plist details summary { font-size: 12px; margin-top: 2px; }
 details.whyrow { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
 details.whyrow > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(200px, 1.1fr) minmax(170px, 1fr) minmax(220px, 2fr) 16px; gap: 8px 18px; align-items: center; padding: 12px 18px; }
 details.whyrow > summary::-webkit-details-marker { display: none; }
@@ -421,11 +436,11 @@ const CONFIG = {
              incentive: "numbers_2", share: "dup__of_incentive", program: "" },
   // Implementations Completed: date passed AND the tracker shows the work done.
   trackers: {
-    master_tu: { label: "Master TU Tracker", program: "", impl: "date_mm4b5x2", status: "status", utility: "text",
+    master_tu: { label: "Master TU Tracker", program: "", impl: "date_mm4b5x2", auditDate: "date_mkrvfahg", status: "status", utility: "text",
                  incentive: "numbers", share: "dup__of_incentive_amount",
                  done: ["Implementation & MV Complete", "Implemented. Pre-approval needed", "CO Submitted"],
                  closeoutGroups: ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"] },
-    bptu: { label: "BGE BPTU Tracker", program: "BPTU", impl: "date_mm0whh86", status: "status", utility: "",
+    bptu: { label: "BGE BPTU Tracker", program: "BPTU", impl: "date_mm0whh86", auditDate: "date_mkrv8cn5", status: "status", utility: "",
             incentive: "numbers", share: "dup__of_incentive_amount",
             done: ["Implementation & MV Complete", "Implemented. Need PA/RA", "CO Submitted"],
             closeoutGroups: ["new_group93315", "duplicate_of_closeouts_to_subm", "new_group"] },
@@ -630,7 +645,7 @@ function colsFor(k) {
   if (k === "kpi") return Object.values(CONFIG.kpiCols).filter(Boolean);
   if (k === "icf") return [CONFIG.icf.status, CONFIG.icf.daysForResponse, CONFIG.icf.daysInPhase, CONFIG.icf.bucket, CONFIG.icf.value, CONFIG.icf.icfEngineer, CONFIG.icf.hbsEngineer, CONFIG.icf.phase, CONFIG.icf.utility, CONFIG.icf.tuStatus, CONFIG.icf.lastBy, CONFIG.icf.nextAction, CONFIG.icf.lastUpdate].filter(Boolean);
   const t = CONFIG.trackers[k];
-  return [t.impl, t.status, t.utility, t.incentive, t.share].filter(Boolean);
+  return [t.impl, t.status, t.utility, t.incentive, t.share, t.auditDate].filter(Boolean);
 }
 
 async function pullBoard(k, onProgress) {
@@ -1611,6 +1626,7 @@ function reasonsFor(r, ctx) {
   const stage = r.stage, prog = r.program, idx = STAGE_IDX[stage];
   const g = goalView(r);
   const out = [];
+  let pipe = null;
   const fmt = g.dollar ? (v) => money(v) : (v) => num(v);
   const exp = g.goal * B.pace.fraction, short = Math.max(0, exp - (g.actual || 0)), left = Math.max(0, g.goal - (g.actual || 0));
   const closed = TODAY > monthBounds(month)[1];
@@ -1652,6 +1668,7 @@ function reasonsFor(r, ctx) {
     const order = ["active", "hold", "unknown", "movedOn", "cancelled", "completed"];
     const items = order.flatMap((k) => groups[k].map(({ p, st }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name,
       detail: `${tag[k]} · ${STAGE_LABEL[prev]} ${p.furthestDate} (${daysBetween(p.furthestDate, asOf)} days) · ${st.label}` })));
+    pipe = { prev, groups };
     const active = groups.active, val = (xs) => g.dollar ? sumOf(xs.map(({ p }) => p.ev[prev].incentive)) || 0 : xs.length;
     const activeVal = val(active);
     const excluded = groups.cancelled.length + groups.completed.length + groups.movedOn.length;
@@ -1723,7 +1740,9 @@ function reasonsFor(r, ctx) {
     const un = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => e.program === UNMAPPED && e.counted);
     if (un.length) out.push({ kind: "Data", sev: 1, head: `${un.length} with no usable Utility`, text: `${plural(un.length, "record")} at this stage this month ${un.length === 1 ? "has" : "have"} a blank or unknown Utility and can't be counted to any program. Some may belong here.`, items: un.map((e) => ({ b: e.boardId, id: e.id, name: e.name, detail: `Utility "${e.utility || ""}"` })) });
   }
-  return { r, g, exp, short, left, weeksLeft, closed, reasons: out.sort((a, b) => b.sev - a.sev) };
+  const d = { r, g, exp, short, left, weeksLeft, closed, pipe, reasons: out.sort((a, b) => b.sev - a.sev) };
+  d.path = closed ? null : pathToGoal(d, ctx);
+  return d;
 }
 
 /* Reasons for every off-pace KPI, computed once per render. */
@@ -1741,6 +1760,93 @@ function offCounts(B) {
   return c;
 }
 
+/* Share of projects that reached `prev` 30–180 days ago and went on to reach `stage`. */
+function convRate(P, prev, stage, program, asOf) {
+  const pick = (all) => [...P.values()].filter((p) => (all || program === "Total" || p.program === program) && p.at[prev] && daysBetween(p.at[prev], asOf) >= 30 && daysBetween(p.at[prev], asOf) <= 180);
+  let xs = pick(false), scope = "this utility";
+  if (xs.length < 5) { xs = pick(true); scope = "all utilities"; }
+  if (!xs.length) return null;
+  return { rate: xs.filter((p) => p.at[stage]).length / xs.length, n: xs.length, scope };
+}
+/* Tracker items booked between tomorrow and month end: audits (by audit date) or implementations (by implementation date, not yet done). */
+function bookedOnTrackers(kind, program, from, to) {
+  const out = [], seen = new Set();
+  let missing = false;
+  for (const [tk, t] of Object.entries(CONFIG.trackers)) {
+    const b = DATA.boards[tk];
+    const col = kind === "audit" ? t.auditDate : t.impl;
+    if (!b || !col) continue;
+    if (!b.colIds.includes(col)) { missing = true; continue; }
+    const done = new Set(t.done.map((x) => x.toLowerCase())), closeout = new Set(t.closeoutGroups);
+    for (const it of b.items) {
+      const dt = it.c[col];
+      if (!isDate(dt) || dt <= from || dt > to) continue;
+      if (it.gid === TRACKER_GROUPS.cancelled || /cancel/i.test(it.c[t.status] || "")) continue;
+      if (kind === "impl" && (done.has((it.c[t.status] || "").toLowerCase()) || closeout.has(it.gid))) continue;
+      const prog = t.program || mapProgram(it.c[t.utility] || null, it.name).program;
+      if (program !== "Total" && prog !== program) continue;
+      const k = kind === "audit" ? baseName(it.name) + "|" + prog : it.id;   // a BPTU audit is one per building
+      if (seen.has(k)) continue; seen.add(k);
+      out.push({ b: b.meta.id, id: it.id, name: it.name, date: dt, value: parseNumber(it.c[t.incentive])[0], detail: `${t.label} · ${kind === "audit" ? "audit" : "implementation"} ${md(dt)} · ${it.c[t.status] || "no status"}` });
+    }
+  }
+  return { items: out.sort((a, b) => (a.date < b.date ? -1 : 1)), missing };
+}
+function pathToGoal(d, ctx) {
+  const { r, g, left } = d;
+  if (left <= 0) return { left: 0, sources: [], uncovered: 0 };
+  const { B, P, ag, month, asOf } = ctx;
+  const program = r.program, stage = r.stage, idx = STAGE_IDX[stage];
+  const [, monthEnd] = monthBounds(month);
+  const daysLeft = B.pace.remaining, weeksLeft = d.weeksLeft;
+  const runPerDay = B.pace.elapsed ? (g.actual || 0) / B.pace.elapsed : 0;
+  const needPerDay = daysLeft ? left / daysLeft : null;
+  const val = (it) => g.dollar ? (it.value || 0) : 1;
+  const sources = [], actions = [];
+  // Certain or near-certain: already booked or already done.
+  if (stage === "audits") {
+    const bk = bookedOnTrackers("audit", program, asOf, monthEnd);
+    if (bk.items.length) sources.push({ kind: "booked", label: `${plural(bk.items.length, "audit")} booked on the trackers for the rest of the month`, value: bk.items.length, items: bk.items });
+    else if (bk.missing) actions.push({ label: "Audit dates on the trackers appear after the next Refresh.", items: [] });
+  }
+  if (stage === "impl_completed") {
+    const st = (program === "Total" ? Object.values(MODEL.stale).flat() : MODEL.stale[program] || []).filter((x) => monthOf(x.date) === month);
+    if (st.length) sources.push({ kind: "done", label: `${plural(st.length, "implementation")} dated this month but not marked done. If the work happened, updating the tracker counts ${st.length === 1 ? "it" : "them"}`, value: g.dollar ? 0 : st.length, items: st });
+    const bk = bookedOnTrackers("impl", program, asOf, monthEnd);
+    if (bk.items.length) sources.push({ kind: "booked", label: `${plural(bk.items.length, "implementation")} scheduled for the rest of the month`, value: g.dollar ? sumOf(bk.items.map((x) => x.value)) || 0 : bk.items.length, items: bk.items });
+  }
+  // Likely: projects in progress at the previous step, at the usual conversion rate.
+  let conv = null;
+  if (d.pipe && idx > 0) {
+    const { prev, groups } = d.pipe;
+    conv = convRate(P, prev, stage, program, asOf);
+    const act = groups.active.map(({ p }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, value: p.ev[prev].incentive, detail: `${STAGE_LABEL[prev]} ${md(p.furthestDate)} · waiting ${daysBetween(p.furthestDate, asOf)} days` }));
+    if (act.length) {
+      const full = g.dollar ? sumOf(act.map((x) => x.value)) || 0 : act.length;
+      const rate = conv ? conv.rate : null;
+      sources.push({ kind: "pipeline", label: `${plural(act.length, "project")} in progress at ${STAGE_LABEL[prev]}${g.dollar ? ` (${money(full)})` : ""}${rate != null ? `. Usually ${pct(rate)} move on (${conv.scope}, last 6 months), so expect about ${g.dollar ? money(full * rate) : num(full * rate, 1)}` : ""}`,
+        value: rate != null ? full * rate : full, max: full, items: act });
+    }
+    if (groups.hold.length) actions.push({ label: `Unblock ${plural(groups.hold.length, "project")} on hold or waiting on information at ${STAGE_LABEL[prev]}`, items: groups.hold.map(({ p, st }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, detail: st.label })) });
+    if (groups.unknown.length) actions.push({ label: `Check ${plural(groups.unknown.length, "project")} at ${STAGE_LABEL[prev]} that ${groups.unknown.length === 1 ? "isn't" : "aren't"} on any tracker`, items: groups.unknown.map(({ p }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, detail: `${STAGE_LABEL[prev]} ${md(p.furthestDate)}` })) });
+  }
+  if (ag && ag.ok && /approved$|submitted$/.test(stage)) {
+    const phase = stage.startsWith("pa") ? /pre-?approval/i : /closeout/i;
+    const hbs = ag.loop.filter((x) => (program === "Total" || x.program === program) && phase.test(x.phase || "") && x.holder === "HBS" && !x.blocked);
+    if (hbs.length) actions.push({ label: `Answer ${plural(hbs.length, "RFI or revision", "RFIs and revisions")} HBS is holding in this phase, so ICF can approve`, items: hbs.map((x) => ({ b: ag.boardId, id: x.id, name: x.name, detail: `${x.status} · ${x.dfr == null ? "?" : Math.round(x.dfr)} days since update` })) });
+  }
+  const covered = sources.reduce((a, x) => a + x.value, 0);
+  const uncovered = Math.max(0, left - covered);
+  // Work needed upstream to close what the pipeline won't.
+  let upstream = null;
+  if (uncovered > 0 && d.pipe && conv && conv.rate > 0) {
+    const more = uncovered / conv.rate;
+    upstream = `${g.dollar ? money(more) : num(Math.ceil(more))} more at ${STAGE_LABEL[d.pipe.prev]} (at the usual ${pct(conv.rate)} conversion), and only work that moves on before ${md(monthEnd)} counts this month.`;
+  }
+  return { left, needPerDay, needPerWeek: weeksLeft ? left / weeksLeft : null, runPerDay, factor: runPerDay > 0 && needPerDay != null ? needPerDay / runPerDay : null,
+           sources, actions, covered, uncovered, upstream, daysLeft };
+}
+
 function whyCard(d, B, open) {
   const { r, g } = d;
   const top = d.reasons.filter((x) => x.sev >= 2).slice(0, 2);
@@ -1754,15 +1860,44 @@ function whyCard(d, B, open) {
       <span class="wk"><b>${esc(STAGE_LABEL[r.stage])}</b>${chip(r.status)}</span>
       <span class="wp"><span class="small tnum"><b>${g.actual == null ? "—" : g.fmt(g.actual)}</b> of ${g.fmt(g.goal)}${d.closed ? "" : ` · <span style="color:var(--bad)">${fmtN(d.short)} short</span>`}</span>
         <span class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></span></span>
-      <span class="wr">${top.length ? top.map((x) => `<span class="reason"><span class="sev ${sevCls(x)}"></span>${esc(x.head || x.kind)}</span>`).join("") : `<span class="muted small">No clear cause in the monday data</span>`}</span>
+      <span class="wr">${d.path && d.path.left > 0 ? `<span class="need">Needs ${esc(g.fmt(d.path.left))} more${d.path.needPerWeek != null ? ` · ${esc(g.dollar ? shortMoney(d.path.needPerWeek) : num(d.path.needPerWeek, 1))}/week` : ""}${d.path.uncovered > 0 ? ` · <b>${esc(g.dollar ? shortMoney(d.path.uncovered) : num(Math.ceil(d.path.uncovered)))} not in the pipeline</b>` : " · pipeline covers it"}</span>` : ""}${top.length ? top.map((x) => `<span class="reason"><span class="sev ${sevCls(x)}"></span>${esc(x.head || x.kind)}</span>`).join("") : `<span class="muted small">No clear cause in the monday data</span>`}</span>
       <span class="chev" aria-hidden="true">›</span>
     </summary>
     <div class="whybody">
       <div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;padding:0 18px 10px">
         ${d.closed ? `<span style="color:var(--bad)">Missed the goal by <b>${g.fmt(d.left)}</b></span>` : `<span>Should be <b>${fmtN(d.exp)}</b> by today</span>${d.weeksLeft ? `<span>Needs <b>${g.fmt(d.left / d.weeksLeft)}</b> a week for the ${plural(d.weeksLeft, "week")} left</span>` : ""}`}
         <button type="button" class="linkbtn" data-drill="${esc(JSON.stringify(r.mtd.drill))}">See this month's items →</button></div>
+      ${d.path && d.path.left > 0 ? pathHtml(d) : ""}
+      <div class="whyhead">Why it's behind</div>
       <div style="border-top:1px solid var(--line)">${reasonsHtml || `<div class="empty">No cause found in the monday data.</div>`}</div>
     </div></details>`;
+}
+
+function pathHtml(d) {
+  const { g, path: p } = d;
+  const f = (v) => g.dollar ? money(v) : num(v, v % 1 && v < 10 ? 1 : 0);
+  const fs = (v) => g.dollar ? shortMoney(v) : Math.abs(v) < 10 && Math.round(v * 10) % 10 ? num(v, 1) : num(Math.round(v));
+  const tot = p.left || 1;
+  const segs = p.sources.map((x) => ({ w: Math.min(x.value, tot) / tot, cls: x.kind === "pipeline" ? "likely" : "sure", t: x.label }));
+  let used = 0;
+  const bar = segs.map((sg) => { const w = Math.max(0, Math.min(sg.w, 1 - used)); used += w; return w > 0 ? `<span class="${sg.cls}" style="width:${w * 100}%" title="${esc(sg.t)}"></span>` : ""; }).join("") + (used < 1 ? `<span class="gapseg" style="width:${(1 - used) * 100}%" title="Not covered by anything booked or in the pipeline"></span>` : "");
+  const list = (xs, cls) => xs.map((x) => `<li class="${cls}"><span>${esc(x.label)}${x.value != null && cls !== "act" ? ` <b>→ ${fs(x.value)}</b>` : ""}</span>
+    ${x.items && x.items.length ? `<details><summary>Show the ${plural(x.items.length, "project")}</summary><div class="scroll"><table class="list"><tbody>${x.items.slice(0, 200).map((it) => `<tr><td class="name">${esc(it.name)}</td><td class="small muted">${esc(it.detail || "")}</td>${g.dollar ? `<td class="n small">${money(it.value)}</td>` : ""}<td style="white-space:nowrap">${itemLink(it.b, it.id)}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</li>`).join("");
+  const verdict = p.uncovered <= 0
+    ? `<b class="ok">Reachable</b> if what's booked and in progress moves as usual.`
+    : `<b class="no">${fs(p.uncovered)} short</b> even if everything booked and in progress moves as usual.${p.upstream ? ` Closing it needs about ${esc(p.upstream)}` : " Closing it needs new work."}`;
+  return `<div class="path">
+    <div class="pathhead">To reach the goal</div>
+    <div class="pathnums"><span><b>${f(p.left)}</b> more</span>
+      ${p.needPerWeek != null ? `<span><b>${fs(p.needPerWeek)}</b> a week for the ${plural(d.weeksLeft, "week")} left</span>` : ""}
+      ${p.needPerDay != null ? `<span><b>${fs(p.needPerDay)}</b> a working day (${plural(p.daysLeft, "day")} left)</span>` : ""}
+      ${p.factor != null ? `<span>${p.factor >= 1.05 ? `<b class="no">${p.factor.toFixed(1)}×</b> the pace so far (${fs(p.runPerDay)}/day)` : `<b class="ok">at or below</b> the pace so far (${fs(p.runPerDay)}/day)`}</span>` : p.runPerDay === 0 ? `<span>nothing logged yet this month</span>` : ""}</div>
+    <div class="bridge" role="img" aria-label="${esc(`${f(p.left)} needed: ${fs(p.covered)} covered by bookings and pipeline, ${fs(p.uncovered)} not covered`)}">${bar}</div>
+    <div class="legend" style="margin:4px 0 0"><span><i style="background:var(--series)"></i>Booked or already done</span><span><i style="background:var(--series);opacity:.45"></i>Expected from the pipeline</span><span><i style="background:var(--bad-mark);opacity:.35"></i>Not covered</span></div>
+    <p class="verdict">${verdict}</p>
+    ${p.sources.length ? `<ul class="plist">${list(p.sources, "src")}</ul>` : `<p class="small muted" style="margin:0">Nothing is booked or in progress that would feed this.</p>`}
+    ${p.actions.length ? `<div class="pathsub">Actions that would help</div><ul class="plist">${list(p.actions, "act")}</ul>` : ""}
+  </div>`;
 }
 
 /* The "why" section under a utility's table: a one-paragraph summary, then one card per off-pace KPI. */
