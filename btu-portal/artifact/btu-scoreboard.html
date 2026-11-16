@@ -49,7 +49,7 @@ button, select, input { font: inherit; color: inherit; }
 
 /* ---------- top bar ---------- */
 header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
-.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-block: 10px; max-width: 1480px; margin: 0 auto; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 10px; max-width: 1480px; margin: 0 auto; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; white-space: nowrap; }
 .brand .logo { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; }
 .brand .logo svg { width: 16px; height: 16px; }
@@ -63,9 +63,10 @@ select.month { background: var(--surface); border: 1px solid var(--line-2); bord
 .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 8px; padding: 2px; background: var(--surface-2); }
 .seg button { border: 0; background: transparent; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--ink-2); font-size: 13px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
-.fresh { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-.fresh .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good-mark); }
-.fresh .dot.stale { background: var(--warn-mark); }
+.refreshbtn { color: var(--ink-2); font-weight: 500; }
+.refreshbtn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good-mark); flex: none; }
+.refreshbtn .dot.stale { background: var(--warn-mark); }
+.refreshbtn #fresh { font-size: 12px; white-space: nowrap; }
 .iconbtn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-2); background: var(--surface); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-weight: 500; font-size: 13px; }
 .iconbtn:hover { background: var(--surface-2); }
 .iconbtn:disabled { opacity: .55; cursor: default; }
@@ -185,13 +186,49 @@ tr.excluded td.name { text-decoration: line-through; text-decoration-color: var(
 .stagepick button[aria-pressed="true"] .cnt-b { background: var(--accent-ink); color: var(--bad); }
 a.jump { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--accent); }
 a.jump:hover .small { text-decoration: underline; }
-section.why { scroll-margin-top: 110px; }
+table.pacegrid { table-layout: fixed; min-width: 900px; }
+table.pacegrid th { white-space: normal; text-align: center; }
+table.pacegrid th:first-child { width: 215px; text-align: left; }
+td.pg { padding: 3px; text-align: center; }
+td.pg a { display: grid; gap: 1px; padding: 7px 4px; border-radius: 8px; text-decoration: none; color: inherit; }
+td.pg.good a { background: var(--good-bg); } td.pg.warn a { background: var(--warn-bg); } td.pg.bad a { background: var(--bad-bg); }
+td.pg a:hover { outline: 2px solid var(--accent); outline-offset: -2px; }
+td.pg .pct { font-weight: 600; font-size: 16px; }
+td.pg .of { font-size: 11px; color: var(--ink-2); }
+td.pg .st { display: inline-flex; justify-content: center; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; }
+td.pg .st svg { width: 9px; height: 9px; }
+td.pg.good .st { color: var(--good); } td.pg.warn .st { color: var(--warn); } td.pg.bad .st { color: var(--bad); }
+tr.grouph td { background: var(--surface-2); font-weight: 600; font-size: 13px; padding: 6px 12px; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px; }
+.filters input, .filters select { border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 10px; background: var(--surface); min-width: 0; }
+.filters input { flex: 1 1 260px; max-width: 420px; }
+details.how.wk summary { display: flex; align-items: center; gap: 8px; }
+details.whyrow { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+details.whyrow > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(200px, 1.1fr) minmax(170px, 1fr) minmax(220px, 2fr) 16px; gap: 8px 18px; align-items: center; padding: 12px 18px; }
+details.whyrow > summary::-webkit-details-marker { display: none; }
+details.whyrow > summary:hover { background: var(--surface-2); }
+details.whyrow[open] > summary { background: var(--surface-2); }
+details.whyrow .wk { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+details.whyrow .wp { display: grid; gap: 5px; }
+details.whyrow .wr { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--ink-2); }
+details.whyrow .reason { display: flex; align-items: center; gap: 8px; }
+details.whyrow .reason .sev { margin: 0; flex: none; width: 8px; height: 8px; }
+details.whyrow .chev { color: var(--muted); font-size: 18px; transition: transform .15s; }
+details.whyrow[open] .chev { transform: rotate(90deg); }
+.whybody { padding-top: 10px; }
+.whybody .qrow { padding-left: 18px; }
+.stats { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 6px 0 2px; }
+.stats span { font-size: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; color: var(--ink-2); }
+.stats b { color: var(--ink); }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: 13px; font-weight: 500; }
+.linkbtn:hover { text-decoration: underline; }
+@media (max-width: 860px) { details.whyrow > summary { grid-template-columns: 1fr 16px; } details.whyrow .wp, details.whyrow .wr { grid-column: 1; } details.whyrow .chev { grid-row: 1; grid-column: 2; } }
 .alert .pill { margin: 2px 2px 0 0; }
 .switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
 .switch input { accent-color: var(--accent); width: 16px; height: 16px; }
 
 /* ---------- notes / quality ---------- */
-details.how { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+details.how { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 details.how summary { cursor: pointer; padding: 12px 18px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 8px; }
 details.how summary::-webkit-details-marker { display: none; }
 details.how summary::before { content: "›"; display: inline-block; transition: transform .15s; color: var(--muted); font-size: 18px; line-height: 1; }
@@ -226,6 +263,8 @@ details.how .body p { margin: 0; }
 .sk { background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%; animation: sk 1.4s ease infinite; border-radius: 8px; }
 @keyframes sk { to { background-position: -200% 0; } }
 
+@media (max-width: 1560px) { .brand small { display: none; } }
+@media (max-width: 1400px) { nav.tabs a { padding: 7px 9px; } .refreshbtn #fresh { display: none; } .bar { gap: 8px 14px; } }
 @media (max-width: 1200px) { .pipeline { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 720px) {
   .pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -250,14 +289,12 @@ details.how .body p { margin: 0; }
       <a href="#quality">Data quality</a>
     </nav>
     <div class="tools">
-      <label class="small muted" for="month">Month</label>
-      <select id="month" class="month"></select>
+      <select id="month" class="month" aria-label="Month"></select>
       <div class="seg" role="group" aria-label="Dollars shown">
         <button type="button" data-mode="incentive" aria-pressed="true">Incentive</button>
         <button type="button" data-mode="share" aria-pressed="false">HBS Share</button>
       </div>
-      <span class="fresh" id="fresh"><span class="dot stale"></span><span>Not loaded yet</span></span>
-      <button type="button" class="iconbtn" id="refresh"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg><span>Refresh</span></button>
+      <button type="button" class="iconbtn refreshbtn" id="refresh"><span class="dot stale"></span><span id="fresh">Not loaded yet</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></button>
     </div>
   </div>
   <div class="loadbar" id="loadbar"><i></i></div>
@@ -612,9 +649,9 @@ function buildKpi(D, M) {
   }
   const I = M.issues;
   for (const [g, refs] of Object.entries(unmapped))
-    I.push({ kind: "unmapped_group", sev: "error", msg: `${refs.length} KPI items sit in group ${g}, which is not a stage. Groups are matched by id only.`, items: refs });
-  if (missingDate.length) I.push({ kind: "missing_date", sev: "error", msg: `${missingDate.length} KPI items have no Completion Date and cannot be placed in any week. Creation and update logs are never used instead.`, items: missingDate });
-  if (blank.length) I.push({ kind: "blank_utility", sev: "warning", msg: `${blank.length} records have a blank Utility. They are shown in the Unmapped row.`, items: blank });
+    I.push({ kind: "unmapped_group", sev: "error", msg: `${plural(refs.length, "KPI item")} ${refs.length === 1 ? "sits" : "sit"} in group ${g}, which is not a stage. Groups are matched by id only.`, items: refs });
+  if (missingDate.length) I.push({ kind: "missing_date", sev: "error", msg: `${plural(missingDate.length, "KPI item")} ${missingDate.length === 1 ? "has" : "have"} no Completion Date and cannot be placed in any week. Creation and update logs are never used instead.`, items: missingDate });
+  if (blank.length) I.push({ kind: "blank_utility", sev: "warning", msg: `${plural(blank.length, "record")} ${blank.length === 1 ? "has" : "have"} a blank Utility. They are shown in the Unmapped row.`, items: blank });
   if (unknown.length) I.push({ kind: "unknown_utility", sev: "warning", msg: `${unknown.length} records have a Utility value with no program mapping. They are shown in the Unmapped row.`, items: unknown });
   if (badNum.length) I.push({ kind: "unparseable_number", sev: "warning", msg: `${badNum.length} dollar values could not be read and are left empty.`, items: badNum });
   if (typeUtil.length) I.push({ kind: "utility_is_type", sev: "info", msg: `${typeUtil.length} records carry a project type (HVAC BTU / HVAC BPTU / HVAC Tune Up) in the Utility field and were routed to Prescriptive. They have no real utility, so they are absent from every utility's totals.`, items: typeUtil });
@@ -836,7 +873,7 @@ function aging(D) {
 
 
 /* ---------------------------------- rendering -------------------------------------------- */
-const state = { view: "overview", month: null, mode: "incentive", stage: "pa_submitted", program: "BGE Tune-Up", whyProg: "all", subStage: "pa_submitted", showRaw: false, drill: null };
+const state = { view: "overview", month: null, mode: "incentive", stage: "pa_submitted", program: "BGE Tune-Up", whyProg: "all", subQuery: "", subProg: "all", subStage: "pa_submitted", showRaw: false, drill: null };
 let DATA = null, MODEL = null, TODAY = todayNY(), ACCOUNT = null, REFRESHING = false, PROGRESS = 0, ALERT = null;
 
 const itemUrl = (b, id) => `https://${ACCOUNT ? ACCOUNT + "." : ""}monday.com/boards/${b}/pulses/${id}`;
@@ -1030,34 +1067,51 @@ function renderWeekly() {
 function renderPace() {
   const B = scoreboard(MODEL, state.month, state.mode, TODAY);
   const weeksLeft = B.weeks.filter((w) => w.end >= TODAY).length;
-  let h = pageHead(`Pace · ${monthName(state.month)}`, `Where each stage stands against its goal, judged on working days gone (${pct(B.pace.fraction)}), with ${B.pace.remaining} working day${B.pace.remaining === 1 ? "" : "s"} and ${weeksLeft} week${weeksLeft === 1 ? "" : "s"} left.`, B);
-  const withGoal = [], without = [];
-  for (const [stage] of STAGES) for (const r of [...B.sections[stage], B.totals[stage]]) {
-    if (hasGoal(r)) withGoal.push(r);
-    else if (r.program === "Total") without.push(r);
+  let h = pageHead(`Pace · ${monthName(state.month)}`, `Every KPI against its goal, judged on working days gone (${pct(B.pace.fraction)}), with ${plural(B.pace.remaining, "working day")} and ${plural(weeksLeft, "week")} left.`, B);
+  const cols = [...PROGRAMS, "Total"];
+  const rowOf = (s, p) => p === "Total" ? B.totals[s] : B.sections[s].find((x) => x.program === p);
+  const any = STAGES.some(([s]) => cols.some((p) => hasGoal(rowOf(s, p))));
+  if (!any) return h + `<section class="card"><div class="empty"><b>No goals set for ${esc(monthName(state.month))}</b>Pace needs a goal per KPI and utility. Send Claude the month's goals.</div></section>`;
+  const src = CONFIG.goals.sources?.[state.month];
+  if (src) h += `<p class="small muted" style="margin:-8px 0 0">${esc(src)} Dollar goals are Incentive.</p>`;
+
+  // Grid: one cell per KPI and utility, coloured by pace status (with an icon and label, never colour alone).
+  const ICONS = { on: ICON.up, watch: ICON.dot, behind: ICON.down };
+  const cell = (s, p) => {
+    const r = rowOf(s, p);
+    if (!r || !hasGoal(r)) return `<td class="pg none"><span class="muted">—</span></td>`;
+    if (r.mtd.count == null) return `<td class="pg none" title="${esc(r.mtd.unavail)}"><span class="muted small">n/a</span></td>`;
+    const g = goalView(r);
+    const cls = r.status === "on" ? "good" : r.status === "watch" ? "warn" : "bad";
+    return `<td class="pg ${cls}"><a href="#weekly" data-proglink="${esc(p)}" data-jumpafter="why-${s}" title="${esc(`${p === "Total" ? "All utilities" : p} · ${STAGE_LABEL[s]}: ${g.fmt(g.actual)} of ${g.fmt(g.goal)}. Open with reasons.`)}">
+      <span class="pct">${pct(g.pct)}</span><span class="of">${g.dollar ? shortMoney(g.actual) : g.actual} / ${g.dollar ? shortMoney(g.goal) : g.goal}</span><span class="st">${ICONS[r.status] || ""}${r.status === "on" ? "On pace" : r.status === "watch" ? "Watch" : "Behind"}</span></a></td>`;
+  };
+  h += `<section class="card"><div class="card-h"><h2>Pace grid</h2><span class="sub">% of goal so far · click a cell for that utility and why</span></div>
+    <div class="card-b scroll"><table class="pacegrid"><thead><tr><th>KPI</th>${cols.map((p) => `<th>${p === "Total" ? "All utilities" : esc(p)}</th>`).join("")}</tr></thead>
+    <tbody>${STAGES.map(([s, l]) => `<tr><td class="rowh">${esc(l)}</td>${cols.map((p) => cell(s, p)).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="card-note">Expected by today is ${pct(B.pace.fraction)} of each goal. On pace: at or above it. Watch: within 10% below. Behind: more than 10% below.</div></section>`;
+
+  // Detail, grouped by KPI.
+  const fmtGap = (g, gap) => { const a = Math.abs(gap); if (g.dollar) return (gap < 0 ? "-" : "+") + money(a); if (a < 0.05) return "0"; return (gap < 0 ? "-" : "+") + num(a, a < 10 ? 1 : 0); };
+  let body = "";
+  for (const [stage, label] of STAGES) {
+    const rows = cols.map((p) => rowOf(stage, p)).filter((r) => r && hasGoal(r));
+    if (!rows.length) continue;
+    body += `<tr class="grouph"><td colspan="6">${esc(label)}</td></tr>`;
+    for (const r of rows) {
+      const g = goalView(r), c = g.actual;
+      if (r.mtd.count == null) { body += `<tr><td class="rowh">${r.program === "Total" ? "All utilities" : esc(r.program)}</td><td colspan="5"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`; continue; }
+      const exp = g.goal * B.pace.fraction, gap = (c || 0) - exp, left = Math.max(g.goal - (c || 0), 0);
+      body += `<tr class="${r.program === "Total" ? "total" : ""}"><td class="rowh">${r.program === "Total" ? "All utilities" : esc(r.program)}</td>
+        <td><div style="display:grid;gap:4px"><div class="small" style="display:flex;justify-content:space-between;gap:8px"><span><b>${g.fmt(c)}</b> of ${g.fmt(g.goal)}${g.dollar ? "" : ` <span class="muted">· ${money(r.mtd.dollars)}</span>`}</span><span class="muted">${pct(g.pct)}</span></div>
+        <div class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div></div></td>
+        <td class="n" style="color:${gap < -0.05 ? "var(--bad)" : "var(--good)"}">${fmtGap(g, gap)}</td>
+        <td class="n">${weeksLeft ? (g.dollar ? money(left / weeksLeft) : num(left / weeksLeft, 1)) : "—"}</td>
+        <td class="n">${B.pace.remaining ? (g.dollar ? money(left / B.pace.remaining) : num(left / B.pace.remaining, 2)) : "—"}</td><td>${chip(r.status)}</td></tr>`;
+    }
   }
-  if (withGoal.length) {
-    h += `<section class="card"><div class="card-h"><h2>Against goal</h2><div class="right small muted">Bar: month to date · Tick: where you should be today</div></div><div class="card-b scroll"><table><thead><tr>
-      <th>Stage</th><th>Program</th><th style="min-width:200px">Progress</th><th class="n">Gap to pace</th><th class="n">Needed per week</th><th class="n">Needed per working day</th><th>Status</th></tr></thead><tbody>
-      ${withGoal.map((r) => {
-        const g = goalView(r), c = g.actual;
-        if (r.mtd.count == null) return `<tr><td>${esc(STAGE_LABEL[r.stage])}</td><td class="rowh">${esc(r.program)}</td><td colspan="5"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`;
-        const exp = g.goal * B.pace.fraction, gap = (c || 0) - exp, left = Math.max(g.goal - (c || 0), 0);
-        return `<tr class="${r.program === "Total" ? "total" : ""}"><td>${esc(STAGE_LABEL[r.stage])}</td><td class="rowh">${r.program === "Total" ? "All programs" : esc(r.program)}</td>
-          <td><div style="display:grid;gap:4px"><div class="small" style="display:flex;justify-content:space-between"><span><b>${g.fmt(c)}</b> of ${g.fmt(g.goal)}${g.dollar ? "" : " · " + money(r.mtd.dollars)}</span><span class="muted">${pct(g.pct)}</span></div>
-          <div class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div></div></td>
-          <td class="n" style="color:${gap < 0 ? "var(--bad)" : "var(--good)"}">${gap >= 0 ? "+" : "-"}${g.dollar ? money(Math.abs(gap)) : num(Math.abs(gap), 1)}</td>
-          <td class="n">${weeksLeft ? (g.dollar ? money(left / weeksLeft) : num(left / weeksLeft, 1)) : "—"}</td><td class="n">${B.pace.remaining ? (g.dollar ? money(left / B.pace.remaining) : num(left / B.pace.remaining, 2)) : "—"}</td><td>${chip(r.status)}</td></tr>`;
-      }).join("")}</tbody></table></div></section>`;
-  } else {
-    h += `<section class="card"><div class="empty"><b>No goals set for ${esc(monthName(state.month))}</b>Pace needs a goal per stage and program. Send Claude the month's goals and this page will show progress bars, the gap to pace and the run rate needed for the weeks left.</div></section>`;
-  }
-  if (without.length) {
-    h += `<section class="card"><div class="card-h"><h2>Run rate so far <span class="sub">· all programs, stages without a goal</span></h2></div><div class="card-b scroll"><table><thead><tr><th>Stage</th><th class="n">Month to date</th><th class="n">${state.mode === "incentive" ? "Incentive" : "HBS Share"}</th><th class="n">Per working day</th></tr></thead><tbody>
-      ${without.map((r) => r.mtd.count == null ? `<tr><td>${esc(STAGE_LABEL[r.stage])}</td><td colspan="3"><span class="na">${esc(r.mtd.unavail)}</span></td></tr>`
-        : `<tr><td>${esc(STAGE_LABEL[r.stage])}</td><td class="n"><b>${r.mtd.count}</b></td><td class="n">${money(r.mtd.dollars)}</td><td class="n">${B.pace.elapsed ? num(r.mtd.count / B.pace.elapsed, 2) : "—"}</td></tr>`).join("")}
-      </tbody></table></div></section>`;
-  }
+  h += `<details class="how"><summary>Detail: gap to pace and what's needed per week</summary><div class="scroll" style="padding:0 18px 14px"><table><thead><tr>
+    <th>Utility</th><th style="min-width:230px">Progress <span class="sub" style="display:inline">· bar: so far, tick: today's pace</span></th><th class="n">Gap to pace</th><th class="n">Needed / week</th><th class="n">Needed / working day</th><th>Status</th></tr></thead><tbody>${body}</tbody></table></div></details>`;
   return h;
 }
 
@@ -1074,22 +1128,33 @@ function statusPill(e) {
   return `<span class="pill">Yes</span>`;
 }
 
-function renderSubmissions() {
+function subResults() {
   const { weeks } = monthWeeks(state.month);
-  const evs = drillEvents(MODEL, state.subStage, null, state.month, null);
-  const groups = new Map(weeks.map((w) => [`Week ${w.index} · ${w.label}`, []]));
+  const q = (state.subQuery || "").trim().toLowerCase();
+  let evs = drillEvents(MODEL, state.subStage, null, state.month, null);
+  if (state.subProg !== "all") evs = evs.filter((e) => e.program === state.subProg);
+  if (q) evs = evs.filter((e) => [e.name, e.utility, e.engineer, e.source, e.program].some((v) => (v || "").toLowerCase().includes(q)));
+  const groups = new Map(weeks.filter((w) => w.start <= TODAY).map((w) => [`Week ${w.index} · ${w.label}`, []]));
   for (const e of evs) { const w = weeks.find((x) => inWeek(x, e.date)); const k = w ? `Week ${w.index} · ${w.label}` : "Not in any week"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); }
-  const reason = unavailFor(MODEL, state.subStage, "*");
-  let h = pageHead(`Submissions · ${monthName(state.month)}`, "Every item logged at a stage, week by week. Duplicates and repeats stay in the list, greyed out.");
-  h += `<div class="stagepick" role="group" aria-label="Stage">${STAGES.map(([s, l]) => `<button type="button" data-substage="${s}" aria-pressed="${s === state.subStage}">${esc(l)}</button>`).join("")}</div>`;
-  if (reason) h += `<div class="alert warn">${ICON.warn}<span>${esc(reason)}</span></div>`;
+  const counted = evs.filter((e) => e.counted);
+  let h = `<p class="small muted" style="margin:0">${plural(counted.length, "project")} counted${evs.length !== counted.length ? ` of ${evs.length} rows logged` : ""} · ${money(sumOf(counted.map((e) => dollarsOf(e, state.mode))) || 0)} ${state.mode === "incentive" ? "Incentive" : "HBS Share"}${q || state.subProg !== "all" ? " (filtered)" : ""}</p>`;
   for (const [label, list] of groups) {
-    const counted = list.filter((e) => e.counted), future = weeks.find((w) => label.startsWith(`Week ${w.index} ·`))?.start > TODAY;
-    if (future && !list.length) continue;
-    h += `<section class="card"><div class="card-h"><h2>${esc(label)}</h2><div class="right small"><b>${counted.length}</b>&nbsp;counted${list.length !== counted.length ? ` <span class="muted">&nbsp;of ${list.length} logged</span>` : ""} · ${money(sumOf(counted.map((e) => dollarsOf(e, state.mode))) || 0)}</div></div>
-      <div class="card-b scroll" style="padding-top:6px">${eventRows(list, false, null)}</div></section>`;
+    const c = list.filter((e) => e.counted);
+    h += `<details class="how wk" open><summary>${esc(label)} <span class="sub" style="margin-left:auto;font-weight:400">${c.length} counted${list.length !== c.length ? ` of ${list.length}` : ""} · ${money(sumOf(c.map((e) => dollarsOf(e, state.mode))) || 0)}</span></summary>
+      <div class="scroll" style="padding:0 8px 10px">${list.length ? eventRows(list, false, null) : `<div class="empty" style="padding:14px">Nothing logged${q || state.subProg !== "all" ? " matching the filter" : ""}.</div>`}</div></details>`;
   }
   return h;
+}
+function renderSubmissions() {
+  const reason = unavailFor(MODEL, state.subStage, "*");
+  const progs = [...new Set(drillEvents(MODEL, state.subStage, null, state.month, null).map((e) => e.program))];
+  if (state.subProg !== "all" && !progs.includes(state.subProg)) state.subProg = "all";
+  let h = pageHead(`Submissions · ${monthName(state.month)}`, "Every item logged at a stage, week by week. Duplicates and repeats stay in the list, greyed out.");
+  h += `<div class="stagepick" role="group" aria-label="Stage">${STAGES.map(([s, l]) => `<button type="button" data-substage="${s}" aria-pressed="${s === state.subStage}">${esc(l)}</button>`).join("")}</div>`;
+  h += `<div class="filters"><input type="search" id="subSearch" placeholder="Search project, utility, engineer…" value="${esc(state.subQuery || "")}" aria-label="Search">
+    <select id="subProg" aria-label="Utility"><option value="all">All utilities</option>${ALL_ROWS.filter((p) => progs.includes(p)).map((p) => `<option value="${esc(p)}" ${p === state.subProg ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></div>`;
+  if (reason) h += `<div class="alert warn">${ICON.warn}<span>${esc(reason)}</span></div>`;
+  return h + `<div id="subResults" style="display:grid;gap:12px">${subResults()}</div>`;
 }
 
 function renderAging() {
@@ -1162,7 +1227,15 @@ function renderQuality() {
     unknown_utility: "Utility values with no program", impl_past_not_complete: "Past implementation date, not shown as done",
     duplicate_value_conflict: "Duplicates with different dollar values", unparseable_number: "Unreadable dollar values", utility_is_type: "Project types in the Utility field" };
   const order = { error: 0, warning: 1, info: 2 };
-  const issues = M.issues.filter((i) => titles[i.kind]).sort((a, b) => order[a.sev] - order[b.sev]);
+  let issues = M.issues.filter((i) => titles[i.kind]);
+  const past = issues.filter((i) => i.kind === "impl_past_not_complete");
+  if (past.length > 1) {
+    const by = past.map((i) => `${i.msg.split(":")[0]} ${i.items.length}`).join(", ");
+    const all = past.flatMap((i) => i.items.map((x) => ({ ...x, detail: `${i.msg.split(":")[0]} · ${x.detail}` })));
+    issues = issues.filter((i) => i.kind !== "impl_past_not_complete").concat({ kind: "impl_past_not_complete", sev: "warning",
+      msg: `${all.length} implementations have a date that has passed but the tracker doesn't show the work done (${by}). They aren't counted as complete until the tracker is updated.`, items: all });
+  }
+  issues.sort((a, b) => order[a.sev] - order[b.sev]);
   h += `<section class="card"><div class="card-h"><h2>Checks</h2><span class="sub">${issues.length + weekIssues.length ? `${issues.length + weekIssues.length} to look at` : "all clear"}</span></div><div style="padding-top:8px">
     ${weekIssues.map(([m, ws]) => `<div class="qrow"><span class="sev error"></span><div><h3>Week setup for ${esc(monthName(m))}</h3><p>${ws.map(esc).join(" ")}</p></div><span></span></div>`).join("")}
     ${issues.map((i) => `<div class="qrow"><span class="sev ${i.sev}"></span><div><h3>${esc(titles[i.kind])}</h3><p>${esc(i.msg)}</p>
@@ -1250,10 +1323,10 @@ function reasonsFor(r, ctx) {
   const hist = hm.map((mo) => sumVal((MODEL.byStageMonth.get(stage + "|" + mo) || []).filter((e) => pick(e) && e.counted)));
   const avg = hist.reduce((a, b) => a + b, 0) / hist.length;
   const histTxt = hm.map((mo, i) => `${shortMonth(mo)} ${fmt(hist[i])}`).join(", ");
-  if (avg === 0) out.push({ kind: "Goal vs. history", sev: 2, text: `Nothing was logged here in the last three months (${histTxt}), so the goal of ${fmt(g.goal)} assumes work that hasn't been flowing at all.` });
-  else if (g.goal >= avg * 1.5) out.push({ kind: "Goal vs. history", sev: 2, text: `The goal of ${fmt(g.goal)} is ${(g.goal / avg).toFixed(1)}× the recent monthly average of ${fmt(avg)} (${histTxt}). Hitting it needs a step up, not just a normal month.` });
-  else if (avg >= g.goal) out.push({ kind: "Goal vs. history", sev: 1, text: `This usually reaches the goal: the last three months averaged ${fmt(avg)} (${histTxt}). This month is running below its own normal, so look for what changed.` });
-  else out.push({ kind: "Goal vs. history", sev: 1, text: `Recent months averaged ${fmt(avg)} (${histTxt}) against a goal of ${fmt(g.goal)}.` });
+  if (avg === 0) out.push({ kind: "Goal vs. history", sev: 2, head: "Nothing logged in the last 3 months", text: `Nothing was logged here in the last three months (${histTxt}), so the goal of ${fmt(g.goal)} assumes work that hasn't been flowing at all.` });
+  else if (g.goal >= avg * 1.5) out.push({ kind: "Goal vs. history", sev: 2, head: `Goal is ${(g.goal / avg).toFixed(1)}× a normal month`, text: `The goal of ${fmt(g.goal)} is ${(g.goal / avg).toFixed(1)}× the recent monthly average of ${fmt(avg)} (${histTxt}). Hitting it needs a step up, not just a normal month.` });
+  else if (avg >= g.goal) out.push({ kind: "Goal vs. history", sev: 1, head: "Running below its own normal month", text: `This usually reaches the goal: the last three months averaged ${fmt(avg)} (${histTxt}). This month is running below its own normal, so look for what changed.` });
+  else out.push({ kind: "Goal vs. history", sev: 1, head: `Recent average ${fmt(avg)} a month`, text: `Recent months averaged ${fmt(avg)} (${histTxt}) against a goal of ${fmt(g.goal)}.` });
 
   // 2. Supply waiting at the previous step, and how long that step takes.
   if (idx > 0 && stage !== "impl_completed") {
@@ -1297,11 +1370,14 @@ function reasonsFor(r, ctx) {
       if (activeVal >= left) { text = `${head} ${still} The ones in progress could cover what's left of the goal if they move this month. The oldest open one has waited ${Math.max(...ages)} days.`; sev = 2; }
       else { text = `${head} ${still} Even if every project in progress moved this month, the goal would still be ${fmt(left - activeVal)} short: the pipeline is too thin.`; sev = 3; }
     }
-    out.push({ kind: "Pipeline", sev, text: text.trim(), items });
+    const phead = !waiting.length ? `Nothing open at ${STAGE_LABEL[prev]}` : sev === 3 ? `Pipeline too thin: ${active.length} in progress at ${STAGE_LABEL[prev]}` : `${active.length} waiting at ${STAGE_LABEL[prev]}, not moving`;
+    out.push({ kind: "Pipeline", sev, head: phead, text: text.trim(), items,
+      stats: [["reached " + STAGE_LABEL[prev], candidates.length], ["in progress", active.length], ["on hold", groups.hold.length], ["not on a tracker", groups.unknown.length],
+              ["moved on under another program", groups.movedOn.length], ["cancelled", groups.cancelled.length], ["completed", groups.completed.length]].filter(([, n], i) => i < 2 || n) });
     if (lag != null) {
       const daysLeft = daysBetween(asOf, monthBounds(month)[1]);
       const late = !closed && lag > daysLeft;
-      out.push({ kind: "Lead time", sev: late ? 2 : 0, text: `Projects typically take ${Math.round(lag)} days from ${STAGE_LABEL[prev]} to ${STAGE_LABEL[stage]}${lagsP.length >= 5 ? "" : " (all programs; too few for this one alone)"}.${late ? ` With ${daysLeft} days left in the month, work reaching ${STAGE_LABEL[prev]} from now on mostly lands next month.` : closed ? ` Work reaching ${STAGE_LABEL[prev]} in the last ${Math.round(lag)} days of a month mostly lands in the next one.` : ""}` });
+      out.push({ kind: "Lead time", sev: late ? 2 : 0, head: `Takes ~${Math.round(lag)} days from the previous step`, text: `Projects typically take ${Math.round(lag)} days from ${STAGE_LABEL[prev]} to ${STAGE_LABEL[stage]}${lagsP.length >= 5 ? "" : " (all programs; too few for this one alone)"}.${late ? ` With ${daysLeft} days left in the month, work reaching ${STAGE_LABEL[prev]} from now on mostly lands next month.` : closed ? ` Work reaching ${STAGE_LABEL[prev]} in the last ${Math.round(lag)} days of a month mostly lands in the next one.` : ""}` });
     }
   }
 
@@ -1309,7 +1385,7 @@ function reasonsFor(r, ctx) {
   if (stage === "impl_completed") {
     const st = prog === "Total" ? Object.values(MODEL.stale).flat() : MODEL.stale[prog] || [];
     const thisMonth = st.filter((x) => monthOf(x.date) === month);
-    if (st.length) out.push({ kind: "Not marked done", sev: 3, text: `${plural(st.length, "implementation")} on the trackers ${st.length === 1 ? "has" : "have"} a date that has passed but ${st.length === 1 ? "isn't" : "aren't"} marked done${thisMonth.length ? ` (${thisMonth.length} dated this month)` : ""}. If the work happened, updating the tracker status counts ${st.length === 1 ? "it" : "them"}.`, items: st });
+    if (st.length) out.push({ kind: "Not marked done", sev: 3, head: `${st.length} past their date, not marked done`, text: `${plural(st.length, "implementation")} on the trackers ${st.length === 1 ? "has" : "have"} a date that has passed but ${st.length === 1 ? "isn't" : "aren't"} marked done${thisMonth.length ? ` (${thisMonth.length} dated this month)` : ""}. If the work happened, updating the tracker status counts ${st.length === 1 ? "it" : "them"}.`, items: st });
   }
 
   // 4. ICF / HBS holding work in the RFI loop.
@@ -1318,32 +1394,31 @@ function reasonsFor(r, ctx) {
     const loop = ag.loop.filter((x) => (prog === "Total" || x.program === prog) && phase.test(x.phase || ""));
     const icf = loop.filter((x) => x.holder === "ICF"), hbs = loop.filter((x) => x.holder === "HBS");
     const toItems = (xs) => xs.map((x) => ({ b: ag.boardId, id: x.id, name: x.name, detail: `${x.status} · ${x.dfr ?? "?"} days waiting` }));
-    if (stage.endsWith("approved") && icf.length) out.push({ kind: "Waiting on ICF", sev: 2, text: `${plural(icf.length, "project")} in this phase ${icf.length === 1 ? "is" : "are"} with ICF after an RFI response or resubmission (${money(sumOf(icf.map((x) => x.value)) || 0)}). Approvals depend on ICF clearing ${icf.length === 1 ? "it" : "them"}.`, items: toItems(icf) });
-    if (hbs.length) out.push({ kind: "Waiting on HBS", sev: 3, text: `${plural(hbs.length, "project")} in this phase ${hbs.length === 1 ? "is" : "are"} waiting on HBS: open RFIs or revisions (${money(sumOf(hbs.map((x) => x.value)) || 0)}). These are in HBS's control to move.`, items: toItems(hbs) });
-    if (!ag.items.some((x) => x.program)) out.push({ kind: "Waiting on ICF", sev: 0, text: "The ICF tracker hasn't been read with its Utility column yet. Press Refresh to include RFI loop counts here." });
+    if (stage.endsWith("approved") && icf.length) out.push({ kind: "Waiting on ICF", sev: 2, head: `${icf.length} with ICF`, text: `${plural(icf.length, "project")} in this phase ${icf.length === 1 ? "is" : "are"} with ICF after an RFI response or resubmission (${money(sumOf(icf.map((x) => x.value)) || 0)}). Approvals depend on ICF clearing ${icf.length === 1 ? "it" : "them"}.`, items: toItems(icf) });
+    if (hbs.length) out.push({ kind: "Waiting on HBS", sev: 3, head: `${hbs.length} waiting on HBS (RFIs, revisions)`, text: `${plural(hbs.length, "project")} in this phase ${hbs.length === 1 ? "is" : "are"} waiting on HBS: open RFIs or revisions (${money(sumOf(hbs.map((x) => x.value)) || 0)}). These are in HBS's control to move.`, items: toItems(hbs) });
   }
 
   // 5. Timing: nothing logged recently.
   const cur = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => pick(e) && e.counted);
   const last = cur.map((e) => e.date).sort().pop();
   const since = last ? daysBetween(last, asOf) : daysBetween(monthBounds(month)[0], asOf);
-  if (since >= 7) out.push({ kind: "Activity", sev: 2, text: last ? `Nothing has been logged here since ${md(last)} (${since} days).` : `Nothing has been logged here yet this month (${since} days in).` });
+  if (since >= 7) out.push({ kind: "Activity", sev: 2, head: last ? `Nothing logged since ${md(last)}` : "Nothing logged yet this month", text: last ? `Nothing has been logged here since ${md(last)} (${since} days).` : `Nothing has been logged here yet this month (${since} days in).` });
 
   // 6. Dollars vs count: are the projects smaller than the goal assumes?
   if (r.goal.count != null && r.goal.dollars != null && r.mtd.count) {
     const avgVal = (r.mtd.dollars || 0) / r.mtd.count, goalAvg = r.goal.dollars / r.goal.count;
     const pc = r.mtd.count / r.goal.count, pdol = (r.mtd.dollars || 0) / r.goal.dollars;
-    if (pdol < pc * 0.75) out.push({ kind: "Project size", sev: 2, text: `Count is ${pct(pc)} of goal but dollars are ${pct(pdol)}: the average project is ${money(avgVal)}, against ${money(goalAvg)} per project in the goal. The mix has shifted to smaller jobs.` });
-    else if (pc < pdol * 0.75) out.push({ kind: "Project size", sev: 1, text: `Dollars (${pct(pdol)} of goal) are ahead of count (${pct(pc)}): fewer, larger projects (${money(avgVal)} average vs ${money(goalAvg)} in the goal).` });
+    if (pdol < pc * 0.75) out.push({ kind: "Project size", sev: 2, head: "Smaller projects than the goal assumes", text: `Count is ${pct(pc)} of goal but dollars are ${pct(pdol)}: the average project is ${money(avgVal)}, against ${money(goalAvg)} per project in the goal. The mix has shifted to smaller jobs.` });
+    else if (pc < pdol * 0.75) out.push({ kind: "Project size", sev: 1, head: "Fewer, larger projects", text: `Dollars (${pct(pdol)} of goal) are ahead of count (${pct(pc)}): fewer, larger projects (${money(avgVal)} average vs ${money(goalAvg)} in the goal).` });
   }
 
   // 7. Data: corrections and records that can't be placed.
   const all = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter(pick);
   const dups = all.filter((e) => e.duplicateOf).length, reps = all.filter((e) => e.repeatOf && !e.duplicateOf && !e.counted).length;
-  if (dups || reps) out.push({ kind: "Data", sev: 1, text: `monday has ${all.length} rows here; ${[dups ? plural(dups, "duplicate") : "", reps ? plural(reps, "repeat submission") : ""].filter(Boolean).join(" and ")} ${dups + reps === 1 ? "was" : "were"} removed. A hand-built count of raw rows would show ${dups + reps} more.` });
+  if (dups || reps) out.push({ kind: "Data", sev: 1, head: `${dups + reps} logged twice, counted once`, text: `monday has ${all.length} rows here; ${[dups ? plural(dups, "duplicate") : "", reps ? plural(reps, "repeat submission") : ""].filter(Boolean).join(" and ")} ${dups + reps === 1 ? "was" : "were"} removed. A hand-built count of raw rows would show ${dups + reps} more.` });
   if (prog !== "Total") {
     const un = (MODEL.byStageMonth.get(stage + "|" + month) || []).filter((e) => e.program === UNMAPPED && e.counted);
-    if (un.length) out.push({ kind: "Data", sev: 1, text: `${plural(un.length, "record")} at this stage this month ${un.length === 1 ? "has" : "have"} a blank or unknown Utility and can't be counted to any program. Some may belong here.`, items: un.map((e) => ({ b: e.boardId, id: e.id, name: e.name, detail: `Utility "${e.utility || ""}"` })) });
+    if (un.length) out.push({ kind: "Data", sev: 1, head: `${un.length} with no usable Utility`, text: `${plural(un.length, "record")} at this stage this month ${un.length === 1 ? "has" : "have"} a blank or unknown Utility and can't be counted to any program. Some may belong here.`, items: un.map((e) => ({ b: e.boardId, id: e.id, name: e.name, detail: `Utility "${e.utility || ""}"` })) });
   }
   return { r, g, exp, short, left, weeksLeft, closed, reasons: out.sort((a, b) => b.sev - a.sev) };
 }
@@ -1363,19 +1438,28 @@ function offCounts(B) {
   return c;
 }
 
-function whyCard(d, B) {
+function whyCard(d, B, open) {
   const { r, g } = d;
-  const reasonsHtml = d.reasons.map((x) => `<div class="qrow"><span class="sev ${x.sev >= 3 ? "error" : x.sev === 2 ? "warning" : "info"}"></span><div><h3>${esc(x.kind)}</h3><p>${esc(x.text)}</p>
-    ${x.items && x.items.length ? `<details><summary>Show the ${plural(x.items.length, "item")}</summary><div class="scroll"><table class="list"><tbody>${x.items.slice(0, 200).map((it) => `<tr><td class="name">${esc(it.name)}</td><td class="small muted">${esc(it.detail || "")}</td><td style="white-space:nowrap">${itemLink(it.b, it.id)}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div><span></span></div>`).join("");
+  const top = d.reasons.filter((x) => x.sev >= 2).slice(0, 2);
+  const sevCls = (x) => x.sev >= 3 ? "error" : x.sev === 2 ? "warning" : "info";
   const fmtN = (v) => g.dollar ? money(v) : num(v, v < 10 && v % 1 ? 1 : 0);
-  return `<section class="card why" id="why-${r.stage}"><div class="card-h"><h2>${esc(STAGE_LABEL[r.stage])}${g.dollar ? ` <span class="sub">· Incentive $</span>` : ""}</h2><div class="right">${chip(r.status)}</div></div>
-    <div class="card-b" style="display:grid;gap:8px">
-      <div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px"><span><b style="font-size:16px">${g.actual == null ? "—" : g.fmt(g.actual)}</b> of ${g.fmt(g.goal)} (${pct(g.pct)})</span>
-        ${d.closed ? `<span style="color:var(--bad)">missed the goal by <b>${g.fmt(d.left)}</b></span>` : `<span>should be <b>${fmtN(d.exp)}</b> by today</span><span style="color:var(--bad)"><b>${fmtN(d.short)}</b> short of pace</span>`}
-        ${d.weeksLeft ? `<span>needs <b>${g.fmt(d.left / d.weeksLeft)}</b> a week for the ${plural(d.weeksLeft, "week")} left</span>` : ""}</div>
-      <div class="bullet" style="max-width:520px"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div>
-    </div><div style="border-top:1px solid var(--line)">${reasonsHtml || `<div class="empty">No cause found in the monday data.</div>`}</div>
-    <div class="card-note" style="padding-top:10px"><button type="button" class="iconbtn" data-drill="${esc(JSON.stringify(r.mtd.drill))}">See this month's items</button></div></section>`;
+  const reasonsHtml = d.reasons.map((x) => `<div class="qrow"><span class="sev ${sevCls(x)}"></span><div><h3>${esc(x.head || x.kind)} <span class="sub">· ${esc(x.kind)}</span></h3>
+    ${x.stats ? `<div class="stats">${x.stats.map(([l, n]) => `<span><b>${n}</b> ${esc(l)}</span>`).join("")}</div>` : ""}<p>${esc(x.text)}</p>
+    ${x.items && x.items.length ? `<details><summary>Show the ${plural(x.items.length, "project")}</summary><div class="scroll"><table class="list"><tbody>${x.items.slice(0, 200).map((it) => `<tr><td class="name">${esc(it.name)}</td><td class="small muted">${esc(it.detail || "")}</td><td style="white-space:nowrap">${itemLink(it.b, it.id)}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div><span></span></div>`).join("");
+  return `<details class="whyrow" id="why-${r.stage}" ${open ? "open" : ""}>
+    <summary>
+      <span class="wk"><b>${esc(STAGE_LABEL[r.stage])}</b>${chip(r.status)}</span>
+      <span class="wp"><span class="small tnum"><b>${g.actual == null ? "—" : g.fmt(g.actual)}</b> of ${g.fmt(g.goal)}${d.closed ? "" : ` · <span style="color:var(--bad)">${fmtN(d.short)} short</span>`}</span>
+        <span class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></span></span>
+      <span class="wr">${top.length ? top.map((x) => `<span class="reason"><span class="sev ${sevCls(x)}"></span>${esc(x.head || x.kind)}</span>`).join("") : `<span class="muted small">No clear cause in the monday data</span>`}</span>
+      <span class="chev" aria-hidden="true">›</span>
+    </summary>
+    <div class="whybody">
+      <div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;padding:0 18px 10px">
+        ${d.closed ? `<span style="color:var(--bad)">Missed the goal by <b>${g.fmt(d.left)}</b></span>` : `<span>Should be <b>${fmtN(d.exp)}</b> by today</span>${d.weeksLeft ? `<span>Needs <b>${g.fmt(d.left / d.weeksLeft)}</b> a week for the ${plural(d.weeksLeft, "week")} left</span>` : ""}`}
+        <button type="button" class="linkbtn" data-drill="${esc(JSON.stringify(r.mtd.drill))}">See this month's items →</button></div>
+      <div style="border-top:1px solid var(--line)">${reasonsHtml || `<div class="empty">No cause found in the monday data.</div>`}</div>
+    </div></details>`;
 }
 
 /* The "why" section under a utility's table: a one-paragraph summary, then one card per off-pace KPI. */
@@ -1401,7 +1485,10 @@ function whySection(B, rows, label) {
   let h = `<div class="pagehead" style="margin-top:6px"><div><h1 style="font-size:20px">${closed ? `Why ${esc(label)} missed` : `Why ${esc(label)} is behind`}</h1>
     <p>${plural(off.length, "KPI")} off pace, each with the reasons the monday data shows. Judged on working days gone, not the latest week.</p></div></div>`;
   if (pattern.length) h += `<section class="card"><div class="card-h"><h2>In short</h2></div><div class="card-b"><ul style="margin:0;padding-left:20px;display:grid;gap:6px">${pattern.join("")}</ul></div></section>`;
-  return h + diag.map((d) => whyCard(d, B)).join("");
+  const icfNote = ctx.ag && ctx.ag.ok && !ctx.ag.items.some((x) => x.program) ? `<div class="card-note" style="padding-top:12px">ICF RFI loop counts by utility appear after the next Refresh.</div>` : "";
+  return h + `<section class="card whylist"><div class="card-h"><h2>Each KPI off pace</h2><div class="right"><button type="button" class="linkbtn" data-expandall>Expand all</button></div></div>
+    <div class="card-note" style="padding-top:4px">Click a row for the full reasons and the monday items behind them.</div>
+    ${diag.map((d) => whyCard(d, B, false)).join("")}${icfNote}</section>`;
 }
 
 /* ---------------------------------- drawer ----------------------------------------------- */
@@ -1439,9 +1526,10 @@ function renderAlerts() {
 }
 function renderFresh() {
   const stale = !DATA || (MODEL && MODEL.issues.some((x) => x.kind === "refresh_error"));
-  $("#fresh").innerHTML = REFRESHING ? `<span class="dot"></span><span>Reading monday.com… ${PROGRESS}%</span>`
-    : `<span class="dot ${stale ? "stale" : ""}"></span><span title="${DATA ? "Pulled " + esc(fmtTime(DATA.at)) : ""}">${esc(ago(DATA && DATA.at))}</span>`;
   const btn = $("#refresh");
+  $("#fresh").textContent = REFRESHING ? `Reading monday… ${PROGRESS}%` : ago(DATA && DATA.at);
+  btn.querySelector(".dot").className = `dot ${stale && !REFRESHING ? "stale" : ""}`;
+  btn.title = REFRESHING ? "Reading monday.com" : `Refresh from monday.com${DATA ? " · last pulled " + fmtTime(DATA.at) : ""}`;
   btn.disabled = REFRESHING; btn.classList.toggle("spin", REFRESHING);
   $("#loadbar i").style.width = REFRESHING ? `${Math.max(4, PROGRESS)}%` : "0";
 }
@@ -1529,7 +1617,11 @@ $("#month").addEventListener("change", (e) => { state.month = e.target.value; re
 $("#refresh").addEventListener("click", () => refresh());
 $("#backdrop").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#drawer").hidden) closeDrawer(); });
-document.addEventListener("change", (e) => { if (e.target.id === "showRaw") { state.showRaw = e.target.checked; render(); } });
+document.addEventListener("change", (e) => {
+  if (e.target.id === "showRaw") { state.showRaw = e.target.checked; render(); }
+  if (e.target.id === "subProg") { state.subProg = e.target.value; $("#subResults").innerHTML = subResults(); }
+});
+document.addEventListener("input", (e) => { if (e.target.id === "subSearch") { state.subQuery = e.target.value; $("#subResults").innerHTML = subResults(); } });
 document.addEventListener("click", (e) => {
   const seg = e.target.closest(".seg button");
   if (seg) { state.mode = seg.dataset.mode; savePrefs(); render(); return; }
@@ -1539,9 +1631,17 @@ document.addEventListener("click", (e) => {
   const tile = e.target.closest("[data-stage]");
   if (tile) { openDrawer({ stage: tile.dataset.stage, program: "Total", month: state.month, week: "mtd" }); return; }
   const pl = e.target.closest("[data-proglink]");
-  if (pl) { e.preventDefault(); state.program = pl.dataset.proglink; savePrefs(); location.hash = "weekly"; return; }
+  if (pl) {
+    e.preventDefault(); state.program = pl.dataset.proglink; savePrefs();
+    const target = pl.dataset.jumpafter;
+    if (location.hash === "#weekly") render(); else location.hash = "weekly";
+    if (target) setTimeout(() => { const el = document.getElementById(target); if (el) { el.open = true; el.scrollIntoView({ block: "start" }); } }, 60);
+    return;
+  }
   const jp = e.target.closest("[data-jump]");
-  if (jp) { e.preventDefault(); document.getElementById(jp.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if (jp) { e.preventDefault(); const el = document.getElementById(jp.dataset.jump); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); } return; }
+  const ex = e.target.closest("[data-expandall]");
+  if (ex) { const rows = [...document.querySelectorAll("details.whyrow")]; const open = !rows.every((d) => d.open); rows.forEach((d) => (d.open = open)); ex.textContent = open ? "Collapse all" : "Expand all"; return; }
   const pp = e.target.closest("[data-pickprog]");
   if (pp) { state.program = pp.dataset.pickprog; savePrefs(); render(); return; }
   const ps = e.target.closest("[data-pickstage]");
