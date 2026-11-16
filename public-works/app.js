@@ -21,7 +21,66 @@
   var mlaByConst = {};
   MLAS.forEach(function (m) { mlaByConst[m.constituency] = m; });
 
-  var state = { q: "", status: "", sector: "", agency: "", constituency: "", funderType: "" };
+  // ---------- wards: point-in-polygon against BMC ward boundaries ----------
+  var WARD_GEO = (window.PUBLIC_WORKS_WARDS || { features: [] }).features;
+  var ROUTES = window.PUBLIC_WORKS_ROUTES || {};
+  var WARD_INFO = {};
+  (DATA.wardInfo || []).forEach(function (w) { WARD_INFO[w.ward] = w; });
+  var WARD_ORDER = ["A", "B", "C", "D", "E", "F/S", "F/N", "G/S", "G/N", "H/E", "H/W", "K/E", "K/W", "P/S", "P/N", "R/S", "R/C", "R/N", "L", "M/E", "M/W", "N", "S", "T"];
+  var WARD_NAMES = WARD_GEO.map(function (f) { return f.properties.ward; })
+    .sort(function (a, b) { return WARD_ORDER.indexOf(a) - WARD_ORDER.indexOf(b); });
+
+  function inRing(x, y, r) {
+    var c = false;
+    for (var i = 0, j = r.length - 1; i < r.length; j = i++) {
+      var xi = r[i][0], yi = r[i][1], xj = r[j][0], yj = r[j][1];
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  }
+  function segDistKm(lat, lng, a, b) {
+    var kx = 111.32 * Math.cos(lat * Math.PI / 180), ky = 110.57;
+    var px = lng * kx, py = lat * ky, ax = a[0] * kx, ay = a[1] * ky, bx = b[0] * kx, by = b[1] * ky;
+    var dx = bx - ax, dy = by - ay, t = dx || dy ? ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy) : 0;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+  }
+  // Points on the sea (coastal road, sea links) snap to the nearest ward within 1.2 km.
+  function wardAt(lat, lng) {
+    var best = null, bestD = 1.2;
+    for (var i = 0; i < WARD_GEO.length; i++) {
+      var polys = WARD_GEO[i].geometry.coordinates;
+      for (var k = 0; k < polys.length; k++) {
+        if (inRing(lng, lat, polys[k][0]) && !polys[k].slice(1).some(function (h) { return inRing(lng, lat, h); })) return WARD_GEO[i].properties.ward;
+        var r = polys[k][0];
+        for (var s = 1; s < r.length; s++) {
+          var d = segDistKm(lat, lng, r[s - 1], r[s]);
+          if (d < bestD) { bestD = d; best = WARD_GEO[i].properties.ward; }
+        }
+      }
+    }
+    return best;
+  }
+  // project id -> { ward: [part names] }, plus "outside" for parts beyond BMC limits
+  var WARD_PARTS = {};
+  PROJECTS.forEach(function (p) {
+    var parts = {};
+    (ROUTES[p.id] || []).forEach(function (path) {
+      path.forEach(function (pt) {
+        var w = wardAt(pt[0], pt[1]) || "outside";
+        (parts[w] = parts[w] || []).push(pt[2]);
+      });
+    });
+    WARD_PARTS[p.id] = parts;
+  });
+  function wardsOf(p) { return Object.keys(WARD_PARTS[p.id] || {}).filter(function (w) { return w !== "outside"; }); }
+
+  var AGENCY_HEADS = DATA.agencyHeads || [];
+  function headsFor(p) {
+    return AGENCY_HEADS.filter(function (h) { return (p.agency || "").indexOf(h.agency) !== -1; });
+  }
+
+  var state = { q: "", status: "", sector: "", agency: "", constituency: "", ward: "", funderType: "" };
 
   // ---------- helpers ----------
   function esc(s) {
@@ -68,9 +127,12 @@
     if (state.sector && p.sector !== state.sector) return false;
     if (state.agency && p.agency !== state.agency) return false;
     if (state.constituency && (p.constituencies || []).indexOf(state.constituency) === -1) return false;
+    if (state.ward && !(p.citywide || wardsOf(p).indexOf(state.ward) !== -1)) return false;
     if (state.funderType && !(p.funders || []).some(function (f) { return f.type === state.funderType; })) return false;
     if (state.q) {
       var hay = [p.name, p.summary, p.agency, p.contractor, p.sector, (p.areas || []).join(" "), (p.constituencies || []).join(" "),
+        wardsOf(p).map(function (w) { return "ward " + w + " " + ((WARD_INFO[w] || {}).assistantCommissioner || ""); }).join(" "),
+        headsFor(p).map(function (h) { return h.name; }).join(" "),
         mlasFor(p).map(function (m) { return m.name || ""; }).join(" "), (p.funders || []).map(function (f) { return f.name; }).join(" ")]
         .join(" ").toLowerCase();
       var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -126,6 +188,9 @@
       '<select id="f-sector" aria-label="Sector">' + opts(uniq(PROJECTS.map(function (p) { return p.sector; })), state.sector, "All sectors") + "</select>" +
       '<select id="f-agency" aria-label="Agency">' + opts(uniq(PROJECTS.map(function (p) { return p.agency; })), state.agency, "All agencies") + "</select>" +
       '<select id="f-const" aria-label="Constituency">' + constOpts + "</select>" +
+      '<select id="f-ward" aria-label="BMC ward"><option value="">All BMC wards</option>' + WARD_NAMES.map(function (w) {
+        return '<option value="' + esc(w) + '"' + (w === state.ward ? " selected" : "") + ">Ward " + esc(w) + "</option>";
+      }).join("") + "</select>" +
       "</div>";
   }
 
@@ -140,6 +205,8 @@
       '<div class="row"><span>Cost</span><b>' + crore(cost(p)) + (p.cost && p.cost.revised != null && p.cost.original != null && p.cost.revised > p.cost.original ? ' <span style="color:var(--st-delayed)" title="Revised up from ' + crore(p.cost.original) + '">▲</span>' : "") + "</b></div>" +
       '<div class="row"><span>Funded by</span><span style="text-align:right">' + esc((p.funders || []).map(function (f) { return f.name; }).join(", ") || "—") + "</span></div>" +
       '<div class="row"><span>Area MLA' + (ms.length === 1 ? "" : "s") + '</span><span style="text-align:right">' + mlaLine + "</span></div>" +
+      '<div class="row"><span>BMC wards</span><span style="text-align:right">' + (p.citywide ? "Citywide" : esc(wardsOf(p).join(", ")) || "—") + "</span></div>" +
+      (state.ward && !p.citywide && WARD_PARTS[p.id][state.ward] ? '<div class="row"><span>In ward ' + esc(state.ward) + '</span><span style="text-align:right">' + esc(WARD_PARTS[p.id][state.ward].join(", ")) + "</span></div>" : "") +
       '<div class="meta">' + esc(target) + (p.progress != null ? " · " + p.progress + "% done" : "") + "</div>" +
       "</button>";
   }
@@ -154,7 +221,7 @@
   }
 
   function bindFilters(rerender) {
-    var map = { "f-status": "status", "f-sector": "sector", "f-agency": "agency", "f-const": "constituency" };
+    var map = { "f-status": "status", "f-sector": "sector", "f-agency": "agency", "f-const": "constituency", "f-ward": "ward" };
     Object.keys(map).forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener("change", function () { state[map[id]] = el.value; rerender(); });
@@ -244,10 +311,59 @@
       }).join("") + "</tbody></table></div></div>";
   }
 
+  function wardOfficerLine(w) {
+    var info = WARD_INFO[w] || {};
+    return info.assistantCommissioner ? esc(info.assistantCommissioner) + '<span style="color:var(--muted)">, Assistant Commissioner' + (info.asOf ? " (as of " + fmtDate(info.asOf) + ")" : "") + "</span>" : '<span style="color:var(--muted)">Assistant Commissioner not on file</span>';
+  }
+
+  function viewWards() {
+    var citywide = PROJECTS.filter(function (p) { return p.citywide; });
+    var q = state.q.toLowerCase();
+    var cards = WARD_NAMES.map(function (w) {
+      var info = WARD_INFO[w] || {};
+      var ps = PROJECTS.filter(function (p) { return !p.citywide && WARD_PARTS[p.id][w]; });
+      var hay = [w, info.assistantCommissioner, (info.localities || []).join(" "), ps.map(function (p) { return p.name; }).join(" ")].join(" ").toLowerCase();
+      if (q && hay.indexOf(q) === -1) return "";
+      var rows = ps.map(function (p) {
+        return '<tr class="click" data-id="' + esc(p.id) + '"><td><b>' + esc(p.shortName || p.name) + "</b><div style=\"font-size:12.5px;color:var(--muted)\">" + esc(WARD_PARTS[p.id][w].join(", ")) + "</div></td><td>" + badge(p.status) + '</td><td style="font-size:13px">' + esc(p.agency) + (headsFor(p).length ? '<div style="color:var(--muted)">' + headsFor(p).map(function (h) { return esc(h.name); }).join(", ") + "</div>" : "") + "</td></tr>";
+      }).join("");
+      return '<div class="panel ward-card" id="ward-' + esc(w.replace("/", "")) + '"><div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap"><h2>Ward ' + esc(w) + "</h2>" +
+        '<span class="hint" style="margin:0">' + ps.length + " project" + (ps.length === 1 ? "" : "s") + " + " + citywide.length + " citywide</span></div>" +
+        (info.localities && info.localities.length ? '<p class="hint" style="margin:2px 0 8px">' + esc(info.localities.join(", ")) + "</p>" : "") +
+        '<div style="font-size:14px;margin-bottom:4px"><b>Ward officer:</b> ' + wardOfficerLine(w) + "</div>" +
+        (info.office || info.phone ? '<div class="hint" style="margin:0 0 10px">' + esc([info.office, info.phone].filter(Boolean).join(" · ")) + "</div>" : "") +
+        (rows ? '<div class="table-scroll"><table class="data"><thead><tr><th>Project and the part in this ward</th><th>Status</th><th>Run by</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="hint">No mapped projects in this ward yet.</p>') +
+        "</div>";
+    }).join("");
+
+    app.innerHTML = '<div class="panel"><h2>Projects by BMC ward</h2><p class="hint">Mumbai has 24 BMC administrative wards, each run by an Assistant Municipal Commissioner (the ward officer). Each project’s stations, sites and junctions are placed on the ward map to show which part falls in which ward. The ward officer handles civic issues around a site (roads, encroachments, drainage, complaints); the agency head is responsible for the project itself.</p>' +
+      '<div class="filters" style="grid-template-columns:1fr"><input type="search" id="ward-q" placeholder="Search ward, locality, officer or project…" value="' + esc(state.q) + '" /></div>' +
+      '<div class="chips" style="margin-bottom:4px">' + WARD_NAMES.map(function (w) { return '<a class="chip" style="text-decoration:none" href="#ward-' + esc(w.replace("/", "")) + '" data-jump="' + esc(w.replace("/", "")) + '">' + esc(w) + "</a>"; }).join("") + "</div></div>" +
+      (citywide.length ? '<div class="panel"><h2>Citywide projects (every ward)</h2><table class="data"><tbody>' + citywide.map(function (p) {
+        return '<tr class="click" data-id="' + esc(p.id) + '"><td><b>' + esc(p.shortName || p.name) + '</b><div style="font-size:12.5px;color:var(--muted)">' + esc((p.areas || []).join(", ")) + "</div></td><td>" + badge(p.status) + '</td><td style="font-size:13px">' + esc(p.agency) + "</td></tr>";
+      }).join("") + "</tbody></table></div>" : "") +
+      (cards || '<div class="empty">No ward matches.</div>');
+
+    var q2 = document.getElementById("ward-q");
+    q2.addEventListener("input", debounce(function () {
+      state.q = q2.value; var pos = q2.selectionStart; viewWards();
+      var n = document.getElementById("ward-q"); n.focus(); n.setSelectionRange(pos, pos);
+    }, 200));
+    app.querySelectorAll("a[data-jump]").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        var el = document.getElementById("ward-" + a.dataset.jump); if (el) el.scrollIntoView({ behavior: "smooth" });
+      });
+    });
+    app.querySelectorAll("tr[data-id]").forEach(function (tr) {
+      tr.addEventListener("click", function () { location.hash = "#/project/" + encodeURIComponent(tr.dataset.id); });
+    });
+  }
+
   var leafletMap = null;
   function viewMap() {
     var list = filtered();
-    app.innerHTML = '<div class="panel">' + filterBar() + '<p class="hint">Pins mark an approximate point on each project (a station, a portal, or the middle of a corridor), not its full route. ' + list.filter(function (p) { return p.location; }).length + " of " + list.length + ' projects mapped.</p><div id="map"></div><div class="legend" style="margin-top:10px">' +
+    app.innerHTML = '<div class="panel">' + filterBar() + '<p class="hint">Lines and dots follow each project’s stations, sites and junctions (approximate, within a few hundred metres). Grey outlines are the 24 BMC wards; click inside a ward to see its officer. ' + list.filter(function (p) { return ROUTES[p.id] || p.location; }).length + " of " + list.length + ' projects mapped; citywide projects are not drawn.</p><div id="map"></div><div class="legend" style="margin-top:10px">' +
       STATUSES.map(function (s) { return '<span style="display:inline-flex;gap:6px;align-items:center"><span class="dot" style="background:var(' + s.css + ')"></span>' + esc(s.key) + "</span>"; }).join("") + "</div></div>";
     bindFilters(viewMap);
     if (!window.L) { document.getElementById("map").innerHTML = '<div class="empty">The map library could not load. The project list still works.</div>'; return; }
@@ -256,14 +372,44 @@
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(leafletMap);
+    if (WARD_GEO.length) {
+      L.geoJSON({ type: "FeatureCollection", features: WARD_GEO }, {
+        style: function (f) {
+          var sel = state.ward && f.properties.ward === state.ward;
+          return { color: sel ? cssVar("--accent") : "#4b5563", weight: sel ? 3 : 1.5, opacity: 0.8, dashArray: sel ? null : "4 3", fillColor: cssVar("--accent"), fillOpacity: sel ? 0.12 : 0.02 };
+        },
+        onEachFeature: function (f, layer) {
+          var w = f.properties.ward;
+          var n = PROJECTS.filter(function (p) { return !p.citywide && WARD_PARTS[p.id][w]; }).length;
+          layer.bindTooltip(w, { permanent: true, direction: "center", className: "ward-label" });
+          layer.bindPopup("<b>Ward " + esc(w) + "</b><br>" + wardOfficerLine(w) + "<br>" + n + ' mapped project' + (n === 1 ? "" : "s") + '<br><a href="#/wards" data-ward-link="' + esc(w) + '">See projects in this ward →</a>');
+        },
+      }).addTo(leafletMap);
+      var wl = L.geoJSON({ type: "FeatureCollection", features: WARD_GEO.filter(function (f) { return !state.ward || f.properties.ward === state.ward; }) });
+      leafletMap.fitBounds(wl.getBounds(), { padding: [10, 10] });
+    }
     list.forEach(function (p) {
-      if (!p.location) return;
       var st = STATUSES.find(function (x) { return x.key === p.status; });
       var color = cssVar(st ? st.css : "--st-notstarted");
-      var m = L.circleMarker([p.location.lat, p.location.lng], { radius: 9, color: "#fff", weight: 2, fillColor: color, fillOpacity: 0.95 }).addTo(leafletMap);
-      m.bindPopup("<b>" + esc(p.name) + "</b><br>" + esc(p.status) + " · " + crore(cost(p)) + '<br><a href="#/project/' + encodeURIComponent(p.id) + '">Details →</a>');
+      var popup = "<b>" + esc(p.name) + "</b><br>" + esc(p.status) + " · " + crore(cost(p)) + "<br>Wards: " + esc(wardsOf(p).join(", ") || "—") + '<br><a href="#/project/' + encodeURIComponent(p.id) + '">Details →</a>';
+      var paths = ROUTES[p.id];
+      if (paths) {
+        paths.forEach(function (path) {
+          if (path.length > 1) L.polyline(path.map(function (pt) { return [pt[0], pt[1]]; }), { color: color, weight: 5, opacity: 0.85 }).addTo(leafletMap).bindPopup(popup);
+          path.forEach(function (pt) {
+            L.circleMarker([pt[0], pt[1]], { radius: path.length > 1 ? 4 : 9, color: "#fff", weight: path.length > 1 ? 1 : 2, fillColor: color, fillOpacity: 1 })
+              .addTo(leafletMap).bindPopup("<b>" + esc(pt[2]) + "</b><br>Part of " + popup + "<br>Ward: " + esc(wardAt(pt[0], pt[1]) || "outside BMC limits"));
+          });
+        });
+      } else if (p.location) {
+        L.circleMarker([p.location.lat, p.location.lng], { radius: 9, color: "#fff", weight: 2, fillColor: color, fillOpacity: 0.95 }).addTo(leafletMap).bindPopup(popup);
+      }
     });
   }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-ward-link]");
+    if (a) { state.q = ""; state.ward = a.dataset.wardLink; setTimeout(function () { var el = document.getElementById("ward-" + state.ward.replace("/", "")); if (el) el.scrollIntoView(); }, 50); }
+  });
 
   function viewAbout() {
     var srcs = (META.sources || []).map(function (s) {
@@ -312,6 +458,15 @@
     var mlaHtml = mls.length ? mls.map(function (m) {
       return '<div class="mla-card"><div class="name">' + esc(m.name || "MLA not on file") + '</div><div style="color:var(--muted)">' + esc(m.constituency) + (m.no ? " (No. " + esc(m.no) + ")" : "") + (m.party ? " · " + esc(m.party) : "") + "</div></div>";
     }).join("") : '<p class="hint">Not mapped to a constituency yet.</p>';
+    var heads = headsFor(p);
+    var runBy = '<div class="mla-card"><div class="name">' + esc(p.agency) + '</div><div style="color:var(--muted)">Implementing agency</div>' +
+      (heads.length ? heads.map(function (h) { return '<div style="margin-top:6px"><b>' + esc(h.name) + "</b>, " + esc(h.role) + (h.asOf ? ' <span style="color:var(--muted)">(as of ' + fmtDate(h.asOf) + ")</span>" : "") + "</div>"; }).join("") : '<div style="margin-top:6px;color:var(--muted)">Agency head not on file</div>') +
+      "</div>" + (p.contractor ? '<div class="mla-card"><div class="name">' + esc(p.contractor) + '</div><div style="color:var(--muted)">Contractor / developer (builds it)</div></div>' : "");
+    var wp = WARD_PARTS[p.id] || {};
+    var wardKeys = Object.keys(wp).sort(function (a, b) { return WARD_ORDER.indexOf(a) - WARD_ORDER.indexOf(b); });
+    var wardHtml = p.citywide ? '<p class="hint">Citywide: this project covers every ward.</p>' : wardKeys.length ? '<table class="data"><thead><tr><th>Ward</th><th>Part of the project</th><th>Ward officer</th></tr></thead><tbody>' + wardKeys.map(function (w) {
+      return "<tr><td><b>" + (w === "outside" ? "Outside BMC" : esc(w)) + "</b></td><td>" + esc(wp[w].join(", ")) + '</td><td style="font-size:13px">' + (w === "outside" ? "—" : esc((WARD_INFO[w] || {}).assistantCommissioner || "not on file")) + "</td></tr>";
+    }).join("") + "</tbody></table>" : '<p class="hint">Not mapped to wards yet.</p>';
     var sources = (p.sources || []).map(function (s) {
       var u = safeUrl(s.url);
       return "<li>" + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(s.title || u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]) + "</a>" : esc(s.title || "")) + (s.date ? " · " + fmtDate(s.date) : "") + (s.claim ? '<div style="color:var(--muted)">' + esc(s.claim) + "</div>" : "") + "</li>";
@@ -322,6 +477,8 @@
       progressBar(p) +
       (p.delayReason ? '<div class="delay"><b>Why it’s late:</b> ' + esc(p.delayReason) + "</div>" : "") +
       "<h3>Key facts</h3><dl class=\"facts\">" + facts.map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl>" +
+      "<h3>Who's running it</h3>" + runBy +
+      "<h3>Which part is in which BMC ward</h3>" + wardHtml +
       "<h3>Who's funding it</h3>" + funders +
       "<h3>Elected MLAs for this area</h3>" + mlaHtml +
       "<h3>Sources</h3>" + (sources ? '<ul class="sources">' + sources + "</ul>" : '<p class="hint">No source on file.</p>') +
@@ -377,7 +534,7 @@
     var tab = (h.match(/^#\/(\w+)/) || [])[1] || "projects";
     document.querySelectorAll("nav.tabs a").forEach(function (a) { a.classList.toggle("active", a.dataset.tab === tab); });
     if (tab !== "map" && leafletMap) { leafletMap.remove(); leafletMap = null; }
-    ({ projects: viewProjects, map: viewMap, mlas: viewMlas, funders: viewFunders, about: viewAbout }[tab] || viewProjects)();
+    ({ projects: viewProjects, map: viewMap, wards: viewWards, mlas: viewMlas, funders: viewFunders, about: viewAbout }[tab] || viewProjects)();
   }
 
   // ---------- boot ----------

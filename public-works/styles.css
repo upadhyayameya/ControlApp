@@ -112,7 +112,11 @@ main { padding: 20px 0 48px; }
 .panel h2 { font-size: 16px; margin: 0 0 4px; }
 .panel .hint { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
 
-.filters { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.filters .search { grid-column: 1 / -1; }
+.leaflet-tooltip.ward-label { background: transparent; border: 0; box-shadow: none; font-weight: 700; color: #374151; font-size: 11px; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+.leaflet-tooltip.ward-label::before { display: none; }
+.ward-card h2 { font-size: 18px; }
 .filters input, .filters select {
   width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
 }
