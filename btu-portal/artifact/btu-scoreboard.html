@@ -368,7 +368,8 @@ const CONFIG = {
   },
   icf: { status: "status", daysForResponse: "formula_mm5w1f2g", daysInPhase: "formula_mm6cpemz",
          bucket: "formula_mm6c5jr1", value: "numeric_mm5whe76", icfEngineer: "dropdown_mm5wqe1v",
-         hbsEngineer: "multiple_person_mm5x8h0r", phase: "color_mm5wyfg2", utility: "dropdown_mm5w3gg4", rfiOverdueDays: 7,
+         hbsEngineer: "multiple_person_mm5x8h0r", phase: "color_mm5wyfg2", utility: "dropdown_mm5w3gg4", tuStatus: "lookup_mm5x8w35", lastBy: "color_mm5whmac",
+         nextAction: "date_mm5yw32z", lastUpdate: "date_mm5w20p4", rfiOverdueDays: 7,
          loop: { "RFI Sent to HBS": { holder: "HBS", kind: "RFI" },
                  "HBS Revising Submission": { holder: "HBS", kind: "Revision" },
                  "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
@@ -559,7 +560,7 @@ function normItem(raw) {
 
 function colsFor(k) {
   if (k === "kpi") return Object.values(CONFIG.kpiCols).filter(Boolean);
-  if (k === "icf") return [CONFIG.icf.status, CONFIG.icf.daysForResponse, CONFIG.icf.daysInPhase, CONFIG.icf.bucket, CONFIG.icf.value, CONFIG.icf.icfEngineer, CONFIG.icf.hbsEngineer, CONFIG.icf.phase, CONFIG.icf.utility].filter(Boolean);
+  if (k === "icf") return [CONFIG.icf.status, CONFIG.icf.daysForResponse, CONFIG.icf.daysInPhase, CONFIG.icf.bucket, CONFIG.icf.value, CONFIG.icf.icfEngineer, CONFIG.icf.hbsEngineer, CONFIG.icf.phase, CONFIG.icf.utility, CONFIG.icf.tuStatus, CONFIG.icf.lastBy, CONFIG.icf.nextAction, CONFIG.icf.lastUpdate].filter(Boolean);
   const t = CONFIG.trackers[k];
   return [t.impl, t.status, t.utility, t.incentive, t.share].filter(Boolean);
 }
@@ -844,9 +845,21 @@ function aging(D) {
     return { id: it.id, name: it.name, status: st, holder: role.holder || null, kind: role.kind || null,
       dfr: parseNumber(it.c[A.daysForResponse])[0], dip: parseNumber(it.c[A.daysInPhase])[0], bucket: it.c[A.bucket] || null,
       value: parseNumber(it.c[A.value])[0], icf: it.c[A.icfEngineer] || null, hbs: it.c[A.hbsEngineer] || null, phase: it.c[A.phase] || null,
-      program: it.c[A.utility] ? mapProgram(it.c[A.utility], it.name).program : null };
+      program: it.c[A.utility] ? mapProgram(it.c[A.utility], it.name).program : null,
+      tu: it.c[A.tuStatus] || null, lastBy: it.c[A.lastBy] || null, next: isDate(it.c[A.nextAction]) ? it.c[A.nextAction] : null, lastUpd: isDate(it.c[A.lastUpdate]) ? it.c[A.lastUpdate] : null };
   });
-  const inLoop = items.filter((x) => x.holder);
+  // The project tracker (TU Board Status mirror) sometimes shows a project further along than the ICF status.
+  const AHEAD = { pre: /^(PA Approved|Signed SOW|Implement|Scheduled|Tune Up Complete|CO |Complete|Invoic|Ready for Invoice)/i,
+                  close: /^(CO Approved|Complete\/Paid|Invoic|CO Processed|Ready for Invoice)/i };
+  const today = todayNY();
+  for (const x of items) {
+    const ahead = x.tu && (/closeout/i.test(x.phase || "") ? AHEAD.close : AHEAD.pre).test(x.tu);
+    x.stale = !!(x.holder && ahead);
+    x.blocked = x.holder === "HBS" && /waiting on (info|others)/i.test(x.tu || "");
+    x.overdue = !!(x.next && x.next < today);
+  }
+  const stale = items.filter((x) => x.stale);
+  const inLoop = items.filter((x) => x.holder && !x.stale);
   const agg = (xs) => [xs.length, sumOf(xs.map((x) => x.value)) || 0];
   const byKind = {}, byHolder = {}, people = {};
   for (const x of inLoop) {
@@ -868,7 +881,8 @@ function aging(D) {
     rfiCount: rfis.length,
     overdue: rfis.filter((x) => (x.dfr || 0) > A.rfiOverdueDays).sort((a, b) => (b.dfr || 0) - (a.dfr || 0)),
     buckets: Object.entries(bk).map(([k, v]) => [k, ...agg(v)]).sort((a, b) => (order[a[0].toLowerCase()] ?? 9) - (order[b[0].toLowerCase()] ?? 9)),
-    missingValue: inLoop.filter((x) => x.value == null).length };
+    missingValue: inLoop.filter((x) => x.value == null).length,
+    stale, blocked: inLoop.filter((x) => x.blocked), overdueFollowUps: inLoop.filter((x) => x.overdue).sort((a, b) => (a.next < b.next ? -1 : 1)) };
 }
 
 
@@ -1159,21 +1173,26 @@ function renderSubmissions() {
 
 function renderAging() {
   const a = aging(DATA);
-  let h = pageHead("Aging", "Who is holding the work in the ICF RFI loop, read from the ICF/HBS Project Tracker. Current state, not tied to the month.");
+  let h = pageHead("Aging", "Who is holding the work in the ICF RFI loop, from the ICF/HBS Project Tracker. Current state, not tied to the month.");
   if (!a.ok) return h + `<section class="card"><div class="empty"><b>Aging isn't available</b>${esc(a.reason)}</div></section>`;
   const v = (o, k) => o[k] || [0, 0];
   const hbs = v(a.byHolder, "HBS"), icf = v(a.byHolder, "ICF"), tot = hbs[0] + icf[0] || 1;
+  const blocked = a.blocked.length, hbsAct = hbs[0] - blocked;
+  const tuMissing = !a.items.some((x) => x.tu);
   h += `<div class="kpis">
-    <div class="kpi"><div class="lbl">In the RFI loop</div><div class="val">${a.loop.length}</div><div class="sub">${money(hbs[1] + icf[1])} · ${a.rfiCount} are open RFIs${a.rfiCount ? ` (${(a.loop.length / a.rfiCount).toFixed(1)}× the RFI count)` : ""}</div></div>
-    <div class="kpi"><div class="lbl">Ball in HBS's court</div><div class="val">${hbs[0]}</div><div class="sub">${money(hbs[1])} · RFIs and revisions</div></div>
+    <div class="kpi"><div class="lbl">In the RFI loop</div><div class="val">${a.loop.length}</div><div class="sub">${money(hbs[1] + icf[1])} · ${a.rfiCount} open RFIs${a.rfiCount ? ` (${(a.loop.length / a.rfiCount).toFixed(1)}× the RFI count)` : ""}</div></div>
+    <div class="kpi"><div class="lbl">Ball in HBS's court</div><div class="val">${hbs[0]}</div><div class="sub">${money(hbs[1])}${blocked ? ` · ${blocked} of them waiting on the customer or others` : ""}</div></div>
     <div class="kpi"><div class="lbl">Ball in ICF's court</div><div class="val">${icf[0]}</div><div class="sub">${money(icf[1])} · responses and resubmissions</div></div>
-    <div class="kpi ${a.overdue.length ? "bad" : "good"}"><div class="lbl">RFIs older than ${CONFIG.icf.rfiOverdueDays} days</div><div class="val">${a.overdue.length}</div><div class="sub">${money(sumOf(a.overdue.map((x) => x.value)) || 0)}</div></div></div>`;
+    <div class="kpi ${a.overdueFollowUps.length ? "bad" : "good"}"><div class="lbl">Follow-ups overdue</div><div class="val">${a.overdueFollowUps.length}</div><div class="sub">Next Action Date has passed</div></div>
+    <div class="kpi ${a.overdue.length ? "bad" : "good"}"><div class="lbl">RFIs older than ${CONFIG.icf.rfiOverdueDays} days</div><div class="val">${a.overdue.length}</div><div class="sub">${money(sumOf(a.overdue.map((x) => x.value)) || 0)} · days since the last update</div></div></div>`;
+  if (a.stale.length) h += `<div class="alert warn">${ICON.warn}<span><b>${plural(a.stale.length, "project")} on the ICF tracker ${a.stale.length === 1 ? "looks" : "look"} out of date.</b> The ICF status still shows ${a.stale.length === 1 ? "it" : "them"} in the RFI loop, but the project tracker has moved on (${esc(a.stale.slice(0, 3).map((x) => `${x.name.split(" - ")[0]}: ${x.tu}`).join("; "))}${a.stale.length > 3 ? "…" : ""}). ${a.stale.length === 1 ? "It's" : "They're"} left out of the counts below. <a href="#stale-list">See the list</a></span></div>`;
+  if (tuMissing) h += `<p class="small muted" style="margin:0">Project tracker status, last-updated-by and Next Action Date appear after the next Refresh.</p>`;
   const bTot = a.buckets.reduce((s, b) => s + b[1], 0) || 1;
   const bColor = (b) => ({ critical: "var(--bad-mark)", watch: "var(--warn-mark)", ok: "var(--good-mark)" }[key(b)] || "var(--line-2)");
   h += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px">
     <section class="card"><div class="card-h"><h2>Who holds the loop</h2></div><div class="card-b">
-      <div class="split" role="img" aria-label="HBS ${hbs[0]}, ICF ${icf[0]}"><span style="width:${(hbs[0] / tot) * 100}%;background:var(--series)"></span><span style="width:${(icf[0] / tot) * 100}%;background:var(--series-2)"></span></div>
-      <div class="legend"><span><i style="background:var(--series)"></i>HBS ${hbs[0]}</span><span><i style="background:var(--series-2)"></i>ICF ${icf[0]}</span></div>
+      <div class="split" role="img" aria-label="HBS ${hbsAct} to act, HBS ${blocked} waiting on others, ICF ${icf[0]}"><span style="width:${(hbsAct / tot) * 100}%;background:var(--series)"></span>${blocked ? `<span style="width:${(blocked / tot) * 100}%;background:var(--series);opacity:.45"></span>` : ""}<span style="width:${(icf[0] / tot) * 100}%;background:var(--series-2)"></span></div>
+      <div class="legend"><span><i style="background:var(--series)"></i>HBS to act ${hbsAct}</span>${blocked ? `<span><i style="background:var(--series);opacity:.45"></i>HBS waiting on customer/others ${blocked}</span>` : ""}<span><i style="background:var(--series-2)"></i>ICF ${icf[0]}</span></div>
       <table style="margin-top:10px"><thead><tr><th>Status</th><th>Ball with</th><th class="n">Items</th><th class="n">Total Incentive</th></tr></thead><tbody>
       ${Object.entries(CONFIG.icf.loop).map(([s, r]) => `<tr><td>${esc(s)}</td><td>${r.holder}</td><td class="n">${v(a.byKind, r.kind)[0]}</td><td class="n">${money(v(a.byKind, r.kind)[1])}</td></tr>`).join("")}</tbody></table></div></section>
     <section class="card"><div class="card-h"><h2>Time in current phase</h2><span class="sub">from the tracker's Aging Bucket</span></div><div class="card-b">
@@ -1181,19 +1200,26 @@ function renderAging() {
       <div class="legend">${a.buckets.map((b) => `<span><i style="background:${bColor(b[0])}"></i>${esc(b[0])} ${b[1]}</span>`).join("")}</div>
       <table style="margin-top:10px"><thead><tr><th>Bucket</th><th class="n">Projects</th><th class="n">Total Incentive</th></tr></thead><tbody>
       ${a.buckets.map(([b, n, d]) => `<tr><td>${esc(b)}</td><td class="n">${n}</td><td class="n">${money(d)}</td></tr>`).join("")}</tbody></table>
-      <div class="small muted" style="margin-top:8px">Critical: over 60 days in phase. Watch: over 30.</div>` : `<div class="empty">No bucket values on the tracker.</div>`}</div></section></div>`;
-  h += `<section class="card"><div class="card-h"><h2>Who is holding the work</h2><span class="sub">HBS-side items by HBS Engineer, ICF-side by ICF Engineer</span></div><div class="card-b scroll"><table><thead><tr><th>Side</th><th>Person</th><th class="n">Items</th><th class="n">Total Incentive</th><th class="n">Longest wait (days)</th></tr></thead><tbody>
+      <div class="small muted" style="margin-top:8px">All projects on the tracker. Critical: over 60 days in phase. Watch: over 30.</div>` : `<div class="empty">No bucket values on the tracker.</div>`}</div></section></div>`;
+  h += `<section class="card"><div class="card-h"><h2>Who is holding the work</h2><span class="sub">HBS-side items by HBS Engineer, ICF-side by ICF Engineer</span></div><div class="card-b scroll"><table><thead><tr><th>Side</th><th>Person</th><th class="n">Items</th><th class="n">Total Incentive</th><th class="n">Longest since last update (days)</th></tr></thead><tbody>
     ${a.byPerson.map(([hh, p, n, d, mx]) => `<tr><td><span class="legend" style="margin:0"><span><i style="background:${hh === "HBS" ? "var(--series)" : "var(--series-2)"}"></i>${hh}</span></span></td><td class="rowh">${esc(p)}</td><td class="n">${n}</td><td class="n">${money(d)}</td><td class="n">${num(mx)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Nothing in the loop.</div></td></tr>`}</tbody></table></div></section>`;
-  h += `<section class="card"><div class="card-h"><h2>RFIs older than ${CONFIG.icf.rfiOverdueDays} days</h2><span class="sub">${a.overdue.length} items, longest wait first</span></div><div class="card-b scroll">${agingTable(a.overdue, a.boardId, false)}</div></section>`;
+  if (a.overdueFollowUps.length) h += `<section class="card"><div class="card-h"><h2>Follow-ups overdue</h2><span class="sub">Next Action Date has passed, oldest first</span></div><div class="card-b scroll">${agingTable(a.overdueFollowUps, a.boardId, true)}</div></section>`;
+  h += `<section class="card"><div class="card-h"><h2>RFIs older than ${CONFIG.icf.rfiOverdueDays} days</h2><span class="sub">${plural(a.overdue.length, "item")}, longest since last update first</span></div><div class="card-b scroll">${agingTable(a.overdue, a.boardId, false)}</div></section>`;
   h += `<details class="how"><summary>Every item in the loop (${a.loop.length})</summary><div class="scroll" style="padding:0 8px 12px">${agingTable(a.loop.slice().sort((x, y) => (y.dfr || 0) - (x.dfr || 0)), a.boardId, true)}</div></details>`;
-  if (a.missingValue) h += `<p class="small muted" style="margin:0">${a.missingValue} items in the loop have no Total Incentive, so dollar totals leave them out.</p>`;
+  if (a.stale.length) h += `<details class="how" id="stale-list"><summary>ICF tracker out of date (${a.stale.length})</summary><div class="body" style="max-width:none"><p>The ICF status says these are in the RFI loop, but the project tracker shows them further along. Update the ICF/HBS Project Tracker so they drop out of the loop.</p></div><div class="scroll" style="padding:0 8px 12px">${agingTable(a.stale, a.boardId, true)}</div></details>`;
+  if (a.missingValue) h += `<p class="small muted" style="margin:0">${plural(a.missingValue, "item")} in the loop ${a.missingValue === 1 ? "has" : "have"} no Total Incentive, so dollar totals leave ${a.missingValue === 1 ? "it" : "them"} out.</p>`;
   return h;
 }
 function agingTable(xs, boardId, withStatus) {
   if (!xs.length) return `<div class="empty">None.</div>`;
-  return `<table class="list"><thead><tr><th>Project</th>${withStatus ? "<th>Status</th>" : ""}<th>Phase</th><th class="n">Days waiting</th><th class="n">Days in phase</th><th>Bucket</th><th>ICF engineer</th><th>HBS engineer</th><th class="n">Total Incentive</th><th></th></tr></thead><tbody>
-    ${xs.map((x) => `<tr><td class="name">${esc(x.name)}</td>${withStatus ? `<td>${esc(x.status)}</td>` : ""}<td>${esc(x.phase || "")}</td><td class="n"><b>${num(x.dfr)}</b></td><td class="n">${num(x.dip)}</td>
-      <td>${x.bucket ? `<span class="pill ${key(x.bucket) === "critical" ? "warn" : ""}" style="${key(x.bucket) === "critical" ? "background:var(--bad-bg);color:var(--bad)" : ""}">${esc(x.bucket)}</span>` : ""}</td>
+  const today = todayNY();
+  return `<table class="list"><thead><tr><th>Project</th>${withStatus ? "<th>ICF status</th>" : ""}<th>Project tracker</th><th>Phase</th>
+    <th class="n" title="Days since the Last Update Date, whoever made it (the tracker's Days for Response formula)">Days since update</th><th class="n">Days in phase</th><th>Bucket</th><th>Next action</th><th>ICF engineer</th><th>HBS engineer</th><th class="n">Total Incentive</th><th></th></tr></thead><tbody>
+    ${xs.map((x) => `<tr><td class="name">${esc(x.name)}${x.blocked ? `<div><span class="pill warn">Waiting on customer/others</span></div>` : ""}</td>${withStatus ? `<td>${esc(x.status)}${x.lastBy ? `<div class="small muted">last update by ${esc(x.lastBy)}${x.lastUpd ? ` · ${esc(md(x.lastUpd))}` : ""}</div>` : ""}</td>` : ""}
+      <td>${x.stale ? `<span class="pill warn" title="Further along than the ICF status">${esc(x.tu)}</span>` : esc(x.tu || "")}</td><td>${esc((x.phase || "").replace(/ Phase$/, ""))}</td>
+      <td class="n"><b>${x.dfr == null ? "—" : Math.round(x.dfr)}</b></td><td class="n">${num(x.dip)}</td>
+      <td>${x.bucket ? `<span class="pill" style="${key(x.bucket) === "critical" ? "background:var(--bad-bg);color:var(--bad)" : key(x.bucket) === "watch" ? "background:var(--warn-bg);color:var(--warn)" : ""}">${esc(x.bucket)}</span>` : ""}</td>
+      <td style="white-space:nowrap">${x.next ? `<span style="${x.next < today ? "color:var(--bad);font-weight:600" : ""}">${esc(md(x.next))}${x.next < today ? ` · ${daysBetween(x.next, today)}d late` : ""}</span>` : `<span class="muted">—</span>`}</td>
       <td>${esc(x.icf || "")}</td><td>${esc(x.hbs || "")}</td><td class="n">${money(x.value)}</td><td style="white-space:nowrap">${itemLink(boardId, x.id)}</td></tr>`).join("")}</tbody></table>`;
 }
 
@@ -1392,8 +1418,11 @@ function reasonsFor(r, ctx) {
   if (ag && ag.ok && ["pa_approved", "co_approved", "pa_submitted", "co_submitted"].includes(stage)) {
     const phase = stage.startsWith("pa") ? /pre-?approval/i : /closeout/i;
     const loop = ag.loop.filter((x) => (prog === "Total" || x.program === prog) && phase.test(x.phase || ""));
-    const icf = loop.filter((x) => x.holder === "ICF"), hbs = loop.filter((x) => x.holder === "HBS");
-    const toItems = (xs) => xs.map((x) => ({ b: ag.boardId, id: x.id, name: x.name, detail: `${x.status} · ${x.dfr ?? "?"} days waiting` }));
+    const icf = loop.filter((x) => x.holder === "ICF"), hbs = loop.filter((x) => x.holder === "HBS" && !x.blocked), blk = loop.filter((x) => x.blocked);
+    const toItems = (xs) => xs.map((x) => ({ b: ag.boardId, id: x.id, name: x.name, detail: `${x.status}${x.tu ? ` · tracker: ${x.tu}` : ""} · ${x.dfr == null ? "?" : Math.round(x.dfr)} days since update${x.overdue ? ` · follow-up was due ${md(x.next)}` : ""}` }));
+    if (blk.length) out.push({ kind: "Waiting on customer", sev: 2, head: `${blk.length} waiting on the customer or others`, text: `${plural(blk.length, "project")} in this phase ${blk.length === 1 ? "is" : "are"} with HBS but the project tracker says ${blk.length === 1 ? "it's" : "they're"} waiting on information from the customer or others (${money(sumOf(blk.map((x) => x.value)) || 0)}).`, items: toItems(blk) });
+    const late = loop.filter((x) => x.overdue);
+    if (late.length) out.push({ kind: "Follow-up overdue", sev: 2, head: `${late.length} follow-up${late.length === 1 ? "" : "s"} overdue`, text: `${plural(late.length, "project")} in the RFI loop for this phase ${late.length === 1 ? "has" : "have"} a Next Action Date that has passed.`, items: toItems(late) });
     if (stage.endsWith("approved") && icf.length) out.push({ kind: "Waiting on ICF", sev: 2, head: `${icf.length} with ICF`, text: `${plural(icf.length, "project")} in this phase ${icf.length === 1 ? "is" : "are"} with ICF after an RFI response or resubmission (${money(sumOf(icf.map((x) => x.value)) || 0)}). Approvals depend on ICF clearing ${icf.length === 1 ? "it" : "them"}.`, items: toItems(icf) });
     if (hbs.length) out.push({ kind: "Waiting on HBS", sev: 3, head: `${hbs.length} waiting on HBS (RFIs, revisions)`, text: `${plural(hbs.length, "project")} in this phase ${hbs.length === 1 ? "is" : "are"} waiting on HBS: open RFIs or revisions (${money(sumOf(hbs.map((x) => x.value)) || 0)}). These are in HBS's control to move.`, items: toItems(hbs) });
   }
