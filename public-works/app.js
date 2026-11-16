@@ -353,7 +353,7 @@
 
   function wardOfficerLine(w) {
     var info = WARD_INFO[w] || {};
-    return info.assistantCommissioner ? esc(info.assistantCommissioner) + '<span style="color:var(--muted)">, Assistant Commissioner' + (info.asOf ? " (as of " + fmtDate(info.asOf) + ")" : "") + "</span>" : '<span style="color:var(--muted)">Assistant Commissioner not on file</span>';
+    return info.assistantCommissioner ? esc(info.assistantCommissioner) + '<span style="color:var(--muted)">' + (/Engineer/.test(info.assistantCommissioner) ? "" : ", Assistant Commissioner") + (info.asOf ? " (as of " + fmtDate(info.asOf) + ")" : "") + (info.confidence === "low" ? ", unconfirmed" : "") + "</span>" : '<span style="color:var(--muted)">Assistant Commissioner not on file</span>';
   }
 
   function viewWards() {
@@ -371,12 +371,14 @@
         '<span class="hint" style="margin:0">' + ps.length + " project" + (ps.length === 1 ? "" : "s") + " + " + citywide.length + " citywide</span></div>" +
         (info.localities && info.localities.length ? '<p class="hint" style="margin:2px 0 8px">' + esc(info.localities.join(", ")) + "</p>" : "") +
         '<div style="font-size:14px;margin-bottom:4px"><b>Ward officer:</b> ' + wardOfficerLine(w) + "</div>" +
-        (info.office || info.phone ? '<div class="hint" style="margin:0 0 10px">' + esc([info.office, info.phone].filter(Boolean).join(" · ")) + "</div>" : "") +
+        (info.zonalDmc ? '<div style="font-size:14px;margin-bottom:4px"><b>Zone ' + esc(info.zone) + ' Deputy Commissioner:</b> ' + esc(info.zonalDmc) + "</div>" : "") +
+        (info.office || info.phone ? '<div class="hint" style="margin:0 0 6px">' + esc([info.office, info.phone].filter(Boolean).join(" · ")) + "</div>" : "") +
+        (info.note ? '<div class="delay" style="margin:6px 0 10px">' + esc(info.note) + "</div>" : '<div style="height:6px"></div>') +
         (rows ? '<div class="table-scroll"><table class="data"><thead><tr><th>Project and the part in this ward</th><th>Status</th><th>Run by</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="hint">No mapped projects in this ward yet.</p>') +
         "</div>";
     }).join("");
 
-    app.innerHTML = '<div class="panel"><h2>Projects by BMC ward</h2><p class="hint">Mumbai has 24 BMC administrative wards, each run by an Assistant Municipal Commissioner (the ward officer). Each project’s stations, sites and junctions are placed on the ward map to show which part falls in which ward. The ward officer handles civic issues around a site (roads, encroachments, drainage, complaints); the agency head is responsible for the project itself.</p>' +
+    app.innerHTML = '<div class="panel"><h2>Projects by BMC ward</h2><p class="hint">BMC runs Mumbai through administrative wards grouped into 7 zones. The map has 24; two newer wards (K/North and P/East) were carved out of K/East and P/North and are noted on those cards. Each ward is run by an Assistant Municipal Commissioner (the ward officer). Each project’s stations, sites and junctions are placed on the ward map to show which part falls in which ward. The ward officer handles civic issues around a site (roads, encroachments, drainage, complaints); the agency head is responsible for the project itself.</p>' +
       '<div class="filters" style="grid-template-columns:1fr"><input type="search" id="ward-q" placeholder="Search ward, locality, officer or project…" value="' + esc(state.q) + '" /></div>' +
       '<div class="chips" style="margin-bottom:4px">' + WARD_NAMES.map(function (w) { return '<a class="chip" style="text-decoration:none" href="#ward-' + esc(w.replace("/", "")) + '" data-jump="' + esc(w.replace("/", "")) + '">' + esc(w) + "</a>"; }).join("") + "</div></div>" +
       (citywide.length ? '<div class="panel"><h2>Citywide projects (every ward)</h2><table class="data"><tbody>' + citywide.map(function (p) {
@@ -500,7 +502,7 @@
     }).join("") : '<p class="hint">Not mapped to a constituency yet.</p>';
     var heads = headsFor(p);
     var runBy = '<div class="mla-card"><div class="name">' + esc(p.agency) + '</div><div style="color:var(--muted)">Implementing agency</div>' +
-      (heads.length ? heads.map(function (h) { return '<div style="margin-top:6px"><b>' + esc(h.name) + "</b>, " + esc(h.role) + (h.asOf ? ' <span style="color:var(--muted)">(as of ' + fmtDate(h.asOf) + ")</span>" : "") + "</div>"; }).join("") : '<div style="margin-top:6px;color:var(--muted)">Agency head not on file</div>') +
+      (heads.length ? heads.map(function (h) { return '<div style="margin-top:6px"><b>' + esc(h.name) + "</b>, " + esc(h.role) + (h.asOf ? ' <span style="color:var(--muted)">(as of ' + fmtDate(h.asOf) + (h.confidence === "low" ? ", unconfirmed" : "") + ")</span>" : "") + "</div>"; }).join("") : '<div style="margin-top:6px;color:var(--muted)">Agency head not on file</div>') +
       "</div>" + (p.contractor ? '<div class="mla-card"><div class="name">' + esc(p.contractor) + '</div><div style="color:var(--muted)">Contractor / developer (builds it)</div></div>' : "");
     var wp = WARD_PARTS[p.id] || {};
     var wardKeys = Object.keys(wp).sort(function (a, b) { return WARD_ORDER.indexOf(a) - WARD_ORDER.indexOf(b); });
