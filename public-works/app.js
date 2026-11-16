@@ -211,13 +211,53 @@
       "</button>";
   }
 
+  var ui = { view: "cards", sort: "value", limit: 60 };
+  try { var saved = JSON.parse(localStorage.getItem("pw-ui") || "{}"); if (saved.view) ui.view = saved.view; if (saved.sort) ui.sort = saved.sort; } catch (e) {}
+  function saveUi() { try { localStorage.setItem("pw-ui", JSON.stringify({ view: ui.view, sort: ui.sort })); } catch (e) {} }
+
+  var STATUS_RANK = { "Stalled": 0, "Delayed": 1, "Not started": 2, "In progress": 3, "Partially open": 4, "Completed": 5 };
+  function sorted(list) {
+    var by = {
+      value: function (a, b) { return (cost(b) || 0) - (cost(a) || 0); },
+      late: function (a, b) { return STATUS_RANK[a.status] - STATUS_RANK[b.status] || (cost(b) || 0) - (cost(a) || 0); },
+      overrun: function (a, b) {
+        function o(p) { return p.cost && p.cost.original && p.cost.revised ? (p.cost.revised - p.cost.original) / p.cost.original : -1; }
+        return o(b) - o(a);
+      },
+      name: function (a, b) { return (a.shortName || a.name).localeCompare(b.shortName || b.name); },
+    }[ui.sort];
+    return list.slice().sort(by);
+  }
+
+  function tableView(list) {
+    return '<div class="table-scroll"><table class="data"><thead><tr><th>Project</th><th>Status</th><th class="num">Done</th><th class="num">Cost</th><th>Agency</th><th>Wards</th><th>Area MLAs</th></tr></thead><tbody>' +
+      list.map(function (p) {
+        var ms = mlasFor(p).filter(function (m) { return m.name; }).map(function (m) { return m.name; });
+        return '<tr class="click" data-id="' + esc(p.id) + '"><td><b>' + esc(p.shortName || p.name) + '</b><div style="font-size:12px;color:var(--muted)">' + esc(p.sector) + "</div></td><td>" + badge(p.status) +
+          '</td><td class="num">' + (p.progress != null ? p.progress + "%" : "—") + '</td><td class="num">' + crore(cost(p)) + "</td><td>" + esc(p.agency) +
+          '</td><td style="font-size:13px">' + (p.citywide ? "Citywide" : esc(wardsOf(p).join(", ")) || "—") + '</td><td style="font-size:13px">' + esc(ms.slice(0, 3).join(", ") + (ms.length > 3 ? " +" + (ms.length - 3) : "")) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
   function viewProjects() {
-    var list = filtered();
+    var list = sorted(filtered());
+    var shown = list.slice(0, ui.limit);
     app.innerHTML = kpis(list) + '<div class="panel">' + filterBar() +
-      '<div class="toolbar"><span>' + list.length + " of " + PROJECTS.length + ' projects</span><span><button class="btn" id="reset">Clear filters</button> <button class="btn" id="csv">Download CSV</button></span></div>' +
-      (list.length ? '<div class="cards">' + list.map(card).join("") + "</div>" : '<div class="empty">No projects match these filters.</div>') +
+      '<div class="toolbar"><span>' + list.length + " of " + PROJECTS.length + ' projects</span><span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      '<select id="sort" class="btn" aria-label="Sort"><option value="value">Biggest first</option><option value="late">Stalled & delayed first</option><option value="overrun">Biggest cost overrun</option><option value="name">A–Z</option></select>' +
+      '<button class="btn" id="toggle-view">' + (ui.view === "cards" ? "Table view" : "Card view") + '</button><button class="btn" id="reset">Clear filters</button> <button class="btn" id="csv">Download CSV</button></span></div>' +
+      (list.length ? (ui.view === "table" ? tableView(shown) : '<div class="cards">' + shown.map(card).join("") + "</div>") : '<div class="empty">No projects match these filters.</div>') +
+      (list.length > shown.length ? '<div style="text-align:center;margin-top:14px"><button class="btn" id="more">Show ' + Math.min(60, list.length - shown.length) + " more of " + (list.length - shown.length) + "</button></div>" : "") +
       "</div>";
-    bindFilters(viewProjects);
+    document.getElementById("sort").value = ui.sort;
+    document.getElementById("sort").addEventListener("change", function (e) { ui.sort = e.target.value; saveUi(); viewProjects(); });
+    document.getElementById("toggle-view").addEventListener("click", function () { ui.view = ui.view === "cards" ? "table" : "cards"; saveUi(); viewProjects(); });
+    var more = document.getElementById("more");
+    if (more) more.addEventListener("click", function () { ui.limit += 60; viewProjects(); });
+    app.querySelectorAll("tr[data-id]").forEach(function (tr) {
+      tr.addEventListener("click", function () { location.hash = "#/project/" + encodeURIComponent(tr.dataset.id); });
+    });
+    bindFilters(function () { ui.limit = 60; viewProjects(); });
   }
 
   function bindFilters(rerender) {
