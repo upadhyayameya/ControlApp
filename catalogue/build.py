@@ -310,8 +310,8 @@ def main():
     shutil.rmtree(WORK, ignore_errors=True)
     WORK.mkdir()
     us = [it for it in items if not it["excludedFromUS"] and it.get("retailUsd")]
-    save_photos(us)
-    missing = [it["code"] for it in us if not it.get("_photo")]
+    save_photos([it for it in items if it.get("retailUsd")])  # every product, so the portal can show left-out ones too
+    missing = [it["code"] for it in items if it.get("retailUsd") and not it.get("_photo")]
     if missing:
         print(f"! no photo for {missing}", file=sys.stderr)
 

@@ -27,4 +27,8 @@ This repo holds two unrelated things:
   https://claude.ai/artifact/NcgN95DCymxTGyqpBct9t2). It has the catalogue plus an owner "Costs & margins" tab
   (India M.R.P., landed cost, markup, profit, margin, what-if sliders). There is no separate pricing console;
   keep cost views in this one page. It contains costs, so it isn't for customers; customers get the PDF.
+- Which products go in the USA catalogue is the owner's choice, made with the portal's "OK for USA catalogue" checkboxes.
+  They are stored in the portal's data, collection `decisions` (doc id = product code, `{include: bool}`). Before
+  rebuilding the PDF, read them with ArtifactData and turn every `include: false` into an `excludeFromUS` entry. Remove
+  config exclusions the owner re-ticked, but warn if that brings back a NASA-logo product.
 - When adding a product to `shop/products.json`, take its code, retail price (`retailUsd`) and description from `catalogue/products-2026-27.json`.

@@ -86,8 +86,24 @@ main { padding-block: 22px 40px; }
 .head p { margin: 4px 0 0; color: var(--muted); }
 .count { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; text-align: left; padding: 0; cursor: pointer; transition: transform .15s ease, border-color .15s ease; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: transform .15s ease, border-color .15s ease; }
 .card:hover { transform: translateY(-2px); border-color: var(--bronze); }
+.card .open { all: unset; display: flex; flex-direction: column; flex: 1; cursor: pointer; text-align: left; }
+.card .open:focus-visible { outline: 2px solid var(--bronze); outline-offset: -2px; }
+.card.out .plate, .card.out .info { opacity: 0.45; }
+.card.out { border-style: dashed; }
+.pick { display: flex; align-items: center; gap: 8px; padding: 9px 13px; border-top: 1px solid var(--line); font-size: 13px; font-weight: 600; cursor: pointer; user-select: none; background: var(--good-bg); color: var(--good); }
+.pick input { width: 17px; height: 17px; accent-color: var(--good); margin: 0; cursor: pointer; }
+.pick.no { background: var(--bad-bg); color: var(--bad); }
+.pick .why { font-weight: 500; font-size: 11.5px; opacity: 0.85; margin-left: auto; text-align: right; }
+.pick.locked { cursor: default; }
+.pick.locked input { cursor: not-allowed; }
+.review { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+.review b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.review .st { font-size: 12.5px; }
+.review .st.err { color: var(--bad); }
+.incell { text-align: center !important; }
+.incell input { width: 17px; height: 17px; accent-color: var(--good); cursor: pointer; }
 .plate { background: var(--plate); height: 128px; display: flex; align-items: center; justify-content: center; padding: 12px; border-bottom: 1px solid var(--line); }
 .plate img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .info { padding: 11px 13px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
@@ -251,7 +267,13 @@ table.t { border-collapse: collapse; width: 100%; font-size: 13px; }
         </select>
         <label class="toggle" for="onlyNew"><input id="onlyNew" type="checkbox"> New only</label>
         <label class="toggle" for="showCosts"><input id="showCosts" type="checkbox"> Show costs</label>
+        <select id="which" aria-label="Show which products">
+          <option value="all">All products</option>
+          <option value="in">In USA catalogue</option>
+          <option value="out">Left out</option>
+        </select>
       </div>
+      <div class="review" id="review"></div>
       <div class="chips" id="chips" role="toolbar" aria-label="Sections"></div>
     </div>
   </div>
@@ -351,13 +373,18 @@ function recompute() { P = D.products.map((p, i) => ({ ...p, i, ...compute(p),
   hay: (p.name + " " + p.note + " " + p.code + " " + p.code.replace(/-/g, "") + " " + bySec[p.section].name).toLowerCase() })); }
 const pill = (m) => `<span class="pill ${m >= 50 ? "good" : m >= 30 ? "warn" : "bad"}">${pct(m)}</span>`;
 const median = (a) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
-const catalogue = () => P.filter((p) => !p.excluded);
+/* USA-catalogue decisions: one db doc per product code, decisions/<code> = {include}. No doc = the
+   catalogue default (in, unless us-config.json leaves it out). Only the owner can change them. */
+let DEC = {};
+let canDecide = false, dbRef = null, saveNote = "Loading your choices…", saveErr = false;
+const isIn = (p) => DEC[p.code] ?? !p.excluded;
+const catalogue = () => P.filter(isIn);
 
 /* ---------- masthead, tabs ---------- */
 $("logo").src = D.logo;
 $("art").style.backgroundImage = `url("${D.cover}")`;
 function facts() {
-  $("facts").innerHTML = `<span><b>${catalogue().length}</b> products</span><span><b>Landed</b> US prices, duty paid</span><span>Free shipping over <b>${usd(D.shipping.freeOver).replace(".00", "")}</b></span>`;
+  $("facts").innerHTML = `<span><b>${catalogue().length}</b> of ${P.length} products in the USA catalogue</span><span><b>Landed</b> US prices, duty paid</span><span>Free shipping over <b>${usd(D.shipping.freeOver).replace(".00", "")}</b></span>`;
 }
 let view = "cat";
 function showView(v) {
@@ -371,25 +398,40 @@ $("tab-costs").addEventListener("click", () => showView("costs"));
 function setHash(h) { if (location.hash !== h) history.replaceState(null, "", h || location.pathname + location.search); }
 
 /* ---------- catalogue ---------- */
-const state = { section: "all", q: "", sort: "catalogue", onlyNew: false, showCosts: !!store.get("show-costs") };
+const state = { section: "all", q: "", sort: "catalogue", onlyNew: false, which: "all", showCosts: !!store.get("show-costs") };
 $("showCosts").checked = state.showCosts;
 
 function chips() {
-  const counts = {}; catalogue().forEach((p) => { if (!state.onlyNew || p.new) counts[p.section] = (counts[p.section] || 0) + 1; });
+  const counts = {}; shown().forEach((p) => { if (!state.onlyNew || p.new) counts[p.section] = (counts[p.section] || 0) + 1; });
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   $("chips").innerHTML = [{ id: "all", name: "All" }, ...D.sections].map((s) => `<button class="chip" type="button" data-s="${s.id}" aria-pressed="${state.section === s.id}">${esc(s.name)}<span>${s.id === "all" ? total : counts[s.id] || 0}</span></button>`).join("");
 }
+function pickBox(p, id) {
+  const on = isIn(p);
+  const why = !on ? (DEC[p.code] === false ? "left out by you" : "left out: " + (p.excluded.split(":")[0] || "")) : "";
+  return `<label class="pick${on ? "" : " no"}${canDecide ? "" : " locked"}" for="${id}">
+    <input type="checkbox" id="${id}" data-pick="${esc(p.code)}" ${on ? "checked" : ""} ${canDecide ? "" : "disabled"}>
+    ${on ? "OK for USA catalogue" : "Not in USA catalogue"}<span class="why">${esc(why)}</span></label>`;
+}
 function card(p) {
   const cost = state.showCosts ? `<div class="costline"><span>Landed <b>${usd(p.landed)}</b></span><span>Profit <b>${usd(p.profit)}</b></span>${pill(p.margin)}</div>` : "";
-  return `<button class="card" type="button" data-code="${esc(p.code)}" aria-label="${esc(p.name)}, ${esc(p.code)}, ${usd(p.retail)}">
+  return `<div class="card${isIn(p) ? "" : " out"}">
+    <button class="open" type="button" data-code="${esc(p.code)}" aria-label="${esc(p.name)}, ${esc(p.code)}, ${usd(p.retail)}">
     <div class="plate">${p.img ? `<img src="${p.img}" alt="" loading="lazy" decoding="async">` : ""}</div>
     <div class="info"><div class="name">${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</div>
       <div class="note">${esc(p.note)}</div>
-      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${usd(p.retail)}</span></div>${cost && p.mine ? cost.replace('<div class="costline">', '<div class="costline"><span class="ownflag">set by you</span>') : cost}</div></button>`;
+      <div class="foot"><span class="code">${esc(p.code)}</span><span class="price">${usd(p.retail)}</span></div>${cost && p.mine ? cost.replace('<div class="costline">', '<div class="costline"><span class="ownflag">set by you</span>') : cost}</div></button>
+    ${pickBox(p, "pk-" + p.code)}</div>`;
+}
+const shown = () => P.filter((p) => state.which === "all" || (state.which === "in") === isIn(p));
+function reviewLine() {
+  const n = catalogue().length;
+  $("review").innerHTML = `<span><b>${n}</b> of ${P.length} products are OK for the USA catalogue · <b>${P.length - n}</b> left out</span>
+    <span class="st${saveErr ? " err" : ""}">${esc(saveNote)}</span>`;
 }
 function renderCat() {
   const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
-  let list = catalogue().filter((p) => (state.section === "all" || p.section === state.section) && (!state.onlyNew || p.new) && words.every((w) => p.hay.includes(w)));
+  let list = shown().filter((p) => (state.section === "all" || p.section === state.section) && (!state.onlyNew || p.new) && words.every((w) => p.hay.includes(w)));
   if (state.sort === "low") list.sort((a, b) => a.retail - b.retail || a.i - b.i);
   if (state.sort === "high") list.sort((a, b) => b.retail - a.retail || a.i - b.i);
   if (state.sort === "margin") list.sort((a, b) => a.margin - b.margin || a.i - b.i);
@@ -398,18 +440,19 @@ function renderCat() {
   $("intro").textContent = sec ? sec.intro : "Every product in the Submarine USA collection. Tap a product for its code and ordering details.";
   $("count").textContent = list.length === 1 ? "1 product" : `${list.length} products`;
   $("grid").innerHTML = list.length ? list.map(card).join("")
-    : `<div class="empty" style="grid-column:1/-1">No products match “${esc(state.q)}”${sec ? " in " + esc(sec.name) : ""}. Try a product code or a simpler word.<br><button class="btn" type="button" id="resetFind">Show all products</button></div>`;
-  chips();
+    : `<div class="empty" style="grid-column:1/-1">No products match “${esc(state.q)}”${sec ? " in " + esc(sec.name) : ""}${state.which !== "all" ? " in this view" : ""}. Try a product code or a simpler word.<br><button class="btn" type="button" id="resetFind">Show all products</button></div>`;
+  chips(); reviewLine();
 }
 function setSection(id) { state.section = id; setHash(id === "all" ? "" : "#" + id); renderCat(); }
 
 $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setSection(b.dataset.s); });
 $("grid").addEventListener("click", (e) => {
-  if (e.target.id === "resetFind") { state.q = ""; $("q").value = ""; state.onlyNew = false; $("onlyNew").checked = false; return setSection("all"); }
-  const b = e.target.closest(".card"); if (b) openProduct(b.dataset.code);
+  if (e.target.id === "resetFind") { state.q = ""; $("q").value = ""; state.onlyNew = false; $("onlyNew").checked = false; state.which = "all"; $("which").value = "all"; return setSection("all"); }
+  const b = e.target.closest(".open"); if (b) openProduct(b.dataset.code);
 });
 let t1; $("q").addEventListener("input", (e) => { clearTimeout(t1); t1 = setTimeout(() => { state.q = e.target.value.trim(); renderCat(); }, 120); });
 $("sort").addEventListener("change", (e) => { state.sort = e.target.value; renderCat(); });
+$("which").addEventListener("change", (e) => { state.which = e.target.value; renderCat(); });
 $("onlyNew").addEventListener("change", (e) => { state.onlyNew = e.target.checked; renderCat(); });
 $("showCosts").addEventListener("change", (e) => { state.showCosts = e.target.checked; store.set("show-costs", state.showCosts); renderCat(); });
 
@@ -440,11 +483,12 @@ function openProduct(code) {
   $("dv").innerHTML = `<button class="close" type="button" aria-label="Close" id="dvclose">×</button>
     <div class="plate">${p.img ? `<img src="${p.img}" alt="${esc(p.name)}">` : ""}</div>
     <div class="body">
-      <div class="sec">${esc(bySec[p.section].name)}${p.excluded ? ' · <span style="color:var(--bad)">left out of US catalogue</span>' : ""}</div>
+      <div class="sec">${esc(bySec[p.section].name)}</div>
       <h3>${esc(p.name)}${p.new ? '<span class="new">NEW</span>' : ""}</h3>
       ${p.note ? `<div style="color:var(--muted)">${esc(p.note)}</div>` : ""}
-      ${p.excluded ? `<div style="color:var(--bad);font-size:14px">${esc(p.excluded)}</div>` : ""}
       <div class="price">${usd(p.retail)}</div>
+      <div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">${pickBox(p, "dvpick")}</div>
+      ${p.excluded ? `<div style="color:var(--muted);font-size:13px">Note: ${esc(p.excluded)}.</div>` : ""}
       <div class="codebox"><span style="color:var(--muted);font-size:13px">Product code</span><span class="code" id="dvcode">${esc(p.code)}</span><button class="btn" type="button" id="copy">Copy code</button></div>
       <p class="how">To order, send the product code to ${handle}. Price includes freight, US duty and import tariffs. ${usd(D.shipping.flat)} shipping, free over ${usd(D.shipping.freeOver).replace(".00", "")}.</p>
       ${costs}
@@ -533,7 +577,7 @@ $("bannerReset").addEventListener("click", resetLevers);
 $("csec").innerHTML = `<option value="">All sections</option>` + D.sections.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
 const sortState = { key: null, dir: 1 };
 const COLS = [
-  { k: "name", t: "Product", cls: "p l" }, { k: "mrp", t: "India M.R.P." }, { k: "mrpUsd", t: "M.R.P. in $" },
+  { k: "inUS", t: "OK for USA", cls: "incell" }, { k: "name", t: "Product", cls: "p l" }, { k: "mrp", t: "India M.R.P." }, { k: "mrpUsd", t: "M.R.P. in $" },
   { k: "factory", t: "Factory" }, { k: "duty", t: "Duty" }, { k: "tariff", t: "Tariff" }, { k: "freight", t: "Freight" },
   { k: "fees", t: "Fees" }, { k: "landed", t: "Landed" }, { k: "retail", t: "US retail" }, { k: "markupPct", t: "Markup" },
   { k: "profit", t: "Profit / unit" }, { k: "margin", t: "Margin" }, { k: "wholesale", t: "Wholesale" },
@@ -559,15 +603,15 @@ function renderCosts() {
       return `<tr><td class="l"><b>${esc(s.name)}</b></td><td>${g.length}</td><td>${inr(a((r) => r.mrp))}</td><td>${usd(a((r) => r.landed))}</td><td>${usd(a((r) => r.freight))}</td><td>${usd(a((r) => r.retail))}</td><td>${pct(a((r) => r.markupPct))}</td><td>${usd(a((r) => r.profit))}</td><td>${pill(a((r) => r.margin))}</td><td>${pill(a((r) => r.wMargin))}</td></tr>`; }).join("") + "</tbody>";
 
   const q = $("cq").value.trim().toLowerCase(), sec = $("csec").value, showOut = $("showOut").checked;
-  let list = P.filter((r) => (showOut || !r.excluded) && (!sec || r.section === sec) && (!q || r.hay.includes(q)));
+  let list = P.map((r) => ({ ...r, inUS: isIn(r) ? 1 : 0 })).filter((r) => (showOut || r.inUS) && (!sec || r.section === sec) && (!q || r.hay.includes(q)));
   if (sortState.key) list.sort((a, b) => { const x = a[sortState.key], y = b[sortState.key]; return (typeof x === "string" ? x.localeCompare(y) : x - y) * sortState.dir; });
   let last = null;
   const body = list.map((r) => {
     let g = "";
-    if (!sortState.key && r.section !== last) { last = r.section; g = `<tr class="grp"><td class="p">${esc(bySec[r.section].name)}</td><td colspan="${COLS.length - 1}"></td></tr>`; }
+    if (!sortState.key && r.section !== last) { last = r.section; g = `<tr class="grp"><td></td><td class="p">${esc(bySec[r.section].name)}</td><td colspan="${COLS.length - 2}"></td></tr>`; }
     const parts = [[r.factory, "--c-factory"], [r.duty + r.tariff, "--c-duty"], [r.freight, "--c-freight"], [r.fees, "--c-fees"]];
     const bar = `<div class="cbar" title="Factory ${usd(r.factory)} · duty + tariff ${usd(r.duty + r.tariff)} · freight ${usd(r.freight)} · fees ${usd(r.fees)}">${parts.map(([v, col]) => `<span style="width:${(v / r.landed * 100).toFixed(1)}%;background:var(${col})"></span>`).join("")}</div>`;
-    return g + `<tr><td class="p"><div class="prod" data-code="${esc(r.code)}"><div class="thumb">${r.img ? `<img src="${r.img}" alt="" loading="lazy">` : ""}</div><div><b>${esc(r.name)}${r.new ? '<span class="new" style="margin-left:5px;font-size:9px;padding:2px 4px">NEW</span>' : ""}${r.excluded ? `<span class="out" title="${esc(r.excluded)}">LEFT OUT</span>` : ""}</b><span>${esc(r.code)}</span>${r.note ? ` <span style="font-family:var(--body)">· ${esc(r.note)}</span>` : ""}</div></div></td>
+    return g + `<tr><td class="incell"><input type="checkbox" data-pick="${esc(r.code)}" aria-label="OK for USA catalogue: ${esc(r.code)}" ${r.inUS ? "checked" : ""} ${canDecide ? "" : "disabled"}></td><td class="p"><div class="prod" data-code="${esc(r.code)}"><div class="thumb">${r.img ? `<img src="${r.img}" alt="" loading="lazy">` : ""}</div><div><b>${esc(r.name)}${r.new ? '<span class="new" style="margin-left:5px;font-size:9px;padding:2px 4px">NEW</span>' : ""}${r.inUS ? "" : `<span class="out" title="${esc(DEC[r.code] === false ? "Left out by you" : r.excluded)}">LEFT OUT</span>`}</b><span>${esc(r.code)}</span>${r.note ? ` <span style="font-family:var(--body)">· ${esc(r.note)}</span>` : ""}</div></div></td>
       <td>${inr(r.mrp)}${r.perPiece ? " ea." : ""}</td><td>${usd(r.mrpUsd)}</td><td title="${inr(r.factoryInr)}">${usd(r.factory)}</td><td>${usd(r.duty)}</td><td>${usd(r.tariff)}</td><td>${usd(r.freight)}</td><td>${usd(r.fees)}</td>
       <td><b>${usd(r.landed)}</b>${bar}</td><td><b>${usd(r.retail)}</b>${r.mine ? '<div class="ownflag">set by you</div>' : ""}</td><td>${pct(r.markupPct)}</td><td>${usd(r.profit)}</td><td>${pill(r.margin)}</td>
       <td>${usd(r.wholesale)}</td><td>${usd(r.wProfit)}</td><td>${pill(r.wMargin)}</td><td>×${r.vsIndia.toFixed(1)}</td><td>${r.grams} g</td><td class="l">${esc(r.hts)}</td></tr>`;
@@ -598,6 +642,43 @@ function terms() {
     <div><h3>How to order</h3><p>Send the product codes you want to ${reach.join(", ") || "us"}.</p><p>Retailers, offices and events: ask for wholesale pricing and custom branding.</p></div>
     <p class="fine">${esc(c.business)} · ${esc(c.location)} · Manufactured by Submarine Pens Limited, Mumbai, India (ISO 9001:2015). Prices effective November 2026 and subject to change; sales tax added where it applies. Colors in photos may vary slightly.</p>`;
 }
+
+/* ---------- saving decisions ---------- */
+const queue = {};  // one write at a time per product
+function decide(code, include) {
+  if (!canDecide || !dbRef) return;
+  DEC = { ...DEC, [code]: include };
+  saveNote = "Saving…"; saveErr = false;
+  refresh();
+  const doc = dbRef.doc("decisions/" + code);
+  queue[code] = (queue[code] || Promise.resolve()).then(() => doc.set({ include, decidedAt: new Date().toISOString() }))
+    .then(() => { saveNote = "All choices saved"; saveErr = false; reviewLine(); })
+    .catch((err) => { saveErr = true; saveNote = err && err.code === "quota_exceeded" ? "Couldn’t save: the page’s storage is full" : "Couldn’t save that choice. Check your connection and tick it again."; reviewLine(); });
+}
+document.addEventListener("change", (e) => {
+  const code = e.target.dataset && e.target.dataset.pick;
+  if (!code) return;
+  decide(code, e.target.checked);
+  if ($("dv").open && e.target.id === "dvpick") openProduct(code);
+});
+(async () => {
+  const timer = setTimeout(() => { if (!dbRef) { saveNote = "Your saved choices can’t be reached right now; showing the catalogue defaults."; reviewLine(); } }, 10000);
+  try {
+    const [db, user] = await Promise.all([window.claude?.use?.("db"), window.claude?.use?.("user")]);
+    if (!db) { clearTimeout(timer); saveNote = "Open this page on claude.ai, signed in, to save choices."; reviewLine(); return; }
+    dbRef = db;
+    canDecide = user ? user.isOwner() : false;
+    db.collection("decisions").limit(1000).onSnapshot((snap) => {
+      if (!snap.metadata.fromCache) clearTimeout(timer);
+      const next = {};
+      snap.docs.forEach((d) => { const v = d.data(); if (v && typeof v.include === "boolean") next[d.id] = v.include; });
+      DEC = next;
+      if (!saveErr) saveNote = canDecide ? (Object.keys(DEC).length ? "All choices saved" : "Untick a product to leave it out. Choices save automatically.") : "Only the page owner can change these.";
+      refresh();
+      if ($("dv").open && dvCode) openProduct(dvCode);
+    }, (err) => { clearTimeout(timer); saveErr = true; saveNote = "Saved choices stopped updating. Reload the page to see the latest."; reviewLine(); });
+  } catch { clearTimeout(timer); saveNote = "Saving isn’t available here."; reviewLine(); }
+})();
 
 /* ---------- boot ---------- */
 function refresh() {
