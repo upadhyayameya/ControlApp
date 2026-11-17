@@ -375,7 +375,9 @@ details > summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color
 details[open] > summary { margin-bottom: 4px; }
 .scheme-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); gap: 12px; }
 .scheme { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 4px; align-content: start; min-width: 0; background: var(--surface); }
-.scheme header { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.scheme header { display: flex; justify-content: space-between; gap: 8px 10px; align-items: flex-start; flex-wrap: wrap; }
+.scheme header > div { min-width: 0; }
+.scheme .pill { white-space: normal; text-align: left; }
 .scheme .local { font-family: var(--font-deva); font-size: 0.9rem; color: var(--ink-2); }
 .scheme .gives { margin: 6px 0; font-size: 0.92rem; }
 .ynums { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; margin: 4px 0 10px; }

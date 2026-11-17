@@ -1,5 +1,5 @@
-// MLA profiles: affidavit (ADR/MyNeta), fund use, reported work and news
-// Compiled from public sources; every item carries its source. Edit with care: see README.md.
+// MLA profiles: affidavit (ADR/MyNeta), Praja report card, reported work and news.
+// Work and news items were independently re-checked against their sources on 2026-11-17; unsupported items were removed.
 window.PUBLIC_WORKS_MLA = {
  "bmcWorks": {
   "summary": "Separate from the MLA fund: from February 2023, while BMC had no elected corporators, MLAs could propose BMC-funded civic works through the guardian ministers. An RTI-based Indian Express investigation found ₹1,490.66 crore sanctioned from February 2023 to October 2025, of which ₹1,476.92 crore went to areas of ruling-alliance MLAs and ₹13.74 crore to one opposition MLA. The period includes the previous Assembly term.",
@@ -121,7 +121,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bjp-mla-sanjay-upadhyay-warns-of-hunger-strike-if-illegal-encroachments-in-borivali-not-removed-by-june-7",
       "title": "BJP MLA Sanjay Upadhyay Warns Of Hunger Strike If Illegal Encroachments In Borivali Not Removed By June 7 (Free Press Journal)",
       "date": "2026-05-28"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-04-10",
@@ -132,7 +133,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-desilting-row-bmc-orders-probe-after-mla-sanjay-upadhyay-flags-alleged-scam-in-borivali",
       "title": "Mumbai Desilting Row: BMC Orders Probe After MLA Sanjay Upadhyay Flags Alleged Scam In Borivali (Free Press Journal)",
       "date": "2026-04-10"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-06-25",
@@ -143,7 +145,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://navbharatlive.com/maharashtra/mumbai/mumbai-borivali-kandivali-railway-station-redevelopment-plan-mla-sanjay-upadhyay-1820387.html",
       "title": "Borivali–Kandivali railway station redevelopment plan (Navbharat Live, Hindi)",
       "date": "2026-06-25"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-11-06",
@@ -154,7 +157,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-western-suburbs-face-acute-water-shortage-ahead-of-bmc-elections-mlas-demand-equitable-supply-zone-wise-data-from-civic-body",
       "title": "Western Suburbs Face Acute Water Shortage Ahead Of BMC Elections; MLAs Demand Equitable Supply, Zone-Wise Data (Free Press Journal)",
       "date": "2025-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-07-19",
@@ -165,18 +169,20 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-gaothan-residents-welcome-mlas-push-forone-window-repair-policy-demand-end-to-disparity-with-slums",
       "title": "Gaothan Residents Welcome MLA's Push For 'One-Window' Repair Policy (Free Press Journal)",
       "date": "2025-07-19"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
     {
      "date": "2026-05-02",
-     "headline": "Opposed the fee increase for morning walkers' passes at Sanjay Gandhi National Park and asked authorities to reconsider it.",
+     "headline": "Publicly opposed the steep rise in Sanjay Gandhi National Park's morning-walker pass fees, calling it unjust and saying the increase would not be allowed.",
      "source": {
       "url": "https://www.freepressjournal.in/amp/mumbai/we-will-not-allow-this-bjp-mla-sanjay-upadhyay-calls-sgnps-price-hike-for-monthly-passes-completely-unjust",
       "title": "'We Will Not Allow This!': BJP MLA Sanjay Upadhyay Calls SGNP's Price Hike For Monthly Passes 'Completely Unjust' (Free Press Journal)",
       "date": "2026-05-02"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-05-28",
@@ -185,7 +191,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bjp-mla-sanjay-upadhyay-warns-of-hunger-strike-if-illegal-encroachments-in-borivali-not-removed-by-june-7",
       "title": "BJP MLA Sanjay Upadhyay Warns Of Hunger Strike ... (Free Press Journal)",
       "date": "2026-05-28"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-04-10",
@@ -194,7 +201,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-desilting-row-bmc-orders-probe-after-mla-sanjay-upadhyay-flags-alleged-scam-in-borivali",
       "title": "Mumbai Desilting Row: BMC Orders Probe ... (Free Press Journal)",
       "date": "2026-04-10"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -259,7 +267,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/buffalo-sheds-along-mumbai-rivers-to-be-shifted-to-curb-pollution",
       "title": "Buffalo Sheds Along Mumbai Rivers To Be Shifted To Curb Pollution (Free Press Journal)",
       "date": "2026-02-26"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-11-06",
@@ -270,7 +279,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-western-suburbs-face-acute-water-shortage-ahead-of-bmc-elections-mlas-demand-equitable-supply-zone-wise-data-from-civic-body",
       "title": "Western Suburbs Face Acute Water Shortage Ahead Of BMC Elections ... (Free Press Journal)",
       "date": "2025-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -281,7 +291,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/buffalo-sheds-along-mumbai-rivers-to-be-shifted-to-curb-pollution",
       "title": "Buffalo Sheds Along Mumbai Rivers To Be Shifted To Curb Pollution (Free Press Journal)",
       "date": "2026-02-26"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-11-06",
@@ -290,7 +301,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-western-suburbs-face-acute-water-shortage-ahead-of-bmc-elections-mlas-demand-equitable-supply-zone-wise-data-from-civic-body",
       "title": "Western Suburbs Face Acute Water Shortage ... (Free Press Journal)",
       "date": "2025-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -347,46 +359,38 @@ window.PUBLIC_WORKS_MLA = {
    "roles": [],
    "work": [
     {
-     "date": "2026-04-08",
-     "what": "Per FPJ, the BMC was directed by the then Chief Minister to realign the 120-ft Magathane–Goregaon DP road at Surve's request; BMC has since cleared 310 structures and targeted opening by May-end 2026.",
-     "kind": "Demanded",
-     "projectId": null,
-     "source": {
-      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-magathane-goregaon-120-ft-dp-road-to-become-operational-by-may-end-after-bmc-clears-all-310-illegal-structures",
-      "title": "Magathane-Goregaon 120 Ft DP Road To Become Operational By May-End After BMC Clears All 310 Illegal Structures (Free Press Journal)",
-      "date": "2026-04-08"
-     }
-    },
-    {
      "date": "2025-11-06",
-     "what": "Was among four western-suburb MLAs who met BMC Additional Municipal Commissioner Abhijeet Bangar on water shortage (no statement attributed to him).",
-     "kind": "Followed up",
+     "what": "Was among four western-suburb MLAs who met BMC Additional Municipal Commissioner Abhijeet Bangar to demand equitable water supply and zone-wise distribution data.",
+     "kind": "Demanded",
      "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-western-suburbs-face-acute-water-shortage-ahead-of-bmc-elections-mlas-demand-equitable-supply-zone-wise-data-from-civic-body",
       "title": "Western Suburbs Face Acute Water Shortage ... (Free Press Journal)",
       "date": "2025-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
     {
-     "date": "2025-12-31",
-     "headline": "Shiv Sena workers showed Surve black flags after Magathane's Ward 3 went to the BJP in BMC seat-sharing; protesters alleged the ward was traded for his son's candidacy elsewhere (allegation as reported).",
+     "date": "2025-12-30",
+     "headline": "Shinde Sena workers showed Surve black flags after Ward 3 in Magathane was given to the BJP in seat-sharing; protesters alleged the ward was given up to secure his son's candidacy elsewhere.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-rebellion-sweeps-political-parties-ahead-of-municipal-polls-bjp-faces-major-internal-revolt-in-mumbai-on-last-day-of-nominations",
       "title": "BMC Elections 2026: Rebellion Sweeps Political Parties Ahead Of Municipal Polls (Free Press Journal)",
       "date": "2025-12-31"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-04-08",
-     "headline": "BMC said the long-stalled Magathane–Goregaon 120-ft DP road, realigned on Surve's request, would open by end of May.",
+     "headline": "BMC cleared all 310 structures on the Magathane–Goregaon 120-ft DP road and aimed to open it by end-May; a realignment the then CM had ordered at Surve's request was rejected by the BMC chief in October 2024.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-magathane-goregaon-120-ft-dp-road-to-become-operational-by-may-end-after-bmc-clears-all-310-illegal-structures",
       "title": "Magathane-Goregaon 120 Ft DP Road ... (Free Press Journal)",
       "date": "2026-04-08"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -443,15 +447,16 @@ window.PUBLIC_WORKS_MLA = {
    "roles": [],
    "work": [
     {
-     "date": "2026-08-22",
-     "what": "Wrote to BMC Commissioner Ashwini Bhide seeking action against more than 100 four-wheeled handcarts allegedly parked illegally and rented out in Mulund, and sought police coordination and accountability of T ward officials.",
+     "date": "2026-08-21",
+     "what": "Urged BMC Commissioner Ashwini Bhide to act against more than 100 four-wheeled handcarts he said were illegally parked and rented out in Mulund, questioned T ward and senior officials' inaction, and asked police to coordinate with the BMC.",
      "kind": "Demanded",
      "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/bjp-mla-mihir-kotecha-seeks-bmc-action-against-over-100-illegal-handcarts-in-mulund",
       "title": "BJP MLA Mihir Kotecha Seeks BMC Action Against Over 100 Illegal Handcarts In Mulund (Free Press Journal)",
       "date": "2026-08-22"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-05-05",
@@ -462,7 +467,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bmc-moves-ahead-with-101-crore-hospital-privatisation-plan-despite-opposition-bjp-mla-mihir-kotecha-alleges-45-crore-scam",
       "title": "BMC Moves Ahead With ₹101 Crore Hospital Privatisation Plan Despite Opposition, BJP MLA Mihir Kotecha Alleges ₹45 Crore Scam (Free Press Journal)",
       "date": "2026-05-05"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-04-27",
@@ -473,7 +479,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-metro-line-4-mishap-wooden-plank-falls-on-car-in-mulund-bjp-mla-mihir-kotecha-seeks-contractor-removal",
       "title": "Mumbai Metro Line 4 Mishap: Wooden Plank Falls On Car In Mulund, BJP MLA Mihir Kotecha Seeks Contractor Removal (Free Press Journal)",
       "date": "2026-04-27"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-12-06",
@@ -484,7 +491,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-civic-row-mla-mihir-kotecha-demands-cancellation-of-550-crore-goregaonmulund-link-road-project-over-poor-work-rising-aqi",
       "title": "MLA Mihir Kotecha Demands Cancellation Of ₹550-Crore Goregaon–Mulund Link Road Project Over Poor Work & Rising AQI (Free Press Journal)",
       "date": "2025-12-06"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-04-28",
@@ -495,27 +503,30 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-mulund-mla-mihir-kotecha-proposes-cable-stayed-bridge-new-roads-to-decongest-prabhu-shri-ram-chowk-at-eeh",
       "title": "Mulund MLA Mihir Kotecha Proposes Cable-Stayed Bridge, New Roads To Decongest Prabhu Shri Ram Chowk At EEH (Free Press Journal)",
       "date": "2025-04-28"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
     {
      "date": "2026-11-01",
-     "headline": "A 10-bed BMC dialysis centre opened at M.T. Agarwal hospital, Mulund; it was inaugurated by minister Ashish Shelar and Kotecha, who attended, called it a Diwali gift for residents.",
+     "headline": "Minister Ashish Shelar inaugurated a 10-bed BMC dialysis centre at M.T. Agarwal hospital, Mulund; Kotecha, who attended, called it a Diwali gift for residents.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/bmc-opens-10-bed-dialysis-centre-at-mulund-hospital-facility-to-serve-up-to-50-patients-daily",
       "title": "BMC Opens 10-Bed Dialysis Centre At Mulund Hospital (Free Press Journal)",
       "date": "2026-11-02"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
-     "date": "2026-08-22",
-     "headline": "Sought BMC and police action against illegally parked handcarts in Mulund.",
+     "date": "2026-08-21",
+     "headline": "Urged BMC and police action against illegally parked handcarts in Mulund.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/bjp-mla-mihir-kotecha-seeks-bmc-action-against-over-100-illegal-handcarts-in-mulund",
       "title": "BJP MLA Mihir Kotecha Seeks BMC Action ... (Free Press Journal)",
       "date": "2026-08-22"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-05-05",
@@ -524,7 +535,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bmc-moves-ahead-with-101-crore-hospital-privatisation-plan-despite-opposition-bjp-mla-mihir-kotecha-alleges-45-crore-scam",
       "title": "BMC Moves Ahead With ₹101 Crore Hospital Privatisation Plan ... (Free Press Journal)",
       "date": "2026-05-05"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-04-27",
@@ -533,7 +545,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-metro-line-4-mishap-wooden-plank-falls-on-car-in-mulund-bjp-mla-mihir-kotecha-seeks-contractor-removal",
       "title": "Mumbai Metro Line 4 Mishap ... (Free Press Journal)",
       "date": "2026-04-28"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -598,7 +611,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-residents-demand-closure-of-kanjurmarg-landfill-in-3-months-bmc-plans-supreme-court-appeal",
       "title": "Residents Demand Closure Of Kanjurmarg Landfill In 3 Months, BMC Plans Supreme Court Appeal (Free Press Journal)",
       "date": "2025-06-13"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -609,7 +623,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-case-filed-against-sena-ubt-mla-sunil-raut-ex-corporator-rashmi-pahudkar-over-protest-in-vikhroli",
       "title": "Case Filed Against Sena UBT MLA Sunil Raut & Ex-Corporator Rashmi Pahudkar Over Protest On EEH In Vikhroli (Free Press Journal)",
       "date": "2025-04-11"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-06-13",
@@ -618,7 +633,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-residents-demand-closure-of-kanjurmarg-landfill-in-3-months-bmc-plans-supreme-court-appeal",
       "title": "Residents Demand Closure Of Kanjurmarg Landfill ... (Free Press Journal)",
       "date": "2025-06-13"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -737,7 +753,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-contractor-blacklisted-after-abrupt-icu-shutdown-only-10-beds-functional-at-jogeshwaris-balasaheb-thackeray-trauma-hospital",
       "title": "Contractor Blacklisted After Abrupt ICU Shutdown; Only 10 Beds Functional At Jogeshwari's Balasaheb Thackeray Trauma Hospital (Free Press Journal)",
       "date": "2025-08-23"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -748,7 +765,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-contractor-blacklisted-after-abrupt-icu-shutdown-only-10-beds-functional-at-jogeshwaris-balasaheb-thackeray-trauma-hospital",
       "title": "Contractor Blacklisted After Abrupt ICU Shutdown ... (Free Press Journal)",
       "date": "2025-08-23"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -813,7 +831,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-cctv-footage-shows-leopard-roaming-near-goregaons-residential-society-mla-demands-intervention-viral-video",
       "title": "CCTV Footage Shows Leopard Roaming Near Goregaon's Residential Society; MLA Demands Intervention (Free Press Journal)",
       "date": "2025-11-27"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -824,7 +843,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-cctv-footage-shows-leopard-roaming-near-goregaons-residential-society-mla-demands-intervention-viral-video",
       "title": "CCTV Footage Shows Leopard Roaming ... (Free Press Journal)",
       "date": "2025-11-27"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -889,7 +909,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/case-registered-over-alleged-faith-healing-claims-at-malad-school-probe-underway-maharashtra-govt-tells-assembly",
       "title": "Case Registered Over Alleged Faith-Healing Claims At Malad School; Probe Underway, Maharashtra Govt Tells Assembly (Free Press Journal)",
       "date": "2026-07-07"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-03-05",
@@ -900,7 +921,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-unhygienic-conditions-at-nair-dental-college-hostel-raised-in-assembly",
       "title": "Unhygienic Conditions At Nair Dental College Hostel Raised In Assembly (Free Press Journal)",
       "date": "2026-03-05"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-03-07",
@@ -911,7 +933,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-crime-5-hawkers-arrested-for-allegedly-attacking-bmc-officials-during-anti-encroachment-drive-in-kandivali",
       "title": "5 Hawkers Arrested For Allegedly Attacking BMC Officials During Anti-Encroachment Drive In Kandivali (Free Press Journal)",
       "date": "2026-03-07"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-12-09",
@@ -922,7 +945,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/special-meetings-to-be-held-to-address-rising-stray-dog-attacks-in-cities-maharashtra-minister-madhuri-misal",
       "title": "'Special Meetings To Be Held To Address Rising Stray Dog Attacks In Cities': Minister Madhuri Misal (Free Press Journal)",
       "date": "2025-12-09"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -933,7 +957,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/case-registered-over-alleged-faith-healing-claims-at-malad-school-probe-underway-maharashtra-govt-tells-assembly",
       "title": "Case Registered Over Alleged Faith-Healing Claims At Malad School ... (Free Press Journal)",
       "date": "2026-07-08"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-03-07",
@@ -942,7 +967,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-crime-5-hawkers-arrested-for-allegedly-attacking-bmc-officials-during-anti-encroachment-drive-in-kandivali",
       "title": "5 Hawkers Arrested ... (Free Press Journal)",
       "date": "2026-03-07"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-03-05",
@@ -951,7 +977,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-unhygienic-conditions-at-nair-dental-college-hostel-raised-in-assembly",
       "title": "Unhygienic Conditions At Nair Dental College Hostel Raised In Assembly (Free Press Journal)",
       "date": "2026-03-06"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-12-21",
@@ -960,7 +987,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-from-traffic-to-hospitals-bjp-leaders-outline-north-mumbai-vision-ahead-of-polls",
       "title": "BMC Elections 2026: From Traffic To Hospitals, BJP Leaders Outline North Mumbai Vision (Free Press Journal)",
       "date": "2025-12-21"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1025,7 +1053,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/buffalo-sheds-along-mumbai-rivers-to-be-shifted-to-curb-pollution",
       "title": "Buffalo Sheds Along Mumbai Rivers To Be Shifted To Curb Pollution (Free Press Journal)",
       "date": "2026-02-26"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-12-10",
@@ -1036,18 +1065,20 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/maharashtra-govt-seeks-urgent-bmc-report-after-bjp-mla-yogesh-sagar-flags-delay-in-treating-5-year-old-sexual-assault-survivor-at-kandivalis-shatabdi-hospital-video",
       "title": "Maharashtra Govt Seeks Urgent BMC Report After BJP MLA Yogesh Sagar Flags Delay ... At Kandivali's Shatabdi Hospital (Free Press Journal)",
       "date": "2025-12-11"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-11-06",
-     "what": "Was among four western-suburb MLAs who met BMC Additional Municipal Commissioner Abhijeet Bangar on water shortage (no statement attributed to him).",
-     "kind": "Followed up",
+     "what": "Was among four western-suburb MLAs who met BMC Additional Municipal Commissioner Abhijeet Bangar to demand equitable water supply and zone-wise distribution data.",
+     "kind": "Demanded",
      "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-western-suburbs-face-acute-water-shortage-ahead-of-bmc-elections-mlas-demand-equitable-supply-zone-wise-data-from-civic-body",
       "title": "Western Suburbs Face Acute Water Shortage ... (Free Press Journal)",
       "date": "2025-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1058,7 +1089,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/maharashtra-govt-seeks-urgent-bmc-report-after-bjp-mla-yogesh-sagar-flags-delay-in-treating-5-year-old-sexual-assault-survivor-at-kandivalis-shatabdi-hospital-video",
       "title": "Maharashtra Govt Seeks Urgent BMC Report ... (Free Press Journal)",
       "date": "2025-12-11"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-12-21",
@@ -1067,7 +1099,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-from-traffic-to-hospitals-bjp-leaders-outline-north-mumbai-vision-ahead-of-polls",
       "title": "BMC Elections 2026: From Traffic To Hospitals, BJP Leaders Outline North Mumbai Vision (Free Press Journal)",
       "date": "2025-12-21"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1125,25 +1158,27 @@ window.PUBLIC_WORKS_MLA = {
    "work": [
     {
      "date": "2026-02-17",
-     "what": "Was one of seven Congress MLAs who jointly filed a starred question seeking clarification on BMC's reported plan to outsource the kitchen at Kasturba Hospital for Infectious Diseases.",
+     "what": "Was one of seven MLAs who jointly submitted a starred question seeking clarification on BMC's reported plan to outsource the kitchen at Kasturba Hospital for Infectious Diseases.",
      "kind": "Raised in Assembly",
      "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-kitchen-privatisation-plan-at-kasturba-hospital-for-infectious-diseases-sparks-political-storm",
       "title": "Kitchen Privatisation Plan At Kasturba Hospital For Infectious Diseases Sparks Political Storm (Free Press Journal)",
       "date": "2026-02-17"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-08-23",
      "what": "Addressed a protest against BMC's plan to hand Malvani Township civic school to a private foundation and was detained by police along with MP Varsha Gaikwad.",
      "kind": "Demanded",
-     "projectId": "BMCS-20",
+     "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/education/mumbai-police-detain-senior-congress-leaders-varsha-gaikwad-aslam-shaikh-during-protest-against-privatisation-of-bmc-school",
       "title": "Police Detain Senior Congress Leaders Varsha Gaikwad & Aslam Shaikh During Protest Against 'Privatisation' Of BMC School (Free Press Journal)",
       "date": "2025-08-23"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1154,7 +1189,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-resultscongress-mla-aslam-shaikhs-son-haiderali-shaikh-wins-from-malads-ward-number-34",
       "title": "BMC Elections 2026 Results: Congress MLA Aslam Shaikh's Son Haiderali Shaikh Wins From Malad's Ward Number 34 (Free Press Journal)",
       "date": "2026-01-16"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-11-21",
@@ -1163,7 +1199,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/amp/mumbai/minister-mangal-prabhat-lodha-alleges-threats-from-mla-aslam-shaikh-bjp-demands-stern-action",
       "title": "Minister Mangal Prabhat Lodha Alleges Threats From MLA Aslam Shaikh; BJP Demands Stern Action (Free Press Journal)",
       "date": "2025-11-21"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1228,7 +1265,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bmc-considers-alternatives-to-demolition-of-veer-savarkar-flyover-in-goregaon-amid-political-opposition",
       "title": "BMC Considers Alternatives To Demolition Of Veer Savarkar Flyover In Goregaon Amid Political Opposition (Free Press Journal)",
       "date": "2025-09-16"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1239,7 +1277,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-infra-news-bmc-drops-plan-to-demolish-goregaons-veer-savarkar-flyover-for-versovadahisar-link-road-after-iit-bombay-clears-monopile-design",
       "title": "BMC Drops Plan To Demolish Goregaon's Veer Savarkar Flyover For Versova–Dahisar Link Road After IIT Bombay Clears Monopile Design (Free Press Journal)",
       "date": "2026-01-25"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1297,45 +1336,49 @@ window.PUBLIC_WORKS_MLA = {
    "work": [
     {
      "date": "2026-05-09",
-     "what": "Built (or facilitated) a public toilet block outside Lokhandwala Joggers Park, Andheri, after requests from residents and walkers.",
-     "kind": "Inaugurated",
+     "what": "Facilitated construction of a public toilet block outside Lokhandwala Joggers Park, Andheri, after requests from residents and walkers.",
+     "kind": "Followed up",
      "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/world-class-public-toilet-unveiled-outside-andheri-lokhandwala-joggers-park-on-public-demand",
       "title": "World-Class Public Toilet Unveiled Outside Andheri Lokhandwala Joggers Park On Public Demand (Free Press Journal)",
       "date": "2026-05-09"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-07-02",
      "what": "Said he would raise in the Assembly session the stalled handover of Chitrakoot ground, Andheri, for a fire station, insisting a fire station must be built on the plot.",
-     "kind": "Raised in Assembly",
+     "kind": "Demanded",
      "projectId": null,
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-fire-brigade-urges-collector-to-handover-andheris-chitrakoot-ground-for-ambivali-fire-station-cites-delayed-emergency-response",
       "title": "Mumbai Fire Brigade Urges Collector To Handover Andheri's Chitrakoot Ground For Ambivali Fire Station (Free Press Journal)",
       "date": "2025-07-02"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
     {
-     "date": "2026-06-29",
+     "date": "2026-06-28",
      "headline": "Joined MP Varsha Gaikwad and footballers protesting BMC's plan to convert the Bandra Reclamation football ground.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/bandra-reclamation-football-ground-conversion-plan-faces-opposition-from-mp-varsha-gaikwad-protesters-video",
       "title": "Bandra Reclamation Football Ground Conversion Plan Faces Opposition From MP Varsha Gaikwad & Protesters (Free Press Journal)",
       "date": "2026-06-29"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-05-09",
-     "headline": "A public toilet built by the MLA opened outside Lokhandwala Joggers Park.",
+     "headline": "A public toilet block facilitated by the MLA opened outside Lokhandwala Joggers Park.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/world-class-public-toilet-unveiled-outside-andheri-lokhandwala-joggers-park-on-public-demand",
       "title": "World-Class Public Toilet Unveiled ... (Free Press Journal)",
       "date": "2026-05-09"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1402,10 +1445,11 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-lokhandwala-oshiwara-residents-launch-online-petition-seeking-speedy-construction-of-long-pending-versova-fire-station",
       "title": "Lokhandwala-Oshiwara Residents Launch Online Petition Seeking Speedy Construction Of Long-Pending Versova Fire Station (Free Press Journal)",
       "date": "2026-11-15"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
-     "date": "2026-04-20",
+     "date": "2026-04-16",
      "what": "Wrote to BMC Standing Committee Chairman Prabhakar Shinde calling additional funds to certain corporators in Andheri West disproportionate and seeking their withdrawal and equitable distribution.",
      "kind": "Demanded",
      "projectId": null,
@@ -1413,7 +1457,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-bjps-ameet-satam-flags-unequal-bmc-fund-allocation-seeks-rollback-of-excess-allotment",
       "title": "BJP's Ameet Satam Flags Unequal BMC Fund Allocation, Seeks Rollback Of Excess Allotment (Free Press Journal)",
       "date": "2026-04-20"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1424,7 +1469,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-lokhandwala-oshiwara-residents-launch-online-petition-seeking-speedy-construction-of-long-pending-versova-fire-station",
       "title": "Lokhandwala-Oshiwara Residents Launch Online Petition ... (Free Press Journal)",
       "date": "2026-11-15"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-04-20",
@@ -1433,7 +1479,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-bjps-ameet-satam-flags-unequal-bmc-fund-allocation-seeks-rollback-of-excess-allotment",
       "title": "BJP's Ameet Satam Flags Unequal BMC Fund Allocation ... (Free Press Journal)",
       "date": "2026-04-21"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-01-16",
@@ -1442,7 +1489,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.theweek.in/news/india/2026/01/16/who-is-ameet-satam-the-former-tata-group-employee-responsible-for-bjps-impressive-bmc-show.html",
       "title": "Who is Ameet Satam, the former Tata Group employee responsible for BJP's impressive BMC show? (The Week)",
       "date": "2026-01-16"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2025-08-25",
@@ -1451,7 +1499,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/ameet-satam-appointed-as-mumbai-bjp-president-ahead-of-bmc-polls",
       "title": "Ameet Satam Appointed As Mumbai BJP President Ahead Of BMC Polls (Free Press Journal)",
       "date": "2025-08-25"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1516,18 +1565,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/andheri-to-get-botanical-garden-skate-park-cricket-turf-under-gokhale-flyover",
       "title": "Andheri To Get Botanical Garden, Skate Park, Cricket Turf Under Gokhale Flyover (Free Press Journal)",
       "date": "2026-07-03"
-     }
-    },
-    {
-     "date": "2026-11-06",
-     "what": "Said he obtained BEST and BMC permissions before a modernised bus shelter was installed in Andheri East, after BEST filed a 'missing bus stop' complaint.",
-     "kind": "Followed up",
-     "projectId": null,
-     "source": {
-      "url": "https://www.freepressjournal.in/mumbai/best-files-missing-bus-stop-complaint-after-andheri-east-shelter-revamp-sparks-permission-row",
-      "title": "BEST Files 'Missing' Bus Stop Complaint After Andheri East Shelter Revamp Sparks Permission Row (Free Press Journal)",
-      "date": "2026-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1538,25 +1577,28 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/best-files-missing-bus-stop-complaint-after-andheri-east-shelter-revamp-sparks-permission-row",
       "title": "BEST Files 'Missing' Bus Stop Complaint ... (Free Press Journal)",
       "date": "2026-11-06"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
      "date": "2026-07-03",
-     "headline": "Work began on gardens and sports facilities under Andheri's Gokhale flyover.",
+     "headline": "Patel announced that work had begun on a garden and sports facilities beneath Andheri's Gokhale flyover.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/andheri-to-get-botanical-garden-skate-park-cricket-turf-under-gokhale-flyover",
       "title": "Andheri To Get Botanical Garden ... (Free Press Journal)",
       "date": "2026-07-03"
-     }
+     },
+     "verified": "2026-11-17"
     },
     {
-     "date": "2025-05-16",
-     "headline": "BCAS revoked Celebi Airport Services' security clearance after Patel led a protest at Mumbai airport demanding cancellation of the Turkish firm's contract.",
+     "date": "2025-05-15",
+     "headline": "BCAS revoked Celebi Airport Services' security clearance citing national security, days after Patel led a protest at Mumbai airport demanding cancellation of the Turkish firm's contract.",
      "source": {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bcas-revokes-security-clearance-of-turkish-company-celebi-citing-national-security-after-protest-by-andheri-east-mla-murji-patel",
       "title": "BCAS Revokes Security Clearance Of Turkish Company Celebi ... After Protest By Andheri East MLA Murji Patel (Free Press Journal)",
       "date": "2025-05-16"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1621,7 +1663,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-airport-slum-redevelopment-awaits-adani-groups-green-light-after-regulatory-approvals-bjp-mla-parag-alwani",
       "title": "'Mumbai Airport Slum Redevelopment Awaits Adani Group's Green Light After Regulatory Approvals': BJP MLA Parag Alwani (Free Press Journal)",
       "date": "2025-06-14"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1632,7 +1675,8 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bmc-transfers-assistant-commissioner-after-massive-jain-protest-over-90-year-old-vile-parle-temple-demolition",
       "title": "BMC Transfers Assistant Commissioner After Massive Jain Protest Over 90-Year-Old Vile Parle Temple Demolition (Free Press Journal)",
       "date": "2025-04-19"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1688,7 +1732,28 @@ window.PUBLIC_WORKS_MLA = {
    },
    "roles": [],
    "work": [],
-   "news": []
+   "news": [
+    {
+     "date": "2026-03-07",
+     "headline": "Bombay HC (Justice Somasekhar Sunderesan) dismissed Congress candidate Mohammad Arif Lalan Khan's election petition against Lande's 2024 win for not disclosing a cause of action; the court said this does not bar any probe of alleged election-law violations.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bombay-hc-dismisses-petition-challenging-shiv-sena-mla-dilip-landes-chandivali-election-victory",
+      "title": "Bombay HC Dismisses Petition Challenging Shiv Sena MLA Dilip Lande's Chandivali Election Victory (Free Press Journal)",
+      "date": "2026-03-08"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-10",
+     "headline": "Distributed juicer-mixer grinders to women in ward 158 at an event whose banners cited state and BMC welfare schemes, while urging support for his party's candidate; residents and a citizens' group alleged misuse of public funds, and FPJ could not reach him for comment.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-dilip-lande-returns-with-freebies-ahead-of-bmc-polls-urges-voters-to-support-shiv-sena-candidate-while-distributing-juicer-mixers",
+      "title": "Dilip Lande Returns With Freebies Ahead Of BMC Polls ... (Free Press Journal)",
+      "date": "2025-11-10"
+     },
+     "verified": "2026-11-17"
+    }
+   ]
   },
   "169": {
    "affidavit": {
@@ -1743,26 +1808,28 @@ window.PUBLIC_WORKS_MLA = {
    "roles": [],
    "work": [
     {
-     "date": "2025-12-19",
-     "what": "Marked the start of work on water tanks (over 2 crore litres) and a pipeline connection from Bhandup for hill areas of Ghatkopar West, ending a four-year vow not to cut his hair until the water problem was addressed.",
+     "date": "2025-12-18",
+     "what": "Said work had begun on water tanks of over 2 crore litres for the hill areas of Ghatkopar West and that a pipeline from Bhandup had been connected, ending his four-year vow not to cut his hair.",
      "kind": "Announced",
      "projectId": null,
      "source": {
       "url": "https://newsable.asianetnews.com/india/mumbai-mla-ram-kadams-4year-vow-ends-as-water-crisis-work-begins-articleshow-q9t9rc9",
       "title": "Mumbai MLA Ram Kadam's 4-year vow ends as water crisis work begins (Asianet Newsable)",
       "date": "2025-12-19"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
     {
-     "date": "2025-12-19",
+     "date": "2025-12-18",
      "headline": "Ended a four-year haircut vow as water tank and pipeline work began for Ghatkopar West's hill areas, ahead of BMC polls.",
      "source": {
       "url": "https://newsable.asianetnews.com/india/mumbai-mla-ram-kadams-4year-vow-ends-as-water-crisis-work-begins-articleshow-q9t9rc9",
       "title": "Mumbai MLA Ram Kadam's 4-year vow ends as water crisis work begins (Asianet Newsable)",
       "date": "2025-12-19"
-     }
+     },
+     "verified": "2026-11-17"
     }
    ]
   },
@@ -1815,7 +1882,66 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-10-17",
+     "what": "Wrote to the authorities seeking that the new Vidyavihar East–West bridge be named after Captain Smit Machchhar.",
+     "kind": "Demanded",
+     "projectId": "BMCI-07",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/nana-patekar-or-smit-machchar-row-erupts-over-naming-of-mumbais-newly-built-vidyavihar-bridge",
+      "title": "Nana Patekar Or Smit Machchar? Row Erupts Over Naming Of Mumbai's Newly Built Vidyavihar Bridge (Free Press Journal)",
+      "date": "2026-10-17"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-20",
+     "what": "Joined local residents in a protest against illegal hawkers and traffic problems in Ghatkopar East.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-viral-video-bjp-mla-parag-shah-slaps-autorickshaw-driver-in-ghatkopar-over-violation-of-traffic-rules-congress-reacts",
+      "title": "Mumbai Viral Video: BJP MLA Parag Shah Slaps Autorickshaw Driver In Ghatkopar Over Violation Of Traffic Rules, Congress Reacts (FPJ)",
+      "date": "2025-12-20"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-10-01",
+     "headline": "Shah told ThePrint the family of Ghatkopar pilot Capt Smit Machchhar, injured in an attack on a Flydubai flight, was still waiting to meet him in Saudi Arabia.",
+     "source": {
+      "url": "https://theprint.in/feature/ghatkopar-mla-says-pilot-smit-machchhars-family-is-waiting-to-meet-injured-son/3058727/",
+      "title": "Ghatkopar MLA says pilot Smit Machchhar's family is waiting to meet injured son (ThePrint)",
+      "date": "2026-10-01"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-09-15",
+     "headline": "Shah, who declared over Rs 3,383 crore in assets in his 2024 affidavit, spent several hours in Ghatkopar disguised as a beggar on the advice of Jain guru Namramuni.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-bjp-mla-parag-shah-with-3383-crore-assets-turns-beggar-for-one-day-in-ghatkopar-looks-unrecognisable-know-why-he-did-it-mumbai-news",
+      "title": "Mumbai BJP MLA Parag Shah With ₹3,383 Crore Assets Turns Beggar For One Day In Ghatkopar (FPJ)",
+      "date": "2026-09-15"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-20",
+     "headline": "A viral video showed Shah slapping an autorickshaw driver in Ghatkopar East during a protest about hawkers; Congress criticised him. The report mentions no FIR or police action.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-viral-video-bjp-mla-parag-shah-slaps-autorickshaw-driver-in-ghatkopar-over-violation-of-traffic-rules-congress-reacts",
+      "title": "Mumbai Viral Video: BJP MLA Parag Shah Slaps Autorickshaw Driver In Ghatkopar (FPJ)",
+      "date": "2025-12-20"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "171": {
    "affidavit": {
@@ -1866,7 +1992,78 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-09-26",
+     "what": "Said he would not let trucks carrying garbage from the Deonar dumping ground use GM Link Road through his constituency, citing traffic, accidents, methane and dust, and suggested a creek bridge to send the trucks via Ghatkopar.",
+     "kind": "Demanded",
+     "projectId": "BMCS-16",
+     "source": {
+      "url": "https://theprint.in/india/wont-let-garbage-laden-trucks-from-deonar-dumping-ground-pass-through-my-constituency-sp-mla/3054494/",
+      "title": "Won't let garbage-laden trucks from Deonar dumping ground pass through my constituency: SP MLA (ThePrint/PTI)",
+      "date": "2026-09-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-24",
+     "what": "Protested at Vidhan Bhavan with a mask and AQI banner on Budget Session day two, blaming dumping grounds and bio-waste firms for air pollution in Mankhurd Shivaji Nagar and demanding government action.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mla-abu-asim-azmi-enters-vidhan-bhavan-with-banner-mask-to-protest-rising-air-pollution-in-city",
+      "title": "Mumbai: MLA Abu Asim Azmi Enters Vidhan Bhavan With Banner, Mask to Protest Rising Air Pollution In City (FPJ)",
+      "date": "2026-02-24"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-09-26",
+     "headline": "At a press conference, Azmi demanded that BMC's planned demolition of huts taller than 14 feet from October 1 be stopped.",
+     "source": {
+      "url": "https://www.uniindia.com/west-india/civic-maha-hutments-abu-azmi/193930",
+      "title": "Abu Azmi on demolition of hutments above 14 feet (UNI)",
+      "date": "2026-09-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-17",
+     "headline": "In the BMC elections, AIMIM won seven seats in the Govandi–Mankhurd area that Azmi represents; an SP candidate lost Ward 136 to AIMIM.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-aimim-creates-political-upset-with-clean-sweep-in-govandi-mankhurd-doubling-previous-seats",
+      "title": "BMC Elections 2026 Results: AIMIM Creates Political Upset With Clean Sweep In Govandi-Mankhurd (FPJ)",
+      "date": "2026-01-17"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-10-14",
+     "headline": "A scuffle broke out in Azmi's presence at the opening of an open gym on the Bainganwadi dumping ground in Govandi; police registered cross-FIRs, one naming SP leader Fahad Azmi and one naming a security guard and his associates.",
+     "source": {
+      "url": "https://www.lokmattimes.com/mumbai/mumbai-fight-breaks-out-in-front-of-sp-mla-abu-azmi-during-gym-inauguration-in-govandi-a522/",
+      "title": "Mumbai: Fight Breaks Out in Front of SP MLA Abu Azmi During Gym Inauguration in Govandi (Lokmat Times)",
+      "date": "2025-10-15"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-03-05",
+     "headline": "The Assembly suspended Azmi until the end of the budget session over remarks about Aurangzeb; he said his remarks were distorted and withdrew them.",
+     "source": {
+      "url": "https://www.newsonair.gov.in/sp-mla-abu-azmi-suspended-from-maharashtra-assembly-over-remarks-praising-aurangzeb",
+      "title": "SP MLA Abu Azmi suspended from Maharashtra Assembly over remarks praising Aurangzeb (News On AIR)",
+      "date": "2025-03-05"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": [
+    "Maharashtra state president, Samajwadi Party (party post)"
+   ]
   },
   "172": {
    "affidavit": {
@@ -1917,7 +2114,68 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2025-08-17",
+     "what": "Visited the site of a retaining-wall collapse at New Ashok Nagar, Vashi Naka (Chembur) and directed temporary shelter and basic facilities for affected families.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-rains-retaining-wall-collapse-damages-7-homes-in-chembur-amid-heavy-showers-mla-sana-malik-visits-spot-dramatic-video-of-tragedy-goes-viral",
+      "title": "Mumbai Rains: Retaining Wall Collapse Damages 7 Homes In Chembur Amid Heavy Showers, MLA Sana Malik Visits Spot (FPJ)",
+      "date": "2025-08-18"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-04",
+     "what": "Raised a Calling Attention motion on alleged misuse of the free and reserved beds that charitable hospitals must keep for poor patients, and asked about signage, public access to the bed portal and real-time vacancy updates.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mla-sana-malik-shaikh-flags-misuse-of-free-beds-in-charitable-hospitals-seeks-govt-accountability",
+      "title": "Mumbai: MLA Sana Malik-Shaikh Flags Misuse Of Free Beds In Charitable Hospitals, Seeks Govt Accountability (FPJ)",
+      "date": "2025-07-04"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2024-12-18",
+     "what": "In her first Assembly speech, demanded that ready-mix concrete plants in Deonar (including JSW RMC and Relcon RMC) be sealed until their licences are reviewed.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/maharashtra-mla-sana-malik-calls-for-closure-of-deonar-rmc-plants-in-first-assembly-speech",
+      "title": "Maharashtra: MLA Sana Malik Calls For Closure Of Deonar RMC Plants In First Assembly Speech (FPJ)",
+      "date": "2024-12-19"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-06-26",
+     "headline": "After her Assembly remarks on polygamy drew criticism, Malik said lawmakers should cite the Quran rather than Pakistan when framing such rules; NCP spokesperson Sunil Tatkare said the party had nothing to do with her statement.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/laws-in-india-should-not-be-framed-with-reference-to-pakistan-ncp-mla-sana-malik-over-polygamy-row",
+      "title": "'Laws in India Should Not Be Framed With Reference to Pakistan': NCP MLA Sana Malik Over Polygamy Row (FPJ)",
+      "date": "2026-06-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-28",
+     "headline": "Malik confirmed that NCP (Ajit Pawar) would contest the BMC elections alone as the party released its first list of 37 candidates.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-ajit-pawar-led-ncp-to-go-solo-in-mumbai-civic-polls-releases-1st-list-of-37-candidates-3-members-of-nawab-maliks-family-included",
+      "title": "BMC Elections 2026: Ajit Pawar-Led NCP To Go Solo In Mumbai Civic Polls, Releases 1st List of 37 Candidates (FPJ)",
+      "date": "2025-12-29"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "173": {
    "affidavit": {
@@ -1968,7 +2226,46 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-10-05",
+     "what": "Inaugurated the Mumbai District Central Cooperative Bank's new branch at Anushakti Nagar and asked for another branch at Ghatla village.",
+     "kind": "Inaugurated",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-bank-to-launch-special-scheme-for-fishermen-workers-pravin-darekar-sets-25000-crore-business-target",
+      "title": "Mumbai Bank To Launch Special Scheme For Fishermen, Workers; Pravin Darekar Sets ₹25,000-Crore Business Target (FPJ)",
+      "date": "2026-10-06"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-01",
+     "what": "Raised in the Assembly a tree fall in Chembur that killed an 11-year-old on a school bus, saying he had repeatedly asked BMC officials for precautions without result.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://theprint.in/india/mumbai-school-bus-tragedy-figures-in-maharashtra-assembly-members-slam-bmc/2974550/",
+      "title": "Mumbai school bus tragedy figures in Maharashtra assembly; members slam BMC (ThePrint/PTI)",
+      "date": "2026-07-01"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2025-12-21",
+     "headline": "A special court acquitted Kate, his wife and 14 others in a case over a November 2009 scuffle with BMC officials during a water-shortage protest in Chembur.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-special-court-acquits-mla-tukaram-kate-wife-others-in-2009-chembur-water-crisis-scuffle-case",
+      "title": "Mumbai: Special Court Acquits MLA Tukaram Kate, Wife, & Others In 2009 Chembur Water Crisis Scuffle Case (FPJ)",
+      "date": "2025-12-21"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "174": {
    "affidavit": {
@@ -2019,7 +2316,31 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [],
+   "news": [
+    {
+     "date": "2026-08-26",
+     "headline": "Kudalkar attended the opening of SRV Hospitals' robotic joint-replacement centre in Chembur, a private hospital.",
+     "source": {
+      "url": "https://www.freepressjournal.in/tech/srv-hospitals-launches-robotic-assisted-joint-replacement-centre-in-chembur",
+      "title": "SRV Hospitals Launches Robotic-Assisted Joint Replacement Centre In Chembur (FPJ)",
+      "date": "2026-08-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-17",
+     "headline": "On a resident's complaint, a special court directed the ACB to register a case and investigate alleged unauthorised construction of a hall on MHADA amenity/garden land; the court called it prima facie unauthorised but made no finding of guilt.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-special-court-orders-probe-against-shiv-sena-mla-mangesh-kudalkar-over-unauthorised-construction-on-mhada-land",
+      "title": "Mumbai: Special Court Orders Probe Against Shiv Sena MLA Mangesh Kudalkar Over Unauthorised Construction On MHADA Land (FPJ)",
+      "date": "2025-12-18"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "175": {
    "affidavit": {
@@ -2070,7 +2391,21 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [],
+   "news": [
+    {
+     "date": "2026-06-22",
+     "headline": "Potnis was one of four Shiv Sena (UBT) MLAs absent from a meeting Uddhav Thackeray called after MPs left the party; the report says no official reason was available.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/shiv-sena-ubt-chief-uddhav-thackeray-calls-mlas-meet-after-mp-exodus-four-absentees-fuel-fresh-defection-speculation",
+      "title": "Shiv Sena (UBT) Chief Uddhav Thackeray Calls MLAs Meet After MP Exodus; Four Absentees Fuel Fresh Defection Speculation (FPJ)",
+      "date": "2026-06-22"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "176": {
    "affidavit": {
@@ -2121,7 +2456,71 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-06-10",
+     "what": "Wrote to the BMC commissioner seeking a citywide ban on private construction on Sundays and public holidays, citing noise.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-shiv-sena-ubt-mla-varun-sardesai-seeks-ban-on-sunday-and-holiday-construction-work-stakeholders-warn-of-project-delays-and-higher-costs",
+      "title": "Mumbai: Shiv Sena UBT MLA Varun Sardesai Seeks Ban On Sunday And Holiday Construction Work (FPJ)",
+      "date": "2026-06-12"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-12",
+     "what": "With other MLAs, raised the exclusion of first-floor slum occupants from SRA housing; the government said there is currently no provision for them.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://navbharatlive.com/maharashtra/mumbai/maharashtra-sra-policy-first-floor-slum-rehabilitation-rule-1605626.html",
+      "title": "SRA first-floor slum rehabilitation (Navbharat Live)",
+      "date": "2026-03-13"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-15",
+     "what": "Raised the stalled redevelopment of 9,483 shanties on 42 acres of defence land in Bandra East, pending since 2017, and sought a time-bound answer on the land transfer.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/shiv-sena-ubt-slams-govt-over-delay-in-bandra-defence-land-clearance-tensions-erupt-in-assembly",
+      "title": "Shiv Sena (UBT) Slams Govt Over Delay In Bandra Defence Land Clearance; Tensions Erupt In Assembly (FPJ)",
+      "date": "2025-07-16"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-14",
+     "what": "Raised drug peddling in the Navpada, Golibar, Bharat Nagar and Behrampada slums and asked for beat chowkies; the CM announced a special police drive in those areas.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/video-cm-devendra-fadnavis-announces-special-police-drive-in-bandra-east-slums-to-curb-drug-menace-mcoca-amended-to-cover-narcotics-offences",
+      "title": "VIDEO: CM Devendra Fadnavis Announces Special Police Drive In Bandra East Slums To Curb Drug Menace (FPJ)",
+      "date": "2025-07-14"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-03-20",
+     "what": "At a meeting with the Transport Minister, raised passenger complaints of overcharging and refusals by auto and taxi drivers at Bandra, Khar and Andheri stations.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-dedicated-whatsapp-helpline-soon-for-complaints-against-errant-auto-taxi-drivers",
+      "title": "Mumbai News: Dedicated WhatsApp Helpline Soon For Complaints Against Errant Auto & Taxi Drivers (FPJ)",
+      "date": "2025-03-20"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [],
+   "roles": []
   },
   "177": {
    "affidavit": {
@@ -2155,7 +2554,71 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-10-11",
+     "what": "Inaugurated a new pedestrian corridor on LK Mehta Marg, the first completed work under the Bandra Bay beautification initiative with Godrej Properties and RC Group.",
+     "kind": "Inaugurated",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/business/godrej-properties-rc-group-inaugurate-new-pedestrian-corridor-in-bandra-bay-transformation",
+      "title": "Godrej Properties, RC Group Inaugurate New Pedestrian Corridor In Bandra Bay Transformation (FPJ)",
+      "date": "2026-10-12"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-26",
+     "what": "Demanded the Bandra Fort connector and sought its inclusion in the Versova–Bandra Sea Link project; the state approved it by a GR dated 28 July 2026 at Rs 1,722.40 crore.",
+     "kind": "Demanded",
+     "projectId": "MUM-014",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bandra-fort-connector-gets-maharashtra-approval-at-1722-crore-to-ease-sea-link-traffic-congestion",
+      "title": "Bandra Fort Connector Gets Maharashtra Approval At ₹1,722 Crore To Ease Sea Link Traffic Congestion (FPJ)",
+      "date": "2026-08-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-09-11",
+     "what": "Wrote to CM Devendra Fadnavis proposing a nursing college on vacant land at Bhabha Hospital, Bandra West; BMC later proposed building it under PPP.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-proposes-land-lease-at-bandras-bhabha-hospital-for-first-ppp-nursing-college-annual-rent-fixed-at-2350",
+      "title": "BMC Proposes Land Lease At Bandra's Bhabha Hospital For First PPP Nursing College; Annual Rent Fixed At ₹2,350 (FPJ)",
+      "date": "2026-11-16"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-11-17",
+     "headline": "As Cultural Affairs Minister, Shelar inaugurated the 'Shivshastra Shauryagatha' exhibition at CSMVS, which includes the Wagh Nakh (reported 17 Nov 2026 as opened the previous week).",
+     "source": {
+      "url": "https://freepressjournal.in/mumbai/mumbai-shivaji-maharajs-historic-wagh-nakh-to-be-displayed-at-csmvs-museum-ashish-shelar-inaugurates-exhibition",
+      "title": "Mumbai: Shivaji Maharaj's Historic Wagh Nakh To Be Displayed At CSMVS Museum; Ashish Shelar Inaugurates Exhibition (FPJ)",
+      "date": "2026-11-17"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-20",
+     "headline": "Shelar denied Shiv Sena (UBT) claims that the Neville D'Souza ground plot in Bandra is being sold, and said he would comment further after the High Court case.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-minister-ashish-shelar-hits-back-at-shiv-sena-ubt-over-bandras-neville-dsouza-ground-redevelopment-row",
+      "title": "Mumbai: Minister Ashish Shelar Hits Back At Shiv Sena UBT Over Bandra's Neville D'Souza Ground Redevelopment Row (FPJ)",
+      "date": "2026-08-22"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": [
+    "Cabinet Minister, Electronics, Information Technology, Artificial Intelligence and Cultural Affairs, Govt of Maharashtra",
+    "Guardian Minister, Mumbai Suburban district (appointed Jan 2025; Mangal Prabhat Lodha is co-guardian minister)"
+   ]
   },
   "178": {
    "affidavit": {
@@ -2206,7 +2669,58 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-05-04",
+     "what": "Was among the leaders who met DRP/SRA CEO Dr Mahendra Kalyankar after a Dharavi Bachao Andolan march and submitted a memorandum.",
+     "kind": "Demanded",
+     "projectId": "MUM-015",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/dharavi-redevelopment-project-drp-ceo-holds-talks-with-dba-leaders-plans-sector-wise-outreach-and-camps-for-pending-cases",
+      "title": "Dharavi Redevelopment Project: DRP CEO Holds Talks With DBA Leaders, Plans Sector-Wise Outreach And Camps For Pending Cases (FPJ)",
+      "date": "2026-05-04"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-27",
+     "what": "Raised unpaid wages of workers at National Textile Corporation mills in Mumbai; the Labour Minister made announcements on the issue in the House.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://navbharatlive.com/maharashtra/mumbai/ntc-mill-workers-pending-wages-gig-workers-social-security-maharashtra-1588582.html",
+      "title": "NTC mill workers' pending wages, gig workers' social security (Navbharat Live)",
+      "date": "2026-02-28"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-03-26",
+     "what": "After a gas-cylinder truck blast in Dharavi, questioned the traffic police, BMC and state about illegal parking of cylinder trucks and demanded a full inquiry and action against officials.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/dharavi-cylinder-blast-bmc-under-fire-for-ignoring-illegal-gas-truck-parking",
+      "title": "Dharavi Gas Cylinder Blast: Activists Blame BMC For Ignoring Repeated Complaints On Illegal Parking (FPJ)",
+      "date": "2025-03-26"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2025-11-24",
+     "headline": "Gaikwad said the opposition would fight the reported 11 lakh duplicate entries in the BMC draft voter list and asked the SEC to explain them.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-denies-aaditya-thackerays-anti-national-allegations-over-delay-in-draft-voters-list-upload",
+      "title": "BMC Denies Aaditya Thackeray's 'Anti-National' Allegations Over Delay In Draft Voters List Upload (FPJ)",
+      "date": "2025-11-24"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "179": {
    "affidavit": {
@@ -2257,7 +2771,31 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [],
+   "news": [
+    {
+     "date": "2025-08-18",
+     "headline": "The Bombay High Court dismissed Congress candidate Ganesh Kumar Yadav's election petition against Selvan's 2024 win as vague and lacking material facts.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/maharashtra-assembly-elections-2024-bombay-hc-dismisses-petition-against-bjp-mla-captain-r-tamil-selvan-upholds-sion-koliwada-victory",
+      "title": "Maharashtra Assembly Elections 2024: Bombay HC Dismisses Petition Against BJP MLA Captain R Tamil Selvan, Upholds Sion-Koliwada Victory (FPJ)",
+      "date": "2025-08-20"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-03-10",
+     "headline": "FPJ reported that Matunga residents began an online campaign against Selvan, saying he had stopped a BMC demolition of encroaching flower stalls on Telang and Bhandarkar Roads in Matunga, outside his Sion Koliwada constituency.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-matunga-residents-launch-online-campaign-against-bjp-mla-tamil-selvan-for-blocking-bmcs-flower-stall-demolition-drive",
+      "title": "Mumbai News: Matunga Residents Launch Online Campaign Against BJP MLA Tamil Selvan For Blocking BMC's Flower Stall Demolition Drive (FPJ)",
+      "date": "2025-03-10"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "180": {
    "affidavit": {
@@ -2308,7 +2846,34 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2025-04-25",
+     "what": "During residents' protest over the Elphinstone bridge closure, confirmed that the CM's office had ordered a pause in work until a meeting the following Monday.",
+     "kind": "Followed up",
+     "projectId": "MUM-013",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-residents-protest-against-demolition-of-125-year-old-elphinstone-mla-confirms-delay-until-monday-video",
+      "title": "Mumbai News: Residents Protest Against Demolition Of 125-Year-Old Elphinstone Bridge; MLA Confirms Delay Until Monday (FPJ)",
+      "date": "2025-04-26"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2025-03-10",
+     "headline": "On the Matunga flower-stall demolition, Kolambkar said the stalls could be shifted in the interest of pedestrians.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-matunga-residents-launch-online-campaign-against-bjp-mla-tamil-selvan-for-blocking-bmcs-flower-stall-demolition-drive",
+      "title": "Mumbai News: Matunga Residents Launch Online Campaign Against BJP MLA Tamil Selvan (FPJ)",
+      "date": "2025-03-10"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "181": {
    "affidavit": {
@@ -2359,7 +2924,31 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [],
+   "news": [
+    {
+     "date": "2026-01-16",
+     "headline": "FPJ credited Sawant's campaigning in the Dadar, Prabhadevi and Mahim wards as Shiv Sena (UBT) won Wards 191 and 194 from the Sarvankar family.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-sarvankar-family-suffers-double-blow-as-thackeray-sena-reclaims-dadar-stronghold",
+      "title": "BMC Elections 2026 Results: Sarvankar Family Suffers Double Blow As Thackeray Sena Reclaims Dadar Stronghold (FPJ)",
+      "date": "2026-01-16"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-02-28",
+     "headline": "The Bombay HC asked Sada Sarvankar to serve notice on respondents in his election petition alleging that Sawant did not disclose four to five criminal cases in his affidavit, and listed it for further hearing after three weeks.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bombay-hc-to-hear-sada-sarvankars-plea-challenging-mahim-mla-mahesh-sawants-2024-maharashtra-assembly-election-win-in-three-weeks",
+      "title": "Bombay HC To Hear Sada Sarvankar's Plea Challenging Mahim MLA Mahesh Sawant's 2024 Maharashtra Assembly Election Win In Three Weeks (FPJ)",
+      "date": "2025-03-01"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "182": {
    "affidavit": {
@@ -2410,7 +2999,64 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-10-29",
+     "what": "Wrote to CM Fadnavis asking him to scrap the Maritime Board plan for advertisement barges off Juhu, Lotus Jetty and the Worli Sea Link jetty, and called for a citywide policy to limit LED hoardings.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/aaditya-thackeray-urges-maharashtra-cm-devendra-fadnavis-to-scrap-floating-hoardings-plan-in-mumbais-sea-calls-it-ridiculous-possibly-corrupt-idea-mumbai-news",
+      "title": "Aaditya Thackeray Urges Maharashtra CM Devendra Fadnavis To Scrap Floating Hoardings Plan In Mumbai's Sea (FPJ)",
+      "date": "2026-10-29"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-10-08",
+     "headline": "At a press conference, Thackeray alleged 24,000 bogus voters in Worli and lakhs of names missing from rolls after the SIR, and sought the CEC's resignation; the claims are unverified.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/aaditya-thackeray-alleges-24000-bogus-voters-in-worli-lakhs-of-names-missing-from-electoral-rolls-questions-election-commission",
+      "title": "Aaditya Thackeray Alleges 24,000 Bogus Voters In Worli, Lakhs Of Names Missing From Electoral Rolls (FPJ)",
+      "date": "2026-10-09"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-14",
+     "headline": "After a parapet wall on the Metro-4 line collapsed, Thackeray asked whether the contractor had been blacklisted, noting an earlier wall collapse and flooding at a Metro-3 site.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/life-has-no-value-under-bjp-regime-aaditya-thackeray-slams-govt-after-mumbai-metro-4-slab-falls-on-vehicles-in-mulund-leaving-1-dead",
+      "title": "Aaditya Thackeray Slams Govt After Mumbai Metro 4 Slab Falls On Vehicles In Mulund (FPJ)",
+      "date": "2026-02-14"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-24",
+     "headline": "BMC denied Thackeray's allegation that the draft voter list for the BMC polls was deliberately uploaded late, saying it was published on November 20 per the SEC schedule.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-denies-aaditya-thackerays-anti-national-allegations-over-delay-in-draft-voters-list-upload",
+      "title": "BMC Denies Aaditya Thackeray's 'Anti-National' Allegations Over Delay In Draft Voters List Upload (FPJ)",
+      "date": "2025-11-24"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-15",
+     "headline": "In the Assembly debate on Bandra East defence-land slums, Thackeray cited a written departmental reply contradicting the minister's account and raised a possible privilege motion.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/shiv-sena-ubt-slams-govt-over-delay-in-bandra-defence-land-clearance-tensions-erupt-in-assembly",
+      "title": "Shiv Sena (UBT) Slams Govt Over Delay In Bandra Defence Land Clearance; Tensions Erupt In Assembly (FPJ)",
+      "date": "2025-07-16"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": []
   },
   "183": {
    "affidavit": {
@@ -2461,7 +3107,23 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2025-04-29",
+     "what": "Led a delegation to MMRDA opposing cash compensation for 100+ Shivdi slum families displaced by the Sewri–Worli connector and demanding in-situ homes under SRA 33(10).",
+     "kind": "Demanded",
+     "projectId": "MUM-013",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/shiv-sena-ubt-slams-mmrdas-compensation-plan-demands-in-situ-homes-for-slum-dwellers-affected-by-sewri-worli-connector",
+      "title": "Shiv Sena UBT Slams MMRDA's Compensation Plan, Demands In-Situ Homes For Slum Dwellers Affected By Sewri-Worli Connector (FPJ)",
+      "date": "2025-04-29"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [],
+   "roles": []
   },
   "184": {
    "affidavit": {
@@ -2512,7 +3174,10 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [],
+   "news": [],
+   "roles": []
   },
   "185": {
    "affidavit": {
@@ -2546,7 +3211,70 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-10-01",
+     "what": "Inspected Banganga Tank in Walkeshwar with BMC ward officials after fish deaths and directed BMC on cleaning, waste control, more oxygen pumps and ten artificial tanks for Pitru Paksha rituals.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/cabinet-minister-mangal-prabhat-lodha-inspects-banganga-after-fish-deaths-urges-eco-friendly-pind-daan-during-pitru-paksha",
+      "title": "Cabinet Minister Mangal Prabhat Lodha Inspects Banganga After Fish Deaths, Urges Eco-Friendly Pind Daan During Pitru Paksha (FPJ)",
+      "date": "2026-10-05"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-20",
+     "what": "Announced a year-long 'Mumbai Against Drugs' campaign from May 1 after an overdose at a NESCO Goregaon concert, at a meeting at the Bandra Collector's Office.",
+     "kind": "Announced",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/minister-mangal-prabhat-lodha-announces-mumbai-against-drugs-campaign-from-may-1-after-goregaon-overdose-tragedy",
+      "title": "Minister Mangal Prabhat Lodha Announces 'Mumbai Against Drugs' Campaign From May 1 After Goregaon Overdose Tragedy (FPJ)",
+      "date": "2026-04-21"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-11-08",
+     "headline": "Lodha celebrated Diwali with Adivasi families at Khambancha Pada, Aarey Colony, at an event where the Lodha Foundation and Vanvasi Kalyan Ashram distributed gifts.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/minister-mangal-prabhat-lodha-celebrates-diwali-with-adivasi-families-in-aarey-colony",
+      "title": "Minister Mangal Prabhat Lodha Celebrates Diwali With Adivasi Families In Aarey Colony (FPJ)",
+      "date": "2026-11-08"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-26",
+     "headline": "At the CII Global Education Conclave, Lodha invited industry to upgrade government ITIs through PPPs.",
+     "source": {
+      "url": "https://www.freepressjournal.in/business/mangal-prabhat-lodha-calls-for-iti-modernisation-urges-industry-to-create-more-jobs-for-youth",
+      "title": "Mangal Prabhat Lodha Calls For ITI Modernisation, Urges Industry To Create More Jobs For Youth (FPJ)",
+      "date": "2026-10-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-23",
+     "headline": "Lodha was named head of a six-member MMR anti-drug committee that includes the Police Commissioner and the Mumbai City and Suburban collectors.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/maharashtra-minister-mangal-prabhat-lodha-to-head-6-member-anti-drug-panel-in-mmr",
+      "title": "Maharashtra Minister Mangal Prabhat Lodha To Head 6-Member Anti-Drug Panel In MMR (FPJ)",
+      "date": "2026-05-23"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": [
+    "Cabinet Minister, Skill Development (Skill, Employment, Entrepreneurship & Innovation), Govt of Maharashtra",
+    "Co-Guardian Minister, Mumbai Suburban district (appointed Jan 2025, alongside Guardian Minister Ashish Shelar)",
+    "Head, six-member anti-drug committee for MMR (May 2026)"
+   ]
   },
   "186": {
    "affidavit": {
@@ -2597,7 +3325,96 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-11-09",
+     "what": "Wrote to the Municipal Commissioner seeking an independent inquiry into a reported 45-minute fire brigade delay at the Dongri fire that gutted about 500 units, the Chief Fire Officer's suspension and compensation.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-congress-mla-amin-patel-demands-probe-into-alleged-45-minute-delay-in-dongri-fire-response-seeks-chief-fire-officers-suspension",
+      "title": "Mumbai: Congress MLA Amin Patel Demands Probe Into Alleged 45-Minute Delay In Dongri Fire Response, Seeks Chief Fire Officer's Suspension (FPJ)",
+      "date": "2026-11-09"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-09",
+     "what": "Asked the Chief Electoral Officer to extend SIR hearings to Oct 31 after 95,538 Mumbadevi voters (about 39%) were flagged, citing unavailable BLOs.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-congress-mla-amin-patel-seeks-sir-hearing-deadline-extension-to-october-31-as-95538-mumbadevi-voters-flagged",
+      "title": "Mumbai Congress MLA Amin Patel Seeks SIR Hearing Deadline Extension To October 31 As 95,538 Mumbadevi Voters Flagged (FPJ)",
+      "date": "2026-10-10"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-28",
+     "what": "Wrote to the Municipal Commissioner asking that voters living in transit camps during building redevelopment be kept on the rolls at their original addresses.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-congress-mla-amin-patel-urges-bmc-to-protect-voting-rights-of-transit-residents-during-electoral-roll-revision",
+      "title": "Mumbai: Congress MLA Amin Patel Urges BMC To Protect Voting Rights Of Transit Residents During Electoral Roll Revision (FPJ)",
+      "date": "2026-07-29"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-27",
+     "what": "After a meeting he held with the Zone I deputy commissioner and officials of wards A, B and E, asked the BMC chief to call a joint meeting to fix delays in birth-certificate corrections in South Mumbai wards A to E.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/congress-mla-amin-patel-seeks-bmc-chiefs-intervention-over-delays-in-birth-certificate-corrections",
+      "title": "Congress MLA Amin Patel Seeks BMC Chief's Intervention Over Delays In Birth Certificate Corrections (FPJ)",
+      "date": "2026-07-28"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-20",
+     "what": "Demanded an inquiry into BMC's PPP policy for handing municipal school plots to private operators, alleging lack of transparency.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/education/congress-mla-amin-patel-demands-inquiry-into-bmcs-ppp-policy-for-municipal-school-plots-alleges-lack-of-transparency",
+      "title": "Congress MLA Amin Patel Demands Inquiry Into BMC's PPP Policy For Municipal School Plots, Alleges Lack Of Transparency (FPJ)",
+      "date": "2026-05-21"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-11",
+     "what": "Raised water shortages in Mumbadevi, Byculla, Colaba and Govandi in the Assembly and urged fast-tracking of the Gargai dam.",
+     "kind": "Raised in Assembly",
+     "projectId": "MUM-026",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-water-crisis-warning-congress-mla-amin-patel-flags-shortages-despite-full-lakes-urges-fast-tracking-of-gargai-dam-project-video",
+      "title": "Mumbai Water Crisis Warning: Congress MLA Amin Patel Flags Shortages Despite Full Lakes, Urges Fast-Tracking Of Gargai Dam Project (FPJ)",
+      "date": "2025-12-11"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2025-03-01",
+     "headline": "Congress appointed Patel its deputy leader in the Maharashtra Assembly.",
+     "source": {
+      "url": "https://theprint.in/india/amin-patel-appointed-as-congresss-deputy-leader-in-maharashtra-assembly/2518538/",
+      "title": "Amin Patel appointed as Congress's deputy leader in Maharashtra assembly (ThePrint)",
+      "date": "2025-03-01"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": [
+    "Deputy Leader, Congress Legislature Party, Maharashtra Assembly (appointed Mar 2025)"
+   ]
   },
   "187": {
    "affidavit": {
@@ -2631,8 +3448,60 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-08-25"
      }
     ]
-   }
+   },
+   "work": [
+    {
+     "date": "2026-10-25",
+     "what": "According to BJP corporator Makarand Narwekar (his brother), BMC's Rs 2.28 crore contract for 91 uniform hawker stalls on Colaba Causeway is fully funded from DPDC funds secured through Narwekar's efforts.",
+     "kind": "Funded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-awards-228-crore-contract-for-91-uniform-hawker-stalls-at-colaba-causeway-to-ease-pedestrian-movement",
+      "title": "BMC Awards ₹2.28 Crore Contract For 91 Uniform Hawker Stalls At Colaba Causeway To Ease Pedestrian Movement (FPJ)",
+      "date": "2026-10-25"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-12",
+     "what": "Met the Clean Heritage Colaba Residents' Association on hawkers, double parking and emergency access on Colaba Causeway, promised priority action and a site visit, and had written to BEST about a bus stand and route.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-colaba-residents-flag-hawkers-double-parking-and-emergency-access-concerns-at-meeting-with-mla-rahul-narwekar",
+      "title": "Mumbai: Colaba Residents Flag Hawkers, Double Parking And Emergency Access Concerns At Meeting With MLA Rahul Narwekar (FPJ)",
+      "date": "2026-10-13"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-01-05",
+     "headline": "The State Election Commissioner said no complaint had been officially registered against Narwekar over allegations that opposition candidates were blocked from filing nominations in Colaba Wards 225–227, where his relatives were contesting; a complaint against the returning officer was still under consideration.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/colaba-nomination-row-sec-clears-rahul-narwekar-action-on-ro-yet-to-be-decided",
+      "title": "Colaba Nomination Row: SEC Clears Rahul Narwekar, Action On RO Yet To Be Decided (FPJ)",
+      "date": "2026-01-06"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-26",
+     "headline": "On the 17th anniversary of 26/11, Speaker Narwekar called for global unity against terrorism, drawing parallels with the 7 October attack in Israel and Pahalgam.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/2611-mumbai-attack-17th-anniversary-maha-assembly-speaker-rahul-narvekar-calls-for-global-unity-against-terrorism",
+      "title": "26/11 Mumbai Attack 17th Anniversary: Maha Assembly Speaker Rahul Narvekar Calls For Global Unity Against Terrorism (FPJ)",
+      "date": "2025-11-26"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "roles": [
+    "Speaker, Maharashtra Legislative Assembly"
+   ]
   }
  },
- "compiled": "2026-11-17"
+ "compiled": "2026-11-17",
+ "workVerified": "2026-11-17"
 };

@@ -4,8 +4,8 @@ window.PUBLIC_WORKS_DATA = {
   meta: {
     title: "Mumbai Public Works",
     subtitle: "Government projects in Mumbai: status, cost, who funds them, and the MLAs for each area",
-    lastUpdated: "2026-11-16",
-    notice: "Compiled from news reports and official releases up to November 2026. Each project links its sources. Verify before citing, and send corrections.",
+    lastUpdated: "2026-11-17",
+    notice: "Compiled from official records and news reports up to 17 November 2026. Claims about named people and companies were independently re-checked. Every item links its source; send corrections.",
     sourceNote: "Projects are compiled from official releases, lender documents and news reports up to November 2026; every project links its sources. MLAs are from the November 2024 Maharashtra Assembly election, checked against the 15th Assembly member list. Ward officers are from BMC\u2019s published list (July 2026) and later transfer reports. Tenders are pulled from the state e-tender portal.",
     sources: [
       { name: "2024 Maharashtra Legislative Assembly election", url: "https://en.wikipedia.org/wiki/2024_Maharashtra_Legislative_Assembly_election" },
