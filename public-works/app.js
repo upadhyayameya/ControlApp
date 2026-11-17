@@ -647,6 +647,11 @@
     "Cleared": { sev: "--st-completed", note: "Acquitted, quashed, lifted or closed" },
   };
   var KIND_ORDER = Object.keys(KINDS);
+  function casePill(k) {
+    var red = /^(Conviction|Chargesheet|Arrest)$/i, green = /acquittal|discharge|quashed|set aside|dismissed/i;
+    var col = red.test(k) ? "--st-stalled" : green.test(k) ? "--st-completed" : "--st-delayed";
+    return '<span class="pill" style="color:var(' + col + ')">' + esc(k) + "</span>";
+  }
   function kindPill(k) {
     var c = KINDS[k] || KINDS.Allegation;
     return '<span class="pill" style="color:var(' + c.sev + ')" data-tip="' + esc(c.note) + '">' + esc(k) + "</span>";
@@ -794,7 +799,11 @@
       '<p style="margin:0 0 10px;font-size:.88rem" class="muted">What the candidate declared under oath (Form 26) when filing nomination, as compiled by ADR on MyNeta. A pending case is an accusation a court has not decided. Some entries are writ petitions or other proceedings, not police cases; the detail below lists them as ADR does.</p>' +
       (aff ? '<dl class="facts-list"><dt>Cases declared pending</dt><dd>' + (aff.pendingCases != null ? aff.pendingCases : "—") + "</dd><dt>Convictions declared</dt><dd>" + (aff.convictedCases != null ? aff.convictedCases : "—") + "</dd><dt>Total assets</dt><dd>" + (aff.totalAssetsCr != null ? crore(aff.totalAssetsCr) : "—") + "</dd><dt>Liabilities</dt><dd>" + (aff.liabilitiesCr != null ? crore(aff.liabilitiesCr) : "—") + "</dd>" + (aff.age ? "<dt>Age at election</dt><dd>" + aff.age + "</dd>" : "") + (aff.education ? "<dt>Education</dt><dd>" + esc(aff.education) + "</dd>" : "") + "<dt>Source</dt><dd>" + (safeUrl(aff.mynetaUrl) ? '<a href="' + esc(safeUrl(aff.mynetaUrl)) + '" target="_blank" rel="noopener">MyNeta affidavit summary (ADR)</a>' : "—") + "</dd></dl>" +
         (aff.sections || aff.detail ? "<details><summary>Case detail as listed by ADR</summary>" + (aff.sections ? '<p style="font-size:.85rem;margin:6px 0">' + esc(aff.sections) + "</p>" : "") + (aff.detail ? '<p style="font-size:.85rem;margin:6px 0">' + esc(aff.detail) + "</p>" : "") + "</details>" : "") +
-        '<p class="axis-note">Cases filed after the November 2024 election are not yet covered here.</p>'
+        (aff.laterChecked ? '<h4 style="margin:16px 0 8px">Since the election</h4>' + ((aff.laterCases || []).length ? '<ol class="events">' + aff.laterCases.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (c) {
+          return '<li><div class="ev-head">' + casePill(c.kind) + '<span class="ev-date">' + esc(fmtDate(c.date)) + "</span>" + (c.status ? '<span class="muted">· ' + esc(c.status) + "</span>" : "") + "</div><div>" + esc(c.summary) + '</div><div class="sub">' + srcLinks(c.sources) + (c.verified ? " · source re-checked " + esc(fmtDate(c.verified)) : "") + "</div></li>";
+        }).join("") + "</ol>" : '<p class="muted" style="margin:0;font-size:.9rem">None found.</p>') +
+          '<p class="axis-note">Legal matters involving the MLA personally since 23 Nov 2024 (FIRs naming them, chargesheets, court orders, acquittals, election petitions), searched the same way for all 36 MLAs and re-checked on ' + esc(fmtDate(aff.laterChecked)) + ". An FIR is an accusation, not a finding.</p>"
+          : '<p class="axis-note">Cases filed after the November 2024 election are not yet covered here.</p>')
         : '<p class="muted" style="margin:0">Affidavit data not loaded.</p>') + "</section></div>" +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">In ' + esc(m.constituency) + '</div><h3>Projects in this constituency</h3></div><p>The MLA represents the area; the agency on each project builds it.</p></div>' +
       (ps.length ? '<div class="cards">' + sortList(ps).map(card).join("") + "</div>" : '<p class="muted" style="margin:0">No mapped projects yet.</p>') + "</section>";
