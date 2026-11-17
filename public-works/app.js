@@ -599,7 +599,7 @@
       return '<li><div class="ev-head">' + kindPill(e.kind) + '<span class="ev-date">' + esc(fmtDate(e.date)) + "</span>" + (e.scope ? '<span class="muted">' + esc(e.scope) + "</span>" : "") + (e.status ? '<span class="muted">· status: ' + esc(e.status) + "</span>" : "") + "</div>" +
         "<div>" + esc(e.summary) + (e.by ? ' <span class="muted">(' + esc(e.by) + ")</span>" : "") + "</div>" +
         (e.people && e.people.length ? '<div class="sub">Named: ' + esc(e.people.join("; ")) + "</div>" : "") +
-        '<div class="sub">' + srcLinks(e.sources) + "</div></li>";
+        '<div class="sub">' + srcLinks(e.sources) + (e.verified ? ' · <span title="A second reviewer re-read the source">source re-checked ' + esc(fmtDate(e.verified)) + "</span>" : "") + "</div></li>";
     }).join("") + "</ol>";
   }
   function kindCounts(events) {
