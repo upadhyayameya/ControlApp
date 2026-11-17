@@ -5356,6 +5356,2175 @@ window.PUBLIC_WORKS_RECORDS = {
    ],
    "verified": "2026-11-17",
    "coverageNote": null
+  },
+  "cor-172": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 172 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-04",
+     "category": "Politics",
+     "what": "Mumbai Live reported that the BJP had narrowed its choice for the mayor's post to her and Ritu Tawde; the post went to Tawde.",
+     "source": {
+      "url": "https://www.mumbailive.com/en/politics/bjp-weighs-rajeshree-shirwadkar-and-ritu-tawde-for-mumbai-mayors-post-91573",
+      "title": "BJP weighs Rajeshree Shirwadkar and Ritu Tawde for Mumbai mayor's post",
+      "date": "2026-02-04",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-20",
+     "category": "Recognition",
+     "what": "Elected unopposed as chairperson of the BMC Education Committee; FPJ describes her as a five-time corporator who twice chaired the Women and Child Development Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/rajashree-shirwadkar-elected-unopposed-as-bmc-education-committee-chairperson",
+      "title": "Rajashree Shirwadkar Elected Unopposed As BMC Education Committee Chairperson",
+      "date": "2026-02-20",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-20",
+     "category": "Raised an issue",
+     "what": "On taking charge she said she wanted BMC schools brought up to private-school standards with digital equipment, a focus on Marathi-medium schools, and that schools run from residential buildings would be given a deadline to move to proper buildings.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/rajashree-shirwadkar-elected-unopposed-as-bmc-education-committee-chairperson",
+      "title": "Rajashree Shirwadkar Elected Unopposed As BMC Education Committee Chairperson",
+      "date": "2026-02-20",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-20",
+     "category": "Controversy",
+     "what": "Was at odds with Mayor Ritu Tawde over a 4 March letter recommending educationist Shrenik Kotecha as honorary adviser to BMC schools: the Mayor called the letter fake and said her signature was forged, while Shirwadkar said she had received the letter and forwarded it.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mayor-ritu-tawde-denies-letter-recommending-educationist-shrenik-kotecha-as-bmc-schools-advisor",
+      "title": "Mumbai Mayor Ritu Tawde Denies Letter Recommending Educationist Shrenik Kotecha As BMC Schools Advisor",
+      "date": "2026-08-20",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: corporator Rajashree Shirwadkar Sion ward 172",
+    "Loksatta site search: राजश्री शिरवाडकर / शिरवाडकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-173": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 173 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Controversy",
+     "what": "Navbharat Live reported that, after the BJP did not name her as its candidate, she allegedly filed her nomination with a fake AB form and the BJP asked the Election Commission to cancel it; the nomination was not cancelled and she won. No response from her was reported.",
+     "source": {
+      "url": "https://navbharatlive.com/maharashtra/mumbai/bmc-election-results-2026-mumbai-bjp-victory-ward-173-shilpa-keluskar-fake-ab-form-1518738.html",
+      "title": "BMC Result 2026: मुंबई में उद्धव का किला ध्वस्त, BJP को बहुमत; पर वार्ड 173 की इस 'फर्जी' जीत ने सबको चौंकाया!",
+      "date": "2026-01-16",
+      "language": "hi"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Shilpa Keluskar corporator ward 173 BMC",
+    "Loksatta site search: शिल्पा केळुसकर / केळुसकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-174": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 174 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Sakshi Kanojia ward 174 Wadala corporator",
+    "Loksatta site search: साक्षी कनोजिया / कनोजिया",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-175": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 175 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-05",
+     "category": "Recognition",
+     "what": "Elected chairperson of the F South/F North ward committee, 8 votes to 7, over former mayor Shraddha Jadhav, after Congress and SP corporators were absent.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-strengthens-grip-in-bmc-ward-committee-polls-wins-3-posts-unopposed-congress-scores-2-victories",
+      "title": "Mumbai News: BJP Strengthens Grip In BMC Ward Committee Polls; Wins 3 Posts Unopposed, Congress Scores 2 Victories",
+      "date": "2026-03-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Manasi Satamkar ward 175 corporator",
+    "Loksatta site search: मानसी सातमकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-176": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 176 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-17",
+     "category": "Politics",
+     "what": "Navbharat Live reported her win as the BJP's first in ward 176, a ward long held by Congress, and credited the campaign of former corporator Ravi Raja.",
+     "source": {
+      "url": "https://navbharatlive.com/maharashtra/mumbai/bmc-election-2026-ravi-raja-defeat-bjp-first-win-ward-176-1520196.html/amp",
+      "title": "BMC Election 2026: खुद हारे रवि राजा, लेकिन शिष्या की बेटी को जिताकर रचा इतिहास",
+      "date": "2026-01-17",
+      "language": "hi"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Rekha Yadav corporator ward 176 GTB Nagar",
+    "Loksatta site search: रेखा यादव धारावी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-177": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 177 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Kalpesha Kothari corporator ward 177 Sion Koliwada; कल्पेशा कोठारी नगरसेविका प्रभाग 177",
+    "Loksatta site search: कल्पेशा कोठारी / कल्पेशा",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-178": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 178 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-02",
+     "category": "Politics",
+     "what": "Appointed Shiv Sena (Shinde) group leader in the BMC; FPJ describes him as a Dadar East corporator and former BMC health committee chairman.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-shiv-sena-shinde-appoints-amey-ghole-as-group-leader-in-bmc-bjp-names-ganesh-khankar",
+      "title": "Mumbai: Shiv Sena (Shinde) Appoints Amey Ghole As Group Leader In BMC, BJP Names Ganesh Khankar",
+      "date": "2026-02-02",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named a member of the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-17",
+     "category": "Raised an issue",
+     "what": "Wrote to the BMC Commissioner objecting that Deputy Mayor Sanjay Ghadi was seated fourth at a Clean Mumbai League event, and sought a public apology and action against the officials responsible.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-news-shinde-sena-demands-public-apology-over-protocol-snub-to-deputy-mayor-sanjay-ghadi-at-bmc-event",
+      "title": "Shinde Sena Demands Public Apology Over Protocol Snub To Deputy Mayor Sanjay Ghadi At BMC Event",
+      "date": "2026-03-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Amey Ghole corporator Wadala ward 178 2026; Amey Ghole Shiv Sena group leader BMC appointed",
+    "Loksatta site search: अमेय घोले",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-179": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 179 in the 15 January 2026 BMC election (counted 16 January) as the Congress candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "name": "Ayesha Sufiyan Vanu",
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-05",
+     "category": "Controversy",
+     "what": "Was absent during the F South/F North ward committee chairperson vote, which the opposition lost 7-8; Congress group leader Ashraf Azmi said the party would seek an explanation from her.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-strengthens-grip-in-bmc-ward-committee-polls-wins-3-posts-unopposed-congress-scores-2-victories",
+      "title": "Mumbai News: BJP Strengthens Grip In BMC Ward Committee Polls; Wins 3 Posts Unopposed, Congress Scores 2 Victories",
+      "date": "2026-03-05",
+      "language": "en"
+     },
+     "name": "Ayesha Sufiyan Vanu",
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Ayesha Bano Congress corporator ward 179 Antop Hill",
+    "Loksatta site search: आयशा वनू / आयशा वनू काँग्रेस",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-180": {
+   "record": [
+    {
+     "date": "2026-01-10",
+     "category": "Politics",
+     "what": "FPJ described her as a senior corporator and former Leader of the House who switched from Shiv Sena (UBT) to the Shinde-led ticket, contesting against former corporator Smita Gavkar.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-bmc-elections-2026-party-splits-trigger-wave-of-ex-corporators-battling-rivals-across-key-wards",
+      "title": "Mumbai BMC Elections 2026: Party Splits Trigger Wave Of Ex-Corporators Battling Rivals Across Key Wards",
+      "date": "2026-01-10",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 180 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-30",
+     "category": "Recognition",
+     "what": "Served as chairperson of the BMC's BEST Committee; in that role she announced the 2026 Diwali ex-gratia of Rs 33,000 for each BEST employee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/diwali-2026-best-employees-to-get-33000-bonus-75-crore-to-be-distributed-on-november-3",
+      "title": "Diwali 2026: BEST Employees To Get ₹33,000 Bonus; ₹75 Crore To Be Distributed On November 3",
+      "date": "2026-10-30",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Trushna Vishwasrao corporator ward 180",
+    "Loksatta site search: तृष्णा विश्वासराव",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-181": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 181 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Anil Kadam Shiv Sena UBT corporator ward 181 Sion",
+    "Loksatta site search: अनिल कदम / अनिल कदम शिवसेना",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-182": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 182 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Retained ward 182, defeating BJP's Rajan Parkar.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-shiv-sena-ubt-holds-fort-as-4-former-mayors-retain-seats-despite-split-and-challenges",
+      "title": "BMC Elections 2026 Results: Shiv Sena (UBT) Holds Fort As 4 Former Mayors Retain Seats Despite Split And Challenges",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Recognition",
+     "what": "Listed among four former Mumbai mayors from Shiv Sena (UBT) who retained seats in the 2026 election.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-shiv-sena-ubt-holds-fort-as-4-former-mayors-retain-seats-despite-split-and-challenges",
+      "title": "BMC Elections 2026 Results: Shiv Sena (UBT) Holds Fort As 4 Former Mayors Retain Seats Despite Split And Challenges",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-27",
+     "category": "Legal matter",
+     "what": "Mahim police registered an FIR against him, 11 named associates and 30-40 unidentified people over an allegedly unauthorised victory procession on 24 January, held after police had refused permission and while prohibitory orders were in force, under sections of the Maharashtra Police Act and the BNS; no response from him was reported.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-bmc-poll-results-sena-ubt-corporator-milind-vaidya-40-others-booked-for-unauthorised-victory-rally-in-mahim-details-here",
+      "title": "Mumbai BMC Poll Results: Sena UBT Corporator Milind Vaidya, 40 Others Booked For Unauthorised Victory Rally In Mahim",
+      "date": "2026-01-27",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Milind Vaidya Mahim ward 182 BMC 2026",
+    "Loksatta site search: मिलिंद वैद्य",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-183": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 183 in the 15 January 2026 BMC election (counted 16 January) as the INC candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 183 in Dharavi, defeating Shiv Sena (Shinde)'s Vaishali Shevale; it was reported as the Congress's first win of the count.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-bmc-election-results-2026-congresss-asha-kale-registers-victory-from-ward-no183-in-dharavi",
+      "title": "Mumbai BMC Election Results 2026: Congress' Asha Kale Secures 1st Win In Civic Polls From Ward No.183 In Dharavi",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Asha Kale Congress Dharavi ward 183 corporator",
+    "Loksatta site search: आशा काळे",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-184": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 184 in the 15 January 2026 BMC election (counted 16 January) as the Congress candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Sajida Khan Congress Dharavi ward 184 corporator",
+    "Loksatta site search: बब्बू खान / सजिदाबी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-185": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 185 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-17",
+     "category": "Politics",
+     "what": "Defeated BJP's Ravi Raja in ward 185, per Navbharat Live (8,860 votes to 6,388).",
+     "source": {
+      "url": "https://navbharatlive.com/maharashtra/mumbai/bmc-election-2026-ravi-raja-defeat-bjp-first-win-ward-176-1520196.html/amp",
+      "title": "BMC Election 2026: खुद हारे रवि राजा, लेकिन शिष्या की बेटी को जिताकर रचा इतिहास",
+      "date": "2026-01-17",
+      "language": "hi"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-19",
+     "category": "Work for the area",
+     "what": "Told Onmanorama that in his first term he had focused on drainage, sanitation, water supply and street lighting, and that during COVID-19 he arranged food for residents with NGO support.",
+     "source": {
+      "url": "https://www.onmanorama.com/news/kerala/2026/01/19/malayali-corporator-thrissur-dharavi-voice-mumbai-bmc-jagdish-thaivalapil-bjp-shiv-sena-maharashtra.html",
+      "title": "Malayali corporator from Thrissur is Dharavi's voice in BMC",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named a member of the BMC Standing Committee (listed as \"T. Jagdish\").",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: T M Jagadish Dharavi ward 185 (via Joseph Koli/Bhaskar Shetty Dharavi searches)",
+    "Loksatta site search: टी.एम. जगदीश / जगदीश धारावी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-186": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 186 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Archana Shinde Dharavi ward 186 Shiv Sena UBT won",
+    "Loksatta site search: अर्चना शिंदे",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-187": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 187 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-17",
+     "category": "Politics",
+     "what": "Listed by FPJ among eight Koli-community candidates who won BMC seats in 2026.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-koli-community-candidates-secure-impressive-wins-with-8-corporators-across-3-parties",
+      "title": "BMC Elections 2026 Results: Koli Community Candidates Secure Impressive Wins With 8 Corporators Across 3 Parties",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-06",
+     "category": "Politics",
+     "what": "Filed for the G North ward committee chair against MNS ally Yashwant Killedar, then withdrew and backed Killedar, who was elected.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-shiv-sena-ubt-backs-mns-candidate-in-g-north-ward-poll-bjp-wins-3-ward-committee-chair-posts",
+      "title": "Mumbai News: Shiv Sena (UBT) Backs MNS Candidate In G North Ward Poll, BJP Wins 3 Ward Committee Chair Posts",
+      "date": "2026-03-06",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Joseph Koli corporator Dharavi ward 187",
+    "Loksatta site search: जोसेफ कोळी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-188": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 188 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-10",
+     "category": "Recognition",
+     "what": "Named the Mahayuti nominee for vice-chair of the BMC Markets and Gardens Committee; FPJ reported that the Mahayuti nominees were set to be elected unopposed.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-shiv-sena-shinde-corporators-set-to-be-elected-unopposed-as-heads-of-bmc-special-committees",
+      "title": "Mumbai News: BJP, Shiv Sena (Shinde) Corporators Set To Be Elected Unopposed As Heads Of BMC Special Committees",
+      "date": "2026-03-10",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Bhaskar Shetty Shiv Sena ward 188 Dharavi corporator",
+    "Loksatta site search: भास्कर शेट्टी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-189": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 189 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Harshala More ward 189 Dharavi corporator Shiv Sena UBT",
+    "Loksatta site search: हर्षला मोरे / हर्षला",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-190": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 190 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 190 by 121 votes over Shiv Sena (UBT)'s Vaishali Patankar, who sought a recount (rejected by officials) and said she would go to court.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-thackeray-sena-retains-central-mumbai-bastions-as-mns-ubt-deliver-major-blows-in-dadar-and-shivaji-park",
+      "title": "BMC Elections 2026 Results: Thackeray Sena Retains Central Mumbai Bastions As MNS, UBT Deliver Major Blows In Dadar And Shivaji Park",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named a member of the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Sheetal Gambhir BJP corporator ward 190 Mahim",
+    "Loksatta site search: शितल गंभीर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-191": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 191 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 191 against Priya Sarvankar, daughter of former MLA Sada Sarvankar.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-shiv-sena-ubt-holds-fort-as-4-former-mayors-retain-seats-despite-split-and-challenges",
+      "title": "BMC Elections 2026 Results: Shiv Sena (UBT) Holds Fort As 4 Former Mayors Retain Seats Despite Split And Challenges",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-21",
+     "category": "Legal matter",
+     "what": "The Palghar caste scrutiny committee cancelled her OBC certificate; she said her family's ancestral village is in Palghar and that she would appeal.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-seat-at-risk-former-mayor-vishakha-rauts-obc-certificate-cancelled-fourth-corporator-disqualified-over-caste-validity",
+      "title": "BMC seat at risk: former mayor Vishakha Raut's OBC certificate cancelled; fourth corporator disqualified over caste validity (title from URL slug)",
+      "date": "2026-08-21",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-09-03",
+     "category": "Legal matter",
+     "what": "The Bombay High Court (Justices Girish Kulkarni and Neela Gokhale) rejected her plea and upheld the BMC's decision that her election stood cancelled; the court said her appeal against the scrutiny committee order must be heard expeditiously.",
+     "source": {
+      "url": "https://www.theweek.in/news/india/2026/09/03/whats-next-for-ward-191-after-vishakha-rauts-disqualification.amp.html",
+      "title": "What's next for Ward 191 after Vishakha Raut's disqualification?",
+      "date": "2026-09-03",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (covered via ward 191 / former mayor searches)",
+    "Loksatta site search: विशाखा राऊत",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-192": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 192 in the 15 January 2026 BMC election (counted 16 January) as the MNS candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-19",
+     "category": "Politics",
+     "what": "Named MNS group leader in the BMC by Raj Thackeray, after winning ward 192 against Shiv Sena (Shinde)'s Preeti Patankar.",
+     "source": {
+      "url": "https://navbharatlive.com/maharashtra/mumbai/raj-thackeray-appoints-yashwant-killedar-as-mns-group-leader-bmc-politics-1524856.html",
+      "title": "राज ठाकरे ने चला 'किल्लेदार' दांव, BMC में यशवंत संभालेंगे MNS की कमान",
+      "date": "2026-01-19",
+      "language": "hi"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-06",
+     "category": "Recognition",
+     "what": "Elected chairperson of the G North ward committee after Shiv Sena (UBT) withdrew its candidate.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-shiv-sena-ubt-backs-mns-candidate-in-g-north-ward-poll-bjp-wins-3-ward-committee-chair-posts",
+      "title": "Mumbai News: Shiv Sena (UBT) Backs MNS Candidate In G North Ward Poll, BJP Wins 3 Ward Committee Chair Posts",
+      "date": "2026-03-06",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-06",
+     "category": "Raised an issue",
+     "what": "Led an MNS speedboat inspection of the Mithi river from Mahim Causeway and said it was still blocked by plastic, waste and thick silt, questioning the BMC's figure of 77.75% desilting completion.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mns-speedboat-inspection-reveals-mithi-river-choked-with-garbage-casts-doubt-on-bmcs-78-desilting-claim",
+      "title": "MNS Speedboat Inspection Reveals Mithi River Choked With Garbage, Casts Doubt On BMC's 78% Desilting Claim",
+      "date": "2026-06-06",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Yashwant Killedar MNS corporator Dadar ward 192",
+    "Loksatta site search: यशवंत किल्लेदार",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-193": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 193 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Recognition",
+     "what": "Listed by ThePrint among three former deputy mayors who won in 2026 (ward 193).",
+     "source": {
+      "url": "https://theprint.in/india/mumbai-civic-polls-four-former-mayors-three-former-deputy-mayors-win/2829291",
+      "title": "Mumbai civic polls: Four former mayors, three former deputy mayors win",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Hemangi Worlikar corporator Worli 2026",
+    "Loksatta site search: हेमांगी वरळीकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-194": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 194 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-bmc-election-results-2026-sena-ubts-nishikant-shinde-defeats-samadhan-sarvankar-from-prabhadevi-gsouth-ward-no-194-by-582-votes",
+      "title": "Mumbai BMC Election Results 2026: Sena UBT's Nishikant Shinde Defeats Samadhan Sarvankar From Prabhadevi G-South Ward No 194",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Defeated Shiv Sena (Shinde)'s Samadhan Sarvankar, who had won the ward in 2017.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-bmc-election-results-2026-sena-ubts-nishikant-shinde-defeats-samadhan-sarvankar-from-prabhadevi-gsouth-ward-no-194-by-582-votes",
+      "title": "Mumbai BMC Election Results 2026: Sena UBT's Nishikant Shinde Defeats Samadhan Sarvankar From Prabhadevi G/South Ward No 194 By 582 Votes",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Nishikant Shinde Prabhadevi ward 194 corporator",
+    "Loksatta site search: निशिकांत शिंदे",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-195": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 195 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Vijay Bhanage Lower Parel ward 195 corporator",
+    "Loksatta site search: विजय बाणगे / विजय भणगे",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-196": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 196 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-06",
+     "category": "Recognition",
+     "what": "Elected unopposed as chairperson of the G South ward committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-shiv-sena-ubt-backs-mns-candidate-in-g-north-ward-poll-bjp-wins-3-ward-committee-chair-posts",
+      "title": "Mumbai News: Shiv Sena (UBT) Backs MNS Candidate In G North Ward Poll, BJP Wins 3 Ward Committee Chair Posts",
+      "date": "2026-03-06",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-23",
+     "category": "Raised an issue",
+     "what": "In the Works Committee (City) she objected to a proposal to narrow a Worli road (Mohan Damodar Patil to Narayan Hardikar Marg) from 18.33 m to 13.40 m; the chair approved it over Shiv Sena (UBT) objections.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-worli-road-narrowing-proposal-sparks-senasena-clash-as-bmc-panel-clears-plan",
+      "title": "Mumbai: Worli Road Narrowing Proposal Sparks Sena–Sena Clash As BMC Panel Clears Plan",
+      "date": "2026-04-24",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Padmaja Chemburkar Worli ward 196 corporator",
+    "Loksatta site search: पद्मजा चेंबूरकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-197": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 197 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Vanita Narvankar ward 197 Mahalaxmi corporator",
+    "Loksatta site search: वनिता नरवणकर / नरवणकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-198": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 198 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Aboli Khadye ward 198 corporator; अबोली खाड्ये नगरसेविका",
+    "Loksatta site search: खाड्ये",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-199": {
+   "record": [
+    {
+     "date": "2026-01-08",
+     "category": "Controversy",
+     "what": "A BJP leader, described by FPJ as the party's former Mulund MP, complained to the State Election Commission alleging that her ward 199 nomination affidavit did not disclose FIRs registered in 2023 at Agripada and Nirmal Nagar police stations, linked to COVID-era body-bag procurement and a Worli SRA matter, in which he said her name appears; FPJ could not reach her for comment.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/bmc-elections-2026-bjp-leader-alleges-shiv-sena-ubt-leader-kishori-pednekar-filed-false-affidavit-moves-election-commission",
+      "title": "BMC Elections 2026: BJP Leader Alleges Shiv Sena (UBT) Leader Kishori Pednekar Filed False Affidavit, Moves Election Commission",
+      "date": "2026-01-09",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 199 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-12",
+     "category": "Legal matter",
+     "what": "Shinde Sena spokesperson Susie Shah petitioned the Bombay High Court seeking rejection of her nomination, alleging she had concealed pending criminal cases in her affidavit; the court refused an urgent hearing and said it would take up the petition after the polls. No later outcome has been reported.",
+     "source": {
+      "url": "https://lawtrend.in/bombay-high-court-refuses-urgent-hearing-on-plea-against-kishori-pednekars-nomination-in-bmc-polls/",
+      "title": "Bombay High Court Refuses Urgent Hearing on Plea Against Kishori Pednekar's Nomination in BMC Polls",
+      "date": "2026-01-12",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Politics",
+     "what": "Declared Leader of the Opposition in the BMC House at the first general body meeting.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjps-ganesh-khankar-named-bmc-leader-of-house-shiv-sena-ubts-kishori-pednekar-appointed-leader-of-opposition",
+      "title": "Mumbai News: BJP's Ganesh Khankar Named BMC Leader Of House, Shiv Sena UBT's Kishori Pednekar Appointed Leader Of Opposition",
+      "date": "2026-02-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-20",
+     "category": "Raised an issue",
+     "what": "Wrote to the Mayor demanding a white paper on development works, funds and approving authorities during the four years of administrator rule since March 2022.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-leader-of-opposition-kishori-pednekar-demands-white-paper-on-4-years-of-administrative-rule-in-bmc",
+      "title": "Mumbai News: Leader Of Opposition Kishori Pednekar Demands White Paper On 4 Years Of Administrative Rule In BMC",
+      "date": "2026-02-21",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-16",
+     "category": "Controversy",
+     "what": "BJP and Shinde Sena members sought her suspension over remarks about Bal Thackeray during the budget debate; she said her remarks were misinterpreted, referred to \"thoughts\" not individuals, and refused to apologise (PTI).",
+     "source": {
+      "url": "https://theprint.in/india/bjp-sena-seek-former-mayor-pednekars-suspension-for-remarks-on-bal-thackeray/2906820/",
+      "title": "BJP, Sena seek former mayor Pednekar's suspension for remarks on Bal Thackeray",
+      "date": "2026-04-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-03",
+     "category": "Controversy",
+     "what": "Mayor Ritu Tawde said she would file a police complaint alleging Pednekar entered the Mayor's chamber in her absence, pressured staff and photographed confidential files; Pednekar said her 30 March letter seeking a monsoon-preparedness meeting had gone unanswered. Whether a complaint was filed was not reported.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mayor-ritu-tawde-to-file-police-complaint-against-kishori-pednekar-over-alleged-misconduct-at-bmc-headquarters-video",
+      "title": "Mumbai Mayor Ritu Tawde To File Police Complaint Against Kishori Pednekar Over Alleged Misconduct At BMC Headquarters",
+      "date": "2026-07-03",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-31",
+     "category": "Raised an issue",
+     "what": "Sought an inquiry into BMC mid-day meals, lab testing of samples and a report, after glass shards were allegedly found in food at a Ghatkopar BMC school.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-kishori-pednekar-seeks-probe-into-bmc-mid-day-meals-after-glass-shards-allegedly-found-in-ghatkopar-school-food",
+      "title": "Mumbai: Kishori Pednekar Seeks Probe Into BMC Mid-Day Meals After Glass Shards Allegedly Found In Ghatkopar School Food",
+      "date": "2026-07-31",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Kishori Pednekar corporator 2026 BMC issue raised demand",
+    "Loksatta site search: (Loksatta items reached via अमेय घोले / श्रद्धा जाधव searches)",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-200": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 200 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Urmila Panchal corporator Naigaon ward 200",
+    "Loksatta site search: उर्मिला पांचाळ / पांचाळ",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-201": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 201 in the 15 January 2026 BMC election (counted 16 January) as the Samajwadi Party candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 201 narrowly over the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/bmc-elections-2026-results-highlight-nail-biting-ward-battles-as-several-winners-scrape-through-with-margins-below-1000-votes",
+      "title": "BMC Elections 2026 Results Highlight Nail-Biting Ward Battles As Several Winners Scrape Through With Margins Below 1000 Votes",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Raised an issue",
+     "what": "With fellow SP corporator Amrin Shehzad Abrahani, wrote to the Mayor and the Commissioner proposing a regulated 24x7 economic model, with pilot projects in areas such as south Mumbai, BKC and Lower Parel.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/sp-corporators-propose-24x7-economic-model-for-mumbai-seek-pilot-projects-in-key-areas",
+      "title": "SP Corporators Propose 24x7 Economic Model For Mumbai, Seek Pilot Projects In Key Areas",
+      "date": "2026-02-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-05",
+     "category": "Politics",
+     "what": "Was absent from the F South/F North ward committee chair vote; FPJ said the SP vote was decisive with the two sides tied, and the opposition candidate lost 7-8.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-strengthens-grip-in-bmc-ward-committee-polls-wins-3-posts-unopposed-congress-scores-2-victories",
+      "title": "Mumbai News: BJP Strengthens Grip In BMC Ward Committee Polls; Wins 3 Posts Unopposed, Congress Scores 2 Victories",
+      "date": "2026-03-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Eram Siddiqui Samajwadi Party ward 201 BMC",
+    "Loksatta site search: इरम सिद्दीकी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-202": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 202 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "A six-time former corporator and former mayor, she won ward 202 over BJP's Parth Bavkar.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-shiv-sena-ubt-holds-fort-as-4-former-mayors-retain-seats-despite-split-and-challenges",
+      "title": "BMC Elections 2026 Results: Shiv Sena (UBT) Holds Fort As 4 Former Mayors Retain Seats Despite Split And Challenges",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named a member of the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-05",
+     "category": "Politics",
+     "what": "Lost the F South/F North ward committee chair election 7-8 to Shiv Sena (Shinde)'s Manasi Satamkar after Congress and SP corporators were absent.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-strengthens-grip-in-bmc-ward-committee-polls-wins-3-posts-unopposed-congress-scores-2-victories",
+      "title": "Mumbai News: BJP Strengthens Grip In BMC Ward Committee Polls; Wins 3 Posts Unopposed, Congress Scores 2 Victories",
+      "date": "2026-03-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Shraddha Jadhav corporator 2026 BMC Sewri",
+    "Loksatta site search: श्रद्धा जाधव",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-203": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 203 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Shraddha Pednekar corporator ward 203 Parel",
+    "Loksatta site search: श्रद्धा पेडणेकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-204": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 204 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Retained ward 204 (Lalbaug), defeating Shiv Sena (Shinde) candidate Anil Kokil.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-thackeray-sena-retains-central-mumbai-bastions-as-mns-ubt-deliver-major-blows-in-dadar-and-shivaji-park",
+      "title": "BMC Elections 2026 Results: Thackeray Sena Retains Central Mumbai Bastions As MNS-UBT Deliver Major Blows In Dadar And Shivaji Park",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Kiran Tawde Lalbaug ward 204 corporator Shiv Sena UBT",
+    "Loksatta site search: किरण तावडे / किरण तावडे लालबाग",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-205": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 205 in the 15 January 2026 BMC election (counted 16 January) as the MNS candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Supriya Dalvi MNS corporator ward 205 Kalachowki",
+    "Loksatta site search: सुप्रिया दळवी / दळवी मनसे",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-206": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 206 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Defeated former corporator Nana Ambole of Shiv Sena (Shinde) in ward 206.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-thackeray-sena-retains-central-mumbai-bastions-as-mns-ubt-deliver-major-blows-in-dadar-and-shivaji-park",
+      "title": "BMC Elections 2026 Results: Thackeray Sena Retains Central Mumbai Bastions As MNS, UBT Deliver Major Blows In Dadar And Shivaji Park",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Sachin Padwal corporator Sewri 2026",
+    "Loksatta site search: सचिन पडवळ",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-207": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 207 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Defeated Akhil Bharatiya Sena's Yogita Gawli in ward 207.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-bmc-elections-2026-results-huge-blow-for-arun-gawlis-akhil-bharatiya-sena-as-yogita-gawli-loses-to-bjps-rohidas-lokhande-in-1st-time-contest",
+      "title": "Mumbai BMC Elections 2026 Results: Huge Blow For Arun Gawli's Akhil Bharatiya Sena As Yogita Gawli Loses To BJP's Rohidas Lokhande",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-05",
+     "category": "Politics",
+     "what": "Lost the A-B-E ward committee chair election 5-7 to Congress's Dnyanraj Nikam.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-strengthens-grip-in-bmc-ward-committee-polls-wins-3-posts-unopposed-congress-scores-2-victories",
+      "title": "Mumbai News: BJP Strengthens Grip In BMC Ward Committee Polls; Wins 3 Posts Unopposed, Congress Scores 2 Victories",
+      "date": "2026-03-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Rohidas Lokhande (via ward 174/BMC results searches)",
+    "Loksatta site search: रोहिदास लोखंडे / लोखंडे भाजप",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-208": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 208 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named a member of the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Ramakant Rahate corporator Byculla ward 208",
+    "Loksatta site search: रमाकांत रहाटे",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-209": {
+   "record": [
+    {
+     "date": "2024-11-15",
+     "category": "Recognition",
+     "what": "As Byculla MLA (before her corporator term), ranked 8th among Mumbai legislators in the Praja Foundation report card (68.86%), as reported by FPJ.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/fpj-mla-audit-bycullas-yamini-jadhav-prepares-for-sena-vs-sena-battle-amid-criticism-over-development-and-redevelopment-issues",
+      "title": "FPJ MLA Audit: Byculla's Yamini Jadhav Prepares For Sena Vs Sena Battle Amid Criticism Over Development And Redevelopment Issues",
+      "date": "2024-11-15",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2024-11-15",
+     "category": "Controversy",
+     "what": "As MLA, FPJ reported former Byculla MLAs Waris Pathan and Madhukar Chavan saying she had done no work for Byculla, Chavan adding that she spent mainly on beautification while old buildings needed redevelopment; she listed projects including a planned Navy jetty and said her focus was cluster redevelopment.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/fpj-mla-audit-bycullas-yamini-jadhav-prepares-for-sena-vs-sena-battle-amid-criticism-over-development-and-redevelopment-issues",
+      "title": "FPJ MLA Audit: Byculla's Yamini Jadhav Prepares For Sena Vs Sena Battle Amid Criticism Over Development And Redevelopment Issues",
+      "date": "2024-11-15",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 209 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (Shinde) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "A former MLA who had lost the last Lok Sabha and Assembly elections, she won ward 209 by 1,490 votes over Congress's Rafiya Damodi.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-bmc-elections-2026-results-heavyweights-fall-veterans-stage-comeback-as-political-survival-trumps-popularity",
+      "title": "Mumbai BMC Elections 2026 Results: Heavyweights Fall, Veterans Stage Comeback As Political Survival Trumps Popularity",
+      "date": "2026-01-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-10",
+     "category": "Recognition",
+     "what": "Named the Mahayuti nominee for chair of the Works Committee (City), with the nominees set to be elected unopposed; she had also been named to the Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-shiv-sena-shinde-corporators-set-to-be-elected-unopposed-as-heads-of-bmc-special-committees",
+      "title": "Mumbai News: BJP, Shiv Sena (Shinde) Corporators Set To Be Elected Unopposed As Heads Of BMC Special Committees",
+      "date": "2026-03-10",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-23",
+     "category": "Controversy",
+     "what": "As Works Committee (City) chair she cleared a proposal to narrow a Worli road from 18.33 m to 13.40 m over Shiv Sena (UBT) objections; Leader of Opposition Kishori Pednekar called it a 'sale of public roads'. No response from Jadhav was reported.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/mumbai-worli-road-narrowing-proposal-sparks-senasena-clash-as-bmc-panel-clears-plan",
+      "title": "Mumbai: Worli Road Narrowing Proposal Sparks Sena–Sena Clash As BMC Panel Clears Plan",
+      "date": "2026-04-24",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Yamini Jadhav ward 209 corporator BMC 2026 won",
+    "Loksatta site search: यामिनी जाधव (via श्रद्धा जाधव / पद्मजा चेंबूरकर searches)",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-210": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 210 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Sonam Jamsutkar ward 210 Byculla corporator",
+    "Loksatta site search: सोनम जामसूतकर / जामसूतकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-211": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 211 in the 15 January 2026 BMC election (counted 16 January) as the INC candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 211, where the Mahayuti had no candidate after the BJP nominee's nomination was rejected for incomplete documents.",
+     "source": {
+      "url": "https://www.freepressjournal.in/amp/mumbai/bmc-elections-2026-mahayuti-left-without-candidates-in-2-south-mumbai-wards-after-nomination-lapses",
+      "title": "BMC Elections 2026: Mahayuti Left Without Candidates In 2 South Mumbai Wards After Nomination Lapses",
+      "date": "2025-12-31",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Waqar Khan Congress corporator ward 211 Nagpada",
+    "Loksatta site search: वकार खान",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-212": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 212 in the 15 January 2026 BMC election (counted 16 January) as the Samajwadi Party candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 212 with 8,848 votes, defeating Akhil Bharatiya Sena's Geeta Gawli (6,823) by 2,025 votes.",
+     "source": {
+      "url": "https://www.lokmattimes.com/mumbai/byculla-election-result-2026-samajwadi-partys-amreen-shehzan-wins-from-mumbais-ward-212-in-bmc-polls-a517/",
+      "title": "Byculla Election Result 2026: Samajwadi Party's Amreen Shehzan Wins From Mumbai's Ward 212 in BMC Polls",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Raised an issue",
+     "what": "With fellow SP corporator Eram Siddiqui, wrote to the Mayor and the Commissioner proposing a regulated 24x7 economic model, with pilot projects in areas such as south Mumbai, BKC and Lower Parel.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/sp-corporators-propose-24x7-economic-model-for-mumbai-seek-pilot-projects-in-key-areas",
+      "title": "SP Corporators Propose 24x7 Economic Model For Mumbai, Seek Pilot Projects In Key Areas",
+      "date": "2026-02-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Amreen Abrahani Samajwadi Party ward 212 Agripada",
+    "Loksatta site search: अमरीन",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-213": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 213 in the 15 January 2026 BMC election (counted 16 January) as the INC candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Nasima Juneja Congress ward 213 Kamathipura corporator",
+    "Loksatta site search: नसीमा जुनेजा",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-214": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 214 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "name": "Ajay Patil",
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-10",
+     "category": "Recognition",
+     "what": "Named the Mahayuti nominee for vice-chair of the Works Committee (City); FPJ reported that the Mahayuti nominees were set to be elected unopposed.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-shiv-sena-shinde-corporators-set-to-be-elected-unopposed-as-heads-of-bmc-special-committees",
+      "title": "Mumbai News: BJP, Shiv Sena (Shinde) Corporators Set To Be Elected Unopposed As Heads Of BMC Special Committees",
+      "date": "2026-03-10",
+      "language": "en"
+     },
+     "name": "Ajay Patil",
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Ajit Patil BJP ward 214 Tardeo corporator",
+    "Loksatta site search: अजय पाटील",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-215": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 215 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Santosh Dhale BJP ward 215 Girgaon corporator",
+    "Loksatta site search: संतोष ढाले",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-216": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 216 in the 15 January 2026 BMC election (counted 16 January) as the Congress candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: Rajashree Bhatankar Congress ward 216 corporator",
+    "Loksatta site search: राजेश्री भाटणकर / भाटणकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-217": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 217 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: गौरांग झवेरी / झवेरी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-218": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 218 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-02",
+     "category": "Raised an issue",
+     "what": "Joined Minister Mangal Prabhat Lodha and BEST officials in inspecting Girgaon areas hit by repeated power cuts and warned of a protest over residents' problems; a BEST complaint bus was stationed at Gaiwadi on Lodha's instruction.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-power-crisis-continuous-follow-up-on-power-supply-issues-will-continue-until-girgaon-residents-get-relief-says-minister-mangal-prabhat-lodha",
+      "title": "Mumbai Power Crisis: Continuous Follow-Up On Power Supply Issues Will Continue Until Girgaon Residents Get Relief, Says Minister Mangal Prabhat Lodha",
+      "date": "2026-06-02",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: स्नेहल तेंडुलकर / तेंडुलकर नगरसेविका",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-219": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 219 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: सन्नी सानप / सानप",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-220": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 220 in the 15 January 2026 BMC election (counted 16 January) as the Shiv Sena (UBT) candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: संपदा मयेकर / मयेकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-221": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 221 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-05",
+     "category": "Legal matter",
+     "what": "On 5 August 2026 the special MP/MLA court in Mumbai refused to cancel a non-bailable warrant issued after he missed a hearing, rejected his bail plea and sent him to judicial custody, in a 2020 Colaba police case in which he and 19 others are accused of wrongfully confining the then BEST general manager and assaulting police during a protest over electricity supply.",
+     "source": {
+      "url": "https://theprint.in/india/2020-mumbai-protest-bjp-corporator-held-as-court-rejects-plea-for-cancellation-of-nbw/3006830/",
+      "title": "2020 Mumbai protest: BJP corporator held as court rejects plea for cancellation of NBW",
+      "date": "2026-08-06",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: आकाश पुरोहित",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-222": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 222 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-10",
+     "category": "Recognition",
+     "what": "Named the Mahayuti nominee for vice-chair of the Women and Child Welfare Committee; FPJ reported that the Mahayuti nominees were set to be elected unopposed.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-shiv-sena-shinde-corporators-set-to-be-elected-unopposed-as-heads-of-bmc-special-committees",
+      "title": "Mumbai News: BJP, Shiv Sena (Shinde) Corporators Set To Be Elected Unopposed As Heads Of BMC Special Committees",
+      "date": "2026-03-10",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: रिटा मकवाना / मकवाना",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-223": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 223 in the 15 January 2026 BMC election (counted 16 January) as the Congress candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 223 narrowly with 8,508 votes against Shiv Sena (Shinde)'s Priya Rupesh Patil (8,041).",
+     "source": {
+      "url": "https://www.lokmattimes.com/mumbai/musafir-khana-election-result-2026-congresss-gyanraj-nikam-wins-from-ward-223-in-bmc-polls-a517/",
+      "title": "Musafir Khana Election Result 2026: Congress's Gyanraj Nikam Wins From Ward 223 in BMC Polls",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-05",
+     "category": "Recognition",
+     "what": "Elected chairperson of the A-B-E ward committee, 7 votes to 5, over BJP's Rohidas Lokhande.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bjp-strengthens-grip-in-bmc-ward-committee-polls-wins-3-posts-unopposed-congress-scores-2-victories",
+      "title": "Mumbai News: BJP Strengthens Grip In BMC Ward Committee Polls; Wins 3 Posts Unopposed, Congress Scores 2 Victories",
+      "date": "2026-03-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: ज्ञानराज निकम",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-224": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 224 in the 15 January 2026 BMC election (counted 16 January) as the Congress candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "name": "Rukhsana Nurul Amin Parak",
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: रुक्साना",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-225": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 225 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-01",
+     "category": "Controversy",
+     "what": "Mumbai Live reported criticism from citizens and social-media users after a hearse van in Colaba carried photos of BJP leaders including Assembly Speaker Rahul Narwekar and corporators Makarand Narwekar, Harshita Narwekar and Gauravi Shivalkar; no response from them was reported.",
+     "source": {
+      "url": "https://www.mumbailive.com/en/politics/mumbai-political-branding-on-hearse-van-triggers-row-in-colaba-93023",
+      "title": "Political branding on hearse van triggers row in Colaba",
+      "date": "2026-06-01",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: हर्षिता नार्वेकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-226": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 226 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://ummid.com/news/2026/1/17/mumbai-corporation-2026-full-list-of-winning-candidates.html",
+      "title": "Mumbai Corporation 2026: Full List of Winning Candidates",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-08",
+     "category": "Raised an issue",
+     "what": "Wrote to the BMC Commissioner proposing a peak-hour congestion charge of Rs 50-100 per entry on single-occupant private cars entering busy business districts, starting with a south Mumbai pilot; Shiv Sena (UBT) MLA Aaditya Thackeray criticised the proposal.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-corporator-makarand-narwekar-proposes-congestion-tax-in-business-districts-to-ease-traffic-and-cut-pollution",
+      "title": "Mumbai Corporator Makarand Narwekar Proposes Congestion Tax In Business Districts To Ease Traffic And Cut Pollution",
+      "date": "2026-02-08",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named a member of the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-22",
+     "category": "Raised an issue",
+     "what": "Wrote to the BMC Commissioner and the Assembly Speaker demanding an immediate halt to 'aspirational toilets' construction in south Mumbai, which he said had resumed despite a minister's July 2025 stay directive, and sought action against the officials responsible.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-corporator-makarand-narwekar-demands-halt-to-aspirational-toilets-work-in-south-mumbai",
+      "title": "BJP Corporator Makarand Narwekar Demands Halt To 'Aspirational Toilets' Work In South Mumbai",
+      "date": "2026-03-22",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-01",
+     "category": "Controversy",
+     "what": "Mumbai Live reported criticism from citizens and social-media users after a hearse van in Colaba carried photos of BJP leaders including Assembly Speaker Rahul Narwekar and corporators Makarand Narwekar, Harshita Narwekar and Gauravi Shivalkar; no response from them was reported.",
+     "source": {
+      "url": "https://www.mumbailive.com/en/politics/mumbai-political-branding-on-hearse-van-triggers-row-in-colaba-93023",
+      "title": "Political branding on hearse van triggers row in Colaba",
+      "date": "2026-06-01",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: मकरंद नार्वेकर",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-227": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 227 in the 15 January 2026 BMC election (counted 16 January) as the BJP candidate.",
+     "source": {
+      "url": "https://sabrangindia.in/bmc-women-corporators-past-the-50-mark-121-women-get-elected-in2026/",
+      "title": "BMC: Women corporators past the 50% mark, 121 women get elected in 2026",
+      "date": "2026-01-19",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-01",
+     "category": "Controversy",
+     "what": "Mumbai Live reported criticism from citizens and social-media users after a hearse van in Colaba carried photos of BJP leaders including Assembly Speaker Rahul Narwekar and corporators Makarand Narwekar, Harshita Narwekar and Gauravi Shivalkar; no response from them was reported.",
+     "source": {
+      "url": "https://www.mumbailive.com/en/politics/mumbai-political-branding-on-hearse-van-triggers-row-in-colaba-93023",
+      "title": "Political branding on hearse van triggers row in Colaba",
+      "date": "2026-06-01",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "WebSearch: (English search not run: web search budget exhausted)",
+    "Loksatta site search: गौरवी",
+    "shared fetch: FPJ committee/ward-committee/results round-ups, Loksatta per-ward result pages (wp-json by post id), Loksatta committee, DRP and General Body reports"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
   }
  },
  "mps": {
