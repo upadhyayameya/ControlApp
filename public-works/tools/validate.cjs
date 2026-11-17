@@ -43,7 +43,15 @@ function validate({ D, R }) {
     for (const path of R[p.id] || []) for (const pt of path)
       if (!(pt[0] > 18.85 && pt[0] < 19.5 && pt[1] > 72.7 && pt[1] < 73.2)) w(`point "${pt[2]}" far from Mumbai: ${pt[0]},${pt[1]}`);
   }
-  return { errors, warnings };
+  // Staleness: statuses go out of date. Flag records not re-checked recently (default 180 days).
+  const staleDays = Number((process.argv.find(a => a.startsWith("--stale-days=")) || "").split("=")[1]) || 180;
+  const now = Date.now(), stale = [];
+  for (const p of D.projects) {
+    const t = Date.parse(p.lastVerified || "");
+    if (!t || (now - t) / 864e5 > staleDays) stale.push(p.id);
+  }
+  if (stale.length) warnings.push(`${stale.length} projects not re-checked in ${staleDays} days: ${stale.slice(0, 20).join(", ")}${stale.length > 20 ? " ..." : ""}`);
+  return { errors, warnings, stale };
 }
 
 if (require.main === module) {

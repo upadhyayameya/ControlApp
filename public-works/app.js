@@ -373,6 +373,7 @@
       },
     }).addTo(leafletMap);
     leafletMap.fitBounds(wl.getBounds(), { padding: [8, 8] });
+
     var layers = [];
     var mapState = { hide: {} };
     function draw() {
@@ -914,7 +915,7 @@
       }).join("") + "</tbody></table>" : '<p class="muted" style="margin:0">No funding breakdown published.</p>') +
       (p.cost && p.cost.note ? '<p class="axis-note">Cost note: ' + esc(p.cost.note) + "</p>" : "") + "</section>" +
       '<section class="panel"><h3>Elected MLAs for this area</h3>' + (mls.length ? '<div class="mla-list">' + mls.map(function (m) {
-        return '<div class="person"><div class="name">' + esc(m.name || "MLA not on file") + '</div><div class="detail">' + esc(m.constituency) + (m.party ? " · " + esc(m.party) : "") + "</div></div>";
+        return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(m.no) + '"><div class="name">' + esc(m.name || "MLA not on file") + '</div><div class="detail">' + esc(m.constituency) + (m.party ? " · " + esc(m.party) : "") + " · profile →</div></a>";
       }).join("") + "</div>" : '<p class="muted" style="margin:0">' + (p.citywide ? "Citywide project: every MLA’s area." : "Not mapped to a constituency.") + "</p>") + "</section>" +
       '<section class="panel"><h3>Sources</h3>' + (sources ? '<ul class="sources">' + sources + "</ul>" : '<p class="muted">No source on file.</p>') +
       (p.lastVerified ? '<p class="axis-note">Status last checked ' + fmtDate(p.lastVerified) + ". Areas: " + esc((p.areas || []).join(", ")) + "</p>" : "") + "</section>" +
