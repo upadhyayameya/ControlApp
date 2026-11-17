@@ -556,12 +556,232 @@
     }).filter(function (r) { return !mq || [r.m.name, r.m.constituency, r.m.party, r.m.district].join(" ").toLowerCase().indexOf(mq.toLowerCase()) !== -1; })
       .sort(function (a, b) { return a.m.no - b.m.no; });
     var maxN = Math.max.apply(null, rows.map(function (r) { return r.n; }).concat([1]));
-    document.getElementById("m-results").innerHTML = '<div class="table-scroll"><table class="data"><thead><tr><th class="num">No.</th><th>Constituency</th><th>MLA</th><th>Party</th><th>Projects</th><th class="num">Delayed</th></tr></thead><tbody>' +
+    document.getElementById("m-results").innerHTML = '<div class="table-scroll"><table class="data"><thead><tr><th class="num">No.</th><th>Constituency</th><th>MLA</th><th>Party</th><th>Projects</th><th class="num">Delayed</th><th class="num" data-tip="Pending criminal cases the MLA declared in the 2024 election affidavit">Declared cases</th></tr></thead><tbody>' +
       rows.map(function (r) {
-        return '<tr class="click" data-const="' + esc(r.m.constituency) + '" tabindex="0"><td class="num muted">' + esc(r.m.no) + "</td><td><b>" + esc(r.m.constituency) + '</b><div class="sub">' + esc(r.m.district) + "</div></td><td><b>" + esc(r.m.name) + "</b></td><td>" + esc(r.m.party) +
-          '</td><td style="min-width:150px"><div class="hbar" style="grid-template-columns:28px 1fr"><span class="val" style="text-align:left">' + r.n + '</span><span class="track"><span class="fill" style="width:' + (r.n ? Math.max(2, 100 * r.n / maxN) : 0) + '%"></span></span></div></td><td class="num">' + (r.late || '<span class="muted">0</span>') + "</td></tr>";
+        return '<tr class="click" data-no="' + esc(r.m.no) + '" tabindex="0"><td class="num muted">' + esc(r.m.no) + "</td><td><b>" + esc(r.m.constituency) + '</b><div class="sub">' + esc(r.m.district) + "</div></td><td><b>" + esc(r.m.name) + "</b></td><td>" + esc(r.m.party) +
+          '</td><td style="min-width:150px"><div class="hbar" style="grid-template-columns:28px 1fr"><span class="val" style="text-align:left">' + r.n + '</span><span class="track"><span class="fill" style="width:' + (r.n ? Math.max(2, 100 * r.n / maxN) : 0) + '%"></span></span></div></td><td class="num">' + (r.late || '<span class="muted">0</span>') + '</td><td class="num">' + (function () { var a = ((MLA_DATA.profiles || {})[r.m.no] || {}).affidavit; return a && a.pendingCases != null ? a.pendingCases : '<span class="muted">—</span>'; })() + "</td></tr>";
       }).join("") + "</tbody></table></div>" + (rows.length ? "" : '<div class="empty">No MLA matches.</div>');
-    bindClicks(document.getElementById("m-results"), "[data-const]", function (el) { clearFilters(); state.constituency = el.dataset.const; go("#overview"); setTimeout(function () { var x = document.getElementById("explorer"); if (x) x.scrollIntoView(); }, 30); });
+    bindClicks(document.getElementById("m-results"), "[data-no]", function (el) { go("#mla-" + el.dataset.no); });
+  }
+
+  // ---------------------------------------------------------------- shared: documented events (cases, penalties, findings)
+  var CONTRACTS = window.PUBLIC_WORKS_CONTRACTS || { companies: [], agencies: [] };
+  var MLA_DATA = window.PUBLIC_WORKS_MLA || { profiles: {} };
+  var DELAYS = window.PUBLIC_WORKS_DELAYS || {};
+  var YOJANAS = window.PUBLIC_WORKS_YOJANAS || [];
+  // Kind -> severity. Colour always comes with the label; "Allegation" is explicitly marked not proven.
+  var KINDS = {
+    "Conviction": { sev: "--st-stalled", note: "Court convicted" },
+    "Court finding": { sev: "--st-stalled", note: "A court ruled against them" },
+    "Chargesheet filed": { sev: "--st-stalled", note: "Police or agency filed charges; not a conviction" },
+    "Blacklisted / debarred": { sev: "--st-stalled", note: "Barred from bidding by a public body" },
+    "Contract terminated": { sev: "--st-delayed", note: "The awarding body ended the contract" },
+    "Penalty": { sev: "--st-delayed", note: "Fine or damages imposed by the awarding body" },
+    "Investigation": { sev: "--st-delayed", note: "An FIR or official inquiry was opened; nothing proven" },
+    "Show-cause notice": { sev: "--st-delayed", note: "Asked to explain; no penalty yet" },
+    "Audit finding": { sev: "--st-delayed", note: "A government auditor (CAG or Accountant General) flagged it; not a criminal finding" },
+    "Allegation": { sev: "--st-notstarted", note: "Raised publicly; not formally acted on, not proven" },
+    "Cleared": { sev: "--st-completed", note: "Acquitted, quashed, lifted or closed" },
+  };
+  var KIND_ORDER = Object.keys(KINDS);
+  function kindPill(k) {
+    var c = KINDS[k] || KINDS.Allegation;
+    return '<span class="pill" style="color:var(' + c.sev + ')" data-tip="' + esc(c.note) + '">' + esc(k) + "</span>";
+  }
+  function srcLinks(list) {
+    return (list || []).filter(function (s) { return s && safeUrl(s.url); }).map(function (s) {
+      return '<a href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener">' + esc(s.title || s.url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]) + "</a>" + (s.date ? ' <span class="muted">' + esc(fmtDate(s.date)) + "</span>" : "");
+    }).join(" · ");
+  }
+  function eventList(events) {
+    if (!events || !events.length) return '<p class="muted" style="margin:0">No documented penalties, cases or findings found in the sources searched.</p>';
+    return '<ol class="events">' + events.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (e) {
+      return '<li><div class="ev-head">' + kindPill(e.kind) + '<span class="ev-date">' + esc(fmtDate(e.date)) + "</span>" + (e.scope ? '<span class="muted">' + esc(e.scope) + "</span>" : "") + (e.status ? '<span class="muted">· status: ' + esc(e.status) + "</span>" : "") + "</div>" +
+        "<div>" + esc(e.summary) + (e.by ? ' <span class="muted">(' + esc(e.by) + ")</span>" : "") + "</div>" +
+        (e.people && e.people.length ? '<div class="sub">Named: ' + esc(e.people.join("; ")) + "</div>" : "") +
+        '<div class="sub">' + srcLinks(e.sources) + "</div></li>";
+    }).join("") + "</ol>";
+  }
+  function kindCounts(events) {
+    var c = {};
+    (events || []).forEach(function (e) { c[e.kind] = (c[e.kind] || 0) + 1; });
+    return KIND_ORDER.filter(function (k) { return c[k]; }).map(function (k) { return '<span class="kc" style="color:var(' + KINDS[k].sev + ')">' + c[k] + " " + esc(k.toLowerCase()) + "</span>"; }).join("");
+  }
+  function slug(s) { return String(s || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+
+  // ---------------------------------------------------------------- contracts
+  var COMPANY_BY_SLUG = {};
+  CONTRACTS.companies.forEach(function (c) { c.slug = slug(c.name); COMPANY_BY_SLUG[c.slug] = c; });
+  function companyProjects(c) { // our projects whose contractor text mentions any alias, plus explicit links
+    var ids = {};
+    (c.mumbaiContracts || []).forEach(function (k) { if (k.projectId) ids[k.projectId] = true; });
+    var names = [c.name].concat(c.aliases || []).filter(function (a) { return a && a.length > 2; }).map(function (a) { return a.toLowerCase(); });
+    PROJECTS.forEach(function (p) {
+      var t = (p.contractor || "").toLowerCase();
+      if (names.some(function (a) { return t.indexOf(a) !== -1; })) ids[p.id] = true;
+    });
+    return PROJECTS.filter(function (p) { return ids[p.id]; });
+  }
+  function contractAgency(k) { return (k.agency || "").split(/[ (/]/)[0]; }
+  function viewContracts() {
+    var cos = CONTRACTS.companies;
+    if (!cos.length) { app.innerHTML = '<section class="lead"><div class="eyebrow">Contracts</div><h2>Contractor records are being compiled</h2><p>This tab will list the companies that win Mumbai’s government contracts, which bodies award them, how the projects went, and documented penalties and cases.</p></section>'; return; }
+    var all = [];
+    cos.forEach(function (c) { (c.mumbaiContracts || []).forEach(function (k) { all.push({ c: c, k: k }); }); });
+    var agencies = {};
+    all.forEach(function (x) { var a = contractAgency(x.k); if (a) agencies[a] = (agencies[a] || 0) + 1; });
+    var agCols = Object.keys(agencies).sort(function (a, b) { return agencies[b] - agencies[a]; }).slice(0, 8);
+    var withEvents = cos.filter(function (c) { return (c.events || []).some(function (e) { return e.kind !== "Allegation" && e.kind !== "Cleared"; }); }).length;
+    var value = all.reduce(function (s, x) { return s + (x.k.amount || 0); }, 0);
+    var rows = cos.slice().sort(function (a, b) { return (b.mumbaiContracts || []).length - (a.mumbaiContracts || []).length; });
+    var maxCell = 1;
+    rows.forEach(function (c) { agCols.forEach(function (a) { var n = (c.mumbaiContracts || []).filter(function (k) { return contractAgency(k) === a; }).length; if (n > maxCell) maxCell = n; }); });
+    function cell(n) {
+      if (!n) return '<td class="hm"><span class="hm0">·</span></td>';
+      var t = n / maxCell, l = Math.round(85 - t * 50);
+      return '<td class="hm"><span class="hmc" style="background:hsl(205 65% ' + l + '%);color:' + (l < 58 ? "#fff" : "#0f1419") + '">' + n + "</span></td>";
+    }
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Contracts</div><h2>Who wins Mumbai’s contracts, and how it went</h2><p>The companies behind the city’s big works, the public bodies that award them, how their projects turned out, and every documented penalty, termination, blacklisting, investigation or court finding. Each entry is labelled by what it is: an allegation is not a finding, and an investigation is not a conviction.</p></section>' +
+      '<section class="stats"><div class="stat"><span class="label">Companies tracked</span><span class="value">' + cos.length + '</span><span class="sub">holding Mumbai government contracts</span></div>' +
+      '<div class="stat"><span class="label">Contracts listed</span><span class="value">' + all.length + '</span><span class="sub">since 2015, from orders and reports</span></div>' +
+      '<div class="stat"><span class="label">Value with a published figure</span><span class="value">' + Math.round(value).toLocaleString("en-IN") + '<small>cr</small></span><span class="sub">award amounts as reported</span></div>' +
+      '<div class="stat alert"><span class="label">Companies with formal action</span><span class="value">' + withEvents + "<small>of " + cos.length + '</small></span><span class="sub">penalty, termination, ban, case or ruling</span></div></section>' +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Repeat relationships</div><h3>Which body awards to which company</h3></div><p>Number of contracts each company holds from each body. Darker means more. Tap a company to see its record.</p></div>' +
+      '<div class="table-scroll"><table class="data heat"><thead><tr><th>Company</th>' + agCols.map(function (a) { return '<th class="num">' + esc(a) + "</th>"; }).join("") + '<th class="num">Total</th><th>Formal actions</th></tr></thead><tbody>' +
+      rows.map(function (c) {
+        var ks = c.mumbaiContracts || [];
+        return '<tr class="click" data-co="' + esc(c.slug) + '" tabindex="0"><td><b>' + esc(c.name) + "</b></td>" + agCols.map(function (a) { return cell(ks.filter(function (k) { return contractAgency(k) === a; }).length); }).join("") + '<td class="num"><b>' + ks.length + '</b></td><td class="kcs">' + (kindCounts(c.events) || '<span class="muted">none found</span>') + "</td></tr>";
+      }).join("") + "</tbody></table></div></section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Awarding bodies</div><h3>Who passes the tenders</h3></div><p>How each body approves contracts, which companies it has awarded repeatedly, and audits or probes into its tendering.</p></div><div class="agency-grid">' +
+      (CONTRACTS.agencies || []).map(function (a) {
+        return '<article class="agency"><header><h4>' + esc(a.agency) + '</h4><span class="muted">' + esc(a.fullName || "") + "</span></header>" +
+          (a.howAwardsWork ? '<p style="margin:6px 0 10px;font-size:.9rem">' + esc(a.howAwardsWork) + "</p>" : "") +
+          ((a.approvers || []).length ? '<div class="sub" style="margin-bottom:8px">Approves: ' + a.approvers.map(function (x) { return esc(x.body) + (x.chair ? " (chair " + esc(x.chair) + ")" : ""); }).join("; ") + "</div>" : "") +
+          ((a.repeatWinners || []).length ? '<div class="sub" style="margin-bottom:8px">Repeat winners reported: ' + a.repeatWinners.map(function (r) { return esc(r.company) + (r.count ? " (" + r.count + ")" : "") + (r.period ? " " + esc(r.period) : ""); }).join("; ") + "</div>" : "") +
+          '<details><summary>' + plural((a.events || []).length, "documented event") + (kindCounts(a.events) ? " · " : "") + kindCounts(a.events) + "</summary>" + eventList(a.events) + "</details></article>";
+      }).join("") + "</div></section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Reading the labels</div><h3>What each label means</h3></div></div><div class="legend">' +
+      KIND_ORDER.map(function (k) { return '<span class="chip" style="cursor:default">' + kindPill(k) + '<span class="muted">' + esc(KINDS[k].note) + "</span></span>"; }).join("") + "</div></section>";
+    bindClicks(app, "[data-co]", function (el) { go("#co-" + el.dataset.co); });
+  }
+  function viewCompany(s) {
+    var c = COMPANY_BY_SLUG[s];
+    if (!c) { viewContracts(); return; }
+    var ks = (c.mumbaiContracts || []).slice().sort(function (a, b) { return (b.year || 0) - (a.year || 0); });
+    var outcomes = {};
+    ks.forEach(function (k) { var o = (k.outcome || "Unknown").replace(/,.*/, "").trim(); outcomes[k.outcome || "Unknown"] = (outcomes[k.outcome || "Unknown"] || 0) + 1; });
+    var ps = companyProjects(c);
+    var OUT_COLOR = { "Completed on time": "--st-completed", "Completed late": "--st-partial", "Ongoing": "--st-progress", "Ongoing, delayed": "--st-delayed", "Terminated": "--st-stalled", "Not started": "--st-notstarted" };
+    app.innerHTML = '<p style="margin:0"><a href="#contracts">← All contractors</a></p>' +
+      '<section class="lead"><div class="eyebrow">Contractor' + (c.listed ? " · " + esc(c.listed) : "") + (c.hq ? " · " + esc(c.hq) : "") + "</div><h2>" + esc(c.name) + "</h2>" +
+      (c.website && safeUrl(c.website) ? '<p><a href="' + esc(safeUrl(c.website)) + '" target="_blank" rel="noopener">' + esc(c.website.replace(/^https?:\/\//, "")) + "</a></p>" : "") + "</section>" +
+      '<section class="stats"><div class="stat"><span class="label">Mumbai contracts listed</span><span class="value">' + ks.length + '</span><span class="sub">government, 2015 onwards</span></div>' +
+      '<div class="stat"><span class="label">Value with a figure</span><span class="value">' + Math.round(ks.reduce(function (s2, k) { return s2 + (k.amount || 0); }, 0)).toLocaleString("en-IN") + '<small>cr</small></span><span class="sub">as reported at award</span></div>' +
+      '<div class="stat"><span class="label">Delivered late or delayed</span><span class="value">' + ks.filter(function (k) { return /late|delayed/i.test(k.outcome || ""); }).length + '</span><span class="sub">of ' + ks.length + '</span></div>' +
+      '<div class="stat' + ((c.events || []).some(function (e) { return e.kind !== "Allegation" && e.kind !== "Cleared"; }) ? " alert" : "") + '"><span class="label">Documented events</span><span class="value">' + (c.events || []).length + '</span><span class="sub">' + (kindCounts(c.events) || "none found") + "</span></div></section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Track record</div><h3>Mumbai government contracts</h3></div></div>' +
+      '<div class="legend" style="margin-bottom:10px">' + Object.keys(outcomes).map(function (o) { return '<span class="chip" style="cursor:default"><span class="swatch" style="background:var(' + (OUT_COLOR[o] || "--st-notstarted") + ')"></span>' + esc(o) + " <b>" + outcomes[o] + "</b></span>"; }).join("") + "</div>" +
+      (ks.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Year</th><th>Project and role</th><th>Awarded by</th><th class="num">Amount</th><th>How it went</th></tr></thead><tbody>' + ks.map(function (k) {
+        var linked = k.projectId && PROJECTS.find(function (p) { return p.id === k.projectId; });
+        return '<tr><td class="num" style="text-align:left">' + esc(k.year || "—") + "</td><td><b>" + (linked ? '<a href="#p-' + esc(k.projectId) + '">' + esc(k.project) + "</a>" : esc(k.project)) + '</b><div class="sub">' + esc(k.role || "") + (k.note ? " · " + esc(k.note) : "") + (k.source && safeUrl(k.source) ? ' · <a href="' + esc(safeUrl(k.source)) + '" target="_blank" rel="noopener">source</a>' : "") + "</div></td><td>" + esc(k.agency || "") + (k.awardedBy ? '<div class="sub">' + esc(k.awardedBy) + "</div>" : "") + '</td><td class="num">' + (k.amount != null ? crore(k.amount) : '<span class="muted">—</span>') + '</td><td><span class="pill" style="color:var(' + (OUT_COLOR[k.outcome] || "--st-notstarted") + ')">' + esc(k.outcome || "Unknown") + "</span></td></tr>";
+      }).join("") + "</tbody></table></div>" : '<p class="muted">No contracts listed.</p>') + "</section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">In public records</div><h3>Penalties, cases and findings</h3></div><p>Only events in official orders, court records or reputable news, each with its source. Allegations are shown as allegations; outcomes such as acquittals are included.</p></div>' + eventList(c.events) + "</section>" +
+      (ps.length ? '<section class="panel"><div class="section-head"><div><h3>Projects on this dashboard</h3></div></div><div class="cards">' + ps.map(card).join("") + "</div></section>" : "");
+    bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
+  }
+
+  // ---------------------------------------------------------------- MLA profile
+  function viewMla(no) {
+    var m = MLAS.find(function (x) { return String(x.no) === String(no); });
+    if (!m) { viewMlas(); return; }
+    var prof = (MLA_DATA.profiles || {})[m.no] || {};
+    var aff = prof.affidavit || null, fund = prof.funds || null;
+    var ps = PROJECTS.filter(function (p) { return (p.constituencies || []).indexOf(m.constituency) !== -1; });
+    var late = ps.filter(isLate);
+    var scheme = MLA_DATA.scheme || null;
+    function statBox(label, value, sub, cls) { return '<div class="stat' + (cls ? " " + cls : "") + '"><span class="label">' + label + '</span><span class="value">' + value + '</span><span class="sub">' + sub + "</span></div>"; }
+    var fundVal = fund && fund.fundUtilisationPct != null ? fund.fundUtilisationPct + "<small>%</small>" : fund && fund.fundUsedCr != null ? fund.fundUsedCr + "<small>cr</small>" : '<span class="muted" style="font-size:1.2rem">not published</span>';
+    var fundSub = fund ? [fund.fundAllottedCr != null ? "of " + crore(fund.fundAllottedCr) + " allotted" : "", fund.period ? esc(fund.period) : ""].filter(Boolean).join(", ") || "MLA local development fund" : (scheme && scheme.annualAllocationCr ? crore(scheme.annualAllocationCr) + " a year allotted to every MLA" : "MLA local development fund");
+    app.innerHTML = '<p style="margin:0"><a href="#mlas">← All MLAs</a></p>' +
+      '<section class="lead"><div class="eyebrow">' + esc(m.constituency) + " · constituency " + esc(m.no) + " · " + esc(m.district) + "</div><h2>" + esc(m.name) + '</h2><p style="margin-top:6px">' + esc(m.party) + " · MLA since " + esc(m.since) + ((prof.roles || []).length ? " · " + esc(prof.roles.join("; ")) : "") + "</p></section>" +
+      '<section class="stats">' +
+      statBox("Projects in the constituency", ps.length, late.length + " delayed or stalled") +
+      statBox("MLA fund " + (fund && fund.fundUtilisationPct != null ? "used" : "spent"), fundVal, fundSub) +
+      statBox("Pending criminal cases", aff && aff.pendingCases != null ? aff.pendingCases : '<span class="muted" style="font-size:1.2rem">—</span>', "self-declared, 2024 election affidavit", aff && aff.pendingCases ? "alert" : "") +
+      statBox("Report card", fund && fund.score != null ? fund.score + (fund.rank ? '<small>rank ' + fund.rank + "</small>" : "") : '<span class="muted" style="font-size:1.2rem">—</span>', MLA_DATA.reportSource ? esc(MLA_DATA.reportSource.publisher + " " + (MLA_DATA.reportSource.year || "")) : "no published score") +
+      "</section>" +
+      '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">On record</div><h3>What they have done for the area</h3></div><p>Works the MLA inaugurated, announced, funded or raised, as reported. Each item links its source.</p></div>' +
+      ((prof.work || []).length ? '<ol class="events">' + prof.work.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (w) {
+        return '<li><div class="ev-head"><span class="pill" style="color:var(--accent)">' + esc(w.kind || "Reported") + '</span><span class="ev-date">' + esc(fmtDate(w.date)) + "</span></div><div>" + esc(w.what) + (w.projectId ? ' <a href="#p-' + esc(w.projectId) + '">project →</a>' : "") + '</div><div class="sub">' + srcLinks([w.source]) + "</div></li>";
+      }).join("") + "</ol>" : '<p class="muted" style="margin:0">No reported work found yet.</p>') + "</section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">In the news</div><h3>Recent coverage</h3></div><p>Summaries in our words; follow the link for the full report.</p></div>' +
+      ((prof.news || []).length ? '<ol class="events">' + prof.news.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (n) {
+        return '<li><div class="ev-head"><span class="ev-date">' + esc(fmtDate(n.date)) + "</span></div><div>" + esc(n.headline) + '</div><div class="sub">' + srcLinks([n.source]) + "</div></li>";
+      }).join("") + "</ol>" : '<p class="muted" style="margin:0">No recent coverage found yet.</p>') + "</section></div>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Money</div><h3>MLA local development fund</h3></div></div>' +
+      (scheme ? '<p style="margin:0 0 8px;font-size:.92rem">' + esc(scheme.name || "MLA Local Development Programme") + ": " + (scheme.annualAllocationCr ? crore(scheme.annualAllocationCr) + " a year per MLA" : "allocation not found") + (scheme.since ? " (since " + esc(scheme.since) + ")" : "") + ". " + esc(scheme.howReleased || "") + " " + esc(scheme.allowedUses || "") + "</p>" : "") +
+      (fund ? '<dl class="facts-list"><dt>Allotted</dt><dd>' + (fund.fundAllottedCr != null ? crore(fund.fundAllottedCr) : "not published") + "</dd><dt>Used</dt><dd>" + (fund.fundUsedCr != null ? crore(fund.fundUsedCr) : "not published") + (fund.fundUtilisationPct != null ? " (" + fund.fundUtilisationPct + "%)" : "") + "</dd><dt>Period</dt><dd>" + esc(fund.period || "—") + "</dd>" + (fund.questionsAsked != null ? "<dt>Questions asked in Assembly</dt><dd>" + fund.questionsAsked + "</dd>" : "") + (fund.attendancePct != null ? "<dt>Attendance</dt><dd>" + fund.attendancePct + "%</dd>" : "") + "<dt>Source</dt><dd>" + srcLinks(fund.sources) + "</dd></dl>" : '<p class="muted" style="margin:0">No per-MLA spending figure has been published for this constituency. The state does not publish MLA fund use by constituency; figures come from RTI-based reports where they exist.</p>') + "</section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Election affidavit (2024)</div><h3>Declared cases and assets</h3></div><p>What the candidate declared under oath in Form 26 when filing nomination, as compiled by ADR (MyNeta). Pending cases are accusations not yet decided by a court.</p></div>' +
+      (aff ? '<dl class="facts-list"><dt>Pending criminal cases</dt><dd>' + (aff.pendingCases != null ? aff.pendingCases : "—") + (aff.seriousIpcNote ? ' <span class="muted">· ' + esc(aff.seriousIpcNote) + "</span>" : "") + "</dd><dt>Convictions</dt><dd>" + (aff.convictedCases != null ? aff.convictedCases : "—") + "</dd><dt>Total assets</dt><dd>" + (aff.totalAssetsCr != null ? crore(aff.totalAssetsCr) : "—") + "</dd><dt>Liabilities</dt><dd>" + (aff.liabilitiesCr != null ? crore(aff.liabilitiesCr) : "—") + "</dd>" + (aff.education ? "<dt>Education</dt><dd>" + esc(aff.education) + "</dd>" : "") + "<dt>Source</dt><dd>" + (safeUrl(aff.mynetaUrl) ? '<a href="' + esc(safeUrl(aff.mynetaUrl)) + '" target="_blank" rel="noopener">MyNeta affidavit summary</a>' : "—") + "</dd></dl>" +
+        ((aff.laterCases || []).length ? '<h4 style="margin:16px 0 8px">Reported since the election</h4>' + eventList(aff.laterCases.map(function (x) { return { date: x.date, kind: /conviction/i.test(x.kind) ? "Conviction" : /acquit|quash/i.test(x.kind) ? "Cleared" : /charge/i.test(x.kind) ? "Chargesheet filed" : "Investigation", summary: x.summary, status: x.status, sources: x.sources }; })) : "") +
+        ((aff.associates || []).length ? '<h4 style="margin:16px 0 8px">Associates formally charged (as reported)</h4><ul class="sources">' + aff.associates.map(function (a) { return "<li><b>" + esc(a.name) + "</b> (" + esc(a.relation) + "): " + esc(a.summary) + '<div class="sub">' + srcLinks(a.sources) + "</div></li>"; }).join("") + "</ul>" : "")
+        : '<p class="muted" style="margin:0">Affidavit data not loaded yet.</p>') + "</section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">In ' + esc(m.constituency) + '</div><h3>Projects in this constituency</h3></div><p>The MLA represents the area; the agency on each project builds it.</p></div>' +
+      (ps.length ? '<div class="cards">' + sortList(ps).map(card).join("") + "</div>" : '<p class="muted" style="margin:0">No mapped projects yet.</p>') + "</section>";
+    bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
+  }
+
+  // ---------------------------------------------------------------- schemes (yojanas)
+  var yq = "", ylevel = "";
+  function viewSchemes() {
+    if (!YOJANAS.length) { app.innerHTML = '<section class="lead"><div class="eyebrow">Schemes</div><h2>Scheme records are being compiled</h2></section>'; return; }
+    var levels = uniq(YOJANAS.map(function (y) { return y.level; }));
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Government schemes · yojana</div><h2>The schemes that reach Mumbai, and where each one stands</h2><p>Central, state and BMC schemes: what they give, who qualifies, how many people in Mumbai they reach where that is published, what changed recently, and how to apply.</p></section>' +
+      '<section class="panel"><div class="filters" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr);margin-bottom:14px"><div class="field search">' + ICON_SEARCH + '<input type="search" id="y-q" placeholder="Search schemes" aria-label="Search schemes" value="' + esc(yq) + '"></div>' +
+      select("y-level", "Level", ylevel, [["", "Central, state and BMC"]].concat(levels.map(function (l) { return [l, l]; }))) + '</div><div id="y-list" class="scheme-list"></div></section>';
+    document.getElementById("y-q").addEventListener("input", debounce(function (e) { yq = e.target.value; renderSchemes(); }, 150));
+    document.getElementById("y-level").addEventListener("change", function (e) { ylevel = e.target.value; renderSchemes(); });
+    renderSchemes();
+  }
+  function schemeStatusColor(s) { s = (s || "").toLowerCase(); return /paus|wound|stop|closed|suspend/.test(s) ? "--st-stalled" : /review|delay|trouble/.test(s) ? "--st-delayed" : /new|launch/.test(s) ? "--st-progress" : /active|running|ongoing/.test(s) ? "--st-completed" : "--st-notstarted"; }
+  function renderSchemes() {
+    var list = YOJANAS.filter(function (y) {
+      if (ylevel && y.level !== ylevel) return false;
+      return !yq || [y.name, y.nameLocal, y.gives, y.ministry, y.eligibility].join(" ").toLowerCase().indexOf(yq.toLowerCase()) !== -1;
+    });
+    document.getElementById("y-list").innerHTML = list.map(function (y) {
+      return '<article class="scheme"><header><div><div class="eyebrow">' + esc(y.level) + (y.launched ? " · since " + esc(y.launched) : "") + "</div><h4>" + esc(y.name) + "</h4>" + (y.nameLocal ? '<div class="local" lang="mr">' + esc(y.nameLocal) + "</div>" : "") + '</div><span class="pill" style="color:var(' + schemeStatusColor(y.status) + ')">' + esc(y.status || "Status unknown") + "</span></header>" +
+        '<p class="gives">' + esc(y.gives || "") + "</p>" +
+        (y.eligibility ? '<p class="sub" style="margin:0 0 10px">Who qualifies: ' + esc(y.eligibility) + "</p>" : "") +
+        ((y.mumbai || []).length ? '<div class="ynums">' + y.mumbai.map(function (n) { return '<div data-tip="' + esc((n.source && n.source.title ? n.source.title + ", " : "") + fmtDate(n.asOf)) + '"><span class="v">' + esc(typeof n.value === "number" ? n.value.toLocaleString("en-IN") : n.value) + '</span><span class="u">' + esc(n.unit || "") + '</span><span class="l">' + esc(n.metric) + (n.asOf ? " · " + esc(fmtDate(n.asOf)) : "") + "</span></div>"; }).join("") + "</div>" : '<p class="sub" style="margin:0 0 10px">No Mumbai-specific figure published.</p>') +
+        (y.budget && y.budget.amountCr ? '<p class="sub" style="margin:0 0 10px">Budget: ' + crore(y.budget.amountCr) + " (" + esc(y.budget.scope || "") + (y.budget.period ? ", " + esc(y.budget.period) : "") + ") · " + srcLinks([y.budget.source]) + "</p>" : "") +
+        ((y.recent || []).length || (y.issues || []).length ? "<details><summary>Recent changes" + ((y.issues || []).length ? " and issues" : "") + " (" + ((y.recent || []).length + (y.issues || []).length) + ")</summary>" +
+          '<ol class="events">' + (y.recent || []).map(function (r) { return '<li><div class="ev-head"><span class="pill" style="color:var(--accent)">Update</span><span class="ev-date">' + esc(fmtDate(r.date)) + "</span></div><div>" + esc(r.what) + '</div><div class="sub">' + srcLinks([r.source]) + "</div></li>"; }).join("") +
+          (y.issues || []).map(function (r) { return '<li><div class="ev-head"><span class="pill" style="color:var(--st-delayed)">Issue</span><span class="ev-date">' + esc(fmtDate(r.date)) + "</span></div><div>" + esc(r.what) + '</div><div class="sub">' + srcLinks([r.source]) + "</div></li>"; }).join("") + "</ol></details>" : "") +
+        (y.apply && (y.apply.how || y.apply.url) ? '<p class="apply">How to apply: ' + esc(y.apply.how || "") + (safeUrl(y.apply.url) ? ' <a href="' + esc(safeUrl(y.apply.url)) + '" target="_blank" rel="noopener">' + esc(y.apply.url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]) + "</a>" : "") + "</p>" : "") +
+        "</article>";
+    }).join("") || '<div class="empty">No scheme matches.</div>';
+  }
+
+  // ---------------------------------------------------------------- delayed project: what's blocking it, what waiting costs
+  function delayPanel(p) {
+    var d = DELAYS[p.id];
+    if (!isLate(p) && !d) return "";
+    if (!d) return "";
+    var monthsLate = p.targetDate ? Math.max(0, Math.round((TODAY - toTime(p.targetDate, true)) / (30.44 * 864e5))) : null;
+    var over = overrun(p);
+    var rate = over && monthsLate ? over / monthsLate : null;
+    return '<section class="panel stuck"><h3>What’s holding it up</h3>' +
+      (d.blocker ? '<p style="margin:0 0 4px;font-weight:600">' + esc(d.blocker) + "</p>" : "") +
+      (d.pendingWith ? '<p class="sub" style="margin:0 0 12px">Waiting on: ' + esc(d.pendingWith) + "</p>" : "") +
+      '<dl class="kv"><div><dt>Spent so far</dt><dd>' + (d.spentCr != null ? crore(d.spentCr) : '<span class="muted" style="font-size:1rem">not published</span>') + "<small>" + (d.spentAsOf ? "as of " + esc(fmtDate(d.spentAsOf)) : "&nbsp;") + "</small></dd></div>" +
+      "<div><dt>Cost rise so far</dt><dd>" + (over ? "+" + crore(over) : '<span class="muted" style="font-size:1rem">none published</span>') + "<small>" + (over ? "revised minus original cost" : "&nbsp;") + "</small></dd></div>" +
+      "<div><dt>Past original deadline</dt><dd>" + (monthsLate != null ? plural(monthsLate, "month") : "—") + "<small>" + (p.targetDate ? "due " + esc(fmtDate(p.targetDate)) : "&nbsp;") + "</small></dd></div></dl>" +
+      ((d.delayCost || []).length ? '<h4 style="margin:14px 0 6px;font-size:.9rem">Documented cost of delay</h4><ul class="sources">' + d.delayCost.map(function (c) { return "<li><b>" + (c.amountCr != null ? crore(c.amountCr) : "") + "</b> " + esc(c.measures) + ' <span class="sub">' + srcLinks([c.source]) + "</span></li>"; }).join("") + "</ul>" : "") +
+      (rate ? '<p class="axis-note">Arithmetic, not an official figure: the cost has risen by about ' + crore(rate) + " for every month past the original deadline (" + crore(over) + " ÷ " + monthsLate + " months). Not all of the rise is caused by the delay.</p>" : "") +
+      (d.latest ? '<p class="axis-note">Latest: ' + esc(d.latest.what) + " (" + esc(fmtDate(d.latest.date)) + ") " + srcLinks([d.latest.source]) + "</p>" : "") +
+      (d.spentSource ? '<p class="axis-note">Spending source: ' + srcLinks([d.spentSource]) + "</p>" : "") +
+      "</section>";
   }
 
   // ---------------------------------------------------------------- funding
@@ -669,6 +889,7 @@
       "<div><dt>Built</dt><dd>" + (p.progress != null ? p.progress + "%" : "—") + "<small>" + (p.progress != null ? "physical progress" : "not published") + "</small></dd></div>" +
       "<div><dt>" + (p.completedDate ? "Opened" : "Due") + "</dt><dd>" + esc(fmtDate(p.completedDate || p.revisedTargetDate || p.targetDate)) + "<small>" + (p.revisedTargetDate && p.targetDate && !p.completedDate ? "originally " + esc(fmtDate(p.targetDate)) : p.completedDate && p.targetDate ? "was due " + esc(fmtDate(p.targetDate)) : "&nbsp;") + "</small></dd></div></dl>" +
       (timeline(p) ? '<section class="panel"><h3>Timeline</h3>' + timeline(p) + "</section>" : "") +
+      delayPanel(p) +
       '<section class="panel"><h3>Who’s running it</h3><div class="people" style="margin:0">' +
       '<div class="person"><div class="role">Implementing agency</div><div class="name">' + esc(p.agency) + "</div>" + (heads.length ? heads.map(function (h) { return '<div class="detail">' + esc(h.name) + ", " + esc(h.role) + (h.confidence === "low" ? '<span class="flag">unconfirmed</span>' : "") + "</div>"; }).join("") : '<div class="detail muted">Head not on file</div>') + "</div>" +
       '<div class="person"><div class="role">Builds it</div><div class="name" style="font-weight:600">' + esc(p.contractor || "Not published") + "</div></div></div></section>" +
@@ -730,7 +951,7 @@
   }
 
   // ---------------------------------------------------------------- router
-  var VIEWS = { overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewMlas, funding: viewFunding, about: viewAbout };
+  var VIEWS = { overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewMlas, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
   function setTab(tab) {
     document.querySelectorAll("nav.tabs a").forEach(function (a) {
       var on = a.dataset.tab === tab;
@@ -750,6 +971,14 @@
         renderWard(w);
         document.getElementById("ward-detail").scrollIntoView({ behavior: "smooth", block: "start" });
       } else viewWards(w);
+      return;
+    }
+    var sub = name.match(/^(mla|co)-(.+)$/);
+    if (sub) {
+      setTab(sub[1] === "mla" ? "mlas" : "contracts");
+      if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+      (sub[1] === "mla" ? viewMla : viewCompany)(sub[2]);
+      window.scrollTo(0, 0);
       return;
     }
     var tab = VIEWS[name] ? name : "overview";
