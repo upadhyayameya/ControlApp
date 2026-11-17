@@ -388,3 +388,6 @@ details[open] > summary { margin-bottom: 4px; }
 .apply { margin: 8px 0 0; font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 8px; }
 .panel.stuck { border-color: var(--st-delayed); }
 @media (max-width: 760px) { .scheme-list, .agency-grid { grid-template-columns: 1fr; } }
+
+table.data.cases td { font-size: 0.82rem; }
+table.data.cases td:first-child { min-width: 150px; }

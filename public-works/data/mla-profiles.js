@@ -72,7 +72,34 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Post Graduate — M.Sc Physics From Wilson College In The Year 1996, B.Sc Physics From Mitibai College In The Year 1993",
     "age": 51,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "203 of 29-06-2004 Mahim Police Station",
+      "caseNo": "900034/2005",
+      "court": "9 Additional Chief Metropolitan Magistrate 9th Court Bandra",
+      "law": "IPC",
+      "sections": "142, 147, 149, 341",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "29 Sep 2023",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "320/2024 MRA Marg Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 37(1)(D), 135 Of Bombay Police Act 1951",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -219,7 +246,46 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate — B.Sc From Vasai College Mumbai University In The Year 1982, HSC From Gokhale Education Society Bordi In The Year 1979, SSC From SPH High School In The Year 1977",
     "age": 63,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "916/2021 Borivali Police Station",
+      "caseNo": "CC No 238/PW/2022",
+      "court": "Chief Metropolitan Magistrate Court, Borivali",
+      "law": "IPC",
+      "sections": "188, 269, 34",
+      "other": "Section- 51 Disaster Management Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "119/2021 Borivali Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "188, 269, 34",
+      "other": "Section- 51 Disaster Management Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "165/2021 Borivali Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "188, 269, 34",
+      "other": "Section- 51 Disaster Management Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -354,7 +420,22 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "189/08 Dahisar Police Thane, SV Road, Near Union Bank, Dahisar East Mumbai 68",
+      "caseNo": "2124/PW/10",
+      "court": "JMFC (Metropolitan Magistrate Court) 26th Court Borivali",
+      "law": "IPC",
+      "sections": "336, 427, 34",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -443,7 +524,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "12th Pass — Passed First Year of Junior College From K J Somaiya College of Science & Commerce Vidyavihar In The Year 1990-1991",
     "age": 50,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -615,7 +698,46 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "286/2001 Bhadrakali Police Station Nashik",
+      "caseNo": "660/2002",
+      "court": "Court No 6 JMMC Nashik",
+      "law": "IPC",
+      "sections": "386, 389, 504, 506, 509",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "1894(C)2003",
+      "court": "The Court of Chief Judicial Magistrate Patna Court",
+      "law": "IPC",
+      "sections": "420, 406, 138",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "478/2018",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -704,7 +826,70 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate Professional — B.A.L.L.B. from Vidhya Prasarak Mandal, T.M.C. Law College, Pune, Mumbai Vidyapeeth in 1982",
     "age": 64,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "397/17, Bhandup Police Thane LBS Marg, Bhandup (West), Dt-30.09.2017",
+      "caseNo": "177/MIASC/2019",
+      "court": "First Class Judicial Magistrate-53 court Mulund Mumbai",
+      "law": "IPC",
+      "sections": "341, 323, 504, 506(2), 34",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "1084/11, Bhandup Police Thane LBS Marg, Bhandup (West), Dt-15.09.2011",
+      "caseNo": null,
+      "court": "First Class Judicial Magistrate-53 court Mulund Mumbai",
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 37 (3) Mumbai Police Act.",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "365/07, Bhandup Police Thane LBS Marg, Bhandup (West), Dt-03.04.2007",
+      "caseNo": "39/PS/08",
+      "court": "First Class Judicial Magistrate-53 court Mulund Mumbai",
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 37 (1) (5), 37(3) 135, Mumbai Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "103/06, Bhandup Police Thane LBS Marg, Bhandup (West), Dt-17.04.2006",
+      "caseNo": "444/PW/06",
+      "court": "First Class Judicial Magistrate-53 court Mulund Mumbai",
+      "law": "IPC",
+      "sections": "143, 144, 147, 149, 323, 504",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "133/2005, 54/05, Antop Hill Police Station Wadala, Dt-10.05.2005",
+      "caseNo": "PW/100878/2009",
+      "court": "First Class Judicial Magistrate-37 court Esplanade Mumbai",
+      "law": "IPC",
+      "sections": "466, 467, 468, 471, 474, 420, 120B, 34",
+      "other": "Arms Act.",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -759,7 +944,46 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — 10th Pass From Bal Vikas Vidya Mandir Jogeshwari East Mumbai 400060 In The Year 1984",
     "age": 59,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": null,
+      "caseNo": "46/2023",
+      "court": "Honble Judicial Magistrate Mulund Court Mumbai",
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec.12, 18, 19, 20, 22, 23",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "16 May 2023",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "249/2005 Dadar Police Station",
+      "caseNo": "100821/2022",
+      "court": "City Civil And Sessions Court Mumbai",
+      "law": "IPC",
+      "sections": "143, 144, 145, 147, 149, 332, 353",
+      "other": "Sec. 37(3) 135 Mumbai Police Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "26 Sep 2022",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "253/2005 Dadar Police Station",
+      "caseNo": "100820/2022",
+      "court": "City Civil And Sessions Court Mumbai",
+      "law": "IPC",
+      "sections": "143, 144, 145, 146, 147, 341, 427, 332, 353",
+      "other": "Sec. 37(3) 135 Mumbai Police Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "26 Sep 2022",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -838,7 +1062,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "12th Pass — HSC From Ismail Yusuf College In The Year 1985-86",
     "age": 55,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -917,7 +1143,70 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate — B.Com, ML Dahanukar College Mumbai University in Year 1985",
     "age": 59,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "727/2021 in Samta Nagar Police Station",
+      "caseNo": "6853/PS/2024",
+      "court": "17th MM Court at Borivali",
+      "law": "IPC",
+      "sections": "141, 143, 149, 188",
+      "other": "Section 37(1), 135 of Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "735/2021 in Samta Nagar Police Station",
+      "caseNo": "6852/PS/2024",
+      "court": "17th MM Court at Borivali",
+      "law": "IPC",
+      "sections": "141, 143, 149, 188",
+      "other": "Section 37(1)(3), 135 of Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "812/2021 in Dindoshi Police Station",
+      "caseNo": "7970/PS/2024",
+      "court": "67th MM Court at Borivali",
+      "law": "IPC",
+      "sections": "141, 188, 269, 270",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "606/2021 in Dindoshi Police Station",
+      "caseNo": "7968/PS/2024",
+      "court": "67th MM Court at Borivali",
+      "law": "IPC",
+      "sections": "188, 269, 270",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "48/2022 in Malwani Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "143, 145, 147, 151, 152, 153, 342, 427, 188, 269, 270, 290",
+      "other": "Section 37(1), 135 of Maharashtra Police Act & Sec.2, 3, 4 of Epidemic Disease Act and Section 52 of National Disaster Management Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1062,7 +1351,34 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — FYJC from Lions PD Dalmiya College, MAlad West in Year 1978-79",
     "age": 62,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "130/2022 Kandivali West Police Station, SV Road Kandivali West",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "353, 143, 145, 147, 151, 152, 153, 188, 269, 270, 290",
+      "other": "Section- 37(3), 135 Mumbai Police Act, Sec 2,3,4 Epidemic Diseases Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "770/2021, Kandivali West Police Station, SV Road Kandivali West",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "143, 145, 149, 188, 269, 270",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1175,7 +1491,70 @@ window.PUBLIC_WORKS_MLA = {
     "education": "8th Pass — 8th Standard 1986, St. Anthony High School Malvani Church, Malad West Mumbai 400095",
     "age": 55,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "222/2024 Colaba Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 37(3), 135 of Maharashtra Police Act, 1951",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "0285/2023 Azad Maidan Police Station",
+      "caseNo": "1876/PS/2024",
+      "court": "40th Metropolitan Magistrate Court, Girgaon Mumbai",
+      "law": "IPC",
+      "sections": "143, 145, 188, 341",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "21 Oct 2024",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "0334/2022 Bandra Police Station",
+      "caseNo": "1061/C/2023",
+      "court": "12th Metropolitan Magistrate Court, Bandra",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 25, 4 of The Arms Act, Section- 37(1), 37(3), 135 of Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "Non-Cognizable Offence No 07/2009 Malvani Police Station",
+      "caseNo": "1518/PS/2011",
+      "court": "24th Metropolitan Magistrate Court, Borivali Mumbai",
+      "law": "IPC",
+      "sections": "504",
+      "other": "Section- 123(1) of the Representation of the People Act,",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "15 Dec 2012",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "Non-Cognizable Offence No 375/2004 Malwani Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "323, 504, 506",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1276,7 +1655,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "8th Pass — 8th Pass From Kundilal Govindram Seksaria Sarvodaya School In The Year 1977",
     "age": 63,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1355,7 +1736,34 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — SSC",
     "age": 62,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "162/2015 Sakinaka Police Station",
+      "caseNo": "2299/ps/2015",
+      "court": null,
+      "law": "IPC",
+      "sections": "279, 338",
+      "other": "Section- 134/A,134/B Motor Vehicle Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "417/24 Oshiwara Police Station",
+      "caseNo": "7577/2024",
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 35(1), 137 Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1456,7 +1864,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Post Graduate — Master of Management Studies (Personnel from Mahatma Gandhi Missions Institute of Management Studies and Research, University of Mumbai completed in 2000",
     "age": 48,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1579,7 +1989,22 @@ window.PUBLIC_WORKS_MLA = {
     "education": "8th Pass — 9th Std. Y J S Gujarati Night High School Tardeo, Mumbai Year 1990",
     "age": 52,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "0049/2024, Shahu Nagar Police Station, Mumbai",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "464, 465, 471",
+      "other": "Section-11(1)(a), 11(1)(b), 11(2)",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "Yes",
+      "appealStatus": "Criminal Write Petition (S.T) No. 2085 of 2024 in the Honourable Bombay High Court, at Bombay"
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1678,7 +2103,34 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate Professional — Bachelor Of Law LLB From K C College Of Law Mumbai University In The Year 1992, Bachelor Of Science From Mithibai College Mumbai University In The Year 1987",
     "age": 57,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "Azad Maidan Police Station Mumbai",
+      "caseNo": "CR No 380/1992",
+      "court": "CMM Court Mumbai",
+      "law": "IPC",
+      "sections": "143, 147, 149, 452, 341, 342",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "Bhoiwada Police Station Mumbai",
+      "caseNo": "144/P/2002, CR No 162/2022",
+      "court": "29th Metropolitan Magistrates Court Bhoiwada Mumbai",
+      "law": "IPC",
+      "sections": "353, 332, 427, 504, 34",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "28 Jun 2004",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1772,7 +2224,142 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "1940/2001 Kurla Police Station,",
+      "caseNo": "667/P/2001",
+      "court": "11th Court Metropolitan Magistrate Kurla Mumbai",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 37(3), 22, 51, 37(D)(E) of Mumbai Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "240/2005 Kurla Police Station",
+      "caseNo": "110343/2023",
+      "court": "City Civil and Session Court- 10 Mumbai",
+      "law": "IPC",
+      "sections": "353, 332, 323, 504, 506(2), 34",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "474/2011 Sakinaka Police Station",
+      "caseNo": "1750/PW/2014",
+      "court": "66th Honourable Metropolitan Magistrate Court, Andheri East",
+      "law": "IPC",
+      "sections": "324, 323, 143, 147, 149",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "WP/6023/2015",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 16(1) of Mumbai Municipal Corporation Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "Writ Appeal No. 509/2018",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- Mumbai Municipal Corporation Act, Sec. 3(1)A, 3 Maharashtra Local Authority Members Disqualification Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "3308/2022",
+      "court": "Supreme Court Delhi",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 100 of Representation of the People Act 1951",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "Writ Appeal No. 15943/2024",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 226 of Mumbai Municipal Corporation Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "Writ Appeal No. 3151/2024",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 226 of Mumbai Municipal Corporation Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "Writ Appeal No. 31935/2024",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 226 of Mumbai Municipal Corporation Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "Writ Appeal No. 29769/2024",
+      "court": "Mumbai High Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 226 of Mumbai Municipal Corporation Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "1644-1662/2024",
+      "court": "Supreme Court, Delhi",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- Maharashtra Legislative Council (Disqualification on ground of Defection). Rules, 1986",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1848,7 +2435,58 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — Secondary School Of education Passed in 1989 & And Appeared in Electrical Power System Diploma 2nd Year",
     "age": 52,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "761/2021 , Police Station Vikhroli Park site , Mumbai",
+      "caseNo": "2537/2023",
+      "court": "31 Chief Judicial Magistrate at Vikhroli",
+      "law": "IPC",
+      "sections": "188, 269, 34",
+      "other": "Section- 51b of Disaster Management Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "862/2021, Police Station Vikhroli Park site, Mumbai",
+      "caseNo": "2538/2023",
+      "court": "31 Chief Judicial Magistrate at Vikhroli",
+      "law": "IPC",
+      "sections": "188, 269, 34",
+      "other": "Section- 51b Of Disaster Management Act & Sec. 37A, 135 Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "158/2014, Police Station Vikhroli Park site , Mumbai",
+      "caseNo": "13/2017",
+      "court": "34 Addl. Session Judge At Mumbai",
+      "law": "IPC",
+      "sections": "141, 143, 147, 149, 324, 323, 341, 342, 504, 506(2)",
+      "other": "Section- 3(10) Atrocity Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "11 Oct 2018",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "286/2014 Police Station Ghatkopar, Mumbai",
+      "caseNo": "Misc Case no. 564/2018",
+      "court": "49, 3- Judicial Magistrate First Class",
+      "law": "IPC",
+      "sections": "507",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1927,7 +2565,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate — Bachelor of Commerce from Board of External Examinations Osmania University in 1990",
     "age": 55,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2067,7 +2707,130 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "29/2024, Mubarakpur Police Station, Mubarakpur Azamgarh Dist, UP",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "419, 420, 467, 471, 120B",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "R-0309/PBPT/LKW/2024",
+      "court": "Adjudicating Authority Under PBPT Act 1988- Delhi",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section-24 of PBPT Act 1988",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "06 Oct 2023",
+      "appeal": "Yes",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "R-0310/PBPT/LKW/2024",
+      "court": "Adjudicating Authority Under PBPT Act 1988- Delhi",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section-24 of PBPT Act-1988",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "06 Oct 2023",
+      "appeal": "Yes",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "R-0311/PBPT/LKW/2024",
+      "court": "Adjudicating Authority Under PBPT Act 1988-Delhi",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section-24 of PBPT Act 1988",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "06 Oct 2023",
+      "appeal": "Yes",
+      "appealStatus": null
+     },
+     {
+      "fir": "394/2023, Sir JJ Marg Police Station, Unit 2, Sir Jamshedi Jeejeebhoy Rd, Mazgaon, Mumbai-400008",
+      "caseNo": "PS/2501003/2024",
+      "court": "Additional Metropolitan Magistrate, Mazgaon, Mumbai-Judicial Magistrate (First Class), 25th court",
+      "law": "IPC",
+      "sections": "188",
+      "other": "Section-37(1)(3), 135 Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "776/2021, Shivaji Nagar Police Station",
+      "caseNo": "PS/5707027/2022",
+      "court": "Additional Metropolitan Magistrate, Kurla, Mumbai, Judicial Magistrate First Class, 57th Court",
+      "law": "IPC",
+      "sections": "188, 269",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "73/2018, Colaba Police Station",
+      "caseNo": "2270/PS/2020",
+      "court": "CMM Court, Bandra",
+      "law": "IPC",
+      "sections": "294B",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "23 Feb 2021",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "196/2018, Saraimeer Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "153A, 504",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "3006/04, Bazarpeth Police Station",
+      "caseNo": "158/04",
+      "court": "Bhusawal Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Section-36, 37(1)(3) Bombay Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "95/96, Economic Offence Wing, Mumbai Police",
+      "caseNo": "564/P/2000",
+      "court": "Metropolitan Magistrate 19th Court",
+      "law": "IPC",
+      "sections": "420, 465",
+      "other": null,
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "22 Jan 2000",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2190,7 +2953,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate Professional — Bachelor of Legislative Law (LL.B.) from Rizvi Law College Bandra (W) Mumbai under Mumbai University in 2024",
     "age": 37,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2318,7 +3083,22 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "241/2009 Azad Maidan Police Station",
+      "caseNo": "898/2019",
+      "court": "City Civil Sessions Court Mumbai, Additional Sessions Judge Court No. 54",
+      "law": "IPC",
+      "sections": "141, 142, 143, 146, 147, 149, 353, 342, 427",
+      "other": "Section- 51 & Section- 3, 7",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "04 Mar 2010",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2438,7 +3218,9 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2514,7 +3296,22 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — SSC FROM SARASWATI VIDHYAMANDIR MUMBAI UNIVERSITY YEAR 1975",
     "age": 69,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "232/2009 Vakola Police Station Santacruz",
+      "caseNo": "1644/PW/2012",
+      "court": "71st Metropolitan Magistrate Court",
+      "law": "IPC",
+      "sections": "143, 144, 145, 147, 148, 149, 427, 436, 353, 324",
+      "other": "Section- 37R/W 33R Mumbai Police Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "28 Jun 2012",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2595,7 +3392,9 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2711,7 +3510,22 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate Professional — LLB From G A Advani College In The Year 1995, B.Sc From Parle College In The Year 1992, HSC From Kirti College In The Year 1989, SSC From DGT High School In The Year 1987",
     "age": 52,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "315/2009 Khar Police Station",
+      "caseNo": "902068/2023",
+      "court": "Bandra Court",
+      "law": "IPC",
+      "sections": "341, 143, 145, 147, 149, 188",
+      "other": "Section- 37(3) 135 Bombay Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2810,7 +3624,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Post Graduate — M.D/M.S. Ayurveda in Branch Rachana Sharir from RA Pdar Medical College(Ayur) Mumbai in Year 2006",
     "age": 47,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2928,6 +3744,33 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
+    ],
+    "caseList": [
+     {
+      "fir": "438/2021,Sion Police Station , Mumbai",
+      "caseNo": "CC No. 2870/PS/2022",
+      "court": "Mazgaon Court",
+      "law": "IPC",
+      "sections": "143, 269, 149",
+      "other": "Section 37(1), 135 Bombay Police Act & 51(b), Disaster Management Act.",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "15 Dec 2023",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": [
+     {
+      "caseNo": "Session Case No. 136/19 FIR No. 229/17 Antophill Police Station, Mumbai",
+      "court": "54th City Civil & Session Court, Mumbai",
+      "law": "IPC",
+      "sections": "332, 353, 147, 149, 145",
+      "other": null,
+      "punishment": "All Punishment run concurrently (Total 6 Month)",
+      "convictedOn": "30 Oct 2023",
+      "appeal": "Yes",
+      "appealStatus": "Criminal Appeal No. 1330/23 before Bombay High Court @ IA No. 4444/23 @ IA444/23 Order date 18-12-2023 High Court Bombay stay of Convicting session Curt in session case no. 136/19"
+     }
     ]
    },
    "funds": {
@@ -3004,7 +3847,46 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — S.S.C. (Old) from Lokseva Vidyalaya, Naigaon, Mumbai-14 in 1973",
     "age": 71,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "438/2021, Sion Police Station Mumbai",
+      "caseNo": null,
+      "court": "Court Mazgaon",
+      "law": "IPC",
+      "sections": "143, 145, 147, 149, 188, 269",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "356/2004, Shivaji Park Police Station Mumbai",
+      "caseNo": null,
+      "court": "Addl. Chief Metropolitan Magistrate Court",
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec 37 (3), 135, 37 (1) (e) of Mumbai Police Act, 1951",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "287/2021, Marine Drive Police Station Mumbai",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "188, 169, 170",
+      "other": "Sec 51 B of Disaster Management Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3126,7 +4008,166 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "569/2022 Dadar Police Station",
+      "caseNo": "Charge Sheet not filed",
+      "court": null,
+      "law": "IPC",
+      "sections": "143, 144, 145, 146 147, 341, 427, 353, 135",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "267/2009 Shivaji Park Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": "141, 143, 145, 146, 147, 149, 441, 427, 449, 504",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "546/2023 Shivaji Park Police Station",
+      "caseNo": "Charge Sheet not filed",
+      "court": null,
+      "law": "IPC",
+      "sections": "354, 509, 34",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "10/2007 Shivaji Park Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 37(1) read with 135 of Maharashtra Police Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "197/2016 Dadar Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 3, 4 of Indian Defacement Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "27 Sep 2022",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "29/17 Dadar Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 3, 4 of Indian Defacement Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": null,
+      "caseNo": "CC/252/2020",
+      "court": "Unjha Taluka Court, Ahmedabad at Gujarat",
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 138 of Negotiable Instruments Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "95/2011 N.M.Joshi Marg Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": "147, 148, 149, 324, 427, 504",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "712/2022 Dadar Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": "143, 147, 148, 149, 385, 504, 506",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "279/06 Shivaji Park Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": "143, 144, 145, 146, 147, 148, 149, 151, 352, 324, 326, 332, 353, 427, 341",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "89/17 Dadar Police Station",
+      "caseNo": "Not aware whether Chargesheet is filed",
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 3, 4 of Indian Defacement Act",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "253/2005 Dadar Police Station",
+      "caseNo": "820/2022",
+      "court": "City Civil and Session Court at Mumbai",
+      "law": "IPC",
+      "sections": "143, 144, 145, 146, 147, 341, 427, 332, 353",
+      "other": "Section-37(3), 135 Maharashtra Police Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "21 Jun 2023",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "249/2005 Dadar Police Station",
+      "caseNo": "821/2022",
+      "court": "City Civil and Session Court at Mumbai",
+      "law": "IPC",
+      "sections": "143, 144, 145, 147, 149, 353, 332",
+      "other": "Section- 37(3), 135 Maharashtra Police Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "27 Sep 2022",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3222,7 +4263,22 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "709/2023, N.M. Joshi Marg Police Station",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": "143, 149, 336, 447",
+      "other": null,
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3331,7 +4387,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — XI Standard from Social Service League High School, Damodar Hall Compound Parel, Mumbai 400012 in Year 1970",
     "age": 71,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3399,7 +4457,9 @@ window.PUBLIC_WORKS_MLA = {
     "education": "12th Pass — H.S.C. Passed from Elphinstone Technical High School and Jounior College, Dhobi Talav, Mumbai in 1990",
     "age": 55,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3469,7 +4529,34 @@ window.PUBLIC_WORKS_MLA = {
       ],
       "verified": "2026-11-17"
      }
-    ]
+    ],
+    "caseList": [
+     {
+      "fir": "CR No-1401 of 2004, Railway Protection Force",
+      "caseNo": "440/PS/2024",
+      "court": "Metropolitan Magistrate, 40th Court at Girgaum Court. MHMM140009442024",
+      "law": "IPC",
+      "sections": null,
+      "other": "Sec. 174 (a) and 147 of Railway Act, 1989",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "16 Aug 2024",
+      "appeal": "No",
+      "appealStatus": null
+     },
+     {
+      "fir": "CR No-113 of 2020, Colaba Police Stn",
+      "caseNo": "Session Case No.256 of 2021",
+      "court": "Bombay City Civil and Sessions Court, 54th Court at Mumbai, MHCC020032032021",
+      "law": "IPC",
+      "sections": "353, 332, 341, 143, 147, 149, 188, 269, 427, 504",
+      "other": "Sec. 37, 135, MPA & Sec.3,4 PDPA",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "04 May 2023",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3567,7 +4654,22 @@ window.PUBLIC_WORKS_MLA = {
     "education": "10th Pass — SSC PASSED FROM DAWOODBHOY FAZALBHOY HIGH SCHOOL, MUMBAI IN 1978",
     "age": 61,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "0222/2024 OF COLABA POLICE STATION",
+      "caseNo": null,
+      "court": null,
+      "law": "IPC",
+      "sections": null,
+      "other": "Section- 37(3), r/w 135 of Maharashtra Police Act, 1951",
+      "chargesFramed": "No",
+      "chargesFramedOn": null,
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3708,7 +4810,22 @@ window.PUBLIC_WORKS_MLA = {
     "education": "Graduate Professional — LLB from Govt Law College, Mumbai in Year 2001",
     "age": 47,
     "laterChecked": "2026-11-17",
-    "laterCases": []
+    "laterCases": [],
+    "caseList": [
+     {
+      "fir": "CR No. 113/2020 Colaba Police Station, Mandlok Road, Scindia Society, Police Colony Apollo Bandar, Colaba Mumbai Maharashtra 400001",
+      "caseNo": "Session Case No. 256/2021",
+      "court": "City Civil & Session Court, Mumbai",
+      "law": "IPC",
+      "sections": "353, 332, 341, 143, 147, 149, 188, 269, 427, 504",
+      "other": "Section- 37, 135 of Maharshtra Police Act, Sec 3, 4 of Epidemic Disease Act, Sec 3, 4 of Prevention of Damage Public Property Act",
+      "chargesFramed": "Yes",
+      "chargesFramedOn": "04 May 2023",
+      "appeal": "No",
+      "appealStatus": null
+     }
+    ],
+    "convictionList": []
    },
    "funds": {
     "fundAllottedCr": null,
