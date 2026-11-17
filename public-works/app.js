@@ -614,7 +614,7 @@
     var shown = list.slice(0, tlimit);
     var box = document.getElementById("t-results");
     box.innerHTML = '<div class="toolbar"><span><b class="tnum">' + list.length + "</b> tenders</span></div>" +
-      (list.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Work</th><th>Body and department</th><th>Ward</th><th>Closes</th></tr></thead><tbody>' + shown.map(function (t) {
+      (list.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Work</th><th>Body and department</th><th>Ward</th><th class="num">Estimated value</th><th>Closes</th></tr></thead><tbody>' + shown.map(function (t) {
         return '<tr class="click" data-tender="' + esc(tenderSlug(t.id)) + '" tabindex="0"><td><b>' + esc(t.title) + '</b><div class="sub"><span class="mono">' + esc(t.id) + "</span>" + (t.ref ? " · " + esc(t.ref) : "") + " · published " + esc(fmtDT(t.published)) + (t.status === "Closed" ? " · closed, last seen " + fmtDate(t.lastSeen) : "") + "</div></td><td>" + esc(t.org) + '<div class="sub">' + esc(t.unit || "") + "</div></td><td>" + (t.ward ? wcode(t.ward) : '<span class="muted">—</span>') + '</td><td class="num" style="text-align:left">' + esc(fmtDT(t.closing)) + "</td></tr>";
       }).join("") + "</tbody></table></div>" : '<div class="empty">No tenders match.</div>') +
       (list.length > shown.length ? '<div class="more"><button type="button" class="btn" id="t-more">Show more</button></div>' : "");
@@ -802,14 +802,10 @@
       statBox("Praja report card", fund && fund.score != null ? fund.score.toFixed(1) + '<small>/100 · rank ' + fund.rank + " of 33</small>" : '<span class="muted" style="font-size:1.1rem">not rated</span>', fund && fund.score != null ? "attendance, questions, fund use, record" : fund && fund.notEvaluatedReason ? esc(fund.notEvaluatedReason) : "no published score") +
       "</section>" +
       ((prof.work || []).length + (prof.news || []).length < 4 ? '<div class="note">Coverage for this MLA is incomplete. Several English news sites block automated reading and Marathi newspapers are not yet covered, so few items have been found and checked. An empty list does not mean nothing was done.</div>' : "") +
-      '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">On record</div><h3>What they have done for the area</h3></div><p>Works the MLA inaugurated, announced, funded or raised, as reported. Each item links its source.</p></div>' +
-      ((prof.work || []).length ? '<ol class="events">' + prof.work.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (w) {
-        return '<li><div class="ev-head"><span class="pill" style="color:var(--accent)">' + esc(w.kind || "Reported") + '</span><span class="ev-date">' + esc(fmtDate(w.date)) + "</span></div><div>" + esc(w.what) + (w.projectId && PROJECTS.some(function (q) { return q.id === w.projectId; }) ? ' <a href="#p-' + esc(w.projectId) + '">project →</a>' : "") + '</div><div class="sub">' + srcLinks([w.source]) + (w.verified ? " · source re-checked " + esc(fmtDate(w.verified)) : "") + "</div></li>";
-      }).join("") + "</ol>" : '<p class="muted" style="margin:0">Nothing found and checked yet.</p>') + "</section>" +
-      '<section class="panel"><div class="section-head"><div><div class="eyebrow">In the news</div><h3>Recent coverage</h3></div><p>Summaries in our words; follow the link for the full report.</p></div>' +
-      ((prof.news || []).length ? '<ol class="events">' + prof.news.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (n) {
-        return '<li><div class="ev-head"><span class="ev-date">' + esc(fmtDate(n.date)) + "</span></div><div>" + esc(n.headline) + '</div><div class="sub">' + srcLinks([n.source]) + (n.verified ? " · source re-checked " + esc(fmtDate(n.verified)) : "") + "</div></li>";
-      }).join("") + "</ol>" : '<p class="muted" style="margin:0">Nothing found and checked yet.</p>') + "</section></div>" +
+      recordSection(((prof.work || []).map(function (w) { return { date: w.date, category: itemCategory(w, false), text: w.what, source: w.source, verified: w.verified, projectId: w.projectId }; }))
+        .concat((prof.news || []).map(function (n) { return { date: n.date, category: itemCategory(n, true), text: n.headline, source: n.source, verified: n.verified }; }))
+        .concat(((aff || {}).laterCases || []).map(function (c) { return { date: c.date, category: "Legal matter", text: c.kind + ": " + c.summary, source: (c.sources || [])[0], verified: c.verified }; })),
+        { note: "Work and news were searched the same way for every MLA, in English and Marathi papers, and each item was re-checked against its source." }) +
       '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">Money</div><h3>MLA local development fund</h3></div></div>' +
       (scheme ? '<p style="margin:0 0 10px;font-size:.92rem">Every Maharashtra MLA gets ' + (scheme.annualAllocationCr ? crore(scheme.annualAllocationCr) + " a year" : "an annual allocation") + " for local works. The MLA recommends works; the district Collector approves them and gets them built. Unspent money lapses at the end of the year. The state does not publish spending per MLA.</p>" : "") +
       (fund && fund.evaluated ? '<dl class="facts-list"><dt>Fund use</dt><dd>' + esc(band || "—") + " of the sanctioned amount</dd><dt>Attendance</dt><dd>" + esc((fund.attendanceBand || "—").replace(/\s*\(.*\)$/, "")) + "</dd>" +
@@ -1242,8 +1238,151 @@
     document.getElementById("close").focus({ preventScroll: true });
   }
 
+  // ---------------------------------------------------------------- representatives: MLAs, corporators, MPs
+  var MPS = (window.PUBLIC_WORKS_MPS || { mps: [] }).mps;
+  var RECORDS = window.PUBLIC_WORKS_RECORDS || { people: {} }; // id -> { record: [...], searched, verified }
+  var CATS = [
+    { key: "Work for the area", css: "--st-completed" },
+    { key: "Raised an issue", css: "--accent" },
+    { key: "Recognition", css: "--st-partial" },
+    { key: "Controversy", css: "--st-delayed" },
+    { key: "Legal matter", css: "--st-stalled" },
+    { key: "Politics", css: "--st-notstarted" },
+  ];
+  function catPill(c) { var x = CATS.find(function (k) { return k.key === c; }) || CATS[5]; return '<span class="pill" style="color:var(' + x.css + ')">' + esc(c) + "</span>"; }
+  // Older MLA items predate categories: map their kind to the nearest category until reclassified.
+  function itemCategory(it, isNews) {
+    if (it.category) return it.category;
+    if (!isNews) return /Raised|Demanded/.test(it.kind || "") ? "Raised an issue" : "Work for the area";
+    return "Politics";
+  }
+  function recordSection(items, opts) {
+    opts = opts || {};
+    var id = "rec-" + Math.random().toString(36).slice(2, 8);
+    var counts = {};
+    items.forEach(function (it) { counts[it.category] = (counts[it.category] || 0) + 1; });
+    var html = '<section class="panel"><div class="section-head"><div><div class="eyebrow">Public record</div><h3>What they have done, and what they are criticised for</h3></div><p>Each entry is one reported fact with its source, sorted by what it is, not by our opinion. Controversies state who alleged what.</p></div>';
+    if (!items.length) return html + '<p class="muted" style="margin:0">' + esc(opts.empty || "Nothing found and checked yet.") + "</p></section>";
+    html += '<div class="legend" id="' + id + '-f"><button type="button" class="chip" data-cat="" aria-pressed="true">All <b>' + items.length + "</b></button>" +
+      CATS.filter(function (c) { return counts[c.key]; }).map(function (c) { return '<button type="button" class="chip" data-cat="' + esc(c.key) + '" aria-pressed="false"><span class="swatch" style="background:var(' + c.css + ')"></span>' + esc(c.key) + " <b>" + counts[c.key] + "</b></button>"; }).join("") + "</div>";
+    html += '<ol class="events" id="' + id + '" style="margin-top:10px">' + items.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (it) {
+      return '<li data-c="' + esc(it.category) + '"><div class="ev-head">' + catPill(it.category) + '<span class="ev-date">' + esc(fmtDate(it.date)) + "</span></div><div>" + esc(it.text) + (it.projectId && PROJECTS.some(function (q) { return q.id === it.projectId; }) ? ' <a href="#p-' + esc(it.projectId) + '">project →</a>' : "") + '</div><div class="sub">' + srcLinks([it.source]) + (it.verified ? " · source re-checked " + esc(fmtDate(it.verified)) : "") + "</div></li>";
+    }).join("") + "</ol>" + (opts.note ? '<p class="axis-note">' + opts.note + "</p>" : "") + "</section>";
+    setTimeout(function () {
+      var f = document.getElementById(id + "-f"); if (!f) return;
+      bindClicks(f, "[data-cat]", function (el) {
+        f.querySelectorAll("[data-cat]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === el)); });
+        document.querySelectorAll("#" + id + " li").forEach(function (li) { li.hidden = !!el.dataset.cat && li.dataset.c !== el.dataset.cat; });
+      });
+    }, 0);
+    return html;
+  }
+  function peopleRecord(id) {
+    var r = (RECORDS.people || {})[id];
+    return r ? (r.record || []).map(function (x) { return { date: x.date, category: x.category, text: x.what, source: x.source, verified: x.verified }; }) : null;
+  }
+
+  var repGroup = "mlas", repQ = "", repParty = "";
+  function viewReps() {
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Your representatives</div><h2>Learn about the people you elect</h2><p>Who represents each part of Mumbai in the BMC, the state Assembly and Parliament: what they declared under oath, the work they have done, the issues they raise, and the controversies and legal matters reported about them. Everything links to its source.</p></section>' +
+      ((CORP.office || []).length ? '<section class="panel"><div class="section-head"><div><div class="eyebrow">In charge</div><h3>City and state office-holders</h3></div></div><div class="people" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr));margin:0">' +
+        CORP.office.map(function (o) { return '<a class="person" style="text-decoration:none;color:inherit" href="#cor-' + esc(o.ward) + '"><div class="role">BMC · ' + esc(o.role) + '</div><div class="name">' + esc(o.name) + '</div><div class="detail">' + esc(o.party) + " · ward " + esc(o.ward) + "</div></a>"; }).join("") +
+        OFFICIALS.filter(function (o) { return !/Mayor/.test(o.role); }).map(function (o) { return '<div class="person"><div class="role">' + esc(o.role) + '</div><div class="name">' + esc(o.name) + "</div></div>"; }).join("") + "</div></section>" : "") +
+      '<section class="panel"><div class="toolbar" style="margin-top:0"><span class="seg" role="tablist" aria-label="Which representatives">' +
+      [["mlas", "MLAs", MLAS.length], ["corporators", "Corporators", CORP.corporators.length], ["mps", "MPs", MPS.length]].map(function (g) { return '<button type="button" role="tab" data-g="' + g[0] + '" aria-pressed="' + (repGroup === g[0]) + '">' + g[1] + " " + g[2] + "</button>"; }).join("") +
+      '</span><span class="actions"><div class="field search" style="width:min(320px,100%)">' + ICON_SEARCH + '<input type="search" id="rep-q" placeholder="Name, area, ward or party" aria-label="Search representatives" value="' + esc(repQ) + '"></div></span></div><div id="rep-list"></div></section>';
+    bindClicks(app, "[data-g]", function (el) { repGroup = el.dataset.g; repQ = ""; viewReps(); });
+    document.getElementById("rep-q").addEventListener("input", debounce(function (e) { repQ = e.target.value; renderRepList(); }, 150));
+    renderRepList();
+  }
+  function renderRepList() {
+    var box = document.getElementById("rep-list"); if (!box) return;
+    var q = repQ.toLowerCase();
+    if (repGroup === "mlas") { box.innerHTML = '<div id="m-results"></div>'; mq = repQ; renderMlas(); return; }
+    if (repGroup === "mps") {
+      box.innerHTML = '<div class="cards">' + MPS.filter(function (m) { return !q || [m.name, m.constituency, m.party, m.segments.join(" ")].join(" ").toLowerCase().indexOf(q) !== -1; }).map(function (m) {
+        var rec = peopleRecord(m.id);
+        return '<a class="card" style="text-decoration:none;color:inherit" href="#' + esc(m.id) + '"><div class="top"><span class="eyebrow">Lok Sabha · ' + esc(m.constituency) + "</span></div><h4>" + esc(m.name) + '</h4><div class="where">' + esc(m.party) + " · covers " + esc(m.segments.join(", ")) + '</div><dl class="facts"><div><dt>Declared cases</dt><dd>' + m.affidavit.pendingCases + "</dd></div><div><dt>Assets</dt><dd>" + crore(m.affidavit.totalAssetsCr) + "</dd></div><div><dt>Record items</dt><dd>" + (rec ? rec.length : "—") + "</dd></div></dl></a>";
+      }).join("") + "</div>";
+      return;
+    }
+    var rows = CORP.corporators.filter(function (c) { return !q || [c.name, c.area, c.party, "ward " + c.ward, c.adminWard].join(" ").toLowerCase().indexOf(q) !== -1; });
+    box.innerHTML = '<div class="table-scroll"><table class="data"><thead><tr><th class="num">Ward</th><th>Corporator</th><th>Party</th><th>Area</th><th>BMC ward</th><th class="num">Projects</th><th class="num">Record</th></tr></thead><tbody>' +
+      rows.map(function (c) {
+        var n = PROJECTS.filter(function (p) { return CORP_PARTS[p.id] && CORP_PARTS[p.id][c.ward]; }).length, rec = peopleRecord("cor-" + c.ward);
+        return '<tr class="click" data-cor="' + esc(c.ward) + '" tabindex="0"><td class="num muted">' + esc(c.ward) + "</td><td><b>" + (c.vacant ? '<span class="muted">Vacant</span> ' : "") + esc(c.name) + "</b>" + (c.vacant ? '<div class="sub">' + esc(c.statusNote) + "</div>" : "") + "</td><td>" + esc(c.party) + '</td><td class="sub">' + esc(c.area || "") + "</td><td>" + wcode(c.adminWard) + '</td><td class="num">' + (n || '<span class="muted">0</span>') + '</td><td class="num">' + (rec ? rec.length : '<span class="muted">—</span>') + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+    bindClicks(box, "[data-cor]", function (el) { go("#cor-" + el.dataset.cor); });
+  }
+
+  function viewCorporator(n) {
+    var c = CORP_BY_WARD[n]; if (!c) { viewReps(); return; }
+    var ps = PROJECTS.filter(function (p) { return CORP_PARTS[p.id] && CORP_PARTS[p.id][c.ward]; });
+    var aw = WARD_PARENT[c.adminWard] || c.adminWard, info = WARD_INFO[aw] || {};
+    var tenders = OPEN_TENDERS.filter(function (t) { return tenderMapWard(t) === aw; });
+    var roles = (CORP.office || []).filter(function (o) { return String(o.ward) === String(c.ward); });
+    var rec = peopleRecord("cor-" + c.ward);
+    var feat = EWARD_GEO.find(function (f) { return String(f.properties.ward) === String(c.ward); });
+    app.innerHTML = '<p style="margin:0"><a href="#mlas" data-back="corporators">← All representatives</a></p>' +
+      '<section class="lead"><div class="eyebrow">Corporator · BMC electoral ward ' + esc(c.ward) + " · " + esc(wardTitle(aw)) + "</div><h2>" + (c.vacant ? "Seat vacant" : esc(c.name)) + '</h2><p style="margin-top:6px">' + (c.vacant ? esc(c.statusNote) : esc(c.party) + (c.area ? " · " + esc(c.area) : "") + (roles.length ? " · " + esc(roles.map(function (r) { return r.role; }).join(", ")) : "")) + "</p>" +
+      (c.partyNote ? '<p class="axis-note">' + esc(c.partyNote) + "</p>" : "") + (c.nameNote ? '<p class="axis-note">' + esc(c.nameNote) + "</p>" : "") + "</section>" +
+      '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">Ward</div><h3>Electoral ward ' + esc(c.ward) + "</h3></div></div>" +
+      (feat ? '<div class="ward-shape" style="max-width:220px">' + shapeSvg(feat.geometry, ps, c.ward) + "</div>" : "") +
+      '<dl class="facts-list" style="margin-top:10px"><dt>Elected</dt><dd>January 2026 BMC election</dd><dt>BMC ward office</dt><dd><a href="#ward-' + wardSlug(aw) + '">' + esc(wardTitle(aw)) + "</a> · officer " + esc(info.assistantCommissioner || "—") + "</dd>" + (info.phone ? "<dt>Ward control room</dt><dd>" + esc(info.phone) + "</dd>" : "") + "<dt>Source</dt><dd>" + srcLinks(CORP.sources) + "</dd></dl></section>" +
+      aqiCardForWard(feat) + "</div>" +
+      recordSection(rec || [], { empty: rec ? "Nothing found and checked yet." : "Not researched yet. Records for all 227 corporators are being compiled and checked.", note: "Searched the same way for every corporator. Few entries usually means little coverage, not little work." }) +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">In this electoral ward</div><h3>' + plural(ps.length, "project") + " and " + plural(tenders.length, "open tender") + " in " + esc(wardTitle(aw)) + "</h3></div></div>" +
+      (ps.length ? '<div class="cards">' + sortList(ps).map(card).join("") + "</div>" : '<p class="muted" style="margin:0">No tracked projects in this electoral ward.</p>') + "</section>";
+    bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
+    var back = app.querySelector("[data-back]"); if (back) back.addEventListener("click", function () { repGroup = "corporators"; });
+  }
+  function aqiCardForWard(feat) {
+    if (!feat || !AQI.stations.length) return "";
+    var ring = feat.geometry.coordinates.reduce(function (a, p) { return p[0].length > a.length ? p[0] : a; }, []);
+    var x = 0, y = 0; ring.forEach(function (c) { x += c[0]; y += c[1]; });
+    return aqiCard(y / ring.length, x / ring.length);
+  }
+  function shapeSvg(geom, ps, eward) {
+    var pts = [].concat.apply([], geom.coordinates.map(function (p) { return p[0]; }));
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    pts.forEach(function (c) { minX = Math.min(minX, c[0]); maxX = Math.max(maxX, c[0]); minY = Math.min(minY, c[1]); maxY = Math.max(maxY, c[1]); });
+    var kx = Math.cos(((minY + maxY) / 2) * Math.PI / 180), W = (maxX - minX) * kx, H = maxY - minY, S = 160 / Math.max(W, H);
+    function xy(lng, lat) { return [(5 + (lng - minX) * kx * S + (160 - W * S) / 2).toFixed(1), (5 + (maxY - lat) * S + (160 - H * S) / 2).toFixed(1)]; }
+    var d = geom.coordinates.map(function (poly) { return poly.map(function (ring) { return "M" + ring.map(function (c) { return xy(c[0], c[1]).join(","); }).join("L") + "Z"; }).join(""); }).join("");
+    var dots = "";
+    ps.forEach(function (p) { (ROUTES[p.id] || []).forEach(function (path) { path.forEach(function (pt) {
+      if (pt[1] < minX - 0.002 || pt[1] > maxX + 0.002 || pt[0] < minY - 0.002 || pt[0] > maxY + 0.002) return;
+      var c = xy(pt[1], pt[0]); dots += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="4" fill="' + statusColor(p.status) + '" stroke="var(--surface)" stroke-width="1.5"><title>' + esc((p.shortName || p.name) + ": " + pt[2]) + "</title></circle>";
+    }); }); });
+    return '<svg viewBox="0 0 170 170" role="img" aria-label="Outline of electoral ward ' + esc(eward) + '"><path d="' + d + '" fill="var(--surface-2)" stroke="var(--ink-3)" stroke-width="1.2" fill-rule="evenodd"/>' + dots + "</svg>";
+  }
+
+  function viewMp(id) {
+    var m = MPS.find(function (x) { return x.id === id; }); if (!m) { viewReps(); return; }
+    var a = m.affidavit, rec = peopleRecord(m.id), extra = (RECORDS.mps || {})[m.id] || {};
+    var ps = PROJECTS.filter(function (p) { return (p.constituencies || []).some(function (c) { return m.segments.indexOf(c) !== -1; }); });
+    app.innerHTML = '<p style="margin:0"><a href="#mlas" data-back="mps">← All representatives</a></p>' +
+      '<section class="lead"><div class="eyebrow">Member of Parliament · Lok Sabha · ' + esc(m.constituency) + "</div><h2>" + esc(m.name) + '</h2><p style="margin-top:6px">' + esc(extra.party || m.party) + (extra.partyNote ? " · " + esc(extra.partyNote) : "") + ((extra.posts || []).length ? " · " + esc(extra.posts.join("; ")) : "") + "</p></section>" +
+      '<section class="stats"><div class="stat"><span class="label">Assembly segments</span><span class="value">' + m.segments.length + '</span><span class="sub">' + esc(m.segments.join(", ")) + '</span></div>' +
+      '<div class="stat' + (a.pendingCases ? " alert" : "") + '"><span class="label">Cases declared pending</span><span class="value">' + a.pendingCases + '</span><span class="sub">sworn in the 2024 election affidavit; not convictions</span></div>' +
+      '<div class="stat"><span class="label">Declared assets</span><span class="value">' + (a.totalAssetsCr != null ? a.totalAssetsCr.toLocaleString("en-IN") : "—") + '<small>cr</small></span><span class="sub">liabilities ' + crore(a.liabilitiesCr) + "</span></div>" +
+      '<div class="stat"><span class="label">MP fund (MPLADS)</span><span class="value">' + (extra.mplads && extra.mplads.spentCr != null ? extra.mplads.spentCr + "<small>cr spent</small>" : '<span class="muted" style="font-size:1.1rem">not published</span>') + '</span><span class="sub">' + (extra.mplads && extra.mplads.allocatedCr != null ? "of " + crore(extra.mplads.allocatedCr) + " allocated" : "₹5 cr a year per MP") + "</span></div></section>" +
+      recordSection(rec || [], { empty: rec ? "Nothing found and checked yet." : "Being compiled and checked." }) +
+      '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">MLAs in this seat</div><h3>The six Assembly constituencies</h3></div></div><div class="people" style="margin:0">' +
+      m.segments.map(function (cn) { var x = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(x.no) + '"><div class="role">' + esc(cn) + '</div><div class="name">' + esc(x.name || "—") + '</div><div class="detail">' + esc(x.party || "") + "</div></a>"; }).join("") + "</div></section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Election affidavit, 2024</div><h3>Declared cases and assets</h3></div></div>' + affidavitBlock(a) + "</section></div>" +
+      '<section class="panel"><div class="section-head"><div><h3>' + plural(ps.length, "project") + " in this Lok Sabha seat</h3></div></div>" + (ps.length ? '<div class="cards">' + sortList(ps).map(card).join("") + "</div>" : "") + "</section>";
+    bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
+    var back = app.querySelector("[data-back]"); if (back) back.addEventListener("click", function () { repGroup = "mps"; });
+  }
+  function affidavitBlock(a) {
+    return '<dl class="facts-list"><dt>Cases declared pending</dt><dd>' + a.pendingCases + "</dd><dt>Convictions declared</dt><dd>" + a.convictedCases + "</dd><dt>Assets</dt><dd>" + crore(a.totalAssetsCr) + "</dd><dt>Liabilities</dt><dd>" + crore(a.liabilitiesCr) + "</dd>" + (a.age ? "<dt>Age at election</dt><dd>" + a.age + "</dd>" : "") + (a.education ? "<dt>Education</dt><dd>" + esc(a.education) + "</dd>" : "") + (a.profession ? "<dt>Profession</dt><dd>" + esc(a.profession) + "</dd>" : "") + '<dt>Source</dt><dd><a href="' + esc(safeUrl(a.mynetaUrl)) + '" target="_blank" rel="noopener">MyNeta affidavit summary (ADR)</a></dd></dl>' +
+      ((a.caseList || []).length ? '<h4 style="margin:14px 0 8px">Each case, as declared</h4><div class="table-scroll"><table class="data cases"><thead><tr><th>FIR / case</th><th>Court</th><th>Law and sections</th><th>Charges framed</th></tr></thead><tbody>' +
+        a.caseList.map(function (c) { return "<tr><td>" + esc(c.fir || "—") + (c.caseNo ? '<div class="sub">' + esc(c.caseNo) + "</div>" : "") + "</td><td>" + esc(c.court || "—") + "</td><td>" + esc([c.law, c.sections].filter(Boolean).join(" ") || "—") + (c.other ? '<div class="sub">' + esc(c.other) + "</div>" : "") + "</td><td>" + esc(c.chargesFramed || "—") + "</td></tr>"; }).join("") + "</tbody></table></div>" : "");
+  }
+
   // ---------------------------------------------------------------- router
-  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewMlas, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
+  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
   function setTab(tab) {
     document.querySelectorAll("nav.tabs a").forEach(function (a) {
       var on = a.dataset.tab === tab;
@@ -1266,6 +1405,8 @@
       return;
     }
     if (/^at-\d+-\d+/.test(name)) { setTab("area"); if (leafletMap) { leafletMap.remove(); leafletMap = null; } viewArea(name); window.scrollTo(0, 0); return; }
+    var rm = name.match(/^(cor-(\d+)|mp-[a-z-]+)$/);
+    if (rm) { setTab("mlas"); if (leafletMap) { leafletMap.remove(); leafletMap = null; } if (rm[2]) viewCorporator(rm[2]); else viewMp(name); window.scrollTo(0, 0); return; }
     var sub = name.match(/^(mla|co)-(.+)$/);
     if (sub) {
       setTab(sub[1] === "mla" ? "mlas" : "contracts");
