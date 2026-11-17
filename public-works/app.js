@@ -249,6 +249,48 @@
   }
   function go(hash) { if (location.hash === hash) route(); else location.hash = hash; }
 
+
+  // ---------------------------------------------------------------- icons (stroke icons, 20px box)
+  var IC = {
+    pin: '<path d="M10 18s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10z"/><circle cx="10" cy="8" r="2.2"/>',
+    crane: '<path d="M4 18V3h1.5M4 3l12 3M5.5 3L4 6M12 6v4M10.5 10h3v3h-3zM2 18h8"/>',
+    people: '<circle cx="7" cy="7" r="2.6"/><path d="M2.5 16c.6-2.7 2.3-4 4.5-4s3.9 1.3 4.5 4"/><circle cx="14" cy="8" r="2.1"/><path d="M12.6 12.3c.4-.2.9-.3 1.4-.3 1.8 0 3.2 1.1 3.6 3.4"/>',
+    rupee: '<path d="M6 4h9M6 7.5h9M6 4h3.5a3.5 3.5 0 0 1 0 7H6l7 6"/>',
+    air: '<path d="M2 8h10a2.5 2.5 0 1 0-2.5-2.5M2 12h13a2.5 2.5 0 1 1-2.5 2.5M2 16h6"/>',
+    scheme: '<rect x="4" y="2.5" width="12" height="15" rx="1.5"/><path d="M7 7h6M7 10h6M7 13h3.5"/>',
+    map: '<path d="M2 5l5-2 6 2 5-2v12l-5 2-6-2-5 2z"/><path d="M7 3v12M13 5v12"/>',
+    ward: '<path d="M3 17V8l7-5 7 5v9z"/><path d="M8 17v-5h4v5"/>',
+    train: '<rect x="5" y="2.5" width="10" height="12" rx="2.5"/><path d="M5 9h10M8 17.5l1-3M12 17.5l-1-3"/><circle cx="8" cy="12" r=".6"/><circle cx="12" cy="12" r=".6"/>',
+    bridge: '<path d="M2 14h16M3 14V9c2.5 0 4-2 7-2s4.5 2 7 2v5M6 14v-4.5M10 14V7M14 14v-4.5"/>',
+    drop: '<path d="M10 2.5s5 5.6 5 9a5 5 0 0 1-10 0c0-3.4 5-9 5-9z"/>',
+    house: '<path d="M3 9l7-6 7 6M5 8v9h10V8"/><path d="M8.5 17v-4h3v4"/>',
+    health: '<rect x="3" y="3" width="14" height="14" rx="3"/><path d="M10 6.5v7M6.5 10h7"/>',
+    bin: '<path d="M4 6h12M8 6V4h4v2M5.5 6l1 11h7l1-11"/>',
+    pillar: '<path d="M3 17h14M4 7h12M10 3l7 4H3zM6 7v8M10 7v8M14 7v8"/>',
+    anchor: '<circle cx="10" cy="4.5" r="1.8"/><path d="M10 6.3V17M6 9h8M3.5 12c.5 3 3.2 5 6.5 5s6-2 6.5-5"/>',
+    book: '<path d="M3 4.5C5 3.5 8 3.5 10 5c2-1.5 5-1.5 7-.5V16c-2-1-5-1-7 .5-2-1.5-5-1.5-7-.5z"/><path d="M10 5v11.5"/>',
+    bolt: '<path d="M11 2L4 11h5l-1 7 7-9h-5z"/>',
+    dot: '<circle cx="10" cy="10" r="3"/>',
+  };
+  function icon(name, size) { return '<svg class="ic" width="' + (size || 18) + '" height="' + (size || 18) + '" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + (IC[name] || IC.dot) + "</svg>"; }
+  function sectorIcon(sec) {
+    sec = sec || "";
+    return icon(/rail|metro|train/i.test(sec) ? "train" : /road|bridge/i.test(sec) ? "bridge" : /water|flood|sanit/i.test(sec) ? "drop" : /hous/i.test(sec) ? "house" : /health/i.test(sec) ? "health" : /waste/i.test(sec) ? "bin" : /heritage|public space/i.test(sec) ? "pillar" : /port|water ?front/i.test(sec) ? "anchor" : /educat/i.test(sec) ? "book" : /power|energy/i.test(sec) ? "bolt" : "dot", 15);
+  }
+  function exploreTiles(data) {
+    var worst = (window.PUBLIC_WORKS_AQI || { stations: [] }).stations.slice().sort(function (a, b) { return b.aqi - a.aqi; })[0];
+    var tiles = [
+      ["#area", "pin", "Your area", "Your corporator, MLA and ward officer, projects within 1.5 km, and the air you breathe.", "Pick a locality"],
+      ["#mlas", "people", "Your representatives", "What MLAs, corporators and MPs declared under oath, did, and were criticised for.", MLAS.length + " MLAs · " + CORP.corporators.length + " corporators · " + (window.PUBLIC_WORKS_MPS ? window.PUBLIC_WORKS_MPS.mps.length : 0) + " MPs"],
+      ["#explorer", "crane", "Projects", "Status, cost, delays and what is blocking each one.", PROJECTS.length + " projects · " + data.late + " delayed or stalled"],
+      ["#contracts", "rupee", "Money", "Who wins contracts, live tenders, and who funds what.", CONTRACTS.companies.length + " companies · " + OPEN_TENDERS.length + " open tenders"],
+      ["#map", "air", "Air and map", "Official air-quality stations and every project on the map.", worst ? "Worst now: " + stationName(worst) + ", AQI " + worst.aqi : "Map of all projects"],
+      ["#schemes", "scheme", "Schemes", "Government yojanas reaching Mumbai, their status and how to apply.", YOJANAS.length + " schemes"],
+    ];
+    return '<section class="explore" aria-label="Explore">' + tiles.map(function (t) {
+      return '<a class="tile" href="' + t[0] + '"><span class="tile-ic">' + icon(t[1], 22) + '</span><span class="tile-t">' + esc(t[2]) + '</span><span class="tile-d">' + esc(t[3]) + '</span><span class="tile-m">' + esc(t[4]) + " →</span></a>";
+    }).join("") + "</section>";
+  }
   // ---------------------------------------------------------------- overview
   function viewOverview() {
     var total = PROJECTS.reduce(function (s, p) { return s + (cost(p) || 0); }, 0);
@@ -266,17 +308,12 @@
     var topOver = PROJECTS.filter(function (p) { return overrunPct(p) >= 5; }).sort(function (a, b) { return overrunPct(b) - overrunPct(a); }).slice(0, 8);
 
     app.innerHTML =
-      '<section class="lead"><div class="eyebrow">Mumbai · ' + esc(fmtDate(META.lastUpdated)) + '</div>' +
-      "<h2>" + PROJECTS.length + " government projects worth " + crore(total) + ". <em>" + late.length + " are delayed or stalled.</em></h2>" +
-      "<p>Every major BMC, state and central government work in the city: what it costs, who pays, who runs it, which ward it is in and who the local MLA is. Each project links to the reports it is based on.</p></section>" +
-
-      '<section class="panel hero-search"><div><div class="eyebrow">Your area</div><h3 style="margin:2px 0 10px;font-family:var(--font-display);font-stretch:92%;font-size:1.2rem">See what\u2019s being built near you, who to ask, and the air quality now</h3></div><div class="field search">' + ICON_SEARCH + '<input type="search" id="home-q" placeholder="Type your locality, a project, an MLA or a corporator" aria-label="Search" autocomplete="off"></div><div class="search-results" id="home-results" hidden></div></section>' +
-      '<section class="stats" aria-label="Summary">' +
-      '<div class="stat"><span class="label">Total value</span><span class="value">' + (total / 100000).toFixed(2) + '<small>lakh cr</small></span><span class="sub">latest sanctioned or revised cost</span></div>' +
-      '<div class="stat alert"><span class="label">Delayed or stalled</span><span class="value">' + late.length + "<small>of " + PROJECTS.length + '</small></span><span class="sub">' + (counts.Stalled || 0) + " stalled outright</span></div>" +
-      '<div class="stat"><span class="label">Added by cost overruns</span><span class="value">' + Math.round(overAmt).toLocaleString("en-IN") + '<small>cr</small></span><span class="sub">across ' + plural(over.length, "project") + " with a revised cost</span></div>" +
-      '<div class="stat"><span class="label">Open tenders today</span><span class="value">' + OPEN_TENDERS.length + '</span><span class="sub"><a href="#tenders">BMC, BEST, MMRDA, PWD →</a></span></div>' +
-      "</section>" +
+      '<section class="hero"><div class="hero-main"><div class="eyebrow">Mumbai · updated ' + esc(fmtDate(META.lastUpdated)) + '</div>' +
+      "<h2>What\u2019s being built in Mumbai, who pays for it, and who answers for it.</h2>" +
+      "<p>Every major BMC, state and central project in the city, the people you elect, the contracts they award and the air you breathe, each fact linked to its source.</p>" +
+      '<div class="hero-search"><div class="field search">' + ICON_SEARCH + '<input type="search" id="home-q" placeholder="Search a locality, project, MLA, corporator or company" aria-label="Search" autocomplete="off"></div><div class="search-results" id="home-results" hidden></div></div></div>' +
+      '<dl class="hero-figs"><div><dt>Projects tracked</dt><dd>' + PROJECTS.length + "<small>worth " + crore(total) + '</small></dd></div><div class="alert"><dt>Delayed or stalled</dt><dd>' + late.length + "<small>" + Math.round(100 * late.length / PROJECTS.length) + "% of all</small></dd></div><div><dt>Added by cost overruns</dt><dd>" + Math.round(overAmt / 1000).toLocaleString("en-IN") + "k<small>crore across " + over.length + " projects</small></dd></div></dl></section>" +
+      exploreTiles({ late: late.length }) +
 
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Status</div><h3>Where every project stands</h3></div><p>Tap a status to filter the list below.</p></div>' +
       '<div class="statusbar" role="img" aria-label="Projects by status">' + STATUSES.map(function (s) {
@@ -349,7 +386,7 @@
       ? '<div class="meter"><div class="bar"><span style="width:' + Math.max(1, Math.min(100, p.progress)) + "%;background:" + statusColor(p.status) + '"></span></div><div class="cap"><span>' + p.progress + "% built</span><span>" + (p.revisedTargetDate && p.targetDate && !p.completedDate ? "was due " + fmtDate(p.targetDate) : "") + "</span></div></div>"
       : '<div class="meter"><div class="cap"><span>' + (p.status === "Completed" ? "Finished" : "Progress not published") + "</span><span>" + (p.revisedTargetDate && p.targetDate && !p.completedDate ? "was due " + fmtDate(p.targetDate) : "") + "</span></div></div>";
     return '<button type="button" class="card" data-open="' + esc(p.id) + '">' +
-      '<div class="top"><span class="eyebrow">' + esc(p.sector) + "</span>" + pill(p.status) + "</div>" +
+      '<div class="top"><span class="eyebrow sector">' + sectorIcon(p.sector) + esc(p.sector) + "</span>" + pill(p.status) + "</div>" +
       "<h4>" + esc(p.shortName || p.name) + "</h4>" +
       '<div class="where">' + esc(p.agency) + (p.citywide ? " · citywide" : ws.length ? " · ward" + (ws.length > 1 ? "s " : " ") + esc(ws.slice(0, 6).join(", ")) + (ws.length > 6 ? " +" + (ws.length - 6) : "") : "") + "</div>" +
       meter +
@@ -1420,8 +1457,13 @@
 
   // ---------------------------------------------------------------- router
   var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
+  var MONEY = { contracts: "Contracts", tenders: "Tenders", funding: "Funding" };
+  function moneyTabs(active) {
+    return '<nav class="subtabs" aria-label="Money">' + Object.keys(MONEY).map(function (k) { return '<a href="#' + k + '"' + (k === active ? ' aria-current="page" class="on"' : "") + ">" + MONEY[k] + (k === "tenders" ? ' <span class="count">' + OPEN_TENDERS.length + "</span>" : "") + "</a>"; }).join("") + "</nav>";
+  }
   function setTab(tab) {
-    document.querySelectorAll("nav.tabs a").forEach(function (a) {
+    if (MONEY[tab]) tab = "money";
+    document.querySelectorAll("nav.tabs a, nav.bottom-nav a").forEach(function (a) {
       var on = a.dataset.tab === tab;
       a.classList.toggle("active", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -1447,16 +1489,19 @@
     var sub = name.match(/^(mla|co)-(.+)$/);
     if (sub) {
       setTab(sub[1] === "mla" ? "mlas" : "contracts");
+      if (sub[1] === "co") setTimeout(function () { app.insertAdjacentHTML("afterbegin", moneyTabs("contracts")); }, 0);
       if (leafletMap) { leafletMap.remove(); leafletMap = null; }
       (sub[1] === "mla" ? viewMla : viewCompany)(sub[2]);
       window.scrollTo(0, 0);
       return;
     }
+    if (name === "explorer") { setTab("overview"); VIEWS.overview(); setTimeout(function () { var x = document.getElementById("explorer"); if (x) x.scrollIntoView({ block: "start" }); }, 30); return; }
     var tab = VIEWS[name] ? name : "overview";
     setTab(tab);
     if (tab !== "map" && leafletMap) { leafletMap.remove(); leafletMap = null; }
     ui.limit = 48;
     VIEWS[tab]();
+    if (MONEY[tab]) app.insertAdjacentHTML("afterbegin", moneyTabs(tab));
     window.scrollTo(0, 0);
   }
   function route() {
@@ -1485,9 +1530,12 @@
   if (META.notice && notice) { notice.hidden = false; notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true" style="flex:none;transform:translateY(2px)">' + STATUSES[3].icon + "</svg><span>" + esc(META.notice) + "</span>"; }
   var tc = document.querySelector('nav.tabs a[data-tab="tenders"]');
   if (tc) tc.insertAdjacentHTML("beforeend", '<span class="count">' + OPEN_TENDERS.length + "</span>");
-  var pc = document.querySelector('nav.tabs a[data-tab="overview"]');
-  if (pc) pc.insertAdjacentHTML("beforeend", '<span class="count">' + PROJECTS.length + "</span>");
-  document.getElementById("footer").innerHTML = "<span>Data updated " + fmtDate(META.lastUpdated) + ". Costs in ₹ crore (1 crore = 10 million).</span><span>Built from public sources. <a href=\"#about\">About the data</a></span>";
+
+  document.getElementById("footer").innerHTML =
+    '<div class="f-col f-about"><div class="board board-sm"><span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span><span class="latin">Mumbai Public Works</span></div><p>An independent public record of government projects in Mumbai, the people responsible and the money involved. Built from official records and news reports; claims about people are checked twice.</p><p class="muted">Data updated ' + esc(fmtDate(META.lastUpdated)) + ". Costs in ₹ crore (1 crore = 10 million).</p></div>" +
+    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a></div>' +
+    '<div class="f-col"><h4>Money</h4><a href="#contracts">Contracts</a><a href="#tenders">Tenders</a><a href="#funding">Funding</a><a href="#schemes">Schemes</a></div>' +
+    '<div class="f-col"><h4>About</h4><a href="#about">Sources and method</a><a href="#about">How we check</a><span class="muted">Corrections: send the source link.</span></div>';
   var hq = document.getElementById("site-q");
   if (hq) {
     mountSearch(hq, document.getElementById("site-results"));
