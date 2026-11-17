@@ -1,5 +1,5 @@
-// MLA profiles: affidavit (ADR/MyNeta), Praja report card, reported work and news.
-// Work and news items were independently re-checked against their sources on 2026-11-17; unsupported items were removed.
+// MLA profiles: affidavit (ADR/MyNeta), Praja report card, reported work and news, post-election legal matters.
+// Work, news and legal items were independently re-checked against their sources; unsupported items were removed.
 window.PUBLIC_WORKS_MLA = {
  "bmcWorks": {
   "summary": "Separate from the MLA fund: from February 2023, while BMC had no elected corporators, MLAs could propose BMC-funded civic works through the guardian ministers. An RTI-based Indian Express investigation found ₹1,490.66 crore sanctioned from February 2023 to October 2025, of which ₹1,476.92 crore went to areas of ruling-alliance MLAs and ₹13.74 crore to one opposition MLA. The period includes the previous Assembly term.",
@@ -71,7 +71,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.42,
     "education": "Post Graduate — M.Sc Physics From Wilson College In The Year 1996, B.Sc Physics From Mitibai College In The Year 1993",
     "age": 51,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -217,7 +218,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.36,
     "education": "Graduate — B.Sc From Vasai College Mumbai University In The Year 1982, HSC From Gokhale Education Society Bordi In The Year 1979, SSC From SPH High School In The Year 1977",
     "age": 63,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -317,7 +319,42 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.29,
     "education": "Graduate — B.Com from Mumbai University in Year 1991",
     "age": 62,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2025-02-03",
+      "kind": "Election petition pending",
+      "summary": "On 3 Feb 2025 the Bombay High Court (Justice Sandeep Marne) gave Surve time to reply to Shiv Sena (UBT) candidate Udesh Patekar's election petition, which alleges corrupt practices in Surve's 2024 Magathane win; the petition was later dismissed on 1 Aug 2025.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/bombay-hc-calls-for-shiv-sena-mla-prakash-surves-reply-on-plea-challenging-his-2024-election-victory-over-alleged-corrupt-practices",
+        "title": "Bombay HC calls for Shiv Sena MLA Prakash Surve's reply on plea challenging his 2024 election victory over alleged corrupt practices",
+        "date": "2025-02-04"
+       }
+      ],
+      "verified": "2026-11-17"
+     },
+     {
+      "date": "2025-08-01",
+      "kind": "Election petition dismissed",
+      "summary": "The Bombay High Court (Justice Sandeep V. Marne) allowed Surve's application under Order VII Rule 11 CPC and dismissed Udesh Patekar's election petition against him (Election Petition 10 of 2024) for lacking the material particulars of the alleged corrupt practices.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.asianage.com/nation/bombay-hc-dismisses-election-petition-against-shiv-sena-mla-1895645",
+        "title": "Bombay HC dismisses election petition against Shiv Sena MLA",
+        "date": "2025-08-05"
+       },
+       {
+        "url": "https://rawlaw.in/wp-content/uploads/2025/08/Prakash.pdf",
+        "title": "Bombay HC judgment, Application 3 of 2025 in Election Petition 10 of 2024 (Udesh Shantaram Patekar v. Prakash Rajaram Surve)",
+        "date": "2025-08-01"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -405,7 +442,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 9.17,
     "education": "12th Pass — Passed First Year of Junior College From K J Somaiya College of Science & Commerce Vidyavihar In The Year 1990-1991",
     "age": 50,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -561,7 +599,23 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 1.7,
     "education": "12th Pass — 12th Pass From Marathi School Ghatkopar Mumbai Pune - Mumbai In The Year June 1982",
     "age": 59,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2025-04-11",
+      "kind": "FIR registered",
+      "summary": "Vikhroli police registered a case against MLA Sunil Raut and former corporator Rashmi Pahudkar under sections 223, 126(2) and 37(1) (as reported by IANS) for holding a protest rally without permission against a gas price hike, which police said blocked traffic on the Eastern Express Highway.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/mumbai-news-case-filed-against-sena-ubt-mla-sunil-raut-ex-corporator-rashmi-pahudkar-over-protest-in-vikhroli",
+        "title": "Mumbai News: Case Filed Against Sena (UBT) MLA Sunil Raut, Ex-Corporator Rashmi Pahudkar Over Protest In Vikhroli",
+        "date": "2025-04-11"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -649,7 +703,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.16,
     "education": "Graduate Professional — B.A.L.L.B. from Vidhya Prasarak Mandal, T.M.C. Law College, Pune, Mumbai Vidyapeeth in 1982",
     "age": 64,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -703,7 +758,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 2.66,
     "education": "10th Pass — 10th Pass From Bal Vikas Vidya Mandir Jogeshwari East Mumbai 400060 In The Year 1984",
     "age": 59,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -781,7 +837,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 3.55,
     "education": "12th Pass — HSC From Ismail Yusuf College In The Year 1985-86",
     "age": 55,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -859,7 +916,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.21,
     "education": "Graduate — B.Com, ML Dahanukar College Mumbai University in Year 1985",
     "age": 59,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1003,7 +1061,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 4.59,
     "education": "10th Pass — FYJC from Lions PD Dalmiya College, MAlad West in Year 1978-79",
     "age": 62,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1115,7 +1174,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.6,
     "education": "8th Pass — 8th Standard 1986, St. Anthony High School Malvani Church, Malad West Mumbai 400095",
     "age": 55,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1215,7 +1275,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 7.85,
     "education": "8th Pass — 8th Pass From Kundilal Govindram Seksaria Sarvodaya School In The Year 1977",
     "age": 63,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1293,7 +1354,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.44,
     "education": "10th Pass — SSC",
     "age": 62,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1393,7 +1455,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.21,
     "education": "Post Graduate — Master of Management Studies (Personnel from Mahatma Gandhi Missions Institute of Management Studies and Research, University of Mumbai completed in 2000",
     "age": 48,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1515,7 +1578,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 2.99,
     "education": "8th Pass — 9th Std. Y J S Gujarati Night High School Tardeo, Mumbai Year 1990",
     "age": 52,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1613,7 +1677,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 2.25,
     "education": "Graduate Professional — Bachelor Of Law LLB From K C College Of Law Mumbai University In The Year 1992, Bachelor Of Science From Mithibai College Mumbai University In The Year 1987",
     "age": 57,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1691,7 +1756,23 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 2.49,
     "education": "Graduate — Graduate from Yashwantrao Chauhan Open University in Year 2008",
     "age": 63,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2026-03-07",
+      "kind": "Election petition dismissed",
+      "summary": "The Bombay High Court (Justice Somasekhar Sundaresan) allowed Lande's application under Order VII Rule 11 CPC and dismissed Congress candidate Mohammad Arif Lalan (Naseem) Khan's election petition challenging Lande's 2024 Chandivali win for failing to plead material facts.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/bombay-hc-dismisses-petition-challenging-shiv-sena-mla-dilip-landes-chandivali-election-victory",
+        "title": "Bombay HC Dismisses Petition Challenging Shiv Sena MLA Dilip Lande's Chandivali Election Victory",
+        "date": "2026-03-08"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1766,7 +1847,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 23.07,
     "education": "10th Pass — Secondary School Of education Passed in 1989 & And Appeared in Electrical Power System Diploma 2nd Year",
     "age": 52,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1844,7 +1926,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.38,
     "education": "Graduate — Bachelor of Commerce from Board of External Examinations Osmania University in 1990",
     "age": 55,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -1954,7 +2037,37 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 38.73,
     "education": "Graduate — B.A. From Veer Bahadur Singh Purvanchal Vishwavidyalaya, Janpur, Uttar Pradesh in 2001",
     "age": 69,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2025-03",
+      "kind": "FIR registered",
+      "summary": "Thane police (Wagle Estate police station) registered an FIR against Azmi under BNS sections 299, 302 and 356 on a complaint by Shiv Sena MP Naresh Mhaske over his remarks on Aurangzeb, and Shiv Sena's Kiran Pawaskar lodged a separate complaint at Marine Drive police station.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/abu-azmi-faces-legal-trouble-for-praising-aurangzeb-shinde-sena-files-cases-against-maharashtra-sp-chief",
+        "title": "Abu Azmi Faces Legal Trouble For Praising Aurangzeb; Shinde Sena Files Cases Against Maharashtra SP Chief",
+        "date": "2025-03-04"
+       }
+      ],
+      "verified": "2026-11-17"
+     },
+     {
+      "date": "2025-06-30",
+      "kind": "Quashing plea pending",
+      "summary": "On 30 Jun 2025 a Bombay High Court bench of Justices Ajey Gadkari and Rajesh Patil sought Mumbai police's reply to Azmi's petitions to quash the two FIRs over his Aurangzeb remarks, which were transferred from Thane to Marine Drive police, and listed the pleas after four weeks.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/bombay-hc-seeks-mumbai-police-reply-on-samajwadi-party-mla-abu-azmis-plea-to-quash-firs-over-aurangzeb-remarks",
+        "title": "Bombay HC Seeks Mumbai Police Reply On Samajwadi Party MLA Abu Azmi's Plea To Quash FIRs Over Aurangzeb Remarks",
+        "date": "2025-06-30"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2076,7 +2189,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 3.28,
     "education": "Graduate Professional — Bachelor of Legislative Law (LL.B.) from Rizvi Law College Bandra (W) Mumbai under Mumbai University in 2024",
     "age": 37,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2188,7 +2302,23 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.43,
     "education": "8th Pass — 9th Fail from Adarsha Vidyamandir, Ghatla Chembur Mumbai 400071",
     "age": 62,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2025-12",
+      "kind": "Acquittal",
+      "summary": "A special court in Mumbai acquitted Tukaram Kate, his wife Mangala Kate and others who had been booked over a November 2009 scuffle with BMC officials at the BMC head office about a water shortage in Chembur.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/mumbai-special-court-acquits-mla-tukaram-kate-wife-others-in-2009-chembur-water-crisis-scuffle-case",
+        "title": "Mumbai: Special Court Acquits MLA Tukaram Kate, Wife, & Others In 2009 Chembur Water Crisis Scuffle Case",
+        "date": "2025-12-21"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2278,7 +2408,37 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.5,
     "education": "12th Pass — HSC Passed May 2023 From Maharashtra State Board of Secondary and higher Secondary Education Pune",
     "age": 53,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2025-12-17",
+      "kind": "Court-ordered inquiry",
+      "summary": "A special MP/MLA court (Judge Satyanarayan R. Navander) directed that Kurla resident Ramesh Borwa's complaint be forwarded to the ACB to register a case and investigate under the Prevention of Corruption Act, over an allegation that Kudalkar built a hall with commercial units on MHADA land reserved for amenity and garden use.",
+      "status": "set aside (Bombay HC, 15 Jul 2026)",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/mumbai-special-court-orders-probe-against-shiv-sena-mla-mangesh-kudalkar-over-unauthorised-construction-on-mhada-land",
+        "title": "Mumbai: Special Court Orders Probe Against Shiv Sena MLA Mangesh Kudalkar Over Unauthorised Construction On MHADA Land",
+        "date": "2025-12-18"
+       }
+      ],
+      "verified": "2026-11-17"
+     },
+     {
+      "date": "2026-07-15",
+      "kind": "Court order set aside",
+      "summary": "On Kudalkar's Criminal Revision Application 539 of 2025, the Bombay High Court (Justice Shivkumar Dige) set aside the special court's 17 Dec 2025 order forwarding the complaint to the ACB because no prior approval under Section 17A of the PC Act had been obtained, and returned the complaint to the special judge to be dealt with according to law.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://lawtext.in/judgement.php?bid=85706",
+        "title": "Mangesh Anant Kudalkar v. The State of Maharashtra & Anr. (Bombay HC judgment summary)",
+        "date": "2026-07-15"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2353,7 +2513,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.25,
     "education": "10th Pass — SSC FROM SARASWATI VIDHYAMANDIR MUMBAI UNIVERSITY YEAR 1975",
     "age": 69,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2418,7 +2579,23 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0,
     "education": "Post Graduate — Master Of Science (Construction Engineering And Management) From Columbia University New York USA In The Year 2015, Bachelor Of Civil Engineering From Mumbai University In The Year 2014",
     "age": 32,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2026-10-12",
+      "kind": "FIR registered",
+      "summary": "Shivaji Park police registered an FIR over the 11 Oct 2026 protest at Shivaji Park and the later sit-in at the police station against the detention of CJP agitators, and police said it names MLA Varun Sardesai among the accused along with Aaditya Thackeray, Amit Thackeray, Mahesh Sawant, Sandeep Deshpande and around 200 protesters.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/fir-against-aaditya-thackeray-amit-thackeray-and-200-protesters-over-shivaji-park-demonstration-police-allege-obstruction",
+        "title": "FIR Against Aaditya Thackeray, Amit Thackeray And 200 Protesters Over Shivaji Park Demonstration; Police Allege Obstruction",
+        "date": "2026-10-13"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2533,7 +2710,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 1.88,
     "education": "Graduate Professional — LLB From G A Advani College In The Year 1995, B.Sc From Parle College In The Year 1992, HSC From Kirti College In The Year 1989, SSC From DGT High School In The Year 1987",
     "age": 52,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2631,7 +2809,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 1.47,
     "education": "Post Graduate — M.D/M.S. Ayurveda in Branch Rachana Sharir from RA Pdar Medical College(Ayur) Mumbai in Year 2006",
     "age": 47,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2733,7 +2912,23 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.52,
     "education": "10th Pass — SSLC Passed (11th Passed) Passing Year 1977, from Government Higher Secondary School, Alangudi, Tamilnadui, India",
     "age": 66,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2025-08-18",
+      "kind": "Election petition dismissed",
+      "summary": "The Bombay High Court (Justice Milind Jadhav) allowed Tamil Selvan's application under Order VII Rule 11 CPC and dismissed Congress candidate Ganesh Kumar Yadav's election petition challenging his 2024 Sion Koliwada win, holding the pleadings vague and lacking material facts.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/maharashtra-assembly-elections-2024-bombay-hc-dismisses-petition-against-bjp-mla-captain-r-tamil-selvan-upholds-sion-koliwada-victory",
+        "title": "Maharashtra Assembly Elections 2024: Bombay HC Dismisses Petition Against BJP MLA Captain R Tamil Selvan, Upholds Sion Koliwada Victory",
+        "date": "2025-08-20"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2808,7 +3003,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.11,
     "education": "10th Pass — S.S.C. (Old) from Lokseva Vidyalaya, Naigaon, Mumbai-14 in 1973",
     "age": 71,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2886,7 +3082,51 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.03,
     "education": "Graduate — B.Com from Mumbai University in Year 1992(RM Bhatt College, Parel (East)) Mumbai",
     "age": 52,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2026-04-07",
+      "kind": "Election petition dismissed",
+      "summary": "The Bombay High Court dismissed Sadanand (Sada) Sarvankar's election petition against Sawant's 2024 Mahim win because the security deposit, made two days after the petition was filed on 4 Jan 2025, had to accompany its presentation under Sections 86(1) and 117 of the Representation of the People Act.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/bombay-hc-dismisses-sada-sarvankars-election-petition-against-mahesh-sawant-on-technical-grounds",
+        "title": "Bombay HC Dismisses Sada Sarvankar's Election Petition Against Mahesh Sawant On Technical Grounds",
+        "date": "2026-04-08"
+       }
+      ],
+      "verified": "2026-11-17"
+     },
+     {
+      "date": "2026-07-27",
+      "kind": "FIR registered",
+      "summary": "Shivaji Park police registered a case against MLA Mahesh Sawant and corporator Yashwant Killedar over a gathering at Shivaji Park held without police permission, and both said they had not received any information about the FIR.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/mumbai-fir-filed-against-shivaji-park-event-organisers-for-holding-gathering-without-police-permission",
+        "title": "Mumbai: FIR Filed Against Shivaji Park Event Organisers For Holding Gathering Without Police Permission",
+        "date": "2026-07-27"
+       }
+      ],
+      "verified": "2026-11-17"
+     },
+     {
+      "date": "2026-10-12",
+      "kind": "FIR registered",
+      "summary": "Shivaji Park police registered an FIR over the 11 Oct 2026 protest at Shivaji Park and the later sit-in at the police station against the detention of CJP agitators, and police said it names Mahesh Sawant among the accused along with Aaditya Thackeray, Amit Thackeray, Varun Sardesai, Sandeep Deshpande and around 200 protesters.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/fir-against-aaditya-thackeray-amit-thackeray-and-200-protesters-over-shivaji-park-demonstration-police-allege-obstruction",
+        "title": "FIR Against Aaditya Thackeray, Amit Thackeray And 200 Protesters Over Shivaji Park Demonstration; Police Allege Obstruction",
+        "date": "2026-10-13"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -2961,7 +3201,28 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.44,
     "education": "Graduate Professional — Bachelor of Laws from K.C. Law College, University of Mumbai in 2015",
     "age": 34,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2026-10-12",
+      "kind": "FIR registered",
+      "summary": "Shivaji Park police registered an FIR against Aaditya Thackeray, Amit Thackeray and others over the 11 Oct 2026 protest at Shivaji Park, where police allege the leaders tried to stop protesters being taken into custody, and over a later sit-in at the police station demanding the detainees' release.",
+      "status": "pending",
+      "sources": [
+       {
+        "url": "https://www.freepressjournal.in/mumbai/mumbai-fir-filed-against-aaditya-thackeray-amit-thackeray-after-they-protested-detention-of-cjp-agitators-mumbai-news",
+        "title": "Mumbai: FIR Filed Against Aaditya Thackeray, Amit Thackeray After They Protested Detention Of CJP Agitators",
+        "date": "2026-10-12"
+       },
+       {
+        "url": "https://www.freepressjournal.in/mumbai/fir-against-aaditya-thackeray-amit-thackeray-and-200-protesters-over-shivaji-park-demonstration-police-allege-obstruction",
+        "title": "FIR Against Aaditya Thackeray, Amit Thackeray And 200 Protesters Over Shivaji Park Demonstration; Police Allege Obstruction",
+        "date": "2026-10-13"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3069,7 +3330,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 0.23,
     "education": "10th Pass — XI Standard from Social Service League High School, Damodar Hall Compound Parel, Mumbai 400012 in Year 1970",
     "age": 71,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3136,7 +3398,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 4.19,
     "education": "12th Pass — H.S.C. Passed from Elphinstone Technical High School and Jounior College, Dhobi Talav, Mumbai in 1990",
     "age": 55,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3190,7 +3453,23 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 308.75,
     "education": "Graduate Professional — LLB from University of Jodhpur in 1978, B.Com from University of Jodhpur in 1975",
     "age": 69,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": [
+     {
+      "date": "2026-08-18",
+      "kind": "Quashed",
+      "summary": "The Bombay High Court (Justice Milind Jadhav) dismissed Criminal Writ Petition 183 of 2009 (Manohar Mahadeo Hajare v. Mangal Prabhat Lodha) and upheld a Sessions Court order of 7 Oct 2008 that had quashed the process issued against Lodha on a 2007 cheating and criminal breach of trust complaint, observing that the disputes were essentially civil.",
+      "status": "decided",
+      "sources": [
+       {
+        "url": "https://www.livelaw.in/high-court/bombay-high-court/bombay-high-court-upholds-quashing-of-process-issued-against-bjps-mangal-prabhat-lodha-in-2007-cheating-case-546543",
+        "title": "Bombay High Court Upholds Quashing Of Process Issued Against BJP's Mangal Prabhat Lodha In 2007 Cheating Case",
+        "date": "2026-08-19"
+       }
+      ],
+      "verified": "2026-11-17"
+     }
+    ]
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3287,7 +3566,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 1.75,
     "education": "10th Pass — SSC PASSED FROM DAWOODBHOY FAZALBHOY HIGH SCHOOL, MUMBAI IN 1978",
     "age": 61,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
@@ -3427,7 +3707,8 @@ window.PUBLIC_WORKS_MLA = {
     "liabilitiesCr": 84.71,
     "education": "Graduate Professional — LLB from Govt Law College, Mumbai in Year 2001",
     "age": 47,
-    "laterChecked": false
+    "laterChecked": "2026-11-17",
+    "laterCases": []
    },
    "funds": {
     "fundAllottedCr": null,
