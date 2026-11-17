@@ -658,7 +658,7 @@
   }
   function srcLinks(list) {
     return (list || []).filter(function (s) { return s && safeUrl(s.url); }).map(function (s) {
-      return '<a href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener">' + esc(s.title || s.url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]) + "</a>" + (s.date ? ' <span class="muted">' + esc(fmtDate(s.date)) + "</span>" : "");
+      return '<a href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener"' + (s.language && s.language !== "en" ? ' lang="' + esc(s.language) + '"' : "") + ">" + esc(s.title || s.url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]) + "</a>" + (s.language === "mr" ? ' <span class="muted">(Marathi)</span>' : s.language === "hi" ? ' <span class="muted">(Hindi)</span>' : "") + (s.date ? ' <span class="muted">' + esc(fmtDate(s.date)) + "</span>" : "");
     }).join(" · ");
   }
   function eventList(events) {
