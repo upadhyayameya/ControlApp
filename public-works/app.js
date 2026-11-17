@@ -430,6 +430,7 @@
       '<div class="map-layout"><div id="map" role="region" aria-label="Map of projects"></div><aside class="map-side">' +
       '<div class="panel"><div class="eyebrow" style="margin-bottom:8px">Show</div><div class="legend" id="map-status"></div>' +
       (AQI.stations.length ? '<div class="legend" style="margin-top:8px"><button type="button" class="chip" id="aq-toggle" aria-pressed="false"><span class="swatch" style="background:#92d050;border-radius:50%"></span>Air quality stations</button></div>' : "") +
+      (CONS.sites.length ? '<div class="legend" style="margin-top:8px"><button type="button" class="chip" id="cs-toggle" aria-pressed="false"><span class="swatch" style="background:#7b4fc9;border-radius:50%"></span>Construction sites (' + CONS.sites.length + ')</button></div>' : "") +
       (EWARD_GEO.length ? '<div class="legend" style="margin-top:8px"><button type="button" class="chip" id="ew-toggle" aria-pressed="false"><span class="swatch" style="background:transparent;border:2px dashed var(--accent)"></span>Corporator wards (227)</button></div>' : "") + '</div>' +
       '<div class="panel"><div class="field search" style="margin-bottom:8px">' + ICON_SEARCH + '<input type="search" id="map-q" placeholder="Find on map" aria-label="Find a project on the map" value="' + esc(state.q) + '"></div><div class="list" id="map-list"></div></div>' +
       "</aside></div>";
@@ -461,6 +462,19 @@
           .bindTooltip(String(st.aqi), { permanent: true, direction: "center", className: "aqi-label" })
           .bindPopup("<b>" + esc(stationName(st)) + "</b><br>AQI " + aqiBadge(st) + "<br>PM2.5 " + (st.pm25 != null ? st.pm25 : "—") + " · PM10 " + (st.pm10 != null ? st.pm10 : "—") + " µg/m³<br><span style=\"color:" + ink3 + "\">24-hour average · " + esc(fmtDT((AQI.fetchedAt || "").replace("Z", ""))) + " UTC</span>");
       })).addTo(leafletMap);
+    });
+    var csLayer = null, csBtn = document.getElementById("cs-toggle");
+    if (csBtn) csBtn.addEventListener("click", function () {
+      var on = csBtn.getAttribute("aria-pressed") !== "true";
+      csBtn.setAttribute("aria-pressed", String(on));
+      if (csLayer) { leafletMap.removeLayer(csLayer); csLayer = null; }
+      if (!on) return;
+      csLayer = L.layerGroup(CONS.sites.map(function (x) {
+        var st = consStale(x);
+        return L.circleMarker([x.lat, x.lng], { radius: 5, color: "#fff", weight: 1, fillColor: st ? "#b3bcc3" : "#7b4fc9", fillOpacity: 0.95 })
+          .bindPopup("<b>" + esc(x.name || (x.kind ? x.kind + " building site" : "Construction site")) + "</b><br>" + (st ? "May be finished: map not updated since " : "Under construction · map updated ") + esc(fmtMonth(x.lastEdited)) + "<br>Ward " + esc(x.ward) + ' · <a href="' + consOsm(x) + '" target="_blank" rel="noopener">OpenStreetMap ↗</a>');
+      })).addTo(leafletMap);
+      leafletMap.attributionControl.addAttribution("Construction: © OpenStreetMap contributors");
     });
     var ewLayer = null, ewBtn = document.getElementById("ew-toggle");
     if (ewBtn) ewBtn.addEventListener("click", function () {
@@ -595,6 +609,10 @@
       (s.tenders.length ? '<ul class="tenders">' + s.tenders.slice(0, 8).map(function (t) {
         return '<li><a href="#t-' + tenderSlug(t.id) + '">' + esc(t.title) + '</a><span class="closes">closes ' + esc(fmtDT(t.closing)) + '</span><span class="meta">' + esc(t.dept || t.org) + (t.ward !== w ? " · ward " + esc(t.ward) : "") + ' · <span class="mono">' + esc(t.id) + "</span></span></li>";
       }).join("") + "</ul>" + (s.tenders.length > 8 ? '<p class="axis-note">+' + (s.tenders.length - 8) + " more on the Tenders tab</p>" : "") : '<p class="muted">No open tenders tagged to this ward today.</p>') +
+      (function () { var ws = CONS.sites.filter(function (x) { return x.ward === w; }); if (!CONS.sites.length) return "";
+        var live = ws.filter(function (x) { return !consStale(x); });
+        return '<div class="section-head" style="margin-top:22px"><div><h3>Construction sites</h3><p>' + plural(ws.length, "site") + ' mapped in this ward, ' + live.length + ' updated in the last 18 months. Most recently updated first.</p></div></div>' +
+          (ws.length ? consRows(ws.slice(0, 12), false) + (ws.length > 12 ? '<p class="axis-note">+' + (ws.length - 12) + ' more on the Map tab</p>' : "") : '<p class="muted">None mapped.</p>') + consNote(); })() +
       '<p class="axis-note" style="margin-top:18px">Also in every ward: ' + citywide.map(function (p) { return '<a href="#p-' + esc(p.id) + '">' + esc(p.shortName || p.name) + "</a>"; }).join(", ") + ".</p>";
     var wf = WARD_FEATURE[w];
     if (wf && AQI.stations.length) {
@@ -1228,6 +1246,26 @@
   }
 
   // ---------------------------------------------------------------- your area
+
+  // ---------------------------------------------------------------- construction (OpenStreetMap)
+  var CONS = window.PUBLIC_WORKS_CONSTRUCTION || { sites: [] };
+  var CONS_STALE = (function () { var d = new Date((CONS.fetchedAt || "2026-01-01") + "T00:00:00Z"); d.setUTCMonth(d.getUTCMonth() - 18); return d.toISOString().slice(0, 10); })();
+  function consStale(x) { return !x.lastEdited || x.lastEdited < CONS_STALE; }
+  function fmtMonth(iso) { var d = new Date(iso + "T00:00:00Z"); return d.toLocaleDateString("en-IN", { month: "short", year: "numeric", timeZone: "UTC" }); }
+  function consOsm(x) { return "https://www.openstreetmap.org/" + x.id; }
+  function consRows(list, withKm) {
+    return '<ul class="cons' + (withKm ? "" : " nokm") + '">' + list.map(function (x) {
+      var st = consStale(x);
+      return '<li class="' + (st ? "stale" : "") + '">' + (withKm ? '<span class="km">' + (x.km < 0.1 ? "here" : x.km.toFixed(1) + " km") + "</span>" : "") +
+        '<span class="cn"><a href="' + consOsm(x) + '" target="_blank" rel="noopener">' + esc(x.name || (x.kind ? x.kind + " building site" : "Unnamed construction site")) + "</a>" +
+        '<span class="sub">' + (x.name && x.kind ? esc(x.kind) + " · " : "") + (x.operator ? esc(x.operator) + " · " : "") + (x.ward ? "ward " + esc(x.ward) + " · " : "") + "map last updated " + esc(x.lastEdited ? fmtMonth(x.lastEdited) : "unknown") + "</span></span>" +
+        '<span class="cs">' + (st ? '<span class="pill p-unknown">May be finished</span>' : '<span class="pill p-construction">Under construction</span>') + "</span></li>";
+    }).join("") + "</ul>";
+  }
+  function consNote() {
+    return '<p class="axis-note">Sites volunteer mappers on <a href="' + esc(CONS.sourceUrl) + '" target="_blank" rel="noopener">OpenStreetMap</a> have tagged as under construction, fetched ' + esc(fmtMonth(CONS.fetchedAt)) + '. This is not an official permit list: some sites are not mapped, and a site whose map entry has not been updated for 18 months (before ' + esc(fmtMonth(CONS_STALE)) + ') may already be finished, so it is marked “May be finished”. Private projects are registered with <a href="https://maharera.maharashtra.gov.in" target="_blank" rel="noopener">MahaRERA</a>, which blocks access from outside India.</p>';
+  }
+
   function viewArea(slugStr) {
     var m = slugStr.match(/^at-(\d+)-(\d+)(?:-(.*))?$/);
     if (!m) { viewAreaPicker(); return; }
@@ -1263,7 +1301,13 @@
       (nearby.length ? '<div class="table-scroll"><table class="data"><tbody>' + nearby.map(function (x) {
         return '<tr class="click" data-open="' + esc(x.p.id) + '" tabindex="0"><td class="num" style="width:1%">' + (x.km < 0.1 ? "here" : x.km.toFixed(1) + " km") + "</td><td><b>" + esc(x.p.shortName || x.p.name) + '</b><div class="sub">' + esc(x.part) + " · " + esc(x.p.agency) + "</div></td><td>" + pill(x.p.status) + '</td><td class="num">' + crore(cost(x.p)) + "</td></tr>";
       }).join("") + "</tbody></table></div>" : '<p class="muted" style="margin:0">No tracked projects within 1.5 km.</p>') + "</section>" +
-      '<section class="panel"><div class="eyebrow">Private construction</div><p style="margin:6px 0 0;font-size:.9rem">Private building projects are registered with MahaRERA, the state real-estate regulator. Its registry blocks access from outside India, so these are not shown yet. Search it directly at <a href="https://maharera.maharashtra.gov.in" target="_blank" rel="noopener">maharera.maharashtra.gov.in</a>.</p></section>';
+      (function () {
+        var near = CONS.sites.map(function (x) { return Object.assign({ km: kmBetween(lat, lng, x.lat, x.lng) }, x); }).filter(function (x) { return x.km <= 1; })
+          .sort(function (a, b) { return (consStale(a) - consStale(b)) || a.km - b.km; });
+        var live = near.filter(function (x) { return !consStale(x); }).length;
+        return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Within 1 km · public and private</div><h3>' + plural(near.length, "construction site") + ' mapped near here</h3></div><p>' + live + ' recently confirmed on the map, ' + (near.length - live) + ' not updated in 18 months.</p></div>' +
+          (near.length ? consRows(near.slice(0, 15), true) + (near.length > 15 ? '<p class="axis-note">+' + (near.length - 15) + ' more on the Map tab</p>' : "") : '<p class="muted" style="margin:0">No construction sites mapped within 1 km.</p>') + consNote() + "</section>";
+      })();
     bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
   }
   function viewAreaPicker() {
