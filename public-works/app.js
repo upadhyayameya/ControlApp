@@ -829,6 +829,13 @@
           '<p class="axis-note">Legal matters involving the MLA personally since 23 Nov 2024 (FIRs naming them, chargesheets, court orders, acquittals, election petitions), searched the same way for all 36 MLAs and re-checked on ' + esc(fmtDate(aff.laterChecked)) + ". An FIR is an accusation, not a finding.</p>"
           : '<p class="axis-note">Cases filed after the November 2024 election are not yet covered here.</p>')
         : '<p class="muted" style="margin:0">Affidavit data not loaded.</p>') + "</section></div>" +
+      (function () {
+        var WAC = window.PUBLIC_WORKS_WARD_AC || {};
+        var cs = CORP.corporators.map(function (c) { var x = (WAC[c.ward] || []).find(function (y) { return y[0] === m.constituency; }); return x ? { c: c, share: x[1] } : null; }).filter(Boolean).sort(function (a, b) { return b.share - a.share; });
+        if (!cs.length) return "";
+        return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Corporators</div><h3>' + plural(cs.length, "BMC ward") + " in " + esc(m.constituency) + '</h3></div><p>From BMC\u2019s 2026 voter rolls. A ward partly in this constituency shows the share of its voters that live here.</p></div><div class="people people-4">' +
+          cs.map(function (x) { return '<a class="person" style="text-decoration:none;color:inherit" href="#cor-' + esc(x.c.ward) + '"><div class="role">Ward ' + esc(x.c.ward) + (x.share < 99 ? " · " + x.share + "% here" : "") + '</div><div class="name">' + (x.c.vacant ? "Vacant" : esc(x.c.name)) + '</div><div class="detail">' + esc(x.c.party) + (x.c.area ? " · " + esc(x.c.area) : "") + "</div></a>"; }).join("") + "</div></section>";
+      })() +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">In ' + esc(m.constituency) + '</div><h3>Projects in this constituency</h3></div><p>The MLA represents the area; the agency on each project builds it.</p></div>' +
       (ps.length ? '<div class="cards">' + sortList(ps).map(card).join("") + "</div>" : '<p class="muted" style="margin:0">No mapped projects yet.</p>') + "</section>";
     bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
@@ -1199,13 +1206,16 @@
     });
     nearby.sort(function (a, b) { return a.km - b.km; });
     var tenders = aw ? OPEN_TENDERS.filter(function (t) { return tenderMapWard(t) === aw; }) : [];
-    var ac = (window.PUBLIC_WORKS_PRABHAG_AC || {});
-    var mlaConst = uniq(ews.map(function (n) { return ac[n]; }).filter(Boolean));
+    var WAC = window.PUBLIC_WORKS_WARD_AC || {};
+    var acShare = {};
+    ews.forEach(function (n) { (WAC[n] || []).forEach(function (x) { acShare[x[0]] = Math.max(acShare[x[0]] || 0, x[1]); }); });
+    var mlaConst = Object.keys(acShare).filter(function (k) { return acShare[k] >= 5; }).sort(function (a, b) { return acShare[b] - acShare[a]; });
+    var splitNote = mlaConst.length > 1;
 
     app.innerHTML = '<section class="lead"><div class="eyebrow">Your area' + (aw ? " · " + esc(wardTitle(aw)) : "") + (ews.length ? " · electoral ward " + esc(ews.join(", ")) : "") + '</div><h2>' + esc(label || "This spot") + '</h2><p>Who to ask, what is being built nearby, and the air you are breathing. <a href="#area">Pick another place</a></p></section>' +
       '<div class="people people-4">' +
       (ews.length ? ews.map(function (n) { var c = CORP_BY_WARD[n] || {}; return '<div class="person"><div class="role">Corporator · ward ' + esc(n) + '</div><div class="name">' + (c.vacant ? "Seat vacant" : esc(c.name || "—")) + '</div><div class="detail">' + esc(c.vacant ? c.statusNote : (c.party || "") + (c.area ? " · " + c.area : "")) + "</div></div>"; }).join("") : "") +
-      (mlaConst.length ? mlaConst.map(function (cn) { var mm = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(mm.no) + '"><div class="role">MLA · ' + esc(cn) + '</div><div class="name">' + esc(mm.name || "—") + '</div><div class="detail">' + esc(mm.party || "") + " · profile →</div></a>"; }).join("")
+      (mlaConst.length ? mlaConst.map(function (cn) { var mm = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(mm.no) + '"><div class="role">MLA · ' + esc(cn) + (splitNote ? " · " + acShare[cn] + "% of voters" : "") + '</div><div class="name">' + esc(mm.name || "—") + '</div><div class="detail">' + esc(mm.party || "") + " · profile →</div></a>"; }).join("")
         : '<a class="person" style="text-decoration:none;color:inherit" href="#mlas"><div class="role">MLA</div><div class="name" style="font-weight:500">Not mapped for this spot yet</div><div class="detail">Find your constituency on the MLAs tab →</div></a>') +
       (aw ? '<a class="person" style="text-decoration:none;color:inherit" href="#ward-' + wardSlug(aw) + '"><div class="role">Ward officer · ' + esc(wardTitle(aw)) + '</div><div class="name">' + esc(info.assistantCommissioner || "Not on file") + '</div><div class="detail">' + esc(info.phone || "") + " · ward page →</div></a>" : "") +
       "</div>" +
@@ -1351,7 +1361,8 @@
       (c.partyNote ? '<p class="axis-note">' + esc(c.partyNote) + "</p>" : "") + (c.nameNote ? '<p class="axis-note">' + esc(c.nameNote) + "</p>" : "") + "</section>" +
       '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">Ward</div><h3>Electoral ward ' + esc(c.ward) + "</h3></div></div>" +
       (feat ? '<div class="ward-shape" style="max-width:220px">' + shapeSvg(feat.geometry, ps, c.ward) + "</div>" : "") +
-      '<dl class="facts-list" style="margin-top:10px"><dt>Elected</dt><dd>January 2026 BMC election</dd><dt>BMC ward office</dt><dd><a href="#ward-' + wardSlug(aw) + '">' + esc(wardTitle(aw)) + "</a> · officer " + esc(info.assistantCommissioner || "—") + "</dd>" + (info.phone ? "<dt>Ward control room</dt><dd>" + esc(info.phone) + "</dd>" : "") + "<dt>Source</dt><dd>" + srcLinks(CORP.sources) + "</dd></dl></section>" +
+      '<dl class="facts-list" style="margin-top:10px"><dt>Elected</dt><dd>January 2026 BMC election</dd>' +
+      ((window.PUBLIC_WORKS_WARD_AC || {})[c.ward] ? "<dt>MLA" + ((window.PUBLIC_WORKS_WARD_AC[c.ward].length > 1) ? "s" : "") + "</dt><dd>" + window.PUBLIC_WORKS_WARD_AC[c.ward].map(function (x) { var mm = mlaByConst[x[0]] || {}; return '<a href="#mla-' + esc(mm.no) + '">' + esc(mm.name || x[0]) + "</a> (" + esc(x[0]) + (window.PUBLIC_WORKS_WARD_AC[c.ward].length > 1 ? ", " + x[1] + "% of voters" : "") + ")"; }).join("<br>") + "</dd>" : "") + '<dt>BMC ward office</dt><dd><a href="#ward-' + wardSlug(aw) + '">' + esc(wardTitle(aw)) + "</a> · officer " + esc(info.assistantCommissioner || "—") + "</dd>" + (info.phone ? "<dt>Ward control room</dt><dd>" + esc(info.phone) + "</dd>" : "") + "<dt>Source</dt><dd>" + srcLinks(CORP.sources) + "</dd></dl></section>" +
       aqiCardForWard(feat) + "</div>" +
       recordSection(rec || [], { empty: rec ? "Nothing found and checked yet." : "Not researched yet. Records for all 227 corporators are being compiled and checked.", note: "Searched the same way for every corporator. Few entries usually means little coverage, not little work." }) +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">In this electoral ward</div><h3>' + plural(ps.length, "project") + " and " + plural(tenders.length, "open tender") + " in " + esc(wardTitle(aw)) + "</h3></div></div>" +
