@@ -1307,7 +1307,8 @@
       return;
     }
     var rows = CORP.corporators.filter(function (c) { return !q || [c.name, c.area, c.party, "ward " + c.ward, c.adminWard].join(" ").toLowerCase().indexOf(q) !== -1; });
-    box.innerHTML = '<div class="table-scroll"><table class="data"><thead><tr><th class="num">Ward</th><th>Corporator</th><th>Party</th><th>Area</th><th>BMC ward</th><th class="num">Projects</th><th class="num">Record</th></tr></thead><tbody>' +
+    var agg = (RECORDS.corporatorDisclosures || {}).aggregate || [];
+    box.innerHTML = (agg.length ? '<div class="note" style="margin:0 0 12px"><b>What the 227 declared in their 2026 election affidavits:</b><ul style="margin:6px 0 0;padding-left:18px">' + agg.map(function (a) { return "<li>" + esc(a.finding) + " " + srcLinks([a.source]) + "</li>"; }).join("") + "</ul></div>" : "") + '<div class="table-scroll"><table class="data"><thead><tr><th class="num">Ward</th><th>Corporator</th><th>Party</th><th>Area</th><th>BMC ward</th><th class="num">Projects</th><th class="num">Record</th></tr></thead><tbody>' +
       rows.map(function (c) {
         var n = PROJECTS.filter(function (p) { return CORP_PARTS[p.id] && CORP_PARTS[p.id][c.ward]; }).length, rec = peopleRecord("cor-" + c.ward);
         return '<tr class="click" data-cor="' + esc(c.ward) + '" tabindex="0"><td class="num muted">' + esc(c.ward) + "</td><td><b>" + (c.vacant ? '<span class="muted">Vacant</span> ' : "") + esc(c.name) + "</b>" + (c.vacant ? '<div class="sub">' + esc(c.statusNote) + "</div>" : "") + "</td><td>" + esc(c.party) + '</td><td class="sub">' + esc(c.area || "") + "</td><td>" + wcode(c.adminWard) + '</td><td class="num">' + (n || '<span class="muted">0</span>') + '</td><td class="num">' + (rec ? rec.length : '<span class="muted">—</span>') + "</td></tr>";
@@ -1360,6 +1361,7 @@
   function viewMp(id) {
     var m = MPS.find(function (x) { return x.id === id; }); if (!m) { viewReps(); return; }
     var a = m.affidavit, rec = peopleRecord(m.id), extra = (RECORDS.mps || {})[m.id] || {};
+    if (extra.party && extra.party !== m.party && !extra.partyNote) extra.partyNote = "elected as " + m.party;
     var ps = PROJECTS.filter(function (p) { return (p.constituencies || []).some(function (c) { return m.segments.indexOf(c) !== -1; }); });
     app.innerHTML = '<p style="margin:0"><a href="#mlas" data-back="mps">← All representatives</a></p>' +
       '<section class="lead"><div class="eyebrow">Member of Parliament · Lok Sabha · ' + esc(m.constituency) + "</div><h2>" + esc(m.name) + '</h2><p style="margin-top:6px">' + esc(extra.party || m.party) + (extra.partyNote ? " · " + esc(extra.partyNote) : "") + ((extra.posts || []).length ? " · " + esc(extra.posts.join("; ")) : "") + "</p></section>" +
@@ -1367,6 +1369,8 @@
       '<div class="stat' + (a.pendingCases ? " alert" : "") + '"><span class="label">Cases declared pending</span><span class="value">' + a.pendingCases + '</span><span class="sub">sworn in the 2024 election affidavit; not convictions</span></div>' +
       '<div class="stat"><span class="label">Declared assets</span><span class="value">' + (a.totalAssetsCr != null ? a.totalAssetsCr.toLocaleString("en-IN") : "—") + '<small>cr</small></span><span class="sub">liabilities ' + crore(a.liabilitiesCr) + "</span></div>" +
       '<div class="stat"><span class="label">MP fund (MPLADS)</span><span class="value">' + (extra.mplads && extra.mplads.spentCr != null ? extra.mplads.spentCr + "<small>cr spent</small>" : '<span class="muted" style="font-size:1.1rem">not published</span>') + '</span><span class="sub">' + (extra.mplads && extra.mplads.allocatedCr != null ? "of " + crore(extra.mplads.allocatedCr) + " allocated" : "₹5 cr a year per MP") + "</span></div></section>" +
+      (extra.prs ? '<section class="panel"><div class="section-head"><div><div class="eyebrow">In Parliament</div><h3>Attendance and participation, 18th Lok Sabha</h3></div><p>' + (/Goyal/.test(m.name) ? "Ministers do not sign the attendance register or ask questions, so these figures are not comparable." : "As tracked by PRS Legislative Research.") + "</p></div>" +
+        '<dl class="kv"><div><dt>Attendance</dt><dd>' + (extra.prs.attendancePct != null ? extra.prs.attendancePct + "%" : "—") + "<small>" + esc(extra.prs.asOf || "") + "</small></dd></div><div><dt>Questions asked</dt><dd>" + (extra.prs.questions != null ? extra.prs.questions : "—") + "<small>&nbsp;</small></dd></div><div><dt>Debates joined</dt><dd>" + (extra.prs.debates != null ? extra.prs.debates : "—") + '<small>&nbsp;</small></dd></div></dl><p class="axis-note">' + srcLinks([extra.prs.source]) + "</p></section>" : "") +
       recordSection(rec || [], { empty: rec ? "Nothing found and checked yet." : "Being compiled and checked." }) +
       '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">MLAs in this seat</div><h3>The six Assembly constituencies</h3></div></div><div class="people" style="margin:0">' +
       m.segments.map(function (cn) { var x = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(x.no) + '"><div class="role">' + esc(cn) + '</div><div class="name">' + esc(x.name || "—") + '</div><div class="detail">' + esc(x.party || "") + "</div></a>"; }).join("") + "</div></section>" +
