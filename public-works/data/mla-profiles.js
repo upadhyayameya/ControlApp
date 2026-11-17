@@ -1,4 +1,4 @@
-// MLA profiles: affidavit (ADR/MyNeta), Praja report card, reported work and news, post-election legal matters.
+// MLA profiles: affidavit (ADR/MyNeta), Praja report card, reported work and news (English and Marathi press), post-election legal matters.
 // Work, news and legal items were independently re-checked against their sources; unsupported items were removed.
 window.PUBLIC_WORKS_MLA = {
  "bmcWorks": {
@@ -487,6 +487,19 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-11-06"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-08-12",
+     "what": "Announced Rs 5 lakh assistance for the family of 11-year-old Mahesh Jadhav, who died while practising human-pyramid formation in Dahisar. Loksatta reported the aid could not be handed over because the mother had no Aadhaar card or bank account.",
+     "kind": "Announced",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-dahisar-govinda-mahesh-jadhav-died-during-practice-mother-no-aadhar-pan-for-assistance-mumbai-print-news-css-98-5299599/",
+      "title": "ना मोबाइल, ना आधार कार्ड, ना बँक खाते… दहिहंडी दुर्घटनेतील महेशचे कुटुंबिय मदतीपासून वंचित",
+      "date": "2025-08-12",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -507,6 +520,39 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-magathane-goregaon-120-ft-dp-road-to-become-operational-by-may-end-after-bmc-clears-all-310-illegal-structures",
       "title": "Magathane-Goregaon 120 Ft DP Road ... (Free Press Journal)",
       "date": "2026-04-08"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-04",
+     "headline": "Surve apologised after his remark 'Marathi is my mother, North India my aunt; it is fine if the mother dies but the aunt must not' drew criticism",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/eknath-shinde-shivsena-mla-prakash-surve-apologize-on-marathi-a-mother-dies-t-will-be-okay-asc-95-5484919/",
+      "title": "“मराठी माझी आई, मेली तरी चालेल” म्हणणाऱ्या शिंदे गटाच्या आमदाराची माफी; म्हणाले, “माझ्याकडून…”",
+      "date": "2025-11-04",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-26",
+     "headline": "Surve's son Raj Surve named by Shiv Sena (Shinde) as one of its two nominated BMC corporators",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-nominated-corporators-bjp-rajhans-singh-son-nitesh-singh-congress-background-controversy-mumbai-print-news-ocd-94-5739922/",
+      "title": "मुलगा स्वीकृत नगरसेवक, वडील आमदार; दोघेही मूळचे काँग्रेसी… भाजपाची नामुष्की! नामनिर्देशित नगरसेवकांमध्येही नातेवाईकांचा भरणा…",
+      "date": "2026-02-26",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-27",
+     "headline": "Deputy CM Eknath Shinde gave Marathi-language training certificates to 20,000 Hindi-speaking rickshaw and taxi drivers at an event organised by Surve at Borivali's Kora Kendra ground",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/marathi-bhasha-training-amathi-rickshaw-taxi-drivers-mumbai-eknath-shinde-ssb-93-6103077/",
+      "title": "मराठी तोडणारी नव्हे तर जोडणारी भाषा; उपमुख्यमंत्री शिंदे यांचा अमराठी भाषकांना संदेश",
+      "date": "2026-08-27",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -789,6 +835,71 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-06-13"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-09",
+     "what": "Raised, with Ajay Choudhari, Ram Kadam and other members, a question on landslide-prone areas in Mumbai; Disaster Management Minister Girish Mahajan said a fresh survey would be done and enough funds given for retaining walls and nets.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/management-minister-girish-mahajan-assured-the-legislative-assembly-that-he-will-conduct-a-survey-of-landslide-prone-areas-in-mumbai-phm-00-5217321/",
+      "title": "मुंबईतील दरडप्रवण क्षेत्रांचे सर्वेक्षण करणार",
+      "date": "2025-07-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-12",
+     "what": "Took part, with other members, in the Assembly debate on Mihir Kotecha's calling-attention notice on the Kanjurmarg solid-waste project; Industries Minister Uday Samant said a high-level committee would hold a 60-day inquiry and the project would get a third-party audit.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/kanjurmarg-waste-project-to-face-detailed-probe-and-independent-audit-mumbai-print-news-ocd-94-5222793/",
+      "title": "कांजूरमार्ग घनकचरा प्रकल्पाची चौकशी होणार",
+      "date": "2025-07-12",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-03-07",
+     "what": "Among members who raised, via calling-attention, redevelopment of dangerous buildings in Mumbai; Deputy CM Shinde announced a redevelopment policy for old buildings in the suburbs too.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/policy-for-redevelopment-of-old-buildings-in-suburbs-too-says-dcm-eknath-shinde-zws-70-4934855/",
+      "title": "उपनगरांतही जुन्या इमारतींच्या पुनर्विकासाचे धोरण; उपमुख्यमंत्री एकनाथ शिंदे यांची घोषणा",
+      "date": "2025-03-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-18",
+     "what": "Asked, with other members, a supplementary question on Mihir Kotecha's calling-attention motion about developers who took extra FSI but did not hand over the required houses to local authorities; Minister of State Madhuri Misal announced an audit and FIRs against developers found at fault.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/builders-audit-mumbai-fsi-scam-madhuri-misal-action-mulund-sra-mcgm-housing-fraud-vsd-99-5779716/",
+      "title": "FSI मुंबईतील बिल्डरांवर कारवाई; चटईक्षेत्र निर्देशकांच्या बदल्यात सरकारला घरे न देणाऱ्या विकासकांवर गुन्हे",
+      "date": "2026-03-18",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-03",
+     "what": "Among members who raised the financial condition of Haffkine Bio-Pharma; the FDA minister announced the institute's land would not be sold or privatised.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/tukaram-mundhe-haffkine-institute-additional-charge-narhari-zhirwal-announcement-rds-00-5996912/",
+      "title": "तुकाराम मुंढे यांच्याकडे आता नवी जबाबदारी",
+      "date": "2026-07-03",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -809,6 +920,28 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-residents-demand-closure-of-kanjurmarg-landfill-in-3-months-bmc-plans-supreme-court-appeal",
       "title": "Residents Demand Closure Of Kanjurmarg Landfill ... (Free Press Journal)",
       "date": "2025-06-13"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-30",
+     "headline": "Raut said Sachin Ahir's move to Shiv Sena (Shinde) was 'not a big blow' to the party",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/sachin-ahir-joins-eknath-shinde-shiv-sena-deputy-chairman-nomination-ppy-92-5990445/",
+      "title": "“आम्ही चार किरणांचीही आस का धरावी?”, सचिन अहिर यांनी उद्धव ठाकरेंची साथ सोडताच संजय राऊतांची पहिली प्रतिक्रिया",
+      "date": "2026-06-30",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-05",
+     "headline": "Raut gave updates on the health of his brother, MP Sanjay Raut, admitted to Fortis Mulund",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shivsena-ubt-mp-sanjay-raut-admitted-fortis-hospital-health-mumbai-print-news-ocd-94-5488831/",
+      "title": "संजय राऊत रुग्णालयात दाखल…",
+      "date": "2025-11-05",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -930,7 +1063,30 @@ window.PUBLIC_WORKS_MLA = {
    },
    "roles": [],
    "work": [],
-   "news": []
+   "news": [
+    {
+     "date": "2026-06-19",
+     "headline": "Shiv Sena (Shinde) workers led by Bhandup MLA Ashok Patil protested on LBS Road, Bhandup, in support of MP Sanjay Dina Patil, striking a picture of Sanjay Raut with footwear, a day after a UBT protest against the MP",
+     "source": {
+      "url": "https://pudhari.news/maharashtra/mumbai/mumbai-bhandup-shinde-faction-protest-sanjay-raut-effigy-beaten-with-slippers-as80",
+      "title": "Shiv Sena Protest Mumbai| भांडुपमध्ये संजय राऊत यांच्या प्रतिमेला जोडे मारून शिंदे गटाचे आंदोलन",
+      "date": "2026-06-19",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-09-10",
+     "headline": "Named to Shiv Sena (Shinde)'s 21-member core committee for the Mumbai civic polls",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/eknath-shinde-team-leads-shivsena-for-mumbai-polls-print-politics-news-ocd-94-5363196/",
+      "title": "मुंबई महानगरपालिका निवडणुकांच्या पार्श्वभूमीवर शिवसेनेची मुख्य कार्यकारी समिती जाहीर; टीम एकनाथ शिंदेमध्ये पक्षातील २१ प्रमुख नेते…",
+      "date": "2025-09-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ]
   },
   "158": {
    "affidavit": {
@@ -1035,6 +1191,71 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-08-23"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-09-11",
+     "what": "Urged the Housing Department (Additional Secretary Asim Gupta) to approve MHADA's tender and issue the work order for redevelopment of the dilapidated PMGP colony at Poonam Nagar–Meghwadi, Jogeshwari (17 buildings, 984 tenements); Gupta assured a work order within two days. Loksatta reported on 2025-09-29 that the state approved the B.G. Shirke tender.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mla-bala-nar-demands-jogeshwari-pmgp-project-clearance-mumbai-print-news-ocd-94-5365809/",
+      "title": "जोगेश्वरीतील पीएमजीपी वसाहतीच्या पुनर्विकासासाठी तातडीने कार्यादेश जारी करा; आमदार बाळा नर यांची मागणी",
+      "date": "2025-09-11",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-05",
+     "what": "Wrote to Cooperation Minister Babasaheb Patil seeking relocation of the deputy/joint registrar office for cooperative housing societies to the Jogeshwari–Andheri area; the office was subsequently relocated.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/jogeshwari-andheri-registrar-office-shifted-shivsena-ubt-anant-nar-efforts-cooperative-societies-relief-mumbai-print-news-ocd-94-5552350/",
+      "title": "जोगेश्वरी-अंधेरी सहकारी गृहनिर्माण संस्थांमधील सभासद, रहिवाशांना दिलासा; उप निबंधक, सह-निबंधक कार्यालयाची जागा बदलली",
+      "date": "2025-12-05",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-01-16",
+     "what": "Met the BMC Commissioner and submitted a memorandum on acute water shortage in Bandrekar Wadi, Meghwadi, Shamnagar and Aghadi Nagar in Jogeshwari East.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/64-percent-water-storage-in-mumbai-seven-dams-citizens-facing-water-shortage-in-many-areas-mumbai-print-news-sud-02-4832906/",
+      "title": "मुंबईला पाणीपुरवठा करणाऱ्या धरणात ६४ टक्के पाणी साठा,मुंबईत बहुतांशी ठिकाणी अपुऱ्या पाणीपुरवठ्याच्या तक्रारी",
+      "date": "2025-01-18",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-18",
+     "what": "Co-moved, with Ajay Choudhari and Yogesh Sagar, a calling-attention notice on Global Hospital, Parel, alleging building-rule violations and that 15% beds reserved for poor patients were not provided for 15 years; the government announced action.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/global-hospital-parel-mumbai-government-action-fsi-cancel-poor-patients-beds-controversy-ssb-93-5779099/",
+      "title": "ग्लोबल रुग्णालय अडचणीत, सरकारची मोठी कारवाई",
+      "date": "2026-03-18",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-14",
+     "what": "Among members, with Parag Alavani, Yogesh Sagar and others, who raised unauthorised constructions and encroachments in Mumbai in the Assembly; Deputy CM Shinde promised a special drive.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/special-campaign-against-unauthorized-construction-orders-from-deputy-chief-minister-eknath-shinde-mumbai-print-news-amy-95-5228453/",
+      "title": "मुंबई, ठाण्यात अनधिकृत बांधकामे उभी राहतात कशी, आमदारांचा सवाल",
+      "date": "2025-07-14",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1045,6 +1266,28 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-contractor-blacklisted-after-abrupt-icu-shutdown-only-10-beds-functional-at-jogeshwaris-balasaheb-thackeray-trauma-hospital",
       "title": "Contractor Blacklisted After Abrupt ICU Shutdown ... (Free Press Journal)",
       "date": "2025-08-23"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-06-26",
+     "headline": "Bombay HC dismissed independent candidate Rohan Satone's election petition against Nar and ordered him to deposit Rs 3.5 lakh as costs",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bombay-high-court-dismissed-rohan-satone-election-petition-against-jogeshwari-east-assembly-constituency-mla-anant-nar-mumbai-print-news-asj-82-5184685/",
+      "title": "ठाकरे गटाचे अनंत नर यांची आमदारकी कायम; उच्च न्यायालयाचा निर्णय, अपक्ष उमेदवाराला साडे तीन लाखांचा दंड",
+      "date": "2025-06-26",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-10",
+     "headline": "Nar among MVA leaders who protested outside D.N. Nagar police station seeking Tushar Gandhi's release",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/tushar-gandhi-detained-mumbai-protest-march-dn-nagar-police-station-rnb-99-6184588/",
+      "title": "ऑगस्ट क्रांती मैदानानंतर डी. एन. नगर पोलीस ठाण्याबाहेर महाविकास आघाडीचे आंदोलन; तुषार गांधींच्या सुटकेसाठी हजारो कार्यकर्ते रस्त्यावर",
+      "date": "2026-10-10",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -1116,6 +1359,84 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-11-27"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-01-06",
+     "what": "Led a residents' march to the BMC ward office over severe water shortage in Goregaon–Dindoshi.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-goregaon-citizens-morcha-for-water-mumbai-print-news-ssb-93-4810873/",
+      "title": "पाणी नाही नळाला ? महापालिका कशाला ? गोरेगाववासियांचा पाण्यासाठी जनप्रक्षोभ मोर्चा",
+      "date": "2025-01-06",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-08",
+     "what": "Met Patra Chawl (Siddharth Nagar, Goregaon) residents on chain hunger strike against MHADA over unfulfilled written assurances, and promised to raise the issue again in the ongoing session.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/patra-chawl-residents-protest-hunger-strike-mhada-redevelopment-goregaon-mumbai-zws-70-5758018/",
+      "title": "पत्रा चाळ रहिवाशांचे प्रलंबित मागण्यांसाठी साखळी उपोषण",
+      "date": "2026-03-08",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-12",
+     "what": "At a May 2026 meeting chaired by Deputy Speaker Anna Bansode on contract film workers and junior artists, including at Goregaon Film City, Prabhu expressed displeasure that the administration had not acted on the issue raised through a point of propriety in the 2025 winter session; Bansode ordered an implementation report within a month.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/anna-bansode-junior-artist-contract-labour-issues-mumbai-film-city-update-rak-94-5893834/",
+      "title": "चित्रपट क्षेत्रातील कंत्राटी कामगारांच्या प्रश्नांवर तोडगा काढा; विधानसभा उपाध्यक्ष अण्णा बनसोडे यांचे निर्देश",
+      "date": "2026-05-12",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-23",
+     "what": "Raised the original Assembly question on drug seizures in the state; CM Fadnavis replied on action including the extradition of Salim Dola.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/salim-dola-drug-trafficker-extradited-devendra-fadnavis-maharashtra-assembly-action-hsp-89-5976502/",
+      "title": "ज्या आमदाराच्या मतदार संघात अंमली पदार्थ मोठ्या प्रमाणात सापडतात, त्या आमदारावर काय कारवाई करायची?",
+      "date": "2026-06-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-07",
+     "what": "Moved a calling-attention notice on illegal excavation in Virar and a related murder; the Revenue Minister announced drone surveys against illegal mining.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/maharashtra-government-drone-survey-against-illegal-mining-rub-99-6005955/",
+      "title": "राज्यातील अवैध उत्खननाविरोधात सरकार अ‍ॅक्शन मोडवर; प्रमुख शहरांमध्ये ‘ड्रोन’द्वारे होणार सर्वेक्षण",
+      "date": "2026-07-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-02",
+     "what": "Asked a starred question (with Shankar Jagtap) on irregular hoarding/digital advertisement licences on MSRTC land; the transport minister said the agency's rights were withdrawn and recovery initiated.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/pune/pratap-sarnaik-told-the-legislative-assembly-that-the-advertising-rights-of-the-company-techsiddhi-advert-have-been-revoked-pune-print-news-phm-00-5197142/",
+      "title": "जाहिरात कंपनीकडून वसुली; एसटीवरील जाहिरातप्रकरणी परिवहन मंत्री प्रताप सरनाईक यांची माहिती",
+      "date": "2025-07-02",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1126,6 +1447,28 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-cctv-footage-shows-leopard-roaming-near-goregaons-residential-society-mla-demands-intervention-viral-video",
       "title": "CCTV Footage Shows Leopard Roaming ... (Free Press Journal)",
       "date": "2025-11-27"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-06",
+     "headline": "Supreme Court hearing continues on Prabhu's challenge to Speaker Rahul Narwekar's 10 Jan 2024 ruling in the Shiv Sena split case",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/supreme-court-shiv-sena-split-hearing-shind-faction-advocate-neeraj-kishan-kaul-arguments-kvg-85-6176209/",
+      "title": "‘हा केवळ संख्याबळाचा खेळ नाही’, शिवसेना फुटीच्या सुनावणीत सर्वोच्च न्यायालयात महत्त्वाचा युक्तिवाद",
+      "date": "2026-10-06",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-09-26",
+     "headline": "BEST to run full-size buses instead of minibuses on the Goregaon station–Dindoshi route; Prabhu explained the change",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/buses-will-be-plying-from-goregaon-bus-station-instead-of-best-minibuses-mumbai-print-news-amy-95-5401335/",
+      "title": "दिंडोशी गोरेगाव मधील बेस्ट प्रवाशांना दिलासा; मिनीबसऐवजी मोठ्या बसगाड्या",
+      "date": "2025-09-26",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -1709,6 +2052,32 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-09-16"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-03",
+     "what": "Met Additional Chief Secretary (Housing) Asim Gupta with airport-funnel residents; Gupta confirmed the CM had approved linking funnel-zone building redevelopment to another scheme and a notification would follow.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-airport-funnel-zone-redevelopment-approval-devendra-fadnavis-mumbai-print-news-css-98-6056253/",
+      "title": "एअरपोर्ट फनेलमधील ४०० इमारतींचा पुनर्विकास अखेर होणार! अन्य योजनेशी संलग्न करण्यास मान्यता",
+      "date": "2026-08-03",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-04",
+     "what": "Met Asim Gupta on redevelopment of 400+ buildings in Juhu and D.N. Nagar restricted by the Juhu high-frequency radar; a TDR option was being considered.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/juhu-dn-nagar-redevelopment-tdr-option-airport-radar-height-restrictions-mumbai-print-news-rub-99-6058196/",
+      "title": "जुहू विमानतळ रडारमधील इमारतींसाठी ‘टीडीआर’चा पर्याय?",
+      "date": "2026-08-04",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -1719,6 +2088,17 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-infra-news-bmc-drops-plan-to-demolish-goregaons-veer-savarkar-flyover-for-versovadahisar-link-road-after-iit-bombay-clears-monopile-design",
       "title": "BMC Drops Plan To Demolish Goregaon's Veer Savarkar Flyover For Versova–Dahisar Link Road After IIT Bombay Clears Monopile Design (Free Press Journal)",
       "date": "2026-01-25"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-10-16",
+     "headline": "Thakur present at Guardian Minister Mangal Prabhat Lodha's janata darbar at BMC P-South ward, where 200+ complaints were heard",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mangalprabhat-lodha-orders-action-against-bangladeshi-hawkers-in-goregaon-mumbai-print-news-vsd-99-5447411/",
+      "title": "बांगलादेशी फेरीवाल्यांचा शोध घेण्यासाठी मोहीम राबवा – पालकमंत्री मंगलप्रभात लोढा यांची सूचना",
+      "date": "2025-10-16",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -2182,6 +2562,71 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-06-14"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-17",
+     "what": "Proposed the concept of an urban-farming project in the open space under the Western Express Highway flyover outside the airport in Vile Parle (East), to prevent encroachment; it was implemented by the Vile Parle Cultural Centre with approval from BMC's K-South ward office.",
+     "kind": "Announced",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-first-urban-farming-project-vile-parle-flyover-bmc-parag-alavani-inauguration-mumbai-print-news-rnb-99-5842299/",
+      "title": "बिज अंकुरले… रोपं तरारली…मुंबईतील पहिला शहरी शेती प्रकल्प आकाराला…",
+      "date": "2026-04-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-08",
+     "what": "Raised, with Amit Satam, Manisha Chaudhari and other members, a calling-attention notice on height curbs caused by two AAI radars blocking redevelopment in Andheri–Juhu; Deputy CM Shinde said both radars would be shifted to Madh and Gorai.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/the-process-of-relocating-both-the-radars-of-the-airports-authority-of-india-in-andheri-juhu-area-has-reached-the-final-stage-phm-00-5214647/",
+      "title": "विमानतळ परिसरातील दोन्ही रडारचे स्थलांतर; अंधेरी-जुहू भागातील पुनर्वसनचा मार्ग मोकळा",
+      "date": "2025-07-08",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-14",
+     "what": "Raised, with Yogesh Sagar, Jitendra Awhad, Bala Nar and other members, a question on unauthorised constructions and encroachments in Mumbai; Deputy CM Shinde promised a special drive.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/special-campaign-against-unauthorized-construction-orders-from-deputy-chief-minister-eknath-shinde-mumbai-print-news-amy-95-5228453/",
+      "title": "मुंबई, ठाण्यात अनधिकृत बांधकामे उभी राहतात कशी, आमदारांचा सवाल",
+      "date": "2025-07-14",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-04-23",
+     "what": "Said he had asked CM Fadnavis and BMC Commissioner Bhushan Gagrani to find a way, within court orders, in the Vile Parle Jain temple demolition matter.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/jain-temple-case-opposition-from-political-parties-continues-mumbai-print-news-ssb-93-5041005/",
+      "title": "जैन मंदिर प्रकरण : राजकीय पक्षांचा विरोध कायम",
+      "date": "2025-04-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-09",
+     "what": "Among members who asked a starred question on government jobs obtained with bogus disability certificates.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/minister-atul-save-said-action-against-bogus-disability-job-scams-will-finish-by-2026-sud-02-5560752/",
+      "title": "बोगस दिव्यांग प्रमाणपत्रे देवून शासकीय नोकऱ्या लाटणाऱ्यांवर कारवाई; ओबीसी कल्याण विभाग मंत्री अतुल सावे यांचे विधानसभेत प्रतिपादन",
+      "date": "2025-12-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -2192,6 +2637,28 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-bmc-transfers-assistant-commissioner-after-massive-jain-protest-over-90-year-old-vile-parle-temple-demolition",
       "title": "BMC Transfers Assistant Commissioner After Massive Jain Protest Over 90-Year-Old Vile Parle Temple Demolition (Free Press Journal)",
       "date": "2025-04-19"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-31",
+     "headline": "Alavani named member of a committee under the Additional Chief Secretary (Housing) to amend the Slum Rehabilitation Act",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/sra-act-amendment-maharashtra-govt-slum-rehabilitation-policy-changes-css-98-6052481/",
+      "title": "SRA act to be Changed: झोपडपट्टी पुनर्वसन कायद्यात होणार बदल, अप्पर मुख्य सचिवांच्या अध्यक्षतेखाली समिती",
+      "date": "2026-07-31",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-13",
+     "headline": "BJP appointed Alavani as its in-charge for the Purandar Assembly segment (Pune district) for the Pune graduates' and teachers' Legislative Council constituency elections",
+     "source": {
+      "url": "https://www.loksatta.com/pune/bjp-pune-graduate-teacher-constituency-assembly-incharge-appointment-pune-print-news-rak-94-6189133/",
+      "title": "भाजपकडून विधानसभा प्रभारींची नियुक्ती",
+      "date": "2026-10-13",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -2399,7 +2866,34 @@ window.PUBLIC_WORKS_MLA = {
     ]
    },
    "roles": [],
-   "work": [],
+   "work": [
+    {
+     "date": "2026-03-13",
+     "what": "Repeatedly followed up for a new building for Sakinaka police station (now in a cramped building at Sangharsh Nagar, Chandivali); a proposal to build it on a BMC civic-amenity plot near Kurla Safed Pool was placed at a 5 Mar 2026 meeting with Deputy CM Shinde.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/sakinaka-police-station-new-building-mumbai-chandivali-dilip-lande-eknath-shinde-mumbai-print-news-hsp-89-5770162/",
+      "title": "साकीनाका पोलिस ठाण्याला मिळणार नवीन इमारत",
+      "date": "2026-03-13",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-07",
+     "what": "Asked a starred question on illegal bike-taxi services; Transport Minister Pratap Sarnaik said bike taxis would be brought under rules, with drivers paying Rs 5 a day plus 2% per ride and permits limited to domicile-certificate holders.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/maharashtra-bike-taxi-new-rules-mumbai-ola-uber-rapido-ban-regulations-transport-minister-pratap-sarnaik-kvg-85-6004875/",
+      "title": "अवैध बाईक टॅक्सीच्या वाहतुकीला आता लगाम लागणार; राज्यातील तरुणांना रोजगार मिळण्यासाठी शासनाचा मोठा निर्णय",
+      "date": "2026-07-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
    "news": [
     {
      "date": "2026-03-07",
@@ -2418,6 +2912,28 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-dilip-lande-returns-with-freebies-ahead-of-bmc-polls-urges-voters-to-support-shiv-sena-candidate-while-distributing-juicer-mixers",
       "title": "Dilip Lande Returns With Freebies Ahead Of BMC Polls ... (Free Press Journal)",
       "date": "2025-11-10"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-09",
+     "headline": "BEL ran a diagnostic check of Chandivali EVMs on 16-17 April 2026 under a February 2026 Bombay HC direction (Justice Somasekhar Sundaresan) obtained by Congress's Naseem Khan; the HC had dismissed Khan's election petition against Lande on 7 Mar 2026, saying its order did not stop the ongoing EVM verification",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-chandivali-assembly-election-evm-inspection-court-order-nasim-khan-dilip-lande-mumbai-print-news-sap-05-5826557/",
+      "title": "चांदिवली विधानसभा निवडणूक वाद : ईव्हीएम तपासणीचे आदेश",
+      "date": "2026-04-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-28",
+     "headline": "As presiding panel chairman, Lande directed suspension of MPCB member-secretary M. Devender Singh for absence during an answer; the state suspended him",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/ias-devender-singh-suspended-maharashtra-assembly-pankaja-munde-rds-00-5743079/",
+      "title": "तालिका अध्यक्षांच्या आदेशानंतर सनदी अधिकाऱ्याचे निलंबन; अनिष्ट प्रथेला सरकारचे बळ",
+      "date": "2026-02-28",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -2538,6 +3054,58 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-12-19"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-15",
+     "what": "Raised, with Varun Sardesai and Aaditya Thackeray, development works in their constituencies on slums and on land held by central agencies and the defence forces; Minister Shambhuraj Desai said a proposal would go to the CM after a meeting with the MLAs concerned.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/shambhuraj-desai-angry-and-opposition-over-development-in-mumbai-land-related-with-defense-dept-asc-95-5230108/",
+      "title": "“आमची लाज काढू नका, तुम्ही काय केलं ते सांगा”, मंत्री शंभूराज देसाईंची विरोधकांबरोबर खडाजंगी",
+      "date": "2025-07-15",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-03",
+     "what": "Asked what the state would do so residents on central/defence land also get homes under SRA; the minister said the state was following up with the Centre.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-sra-scam-sit-probe-bjp-mla-yogesh-sagar-demands-assembly-asj-82-5997417/",
+      "title": "मुंबईतील सर्व झोपु योजनांची एसआयटीकडून चौकशी करा, भाजप आमदाराची मागणी",
+      "date": "2026-07-03",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-09",
+     "what": "Raised, with Sunil Raut, Ajay Choudhari and other members, a question on landslide-prone areas in Mumbai; Minister Girish Mahajan promised a fresh survey and funds for retaining walls and nets.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/management-minister-girish-mahajan-assured-the-legislative-assembly-that-he-will-conduct-a-survey-of-landslide-prone-areas-in-mumbai-phm-00-5217321/",
+      "title": "मुंबईतील दरडप्रवण क्षेत्रांचे सर्वेक्षण करणार",
+      "date": "2025-07-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-11",
+     "what": "Raised a point of propriety in the Assembly that Ladki Bahin instalments had stopped for some women in Ghatkopar after one or two months, and asked for a website showing each beneficiary's payment status and the reason for non-payment.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/ram-kadam-question-on-ladki-bahin-yojna-ssb-93-5222752/",
+      "title": "लाडक्या बहिणींची फसवणूक, राम कदम यांचा घरचा आहेर",
+      "date": "2025-07-12",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -2548,6 +3116,39 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://newsable.asianetnews.com/india/mumbai-mla-ram-kadams-4year-vow-ends-as-water-crisis-work-begins-articleshow-q9t9rc9",
       "title": "Mumbai MLA Ram Kadam's 4-year vow ends as water crisis work begins (Asianet Newsable)",
       "date": "2025-12-19"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-12",
+     "headline": "After a midnight landslide in Ghatkopar killed two, Kadam told ABP Majha that poor coordination between BMC, collector and MHADA meant unauthorised huts continued and funds for retaining walls were not available",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-ghatkopar-landslide-news-gausia-chawl-rescue-update-sgk-96-6072141/",
+      "title": "साखरझोपेत असलेल्या मुंबईकरांवर काळाचा घाला; घाटकोपरमध्ये मध्यरात्री दरड कोसळून दोघांचा मृत्यू, ३-४ घरे ढिगाऱ्याखाली",
+      "date": "2026-08-12",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-07",
+     "headline": "In the Assembly Kadam said his mother died of a lung disease he attributed to pigeon droppings and asked for pigeons to be moved to Sanjay Gandhi National Park; Jain monk Nileshchandra Muni asked him to show proof",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/bjp-mla-ram-kadam-mother-death-pigeon-danger-mumbai-dadar-kabutarkhana-controversy-kvg-85-6005808/",
+      "title": "‘कबुतरांमुळं माझ्या आईचा जीव गेला’, भाजपा आमदार राम कदम विधानसभेत आक्रमक; तर जैन मुनी म्हणतात, ‘पुरावा द्या’",
+      "date": "2026-07-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-08-13",
+     "headline": "Kadam organised a dahi-handi at Shreyas signal, Ghatkopar (W), billed as 'India's biggest'",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/govinda-team-confused-over-actual-prize-distribution-in-mumbais-lakh-rupee-dahi-handi-celebrations-mumbai-print-news-sud-02-5300737/",
+      "title": "मुंबईत ‘लाख’मोलाच्या दहीहंड्या, मात्र बक्षिसाच्या प्रत्यक्ष रक्कमेबाबत संभ्रम",
+      "date": "2025-08-13",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -3161,6 +3762,32 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2026-07-01"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-15",
+     "what": "Moved a calling-attention notice on residents of landslide-prone areas; MoS Urban Development Madhuri Misal said 'hill-top huts' rehabilitation projects would be implemented (384 landslides, 166 deaths in Mumbai 2000-2024 per the reply).",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/minister-of-state-madhuri-misal-informed-that-hill-top-huts-rehabilitation-project-will-be-implemented-in-landslide-prone-areas-mumbai-news-amy-95-5231453/",
+      "title": "दरडप्रवण भागांमध्ये हिल टॉप हट्स पुनर्वसन प्रकल्प राबवणार; राज्यमंत्री माधुरी मिसाळ यांची माहिती",
+      "date": "2025-07-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-02",
+     "what": "Moved, with Sunil Prabhu, Yogesh Sagar and other members, a calling-attention notice seeking ownership of BMC sanitation workers' quarters at Ghatla colony, Chembur; in-charge Urban Development Minister Uday Samant announced a committee of legislators on ownership homes for sanitation workers.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/chandrashekhar-bawankule-information-will-simplify-the-process-of-acquiring-land-ownership-rights-for-those-with-possession-rights-mumbai-print-news-amy-95-5199573/",
+      "title": "कब्जेहक्काच्या जमीनी मालकी हक्काच्या करण्याची प्रक्रिया सोपी करणार",
+      "date": "2025-07-03",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
    "news": [
@@ -3171,6 +3798,17 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-special-court-acquits-mla-tukaram-kate-wife-others-in-2009-chembur-water-crisis-scuffle-case",
       "title": "Mumbai: Special Court Acquits MLA Tukaram Kate, Wife, & Others In 2009 Chembur Water Crisis Scuffle Case (FPJ)",
       "date": "2025-12-21"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-01-16",
+     "headline": "Kate's daughter-in-law Tanvi Kate (Shiv Sena) lost the Chembur ward in the 2026 BMC poll to Shiv Sena (UBT)'s Meenakshi Patankar, 16,020 votes to 9,590, after a dispute between the two Senas over alleged cash distribution and EVM tampering",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/thackeray-faction-candidate-wins-in-controversial-chembur-contest-mumbai-print-news-amy-95-5650527/",
+      "title": "BMC Election result 2026: चेंबूरमधील वादग्रस्त लढतीत ठाकरे गटाच्या उमेदवाराचा विजय",
+      "date": "2026-01-16",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -3259,7 +3897,21 @@ window.PUBLIC_WORKS_MLA = {
      }
     ]
    },
-   "work": [],
+   "work": [
+    {
+     "date": "2026-02-24",
+     "what": "Asked, with Prashant Thakur and other members, a question on minor girls going missing in Mumbai and other cities; the Home Department's written reply said 48,278 women went missing in the state in 2025.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/maharashtra-missing-women-minor-girls-statistics-assembly-operation-muskan-home-department-report-mumbai-print-news-amy-95-5735835/",
+      "title": "वर्षभरात ४८ हजार महिला, मुली बेपत्ता",
+      "date": "2026-02-25",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
    "news": [
     {
      "date": "2026-08-26",
@@ -3278,6 +3930,39 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-special-court-orders-probe-against-shiv-sena-mla-mangesh-kudalkar-over-unauthorised-construction-on-mhada-land",
       "title": "Mumbai: Special Court Orders Probe Against Shiv Sena MLA Mangesh Kudalkar Over Unauthorised Construction On MHADA Land (FPJ)",
       "date": "2025-12-18"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-22",
+     "headline": "Bombay HC (Justice Shivkumar Dige) set aside, on procedural grounds, the special court's 17 Dec 2025 order directing an ACB inquiry into a complaint against Kudalkar (alleging encroachment on MHADA land and misuse of public funds), finding the required steps, including prior sanction for inquiry against a public servant, were not followed, and sent the complaint back to the special judge",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mangesh-kudalkar-acb-inquiry-order-quashed-bombay-high-court-mumbai-print-news-sap-05-6033586/",
+      "title": "सार्वजनिक निधीच्या गैरवापराचा प्रकरण : मंगेश कुडाळकरांविरोधातील एसीबी चौकशीचे आदेश रद्द, उच्च न्यायालयाचा निर्णय",
+      "date": "2026-07-22",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-04-08",
+     "headline": "Loksatta: Kudalkar had 7 questions admitted in the 2025 budget session, among the most from the ruling side",
+     "source": {
+      "url": "https://www.loksatta.com/politics/in-maharashtra-assembly-budget-session-mla-most-questions-asked-on-corruption-and-scams-print-politics-news-css-98-5004829/",
+      "title": "विधिमंडळात सर्वाधिक प्रश्न भ्रष्टाचार, गैरव्यवहारांवर",
+      "date": "2025-04-08",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-06-09",
+     "headline": "FPJ: Kudalkar was among local leaders who had earlier held protests against transfer of Kurla Mother Dairy land for the Dharavi project",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-news-mp-varsha-gaikwad-leads-protest-against-allotment-of-kurla-mother-dairy-land-to-adani-for-dharavi-project",
+      "title": "Mumbai News: MP Varsha Gaikwad Leads Protest Against Allotment Of Kurla Mother Dairy Land To Adani For Dharavi Project",
+      "date": "2025-06-09",
+      "language": "en"
      },
      "verified": "2026-11-17"
     }
@@ -3359,6 +4044,17 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/shiv-sena-ubt-chief-uddhav-thackeray-calls-mlas-meet-after-mp-exodus-four-absentees-fuel-fresh-defection-speculation",
       "title": "Shiv Sena (UBT) Chief Uddhav Thackeray Calls MLAs Meet After MP Exodus; Four Absentees Fuel Fresh Defection Speculation (FPJ)",
       "date": "2026-06-22"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-08-14",
+     "headline": "Varun Sardesai complained that MMRDA's invitation for five project inaugurations by the CM omitted local MLAs, including Kalina MLA Potnis, through whose constituency the elevated road passes",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/cm-devendra-fadnavis-to-inaugurate-five-mmrda-projects-local-mla-varun-sardesai-name-not-printed-in-invitation-card-mumbai-print-news-sud-02-5302834/",
+      "title": "एमएमआरडीएला राज्य शिष्टाचाराचा विसर, प्रकल्पांच्या लोकार्पणाच्या निमंत्रण पत्रिकेत स्थानिक आमदारांचे नावच नाही; वरूण सरदेसाईंकडून नाराजी व्यक्त",
+      "date": "2025-08-14",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -3810,7 +4506,34 @@ window.PUBLIC_WORKS_MLA = {
      }
     ]
    },
-   "work": [],
+   "work": [
+    {
+     "date": "2026-03-27",
+     "what": "CM Fadnavis, at the bhoomipujan of the Sion (Lokmanya Tilak) hospital redevelopment, credited Selvan's persistent follow-up for the project.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/devendra-fadnavis-bhoomipujan-sion-hospital-lokmanya-tilak-rugnalay-redevelopment-ritu-tawde-bmc-healthcare-mumbai-print-news-ocd-94-5799633/",
+      "title": "मुंबईसह राज्यातील नागरिकांना आधुनिक दर्जेदार आरोग्यसेवा उपलब्ध होणार; मुख्यमंत्री देवेंद्र फडणवीस यांचे प्रतिपादन",
+      "date": "2026-03-27",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-30",
+     "what": "Moved, with Amin Patel, a calling-attention notice on frequent unannounced power cuts in BEST areas of Mumbai; Speaker Rahul Narwekar directed the government to issue strict instructions and called a meeting on the issue.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-best-power-cut-load-shedding-rahul-narvekar-assembly-action-rds-00-5990183/",
+      "title": "अघोषित भारनियमनाने मुंबईकर हैराण; विधानसभा अध्यक्षांची तंबी, म्हणाले…",
+      "date": "2026-06-30",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
    "news": [
     {
      "date": "2025-08-18",
@@ -3829,6 +4552,17 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-matunga-residents-launch-online-campaign-against-bjp-mla-tamil-selvan-for-blocking-bmcs-flower-stall-demolition-drive",
       "title": "Mumbai News: Matunga Residents Launch Online Campaign Against BJP MLA Tamil Selvan For Blocking BMC's Flower Stall Demolition Drive (FPJ)",
       "date": "2025-03-10"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-02",
+     "headline": "MNS's Sandeep Deshpande responded to Selvan's stand against Raj Thackeray",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/sandeep-deshpande-on-mns-bjp-alliance-for-mumbai-mayor-election-marathi-rak-94-5683772/",
+      "title": "मुंबई महापौर निवडणुकीत मनसे-भाजपा एकत्र येणार? पक्षाच्या बैठकीनंतर संदीप देशपांडेंकडून भूमिका स्पष्ट",
+      "date": "2026-02-02",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -3935,6 +4669,45 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/mumbai-news-residents-protest-against-demolition-of-125-year-old-elphinstone-mla-confirms-delay-until-monday-video",
       "title": "Mumbai News: Residents Protest Against Demolition Of 125-Year-Old Elphinstone Bridge; MLA Confirms Delay Until Monday (FPJ)",
       "date": "2025-04-26"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-30",
+     "what": "Demanded the government reconsider prices of Rs 72 lakh to Rs 1.48 crore set for BDD chawl flats for post-2011 police occupants and make them affordable; Loksatta describes him as following up on police housing.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bdd-chawl-redevelopment-police-housing-flat-prices-mumbai-print-news-rnb-99-6222807/",
+      "title": "बीडीडी चाळीतील घरासाठी एक-दीड कोटी आणायचे कुठून? पात्र ठरूनही पोलिसांचे हक्काचे घर ‘हवेतच’",
+      "date": "2026-10-30",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-14",
+     "what": "On Naigaon BDD complex residents' water-shortage pot march, said he was in talks with MHADA and BMC officials and the shortage would be resolved soon.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/naigaon-bdd-chawl-water-scarcity-residents-protest-handa-morcha-mumbai-print-news-rub-99-6191682/",
+      "title": "नायगाव बीडीडी संकुलात पुन्हा; त्रस्त रहिवासी रस्त्यावर, हंडा मोर्चा काढून निषेध",
+      "date": "2026-10-14",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-16",
+     "what": "At the key-distribution for 864 Naigaon BDD flats, backed residents' demand for one parking space per flat; CM Fadnavis assured a decision after discussion.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bdd-chawl-redevelopment-naigaon-possession-864-flats-cm-devendra-fadnavis-mumbai-mhada-mumbai-print-news-rds-00-5776111/",
+      "title": "बीडीडी पुनर्वसन २०२९ पर्यंत पूर्ण – मुख्यमंत्र्यांची ग्वाही; नायगावमधील ८६४ रहिवासी चाळीतून उत्तुंग इमारतीत चावी वाटपाचा कार्यक्रम संपन्न",
+      "date": "2026-03-16",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -4206,7 +4979,73 @@ window.PUBLIC_WORKS_MLA = {
      }
     ]
    },
-   "work": [],
+   "work": [
+    {
+     "date": "2026-05-26",
+     "what": "Wrote to BMC Commissioner Ashwini Bhide seeking action on the tarpaulin-covered closed Dadar kabutarkhana structure and measures for road widening.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/dadar-kabutarkhana-demolition-road-widening-shiv-sena-thackeray-bmc-controversy-mumbai-print-news-hsp-89-5920234/",
+      "title": "कबुतरखाना पुन्हा चर्चेत, रस्ता रुंदीकरण करण्याची मागणी",
+      "date": "2026-05-26",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-09-24",
+     "what": "Inspected Indrayani complex, Dadar, after 1.5 months of contaminated water supply and directed BMC officials to fix it (residents said it had not improved).",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-dadar-indrayani-complex-contaminated-water-supply-residents-became-ill-mumbai-print-news-css-98-5395401/",
+      "title": "दिड महिन्यापासून दादरमधील ‘या’ संकुलात दूषित पाणीपुरवठा; रहिवासी ताप, खोकल्याने त्रस्त",
+      "date": "2025-09-24",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-17",
+     "what": "With corporator Vishakha Raut, called residents to a meeting to register complaints about Shivaji Park, to be taken to the administration.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shivaji-park-dadar-citizen-complaint-meeting-february-17-update-mumbai-print-news-zws-70-5719821/",
+      "title": "मुंबईकरांनो… शिवाजी पार्कशी संबंधित तक्रारी करण्याची संधी… मंगळवारी संध्याकाळी इथे नक्की जा…",
+      "date": "2026-02-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-11",
+     "what": "Asked, with Hiraman Khoskar, Manisha Chaudhari and other members, questions in the Assembly on the Samruddhi–Vadhavan port connector road; minister Dada Bhuse replied.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/nashik/nashik-linked-to-vadhavan-port-via-samruddhi-highway-connector-road-work-starts-soon-reducing-travel-time-rds-00-5564867/",
+      "title": "Vadhavan Port Update : समृद्धी महामार्ग-वाढवण बंदर जोडमार्गाचे काम लवकरच… सहापदरी मार्गावरील प्रवास कसा असेल?",
+      "date": "2025-12-11",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-10",
+     "what": "Raised Pune crime via a starred question (with Vijay Shivtare, Rohit Pawar).",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/pune/maharashtra-cm-devendra-fadnavis-says-no-case-filed-for-fake-weapon-licence-against-nilesh-ghaywal-pune-print-news-rds-00-5562444/",
+      "title": "मुख्यमंत्र्यांची मोठी माहिती… म्हणाले‚‘गुंड नीलेश घायवळविरुद्ध …’",
+      "date": "2025-12-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
    "news": [
     {
      "date": "2026-01-16",
@@ -4225,6 +5064,39 @@ window.PUBLIC_WORKS_MLA = {
       "url": "https://www.freepressjournal.in/mumbai/bombay-hc-to-hear-sada-sarvankars-plea-challenging-mahim-mla-mahesh-sawants-2024-maharashtra-assembly-election-win-in-three-weeks",
       "title": "Bombay HC To Hear Sada Sarvankar's Plea Challenging Mahim MLA Mahesh Sawant's 2024 Maharashtra Assembly Election Win In Three Weeks (FPJ)",
       "date": "2025-03-01"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-07",
+     "headline": "Bombay HC dismissed Sada Sarvankar's election petition challenging Sawant's Mahim win",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mahim-mla-mahesh-sawant-election-petition-sada-sarvankar-bombay-high-court-verdict-mumbai-print-news-sap-05-5820548/",
+      "title": "सदा सरवणकर यांना उच्च न्यायालयाचा दणका कारण काय ?",
+      "date": "2026-04-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-13",
+     "headline": "Special court acquitted MP Ravindra Waikar and others, including Sawant and Vishakha Raut, in a 2005 Dadar rioting case",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/special-court-acquits-sena-mp-ravindra-waikar-others-in-2005-rioting-case-in-dadar-mumbai-print-news-zws-70-5503735/",
+      "title": "२००५ सालच्या दादरमधील जमावाने केलेल्या हिंसेचे प्रकरण : खासदार रवींद्र वायकरांसह इतर निर्दोष",
+      "date": "2025-11-13",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-09-21",
+     "headline": "Sawant objected after ex-MLA Sada Sarvankar said he got Rs 20 crore funds despite not being an MLA",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shivsena-ex-mla-sada-sarvankar-said-i-get-20-crore-rupees-fund-without-being-an-mla-css-98-5389686/",
+      "title": "आमदार नसतानाही मला २० कोटींचा निधी, माजी आमदार सरवणकरांचे वादग्रस्त विधान",
+      "date": "2025-09-21",
+      "language": "mr"
      },
      "verified": "2026-11-17"
     }
@@ -4440,9 +5312,110 @@ window.PUBLIC_WORKS_MLA = {
       "date": "2025-04-29"
      },
      "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-27",
+     "what": "Led a Shiv Sena (UBT) protest at KEM Hospital against its proposed renaming and demanded the health committee's renaming proposal be cancelled.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-kem-hospital-renaming-controversy-shiv-sena-ubt-protest-mangal-prabhat-lodha-mumbai-print-news-amy-95-5863416/",
+      "title": "लोढा यांनी बांधलेल्या टॉवरमध्ये धर्मादाय रुग्णालय काढावे आणि हवे ते नाव द्यावे ..",
+      "date": "2026-04-27",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-11",
+     "what": "With Kishori Pednekar, submitted a proposal to BMC to use the space under the Lower Parel bridge for public amenities such as an open gym, to prevent misuse.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mangal-prabhat-lodha-shiv-sena-ubt-protest-lower-parel-bridge-space-dispute-ocd-94-5830009/",
+      "title": "मंगलप्रभात लोढा यांच्याविरोधात शिवसेनेचे (ठाकरे) उपोषण; ‘लोढा हटाव, मुंबई बचाव’च्या घोषणा",
+      "date": "2026-04-11",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-18",
+     "what": "Moved, with Yogesh Sagar and Bala Nar, a calling-attention notice on Global Hospital, Parel, over building-rule violations and non-provision of 15% beds for poor patients; MoS Madhuri Misal said its extra FSI concession would be withdrawn.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/global-hospital-parel-mumbai-government-action-fsi-cancel-poor-patients-beds-controversy-ssb-93-5779099/",
+      "title": "ग्लोबल रुग्णालय अडचणीत, सरकारची मोठी कारवाई",
+      "date": "2026-03-18",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-11-26",
+     "what": "Demanded a thorough probe and case against responsible officials over the death of tiger 'Shakti' at Byculla zoo.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/suspicious-death-of-a-tiger-shakti-in-the-ranichi-baug-bone-stuck-in-the-trachea-died-due-to-lack-of-treatment-scj-81-5533727/",
+      "title": "“राणीच्या बागेत वाघाचा मृत्यू, श्वसननलिकेत हाड अडकलं होतं, उपचार..”; व्याघ्रप्रेमी प्रथमेश जगताप यांचा आरोप काय?",
+      "date": "2025-11-26",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-04-16",
+     "what": "Led a Shiv Sena (UBT) water 'handa morcha' in Sewri.",
+     "kind": "Demanded",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shiv-sena-thackeray-faction-took-out-handa-march-on-wednesday-mumbai-print-news-mrj-95-5025041/",
+      "title": "पाणी द्या, नाहीतर खुर्च्या खाली करा; शिवसेनेचा (ठाकरे) हंडा मोर्चा",
+      "date": "2025-04-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-08-09",
+     "what": "Said he had followed up for years on Sewri BDD chawl redevelopment stalled for want of central approval, criticised state and central governments, and warned of intensified agitation.",
+     "kind": "Followed up",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/sewri-bdd-redevelopment-stalled-due-to-lack-of-central-government-approval-mumbai-print-news-phm-00-5292613/",
+      "title": "शिवडी बीडीडी चाळींचा पुनर्विकास केव्हा ? – रहिवाशांचा प्रश्न, ३५ वर्षांपासून पुनर्विकासाची प्रतीक्षा,मात्र केंद्र सरकारच्या मंजुरीअभावी पुनर्विकास रखडला",
+      "date": "2025-08-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
     }
    ],
-   "news": [],
+   "news": [
+    {
+     "date": "2026-06-24",
+     "headline": "Choudhari demanded action against whoever gave Speaker Narwekar the print that led to a Marathi mispronunciation",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/rahul-narwekar-marathi-pronunciation-asha-dinanath-bhosle-clarification-controversy-explanation-sgk-96-5978670/",
+      "title": "“ते एका चुकीमुळे घडलं”, मराठी भाषेच्या अशुद्ध उच्चारावरून राहुल नार्वेकरांनी दिलं स्पष्टीकरण; म्हणाले, “प्रिंटमध्ये लहान फॉन्ट अन्…”",
+      "date": "2026-06-24",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-06-25",
+     "headline": "Choudhari's daughter-in-law Gauri Choudhari appointed Shiv Sena (UBT) women's assembly chief (mahila vidhan sabha pramukh) for Sewri",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shiv-sena-ubt-announced-mumbai-head-of-the-womens-assembly-posts-tejashwi-ghosalkars-name-retained-mumbai-print-news-sud-02-5181966/",
+      "title": "तेजस्वी घोसाळकरांकडे विधानसभा प्रमुखपद कायम; ठाकरे गटातील पदाधिकाऱ्यांची नावे जाहीर",
+      "date": "2025-06-25",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
    "roles": []
   },
   "184": {
@@ -4498,8 +5471,110 @@ window.PUBLIC_WORKS_MLA = {
      }
     ]
    },
-   "work": [],
-   "news": [],
+   "work": [
+    {
+     "date": "2026-03-16",
+     "what": "Co-moved (with Rais Shaikh, Manisha Chaudhari) a calling-attention on obstacles to redevelopment of 388 MHADA-reconstructed cessed buildings in Mumbai; Minister Shambhuraj Desai announced further incentives.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mhada-cessed-buildings-redevelopment-mumbai-shambhuraj-desai-new-incentives-fsi-rules-ocd-94-5776544/",
+      "title": "म्हाडाच्या उपकरप्राप्त इमारतींच्या पुनर्विकासासाठी भरीव सवलती",
+      "date": "2026-03-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-07-17",
+     "what": "Raised a question on inspection of registered private hospitals; the health minister said 334 hospitals violating the Nursing Home Act had been sealed.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/maharashtra-closes-334-hospitals-violating-nursing-home-act-mumbai-news-amy-95-5236381/",
+      "title": "महाराष्ट्र सुश्रुषागृह कायद्याचे उल्लंघन करणाऱ्या ३३४ रुग्णालयांना टाळे",
+      "date": "2025-07-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-12",
+     "what": "Asked, with Sneha Dubey, Chetan Tupe and other members, about child deaths from malnutrition; the health minister stated 14,526 deaths in three years.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/maharashtra-malnutrition-child-death-statistics-2025-health-minister-infant-mortality-corona-assembly-report-ocd-94-5569045/",
+      "title": "महायुती सरकारच्या कार्यकाळात गेल्या ३ वर्षात कुपोषणामुळे १४ हजार ५२६ बालमृत्यू; आरोग्यमंत्र्यांची विधानसभेत धक्कादायक कबुली",
+      "date": "2025-12-12",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2025-12-10",
+     "what": "Moved, with Sunil Prabhu and other members, a calling-attention notice alleging irregularities in the Ladki Bahin scheme, including payments to ineligible and male beneficiaries.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/ladki-bahin-yojna-dcm-eknath-shinde-talk-over-rs-2100-to-ladki-bahin-yojana-beneficiaries-zws-70-5563775/",
+      "title": "मुख्यमंत्री लाडकी बहीण योजनेतील मानधन २१०० रुपये करण्याचा योग्य वेळी निर्णय; उपमुख्यमंत्री एकनाथ शिंदे यांचे प्रतिपादन",
+      "date": "2025-12-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-24",
+     "what": "Among members who raised orchestra bars violating rules in Mumbai; the government said licences of bars violating rules three times would be cancelled permanently.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/maharashtra-government-to-cancel-orchestra-bar-licenses-permanently-for-rule-violations-devendra-fadnavis-2026-ssb-93-5734141/",
+      "title": "तीन वेळा नियमभंग करणाऱ्या बारचे परवाने कायमस्वरूपी रद्द करणार",
+      "date": "2026-02-24",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-03",
+     "what": "Listed among members who raised Haffkine Bio-Pharma's finances; the minister announced its land would not be sold or privatised.",
+     "kind": "Raised in Assembly",
+     "projectId": null,
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/tukaram-mundhe-haffkine-institute-additional-charge-narhari-zhirwal-announcement-rds-00-5996912/",
+      "title": "तुकाराम मुंढे यांच्याकडे आता नवी जबाबदारी",
+      "date": "2026-07-03",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "news": [
+    {
+     "date": "2026-01-16",
+     "headline": "Jamsutkar's wife Sonam Jamsutkar (Shiv Sena UBT) won BMC ward 210 in the 2026 civic polls",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-election-results-2026-ubt-sena-sonam-jamsutkar-clinches-victory-in-ward-210-mumbai-print-news-zws-70-5647749/",
+      "title": "BMC Election Results 2026 : प्रभाग २१० मध्ये मशाल धगधगली! उबाठा शिवसेनेच्या सोनम जामसुतकर यांचा भाजपवर दणदणीत विजय",
+      "date": "2026-01-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-11-16",
+     "headline": "Jamsutkar was among 12 Shiv Sena (UBT) MLAs, led by Aaditya Thackeray, who met the Mumbai University VC to demand withdrawal of a show-cause notice warning senate member Pradeep Sawant of disqualification",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/aaditya-thackeray-shiv-sena-ubt-mlas-confront-mumbai-university-vc-over-senate-member-pradeep-sawant-disqualification-notice-mumbai-print-news-sap-05-6252511/",
+      "title": "मुंबई विद्यापीठात अधिसभा सदस्याला अपात्र ठरविण्यावरून शिवसेना उबाठा आक्रमक; आदित्य ठाकरेंसह १२ आमदारांनी कुलगुरूंना धरले धारेवर",
+      "date": "2026-11-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
    "roles": []
   },
   "185": {
