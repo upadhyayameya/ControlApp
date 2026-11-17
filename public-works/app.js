@@ -1031,7 +1031,12 @@
     }
     if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
   }
-  overlay.addEventListener("click", closeDrawer);
+  overlay.addEventListener("click", function (e) {
+    closeDrawer();
+    // A click that landed on the header (e.g. the search box) under the overlay goes through.
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    if (el && el.closest && el.closest("header.site")) { if (el.id === "site-q") el.focus(); else if (el.click) el.click(); }
+  });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer(); });
 
   // ---------------------------------------------------------------- CSV
@@ -1114,9 +1119,10 @@
   function buildIndex() {
     var items = [];
     PLACES.forEach(function (pl) { items.push({ group: "Areas", label: pl.name, sub: pl.kind, href: "#" + placeSlug(pl.lat, pl.lng) + "-" + slug(pl.name), hay: pl.name }); });
-    PROJECTS.forEach(function (p) { items.push({ group: "Projects", label: p.shortName || p.name, sub: p.agency + " · " + p.status, href: "#p-" + p.id, hay: [p.name, p.shortName, p.agency, (p.areas || []).join(" ")].join(" ") }); });
-    MLAS.forEach(function (m) { items.push({ group: "MLAs", label: m.name, sub: m.constituency + " · " + m.party, href: "#mla-" + m.no, hay: m.name + " " + m.constituency }); });
-    CORP.corporators.forEach(function (c) { items.push({ group: "Corporators", label: c.name, sub: "Ward " + c.ward + " · " + (c.area || "") + " · " + c.party, href: "#ward-" + wardSlug(WARD_PARENT[c.adminWard] || c.adminWard), hay: c.name + " " + (c.area || "") + " ward " + c.ward }); });
+    PROJECTS.forEach(function (p) { items.push({ group: "Projects", label: p.shortName || p.name, sub: p.agency + " · " + p.status, href: "#p-" + p.id, hay: [p.name, p.shortName, p.agency, p.id, p.sector, (p.areas || []).join(" ")].join(" ") }); });
+    (window.PUBLIC_WORKS_MPS || { mps: [] }).mps.forEach(function (m) { items.push({ group: "Representatives", label: m.name, sub: "MP · " + m.constituency + " · " + m.party, href: "#" + m.id, hay: m.name + " " + m.nameOnAffidavit + " MP " + m.constituency + " " + m.segments.join(" ") }); });
+    MLAS.forEach(function (m) { items.push({ group: "Representatives", label: m.name, sub: "MLA · " + m.constituency + " · " + m.party, href: "#mla-" + m.no, hay: m.name + " MLA " + m.constituency + " " + m.party }); });
+    CORP.corporators.forEach(function (c) { items.push({ group: "Representatives", label: c.vacant ? "Ward " + c.ward + " (vacant)" : c.name, sub: "Corporator · ward " + c.ward + " · " + (c.area || "") + " · " + c.party, href: "#cor-" + c.ward, hay: c.name + " corporator " + (c.area || "") + " ward " + c.ward + " " + c.party }); });
     WARD_NAMES.forEach(function (w) { var i = WARD_INFO[w] || {}; items.push({ group: "BMC wards", label: wardTitle(w), sub: (i.localities || []).slice(0, 4).join(", "), href: "#ward-" + wardSlug(w), hay: wardTitle(w) + " " + w + " " + (i.localities || []).join(" ") + " " + (i.assistantCommissioner || "") }); });
     CONTRACTS.companies.forEach(function (c) { items.push({ group: "Companies", label: c.name, sub: plural((c.mumbaiContracts || []).length, "Mumbai contract"), href: "#co-" + c.slug, hay: [c.name].concat(c.aliases || []).join(" ") }); });
     YOJANAS.forEach(function (y) { items.push({ group: "Schemes", label: y.name, sub: y.level, href: "#schemes", hay: y.name + " " + (y.nameLocal || "") }); });
@@ -1132,10 +1138,26 @@
       if (t) return [{ group: "Tenders", label: t.title, sub: t.id, href: "#t-" + tenderSlug(t.id) }];
     }
     var hits = searchIndex.filter(function (it) { return terms.every(function (x) { return it.h.indexOf(x) !== -1; }); });
-    hits.forEach(function (it) { it.score = (it.label.toLowerCase().indexOf(q) === 0 ? 0 : it.h.indexOf(q) !== -1 ? 1 : 2) + (it.group === "Areas" ? -0.5 : 0); });
-    hits.sort(function (a, b) { return a.score - b.score; });
-    var byGroup = {}, out = [];
-    hits.forEach(function (h) { byGroup[h.group] = (byGroup[h.group] || 0) + 1; if (byGroup[h.group] <= 5) out.push(h); });
+    function rank(it) {
+      var l = it.label.toLowerCase();
+      if (l === q) return 0;
+      if (l.indexOf(q) === 0) return 1;
+      if ((" " + it.h + " ").indexOf(" " + q + " ") !== -1) return 1.5;
+      if ((" " + l).indexOf(" " + q) !== -1) return 2;
+      if (l.indexOf(q) !== -1) return 3;
+      if ((" " + it.h).indexOf(" " + q) !== -1) return 4;
+      return 5;
+    }
+    var ORDER = ["Projects", "Representatives", "Areas", "BMC wards", "Companies", "Schemes", "Tenders"];
+    hits.forEach(function (it) { it.score = rank(it); });
+    var groups = {};
+    hits.forEach(function (h) { (groups[h.group] = groups[h.group] || []).push(h); });
+    var keys = Object.keys(groups).map(function (g) {
+      groups[g].sort(function (a, b) { return a.score - b.score || a.label.length - b.label.length; });
+      return { g: g, best: groups[g][0].score, pri: ORDER.indexOf(g) };
+    }).sort(function (a, b) { return a.best - b.best || a.pri - b.pri; });
+    var out = [];
+    keys.forEach(function (k) { out = out.concat(groups[k.g].slice(0, k.g === "Representatives" ? 6 : 5)); });
     return out.slice(0, 24);
   }
   function mountSearch(input, box, onPick) {
@@ -1458,7 +1480,7 @@
   var hq = document.getElementById("site-q");
   if (hq) {
     mountSearch(hq, document.getElementById("site-results"));
-    document.addEventListener("keydown", function (e) { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); hq.focus(); } });
+    document.addEventListener("keydown", function (e) { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); if (drawer.classList.contains("open")) closeDrawer(); hq.focus(); } });
   }
   window.addEventListener("hashchange", route);
   if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (leafletMap) viewMap(); });

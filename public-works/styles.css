@@ -115,6 +115,7 @@ h1, h2, h3 { text-wrap: balance; }
 
 /* ---------- header: the station nameboard ---------- */
 header.site { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 900; }
+header.site:focus-within { z-index: 1100; }
 header.site .wrap { display: flex; align-items: stretch; gap: 20px; padding-block: 12px 0; flex-wrap: wrap; }
 .board {
   background: var(--board); color: var(--board-ink); text-decoration: none;
