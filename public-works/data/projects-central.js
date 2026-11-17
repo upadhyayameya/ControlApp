@@ -751,11 +751,11 @@
       "id": "CENT-15",
       "name": "Byculla station redevelopment (Amrit Bharat Station Scheme)",
       "shortName": "Byculla ABSS",
-      "summary": "₹35.05 crore redevelopment with a new station building, ticket offices and bridges, begun in 2023 with a one-year target. It was not among the stations inaugurated in May 2025, and no later completion report was found.",
+      "summary": "₹35.05 crore redevelopment with a new station building, ticket offices and bridges, begun in 2023 with a one-year target. It was not among the stations inaugurated in May 2025, and no later completion report was found. Listed by the Ministry of Railways among completed Amrit Bharat stations in Lok Sabha replies of 29 July 2026; works finished between March and July 2026.",
       "sector": "Suburban rail",
       "agency": "Central Railway",
-      "status": "Delayed",
-      "progress": null,
+      "status": "Completed",
+      "progress": 100,
       "cost": {
         "original": 35.05,
         "revised": null,
@@ -772,7 +772,7 @@
       "startDate": "2023",
       "targetDate": "2024",
       "revisedTargetDate": null,
-      "completedDate": null,
+      "completedDate": "2026-07",
       "delayReason": null,
       "areas": [
         "Byculla"
@@ -787,9 +787,14 @@
           "title": "Construction World",
           "date": "2023-10-16",
           "claim": "Rs 350.5 million; foundation/excavation under way; completion within a year"
+        },
+        {
+          "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+          "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+          "date": "2026-07-29"
         }
       ],
-      "lastVerified": "2026-11-16",
+      "lastVerified": "2026-11-17",
       "location": {
         "lat": 18.9796,
         "lng": 72.8336

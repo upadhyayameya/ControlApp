@@ -724,5 +724,215 @@ window.PUBLIC_WORKS_DELAYS = {
    }
   },
   "notes": "The occupancy-certificate and excess-height issue in the input was not covered by the opened source. No cost or spend figure was found."
+ },
+ "CENT-05": {
+  "id": "CENT-05",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "Western Railway reworked the design (three platforms expanded to four, with platform 4 as the home platform; platforms widened from 9 m to 12 m), which pushed opening back about a year. As of June 2026 about 55% physical progress: track laying (3.5 track-km) only about 10% done, drainage about 30%, station building about 40%. Approval of the circulating-area plan was still under process.",
+  "pendingWith": "Western Railway (Mumbai Division / construction organisation); circulating-area plan approval pending (approving authority not named)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-05",
+   "what": "Project (Rs 76 crore, sanctioned 2022-23) about 55% complete; target is to run the first train from Jogeshwari in January 2027.",
+   "source": {
+    "url": "https://navbharatlive.com/maharashtra/mumbai/jogeshwari-coaching-terminal-western-railway-project-completion-deadline-updates-1842519.html",
+    "title": "Jogeshwari coaching terminal: project completion deadline update (Navbharat Live, Hindi)",
+    "date": "2026-07-05"
+   }
+  },
+  "notes": "WR GM Ram Shray Pandey cited a January 2027 target (FPJ, 2026-06-15: https://www.freepressjournal.in/mumbai/mumbai-infra-update-western-railways-7648-crore-jogeshwari-coaching-terminal-likely-to-be-operational-by-january-2027). Swarajya (2026-06-16: https://swarajyamag.com/news-brief/mumbais-first-new-independent-rail-terminus-in-34-years-to-open-in-january-2027-after-year-long-delay) says the original target was March 2025 and attributes the year-long delay to the reworked design; other reports cite earlier targets of Dec 2024 and a Phase I opening in June 2026. No spend-to-date figure has been published. No report of the terminal opening was found as of 2026-11-17."
+ },
+ "CENT-16": {
+  "id": "CENT-16",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "Works only partly done: station building, platform surfacing, shelters and sanitation upgraded, but the new booking office, circulating area and parking were still under way as of March 2026. Railways gives only generic reasons for ABSS delays (utility shifting, infringements, working without stopping trains).",
+  "pendingWith": "Central Railway (Mumbai Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-03-27",
+   "what": "Vikhroli: station building, platform surfacing, shelter and sanitation facilities upgraded; new booking office, circulating area and parking development underway (Railway Minister's Rajya Sabha reply).",
+   "source": {
+    "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2246192",
+    "title": "PIB Mumbai: Indian Railways enhances connectivity and expands Amrit Bharat initiatives across Maharashtra and Konkan (Rajya Sabha reply)",
+    "date": "2026-03-27"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Construction World (2023-10-16) had said the CR stations would be 'the fastest to be completed within a year' (Rs 19.02 cr). No station-wise spend is published: Railways says ABSS spending (Plan Head-53) is kept zone-wise, not station-wise (https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AU1654_NABbYF.pdf)."
+ },
+ "CENT-17": {
+  "id": "CENT-17",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "No station-specific reason is published. Foundation and excavation for the new station building and booking office were reported in October 2023 with a one-year target; the station is still not listed as completed.",
+  "pendingWith": "Central Railway (Mumbai Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Kanjur Marg is listed among the 132 Maharashtra ABSS stations but not among the 261 completed stations.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Cost Rs 27 cr per Construction World (2023-10-16, https://www.constructionworld.in/transport-infrastructure/metro-rail-and-railways-infrastructure/fastest-station-redevelopment-in-parel-vikhroli-byculla--kanjurmarg/45750). No 2025-26 progress report on Kanjurmarg was found."
+ },
+ "CENT-18": {
+  "id": "CENT-18",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Marine Lines is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 28 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
+ },
+ "CENT-19": {
+  "id": "CENT-19",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Charni Road is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 23 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
+ },
+ "CENT-20": {
+  "id": "CENT-20",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Grant Road is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 28 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
+ },
+ "CENT-21": {
+  "id": "CENT-21",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Lower Parel is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 30 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
+ },
+ "CENT-22": {
+  "id": "CENT-22",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Prabhadevi is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 21 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
+ },
+ "CENT-23": {
+  "id": "CENT-23",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Jogeshwari is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 50 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
+ },
+ "CENT-24": {
+  "id": "CENT-24",
+  "statusNow": "Delayed",
+  "completedDate": null,
+  "spentCr": null,
+  "spentAsOf": null,
+  "spentSource": null,
+  "blocker": "December 2024 target missed and still not declared complete. No station-specific reason has been published; Railways cites only generic ABSS constraints (utility shifting, infringements, working near live tracks and high-voltage lines without stopping trains).",
+  "pendingWith": "Western Railway (Mumbai Central Division)",
+  "delayCost": [],
+  "latest": {
+   "date": "2026-07-29",
+   "what": "Malad is listed among the 132 Maharashtra ABSS stations but is not among the 261 stations declared completed.",
+   "source": {
+    "url": "https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AS153_z189l7.pdf",
+    "title": "Lok Sabha Starred Question No. 153 (answered 29.07.2026): Implementation, modernisation and special development under the ABSS, Ministry of Railways",
+    "date": "2026-07-29"
+   }
+  },
+  "notes": "Not among the 261 stations Railways listed as completed in its Lok Sabha replies of 29.07.2026, nor among the 17 Maharashtra stations listed completed on 27.03.2026. Sanctioned cost Rs 35 cr; scope: Façade, entry/exit gates, approach roads, circulating area, platform surfacing, toilets, drainage, roof repairs, lighting, Divyangjan facilities and parking (per FPJ 2024-02-21; tenders for all eight WR stations already awarded then; target December 2024). Source: https://www.freepressjournal.in/mumbai/mumbai-news-8-suburban-stations-of-wr-to-be-upgraded-by-december-2024-check-proposed-pictures. No 2025-26 station-specific progress report was found. No station-wise spend is published (Plan Head-53 is kept zone-wise). Per the same Lok Sabha reply, the four zones covering Maharashtra were allocated Rs 3,543 cr for 2026-27, with Rs 1,671 cr spent up to June 2026 (state-level, not station-level)."
  }
 };
