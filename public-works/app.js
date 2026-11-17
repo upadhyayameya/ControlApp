@@ -645,7 +645,7 @@
       '<section class="stats"><div class="stat"><span class="label">Companies tracked</span><span class="value">' + cos.length + '</span><span class="sub">holding Mumbai government contracts</span></div>' +
       '<div class="stat"><span class="label">Contracts listed</span><span class="value">' + all.length + '</span><span class="sub">since 2015, from orders and reports</span></div>' +
       '<div class="stat"><span class="label">Value with a published figure</span><span class="value">' + Math.round(value).toLocaleString("en-IN") + '<small>cr</small></span><span class="sub">award amounts as reported</span></div>' +
-      '<div class="stat alert"><span class="label">Companies with formal action</span><span class="value">' + withEvents + "<small>of " + cos.length + '</small></span><span class="sub">penalty, termination, ban, case or ruling</span></div></section>' +
+      '<div class="stat alert"><span class="label">Companies with formal action</span><span class="value">' + withEvents + "<small>of " + cos.length + '</small></span><span class="sub">penalty, notice, termination, ban, audit, case or ruling</span></div></section>' +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Repeat relationships</div><h3>Which body awards to which company</h3></div><p>Number of contracts each company holds from each body. Darker means more. Tap a company to see its record.</p></div>' +
       '<div class="table-scroll"><table class="data heat"><thead><tr><th>Company</th>' + agCols.map(function (a) { return '<th class="num">' + esc(a) + "</th>"; }).join("") + '<th class="num">Total</th><th>Formal actions</th></tr></thead><tbody>' +
       rows.map(function (c) {
@@ -776,15 +776,13 @@
     if (!d) return "";
     var monthsLate = p.targetDate ? Math.max(0, Math.round((TODAY - toTime(p.targetDate, true)) / (30.44 * 864e5))) : null;
     var over = overrun(p);
-    var rate = over && monthsLate ? over / monthsLate : null;
     return '<section class="panel stuck"><h3>What’s holding it up</h3>' +
       (d.blocker ? '<p style="margin:0 0 4px;font-weight:600">' + esc(d.blocker) + "</p>" : "") +
       (d.pendingWith ? '<p class="sub" style="margin:0 0 12px">Waiting on: ' + esc(d.pendingWith) + "</p>" : "") +
       '<dl class="kv"><div><dt>Spent so far</dt><dd>' + (d.spentCr != null ? crore(d.spentCr) : '<span class="muted" style="font-size:1rem">not published</span>') + "<small>" + (d.spentAsOf ? "as of " + esc(fmtDate(d.spentAsOf)) : "&nbsp;") + "</small></dd></div>" +
-      "<div><dt>Cost rise so far</dt><dd>" + (over ? "+" + crore(over) : '<span class="muted" style="font-size:1rem">none published</span>') + "<small>" + (over ? "revised minus original cost" : "&nbsp;") + "</small></dd></div>" +
+      "<div><dt>Cost rise so far</dt><dd>" + (over ? "+" + crore(over) : '<span class="muted" style="font-size:1rem">none published</span>') + "<small>" + (over ? "since the first estimate of " + crore(p.cost.original) + "; not all due to delay" : "&nbsp;") + "</small></dd></div>" +
       "<div><dt>Past original deadline</dt><dd>" + (monthsLate != null ? plural(monthsLate, "month") : "—") + "<small>" + (p.targetDate ? "due " + esc(fmtDate(p.targetDate)) : "&nbsp;") + "</small></dd></div></dl>" +
       ((d.delayCost || []).length ? '<h4 style="margin:14px 0 6px;font-size:.9rem">Documented cost of delay</h4><ul class="sources">' + d.delayCost.map(function (c) { return "<li><b>" + (c.amountCr != null ? crore(c.amountCr) : "") + "</b> " + esc(c.measures) + ' <span class="sub">' + srcLinks([c.source]) + "</span></li>"; }).join("") + "</ul>" : "") +
-      (rate ? '<p class="axis-note">Arithmetic, not an official figure: the cost has risen by about ' + crore(rate) + " for every month past the original deadline (" + crore(over) + " ÷ " + monthsLate + " months). Not all of the rise is caused by the delay.</p>" : "") +
       (d.latest ? '<p class="axis-note">Latest: ' + esc(d.latest.what) + " (" + esc(fmtDate(d.latest.date)) + ") " + srcLinks([d.latest.source]) + "</p>" : "") +
       (d.spentSource ? '<p class="axis-note">Spending source: ' + srcLinks([d.spentSource]) + "</p>" : "") +
       "</section>";

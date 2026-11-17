@@ -213,7 +213,7 @@ main > * { min-width: 0; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 select.btn { padding-right: 8px; }
 
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 12px; }
 .card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px 12px;
   display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; cursor: pointer; text-align: left; width: 100%; min-width: 0;
@@ -367,13 +367,13 @@ ol.events li:last-child { border-bottom: 0; }
 table.heat td.hm { text-align: center; padding: 6px 4px; }
 .hmc { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 24px; border-radius: 4px; font-weight: 650; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
 .hm0 { color: var(--line); }
-.agency-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.agency-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 12px; }
 .agency { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; min-width: 0; }
 .agency header { display: grid; gap: 2px; }
 .agency h4, .scheme h4 { margin: 0; font-family: var(--font-display); font-weight: 700; font-stretch: 92%; font-size: 1.15rem; line-height: 1.2; }
 details > summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--ink-2); padding: 4px 0; }
 details[open] > summary { margin-bottom: 4px; }
-.scheme-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
+.scheme-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); gap: 12px; }
 .scheme { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 4px; align-content: start; min-width: 0; background: var(--surface); }
 .scheme header { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 .scheme .local { font-family: var(--font-deva); font-size: 0.9rem; color: var(--ink-2); }
