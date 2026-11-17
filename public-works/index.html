@@ -2,27 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Mumbai Public Works</title>
-  <meta name="description" content="Open dashboard of government infrastructure projects in Mumbai: status, cost, who is funding them, and the elected MLAs for each area." />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <meta name="claude:viewport-fit-sides" content="cover" />
+  <meta name="description" content="Open dashboard of government projects in Mumbai: status, cost, who funds them, who runs them, which BMC ward they are in, and the MLA for each area." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@600;700&family=Anek+Latin:wdth,wght@75..100,500..800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="vendor/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site">
     <div class="wrap">
-      <div class="brand">
-        <h1 id="site-title">Mumbai Public Works</h1>
-        <p id="site-sub">Government projects, their status, who funds them, and your MLA</p>
-      </div>
+      <a class="board" href="#overview" aria-label="Mumbai Public Works, home">
+        <span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span>
+        <span class="latin">Mumbai Public Works</span>
+      </a>
+      <p class="tagline">Every government project in the city: what it costs, who pays, who runs it, and who represents the area.</p>
       <nav class="tabs" aria-label="Sections">
-        <a href="#/projects" data-tab="projects">Projects</a>
-        <a href="#/map" data-tab="map">Map</a>
-        <a href="#/wards" data-tab="wards">Wards</a>
-        <a href="#/tenders" data-tab="tenders">Tenders</a>
-        <a href="#/mlas" data-tab="mlas">MLAs</a>
-        <a href="#/funders" data-tab="funders">Who's funding</a>
-        <a href="#/about" data-tab="about">About the data</a>
+        <a href="#overview" data-tab="overview">Projects</a>
+        <a href="#map" data-tab="map">Map</a>
+        <a href="#wards" data-tab="wards">Wards</a>
+        <a href="#tenders" data-tab="tenders">Tenders</a>
+        <a href="#mlas" data-tab="mlas">MLAs</a>
+        <a href="#funding" data-tab="funding">Funding</a>
+        <a href="#about" data-tab="about">About</a>
       </nav>
     </div>
   </header>
@@ -31,9 +36,7 @@
 
   <main class="wrap" id="app" aria-live="polite"></main>
 
-  <footer class="site">
-    <div class="wrap" id="footer"></div>
-  </footer>
+  <footer class="site"><div class="wrap" id="footer"></div></footer>
 
   <div class="overlay" id="overlay"></div>
   <aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="drawer-title" role="dialog"></aside>
