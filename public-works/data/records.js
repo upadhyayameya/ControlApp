@@ -292,6 +292,1518 @@ window.PUBLIC_WORKS_RECORDS = {
     "prsindia.org/mptrack/18th-lok-sabha/anil-yeshwant-desai (opened)"
    ],
    "verified": "2026-11-17"
+  },
+  "cor-115": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 115 (Bhandup) as the MNS candidate in the January 2026 BMC election.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bjp-and-shinde-sena-score-big-in-ghatkopar-chembur-and-anushakti-nagar-mumbai-print-news-amy-95-5650522/",
+      "title": "BMC Election result 2026: पूर्व उपनगरात बालेकिल्ला राखण्यात पक्षांना यश (Loksatta)",
+      "date": "2026-01-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "corporator Jyoti Rajbhoj ward 115 Kokannagar Bhandup",
+    "नगरसेविका ज्योती राजभोज भांडुप",
+    "Loksatta site search (wp-json posts, search='ज्योती राजभोज', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-116": {
+   "record": [
+    {
+     "date": "2017-10-12",
+     "category": "Politics",
+     "what": "2017-2022 term: won the October 2017 by-election in ward 116 (Bhandup) for the BJP with 11,129 votes to Shiv Sena's Meenakshi Patil's 6,337; the by-poll followed the death of Congress corporator Pramila Patil, her mother-in-law.",
+     "source": {
+      "url": "https://dnaindia.com/india/report-shiv-sena-in-shock-as-bjp-narrows-gap-in-bmc-2552492",
+      "title": "Report: Shiv Sena in shock as BJP narrows gap in BMC (DNA)",
+      "date": "2017-10-13",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "corporator Jagruti Patil ward 116 BJP Bhandup",
+    "नगरसेविका जागृती पाटील भांडुप",
+    "Loksatta site search (wp-json posts, search='जागृती पाटील', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-117": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 117 (Vikhroli) for Shiv Sena (UBT), defeating Shiv Sena (Shinde)'s Suvarna Karanje by 2,270 votes.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bjp-and-shinde-sena-score-big-in-ghatkopar-chembur-and-anushakti-nagar-mumbai-print-news-amy-95-5650522/",
+      "title": "BMC Election result 2026: पूर्व उपनगरात बालेकिल्ला राखण्यात पक्षांना यश (Loksatta)",
+      "date": "2026-01-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Shweta Pawaskar corporator Kanjurmarg ward 117",
+    "नगरसेविका श्वेता पावसकर कांजूर",
+    "Loksatta site search (wp-json posts, search='श्वेता पावसकर', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: पावस्कर"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-118": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "Won ward 118 (Vikhroli) for Shiv Sena (UBT), defeating Shiv Sena (Shinde)'s Tejaswi Gadhe by 7,156 votes.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bjp-and-shinde-sena-score-big-in-ghatkopar-chembur-and-anushakti-nagar-mumbai-print-news-amy-95-5650522/",
+      "title": "BMC Election result 2026: पूर्व उपनगरात बालेकिल्ला राखण्यात पक्षांना यश (Loksatta)",
+      "date": "2026-01-16",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Sunita Jadhav corporator Kannamwar Nagar Vikhroli ward 118",
+    "Loksatta site search (wp-json posts, search='सुनीता जाधव', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-119": {
+   "record": [],
+   "searched": [
+    "Rajesh Sonawane corporator Tagore Nagar Vikhroli ward 119 Shiv Sena",
+    "नगरसेवक राजेश सोनावणे विक्रोळी टागोर नगर",
+    "Loksatta site search (wp-json posts, search='राजेश सोनावणे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-120": {
+   "record": [],
+   "searched": [
+    "Vishwas Shinde corporator Godrej Colony Vikhroli ward 120",
+    "नगरसेवक विश्वास शिंदे विक्रोळी",
+    "Loksatta site search (wp-json posts, search='विश्वास शिंदे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-121": {
+   "record": [
+    {
+     "date": "2026-01-20",
+     "category": "Politics",
+     "what": "Loksatta named her (ward 121, Shiv Sena (UBT)) and Jitendra Valvi (ward 53) as the corporators eligible to contest if the mayor's post were reserved for Scheduled Tribes.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-municipal-corporation-reservation-scheduled-tribes-mayor-mumbai-print-news-ssb-93-5658636/",
+      "title": "महापौरपदासाठी अनुसूचित जमातीचे आरक्षण पडल्यास पेच (Loksatta)",
+      "date": "2026-01-20",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Priyadarshini Thackeray corporator Powai ward 121",
+    "प्रियदर्शिनी ठाकरे नगरसेविका पवई",
+    "Loksatta site search (wp-json posts, search='प्रियदर्शिनी ठाकरे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-122": {
+   "record": [
+    {
+     "date": "2025-12-18",
+     "category": "Politics",
+     "what": "Former three-time NCP corporator from ward 122 (Powai), who had stayed with the Sharad Pawar faction after the split, joined the BJP in the presence of Mumbai BJP chief Amit Satam ahead of the 2026 polls.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-corporator-chandan-sharma-joins-bjp-ncp-sharad-pawar-setback-mumbai-print-news-vsd-99-5583261/",
+      "title": "BMC Election : राष्ट्रवादीच्या माजी नगरसेवकाचा भाजपमध्ये प्रवेश (Loksatta)",
+      "date": "2025-12-19",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-17",
+     "category": "Recognition",
+     "what": "Named by the BJP to the BMC Improvement Committee.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-municipal-corporation-announces-members-for-standing-education-improvement-and-best-committees-mumbai-print-news-amy-95-5719376/",
+      "title": "समित्यांवर भाजपकडून पक्षांतरितांना संधी (Loksatta)",
+      "date": "2026-02-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Chandan Sharma BJP corporator Powai Hiranandani ward 122",
+    "नगरसेवक चंदन शर्मा पवई",
+    "Loksatta site search (wp-json posts, search='चंदन शर्मा', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-123": {
+   "record": [],
+   "searched": [
+    "Sunil More Shiv Sena UBT corporator Vikhroli ward 123 BMC",
+    "Loksatta site search (wp-json posts, search='सुनील मोरे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-124": {
+   "record": [],
+   "searched": [
+    "Sakina Shaikh corporator Varsha Nagar Vikhroli ward 124",
+    "Loksatta site search (wp-json posts, search='सकिना शेख', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: सकीना शेख"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-125": {
+   "record": [
+    {
+     "date": "2026-07-16",
+     "category": "Controversy",
+     "what": "CCTV footage showed a verbal argument between him and Shiv Sena assembly leader Yashwant More in Ghatkopar East turn into a physical scuffle, reportedly over appointments in the party unit; the matter reached Pantnagar police station but both sides declined to file a written complaint, calling it an internal party matter.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/on-camera-shiv-sena-leaders-suresh-awale-yashwant-more-clash-over-party-appointments-in-ghatkopar-east",
+      "title": "On Camera: Shiv Sena Leaders Suresh Awale, Yashwant More Clash Over Party Appointments In Ghatkopar East (Free Press Journal)",
+      "date": "2026-07-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Suresh Awale corporator Ramabai Colony Ghatkopar ward 125",
+    "Loksatta site search (wp-json posts, search='सुरेश आवळे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-126": {
+   "record": [
+    {
+     "date": "2025-12-23",
+     "category": "Politics",
+     "what": "Former Ghatkopar corporator, who had moved from MNS to the undivided Shiv Sena, left Shiv Sena (UBT) and joined the BJP with her husband, former corporator Sanjay Bhalerao, before the 2026 polls.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-election-shiv-sena-ubt-leader-archana-bhalerao-joins-bjp-mumbai-print-news-vsd-99-5592883/",
+      "title": "मनसेतून शिवसेनेत..शिवसेनेतून..भाजपामध्ये; घाटकोपरच्या माजी नगरसेविकेचा ठाकरेंना ‘जय महाराष्ट्र’ (Loksatta)",
+      "date": "2025-12-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-24",
+     "category": "Raised an issue",
+     "what": "In a General Body debate on air pollution, said development must be pollution-free and urged greening of Mumbai's open spaces.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-air-pollution-bmc-general-body-meeting-clash-mumbai-print-news-rnb-99-6209538/",
+      "title": "मुंबईतील हवा प्रदूषणावरून महासभेत रणकंदन पालिकेच्या निष्क्रियतेवर नगरसेवकांचे बोट (Loksatta)",
+      "date": "2026-10-24",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Archana Bhalerao corporator Ghatkopar ward 126 BJP",
+    "Loksatta site search (wp-json posts, search='अर्चना भालेराव', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-127": {
+   "record": [],
+   "searched": [
+    "Swaroopa Patil corporator Ghatkopar ward 127 Shiv Sena UBT",
+    "Loksatta site search (wp-json posts, search='स्वरूपा पाटील', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-128": {
+   "record": [
+    {
+     "date": "2026-01-19",
+     "category": "Politics",
+     "what": "Won ward 128 for the MNS by 158 votes over Shiv Sena (Shinde)'s Ashwini Hande.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shiv-sena-shinde-faction-loses-16-bmc-wards-by-narrow-margins-vsd-99-5654556/",
+      "title": "Mumbai Municipal Corporation Election Results: मुंबईत १६ प्रभागांत शिवसेना शिंदे गटाला विजयाची हुलकावणी (Loksatta)",
+      "date": "2026-01-19",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Saee Shirke MNS corporator Ghatkopar ward 128",
+    "Loksatta site search (wp-json posts, search='सई शिर्के', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-129": {
+   "record": [
+    {
+     "date": "2026-03-09",
+     "category": "Recognition",
+     "what": "Elected unopposed as chairperson of the N ward committee for 2026-27.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-ward-committee-elections-bjp-sakshi-dalvi-wins-mumbai-corporation-politics-mumbai-print-news-rds-00-5761802/",
+      "title": "दोन मते अवैध ठरल्यामुळे भाजपच्या साक्षी दळवी यांचा विजय; १७ प्रभाग समित्यांपैकी ९ ठिकाणी भाजपचा विजय (Loksatta)",
+      "date": "2026-03-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-10",
+     "category": "Raised an issue",
+     "what": "Moved a notice of motion seeking a ban on the sale and use of plastic confetti (party poppers) in the BMC area, citing blocked drains and water pollution.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-party-popper-plastic-confetti-ban-demand-bmc-mumbai-print-news-amy-95-6068690/",
+      "title": "पार्टी पॉपरमधील प्लास्टिक वापरावर बंदीची मागणी (Loksatta)",
+      "date": "2026-08-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Ashwini Mate BJP corporator Ghatkopar ward 129 N ward committee",
+    "Loksatta site search (wp-json posts, search='अश्विनी माटे', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: अश्विनी मते"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-130": {
+   "record": [],
+   "searched": [
+    "Dharmesh Giri BJP corporator Ghatkopar ward 130",
+    "Loksatta site search (wp-json posts, search='धर्मेश गिरी', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-131": {
+   "record": [
+    {
+     "date": "2025-12-29",
+     "category": "Politics",
+     "what": "Then Mumbai president of NCP (SP) and a corporator elected from ward 131 in 2017 on an NCP ticket, she joined the BJP, citing seat-sharing ('we are not getting respectable seats').",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-major-setback-for-ncp-sp-ahead-of-civic-polls-as-partys-mumbai-president-rakhee-jadhav-joins-bjp",
+      "title": "BMC Elections 2026: Major Setback For NCP-SP Ahead Of Civic Polls As Party's Mumbai President Rakhee Jadhav Joins BJP (Free Press Journal)",
+      "date": "2025-12-29",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named by the BJP to the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees (Free Press Journal)",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-22",
+     "category": "Raised an issue",
+     "what": "Said a stray-dog sterilisation proposal (about 1.35 lakh dogs over three years) lacked detail and demanded a special meeting on it.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-to-spend-23-crore-on-stray-dog-sterilization-plan-2024-2027-mumbai-print-news-asj-82-5853131/",
+      "title": "श्वानांच्या नसबंदीवर महापालिका करणार २३ कोटी खर्च (Loksatta)",
+      "date": "2026-04-22",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Rakhi Jadhav corporator Ghatkopar ward 131 BJP NCP",
+    "Loksatta site search (wp-json posts, search='राखी जाधव', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-132": {
+   "record": [
+    {
+     "date": "2026-02-11",
+     "category": "Recognition",
+     "what": "Elected Mumbai's Mayor unopposed and took oath; FPJ describes her as a two-term corporator from ward 132, Ghatkopar.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjps-ritu-tawade-takes-oath-as-bmc-mayor-watch",
+      "title": "BJP's Ritu Tawade Takes Oath As BMC Mayor (Free Press Journal)",
+      "date": "2026-02-11",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-14",
+     "category": "Controversy",
+     "what": "After an RTI activist and the opposition objected to red-and-blue flashing lights on her official car and escort vehicle, the BMC removed them; she said she had no interest in a beacon and called it the administration's mistake.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-removes-flashing-lights-from-mumbai-mayor-ritu-tawdes-car-following-social-media-rti-protest",
+      "title": "BMC Removes Flashing Lights From Mumbai Mayor Ritu Tawde's Car Following Social Media & RTI Protest (Free Press Journal)",
+      "date": "2026-03-15",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-01",
+     "category": "Controversy",
+     "what": "Was criticised, including by Sanjay Raut, for saying a Jain monk's prayer cured her throat ailment; she said her remarks were distorted and that chanting 'Om' at the monk's suggestion had helped.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-mayor-ritu-tawde-jain-muni-throat-cure-controversy-sanjay-raut-clash-update-mumbai-print-news-amy-95-5810167/",
+      "title": "वक्तव्याचा विपर्यास ; ओमच्या उच्चारामुळे घसा बरा झाला – महापौर रितू तावडे यांचे स्पष्टीकरण (Loksatta)",
+      "date": "2026-04-02",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-17",
+     "category": "Controversy",
+     "what": "Loksatta reported that her allocation of the Rs 250 crore mayor's development fund favoured BJP corporators (Rs 145.5 crore) and Ghatkopar (Rs 58 crore), with opposition parties getting Rs 6 crore in all; she said BJP corporators had received no such funds in earlier terms and told critics to 'study before alleging'.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-mayor-fund-allocation-ghatkopar-bjp-ritu-tawade-shiv-sena-opposition-dispute-amy-95-5903114/",
+      "title": "घाटकोपरमध्ये महापौर निधीचा वर्षाव; रितू तावडे यांच्याकडून ५८ कोटी दोन विधानसभा मतदारसंघातच (Loksatta)",
+      "date": "2026-05-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-17",
+     "category": "Work for the area",
+     "what": "As mayor, allotted Rs 26 crore of her development fund to her own ward 132: Rs 11 crore for the ward plus Rs 15 crore for beautifying Khandoba hill.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-mayor-fund-allocation-ghatkopar-bjp-ritu-tawade-shiv-sena-opposition-dispute-amy-95-5903114/",
+      "title": "घाटकोपरमध्ये महापौर निधीचा वर्षाव; रितू तावडे यांच्याकडून ५८ कोटी दोन विधानसभा मतदारसंघातच (Loksatta)",
+      "date": "2026-05-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-05",
+     "category": "Controversy",
+     "what": "After the opposition criticised a Rs 2.9 crore tender linked to the mayor's residence, she said the works were for the surrounding area and zoo, not the bungalow, called it a 'fake narrative', and directed the Garden Department to cancel the tender.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mayors-residence-renovation-row-bmc-cancels-29-crore-tender-after-political-backlash",
+      "title": "Mumbai Mayor's Residence Renovation Row: BMC Cancels ₹2.9-Crore Tender After Political Backlash (Free Press Journal)",
+      "date": "2026-08-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-19",
+     "category": "Controversy",
+     "what": "Opposition leader Kishori Pednekar criticised a Rs 25.12 lakh social-media contract (to Runtime Solutions, no tender invited per the contract document) for publicising the mayor; Tawde denied any role in appointing the agency and her office said it was an existing civic agency.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mayor-ritu-tawde-faces-opposition-heat-over-2512-lakh-social-media-contract",
+      "title": "Mumbai Mayor Ritu Tawde Faces Opposition Heat Over ₹25.12 Lakh Social Media Contract (Free Press Journal)",
+      "date": "2026-08-20",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Mayor Ritu Tawde controversy 2026",
+    "Loksatta site search (wp-json posts, search='ऋतू तावडे', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: रितू तावडे"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-133": {
+   "record": [],
+   "searched": [
+    "Nirmiti Kanade corporator Ghatkopar ward 133 Shiv Sena",
+    "Loksatta site search (wp-json posts, search='निर्मिती कानडे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-134": {
+   "record": [
+    {
+     "date": "2026-03-26",
+     "category": "Legal matter",
+     "what": "Shivaji Nagar police registered an FIR against her, relatives and others under BNS sections including trespass, unlawful assembly, intimidation and obstruction, on a school principal's complaint alleging that the group entered Jafri English High School, Govandi, during a 21 Feb board exam over a withheld hall ticket; FPJ did not report her response.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-corporator-booked-for-school-trespass-intimidation-over-withheld-hall-tickets-dispute",
+      "title": "Mumbai Corporator Booked For School Trespass, Intimidation Over Withheld Hall Tickets Dispute (Free Press Journal)",
+      "date": "2026-03-27",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Mehjabin Khan AIMIM corporator Govandi ward 134",
+    "Loksatta site search (wp-json posts, search='मेहजबीन खान', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: मेहजबीन"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-135": {
+   "record": [
+    {
+     "date": "2026-01-16",
+     "category": "Politics",
+     "what": "A former journalist and BJP media department head contesting his first election, he won ward 135 (Mankhurd) by 8,578 votes over Shiv Sena (UBT)'s Samiksha Sakre.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-bmc-elections-2026-bjps-navnath-ban-secures-key-win-in-mankhurds-ward-135-boosting-saffron-partys-outreach-in-muslim-dominated-areas",
+      "title": "BJP's Navnath Ban Secures Key Win In Mankhurd's Ward 135 (Free Press Journal)",
+      "date": "2026-01-16",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-09",
+     "category": "Raised an issue",
+     "what": "After a tree fell on a school bus in Chembur on June 30, killing an 11-year-old, wrote to the Commissioner and Mayor seeking a high-level expert group to study causes of tree falls.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-tree-fall-incidents-bjp-navnath-ban-demands-expert-committee-bmc-mumbai-print-news-hsp-89-6009487/",
+      "title": "झाडे पडण्यामागील कारणांचा शोध घेण्यासाठी उच्चस्तरीय अभ्यास गट स्थापन करा, नगरसेवक नवनाथ बन यांची मागणी (Loksatta)",
+      "date": "2026-07-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "(covered by FPJ ward-135 result article found via Dharmesh Giri query)",
+    "Loksatta site search (wp-json posts, search='नवनाथ बन', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-136": {
+   "record": [
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Listed as AIMIM's member on the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees (Free Press Journal)",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-22",
+     "category": "Raised an issue",
+     "what": "Questioned why the same organisations are hired year after year for stray-dog sterilisation.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-to-spend-23-crore-on-stray-dog-sterilization-plan-2024-2027-mumbai-print-news-asj-82-5853131/",
+      "title": "श्वानांच्या नसबंदीवर महापालिका करणार २३ कोटी खर्च (Loksatta)",
+      "date": "2026-04-22",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-09",
+     "category": "Raised an issue",
+     "what": "Questioned whether market rates had been checked for a Rs 91 lakh purchase of office furniture for the education department.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-education-department-spending-91-lakh-on-office-furniture-controversy-standing-committee-mumbai-print-news-amy-95-5824235/",
+      "title": "पालिकेच्या शिक्षण विभागातील अधिकारी – कर्मचाऱ्यांसाठी तब्बल ९१ लाख रुपयांच्या टेबल- खुर्च्या (Loksatta)",
+      "date": "2026-04-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-28",
+     "category": "Raised an issue",
+     "what": "Alleged that a 'desilting mafia' was operating in Mumbai as nullah cleaning lagged before the monsoon.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-monsoon-drainage-cleaning-politics-bmc-standing-committee-contractor-controversy-mumbai-print-news-sap-05-5924887/",
+      "title": "नालेसफाई होऊ न देणारी अदृश्य शक्ती कोणती? (Loksatta)",
+      "date": "2026-05-28",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-09-08",
+     "category": "Raised an issue",
+     "what": "Cited epidemic case and death figures and demanded urgent, better measures from the BMC against monsoon diseases.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/jogeshwari-trauma-care-hospital-dsa-machine-bmc-monsoon-diseases-mumbai-print-news-rnb-99-6124519/",
+      "title": "ट्रॉमा केअर रुग्णालयात रुग्णांच्या उपचारासाठीचे २५ कोटींचे यंत्र बंद अवस्थेत (Loksatta)",
+      "date": "2026-09-08",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Jameer Qureshi AIMIM corporator Shivaji Nagar ward 136 BMC",
+    "Loksatta site search (wp-json posts, search='जमीर कुरेशी', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-137": {
+   "record": [
+    {
+     "date": "2026-06-18",
+     "category": "Legal matter",
+     "what": "The Ahilyanagar district caste scrutiny committee invalidated the OBC caste certificate on which he had won the OBC-reserved ward 137.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shivsena-ubt-corporator-deepak-sawant-disqualified-mumbai-municipal-corporation-mumbai-print-news-zws-70-5967517/",
+      "title": "शिवसेना (ठाकरे) पक्षाचे दीपक सावंत यांचे नगरसेवक पद रद्द (Loksatta)",
+      "date": "2026-06-18",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-22",
+     "category": "Legal matter",
+     "what": "The BMC General Body cancelled his membership under the Maharashtra Caste Certificate Act and BMC Act, stating no stay had been granted on the committee's order and the High Court had given no interim relief; it ordered recovery of his honorarium; an election petition was pending in the Small Causes Court.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/aimim-corporator-shamir-patel-disqualified-by-bmc-after-caste-scrutiny-committee-invalidates-certificate",
+      "title": "AIMIM Corporator Shamir Patel Disqualified By BMC After Caste Scrutiny Committee Invalidates Certificate (Free Press Journal)",
+      "date": "2026-06-22",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "(covered by FPJ/Loksatta AIMIM and disqualification articles)",
+    "Loksatta site search (wp-json posts, search='शमीर पटेल', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: समीर पटेल"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-138": {
+   "record": [
+    {
+     "date": "2026-04-30",
+     "category": "Legal matter",
+     "what": "On a challenge by runner-up Mohammad Mahfuz Shaikh (SP), the Parbhani district caste scrutiny committee held her Julaha (OBC) caste certificate invalid; AIMIM group leader Vijay Ubale said the party would challenge it in court.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mim-corporator-roshan-sheikh-caste-certificate-invalid-mumbai-municipal-corporation-disqualification-mankhurd-amy-95-5869905/",
+      "title": "एमआयएमच्या नगरसेविकेचे जात प्रमाणपत्र अवैध…आता कोणाला मिळणार संधी… (Loksatta)",
+      "date": "2026-04-30",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-07-10",
+     "category": "Legal matter",
+     "what": "Mayor Ritu Tawde announced at the General Body that her membership stood terminated with effect from April 27, 2026, the date the certificate was invalidated.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/two-more-bmc-corporators-disqualified-after-caste-certificates-invalidated-by-panels",
+      "title": "Two More BMC Corporators Disqualified After Caste Certificates Invalidated By Panels (Free Press Journal)",
+      "date": "2026-07-11",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "(covered by FPJ/Loksatta AIMIM and disqualification articles)",
+    "Loksatta site search (wp-json posts, search='रोशन शेख', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-139": {
+   "record": [
+    {
+     "date": "2026-01-17",
+     "category": "Politics",
+     "what": "Won ward 139 for AIMIM by 6,328 votes.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-aimim-creates-political-upset-with-clean-sweep-in-govandi-mankhurd-doubling-previous-seats",
+      "title": "BMC Elections 2026 Results: AIMIM Creates Political Upset With Clean Sweep In Govandi-Mankhurd, Doubling Previous Seats (Free Press Journal)",
+      "date": "2026-01-17",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Shabana Shaikh AIMIM corporator ward 139 Lotus Colony Govandi",
+    "Loksatta site search (wp-json posts, search='शबाना शेख', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-140": {
+   "record": [
+    {
+     "date": "2026-01-21",
+     "category": "Recognition",
+     "what": "Named AIMIM's group leader in the BMC after winning ward 140 (Govandi); FPJ noted he is a Hindu elected from a Muslim-majority area.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-aimims-hindu-candidate-vijay-ubale-appointed-partys-group-leader-at-bmc-after-landmark-win-in-muslim-dominated-area",
+      "title": "Mumbai: AIMIM's Hindu Candidate Vijay Ubale Appointed Party's Group Leader At BMC (Free Press Journal)",
+      "date": "2026-01-22",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-17",
+     "category": "Raised an issue",
+     "what": "In a General Body debate on water shortage and tanker supply, stressed the seriousness of the water problem, citing Adivasi hamlets in Aarey Colony.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-water-shortage-tanker-mafia-ban-demand-private-tankers-leakage-issue-mumbai-print-news-rds-00-5778659/",
+      "title": "टॅंकर माफियांना दणका देण्यासाठी खासगी टँकर आठवडाभर बंद ठेवा; पालिका महासभेची मागणी (Loksatta)",
+      "date": "2026-03-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-24",
+     "category": "Raised an issue",
+     "what": "Asked in the General Body where the environment department's funds were being spent, during a debate on air pollution.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-air-pollution-bmc-general-body-meeting-clash-mumbai-print-news-rnb-99-6209538/",
+      "title": "मुंबईतील हवा प्रदूषणावरून महासभेत रणकंदन पालिकेच्या निष्क्रियतेवर नगरसेवकांचे बोट (Loksatta)",
+      "date": "2026-10-24",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "(covered by FPJ AIMIM articles)",
+    "Loksatta site search (wp-json posts, search='विजय उबाळे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-141": {
+   "record": [
+    {
+     "date": "2020-01-10",
+     "category": "Politics",
+     "what": "2017-2022 term: elected from ward 141 (Mankhurd) on a Congress ticket in 2017, he resigned and joined Shiv Sena, then won the January 2020 by-poll by 1,385 votes over BJP's Dinesh Panchal.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/senas-lokare-wins-civic-by-poll-for-mankhurd-seat-sena-tally-now-95-in-bmc",
+      "title": "Sena's Lokare wins civic by-poll for Mankhurd seat, Sena tally now 95 in BMC (Free Press Journal)",
+      "date": "2020-01-10",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named by Shiv Sena (UBT) to the BMC Improvement Committee.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-improvement-committee-chairman-sandhya-doshi-elected-unopposed-mumbai-municipal-corporation-mumbai-print-news-rds-00-5732086/",
+      "title": "बृहन्मुंबई महानगरपालिका सुधार समिती अध्यक्षपदी संध्या विपुल दोशी (सक्रे) यांची बिनविरोध निवड (Loksatta)",
+      "date": "2026-02-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-15",
+     "category": "Raised an issue",
+     "what": "In the Improvement Committee, alleged that more land than a petrol pump needs was being de-reserved from a Mulund sports-complex reservation.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mulund-sports-complex-reservation-changed-petrol-pump-dharavi-redevelopment-land-approval-mumbai-print-news-zws-70-6078123/",
+      "title": "मुलुंडमधील मोकळ्या जागांचा बळी; क्रीडासंकुलाचे आरक्षण बदलून पेट्रोल पंपाला जागा देणार (Loksatta)",
+      "date": "2026-08-15",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Vitthal Lokare corporator Mankhurd ward 141",
+    "Loksatta site search (wp-json posts, search='विठ्ठल लोकरे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-142": {
+   "record": [
+    {
+     "date": "2026-01-25",
+     "category": "Politics",
+     "what": "An MCA graduate aged 29, she switched from the BJP to Shiv Sena (Shinde) shortly before the election and won ward 142.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bmc-elections-2026-results-meet-mumbais-youngest-corporators-elected-across-key-wards",
+      "title": "BMC Elections 2026 Results: Meet Mumbai's Youngest Corporators Elected Across Key Wards (Free Press Journal)",
+      "date": "2026-01-25",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Apeksha Khandekar Shiv Sena corporator ward 142 Lalubhai Compound Mankhurd",
+    "Loksatta site search (wp-json posts, search='अपेक्षा खांडेकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-143": {
+   "record": [],
+   "searched": [
+    "Shabana Qazi AIMIM corporator ward 143 Maharashtra Nagar Mankhurd",
+    "Loksatta site search (wp-json posts, search='शबाना काझी', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: शबाना काजी"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-144": {
+   "record": [
+    {
+     "date": "2017-02-24",
+     "category": "Politics",
+     "what": "2017: after Shiv Sena denied him a ticket, Dinesh ('Bablu') Panchal and his wife joined the BJP; he lost the 2017 BMC election while she won.",
+     "source": {
+      "url": "https://www.loksatta.com/bmc-elections-2017/bmc-election-2017-mixed-results-of-kith-and-kin-of-netas-1418196/",
+      "title": "BMC Election 2017: नेत्यांच्या नातेवाईकांना ‘काही खुशी काही गम’ (Loksatta)",
+      "date": "2017-02-24",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2020-01-10",
+     "category": "Politics",
+     "what": "Lost the January 2020 ward 141 by-poll as BJP candidate, polling 3,042 votes to Vitthal Lokare's 4,427.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/senas-lokare-wins-civic-by-poll-for-mankhurd-seat-sena-tally-now-95-in-bmc",
+      "title": "Sena's Lokare wins civic by-poll for Mankhurd seat (Free Press Journal)",
+      "date": "2020-01-10",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Dinesh Panchal Bablu Panchal BJP corporator Deonar ward 144",
+    "Loksatta site search (wp-json posts, search='दिनेश पांचाळ', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-145": {
+   "record": [
+    {
+     "date": "2026-03-09",
+     "category": "Recognition",
+     "what": "Elected chairperson of the M-East ward committee with 8 votes to 5 for Shiv Sena (UBT)'s Pragya Sadaphule.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-ward-committee-elections-bjp-sakshi-dalvi-wins-mumbai-corporation-politics-mumbai-print-news-rds-00-5761802/",
+      "title": "दोन मते अवैध ठरल्यामुळे भाजपच्या साक्षी दळवी यांचा विजय; १७ प्रभाग समित्यांपैकी ९ ठिकाणी भाजपचा विजय (Loksatta)",
+      "date": "2026-03-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-21",
+     "category": "Controversy",
+     "what": "After the BJP objected to a photograph of her husband Akbar Hussain, whom Loksatta describes as externed, displayed beside AIMIM chief Asaduddin Owaisi's in her ward committee office, it was removed on AIMIM group leader Vijay Ubale's instruction; she said party workers had put it up without her knowledge and that the opposition had needlessly blown up the issue.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mim-corporator-khairunnisa-hussain-tadipar-husband-photo-controversy-mumbai-municipal-corporation-mumbai-print-news-amy-95-5786831/",
+      "title": "एमआयएमच्या नगरसेविकेच्या कार्यालयात तडीपार नवऱ्याचे छायाचित्र; भाजपच्या आक्षेपानंतर छायाचित्र हटवले (Loksatta)",
+      "date": "2026-03-21",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Khairunnisa Hussain AIMIM corporator ward 145 M East ward committee chairperson",
+    "Loksatta site search (wp-json posts, search='खैरुनिसा हुसेन', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: खैरुन्निसा / खैरनुसा"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-146": {
+   "record": [
+    {
+     "date": "2019-04-15",
+     "category": "Raised an issue",
+     "what": "2017-2022 term: as M-East ward committee chair, moved a notice of motion seeking smart-chip ID cards for BMC school pupils.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/smart-id-in-bmc-school-1876004/",
+      "title": "‘स्मार्ट चिप’ ओळखपत्रे यंदाही नाहीत (Loksatta)",
+      "date": "2019-04-15",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2023-08-27",
+     "category": "Politics",
+     "what": "Left Shiv Sena (UBT) and joined the Shinde-led Shiv Sena along with her husband, former MLA Tukaram Kate.",
+     "source": {
+      "url": "https://www.loksatta.com/maharashtra/uddhav-thackeray-faction-former-mla-tukaram-kate-and-former-bmc-corporator-samruddhi-kate-join-shinde-faction-with-other-7-congress-corporator-rmm-97-3876947/",
+      "title": "उद्धव ठाकरेंना आणखी एक धक्का; माजी आमदाराचा शिंदे गटात प्रवेश (Loksatta)",
+      "date": "2023-08-27",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-23",
+     "category": "Raised an issue",
+     "what": "In the Law Committee, objected to the functioning of BMC law officer Komal Punjabi, alleging favouritism in promotions and transfers; members of all parties backed her point of order.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-law-officer-komal-punjabi-transfer-controversy-legal-committee-mumbai-print-news-css-98-6207957/",
+      "title": "मुंबई: पालिकेतील कायदा अधिकारी अडचणीत, कार्यपद्धतीवर विधी समिती आक्रमक (Loksatta)",
+      "date": "2026-10-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Samruddhi Kate Shiv Sena corporator Chembur ward 146",
+    "Loksatta site search (wp-json posts, search='समृद्धी काटे', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: समृद्धी काते"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-147": {
+   "record": [
+    {
+     "date": "2026-03-09",
+     "category": "Politics",
+     "what": "Lost the election for M-East ward committee chair to AIMIM's Khairunnisa Hussain, 5 votes to 8.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-ward-committee-elections-bjp-sakshi-dalvi-wins-mumbai-corporation-politics-mumbai-print-news-rds-00-5761802/",
+      "title": "दोन मते अवैध ठरल्यामुळे भाजपच्या साक्षी दळवी यांचा विजय; १७ प्रभाग समित्यांपैकी ९ ठिकाणी भाजपचा विजय (Loksatta)",
+      "date": "2026-03-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Pragya Sadaphule Shiv Sena corporator ward 147 RCF Colony Chembur",
+    "Loksatta site search (wp-json posts, search='प्रज्ञा सदाफुले', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-148": {
+   "record": [
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named to the BMC Standing Committee for Shiv Sena.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees (Free Press Journal)",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-07",
+     "category": "Raised an issue",
+     "what": "Told the Standing Committee that residents of Bharat Nagar in her area had to carry water on their heads from elsewhere and depend on tankers.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-water-shortage-crisis-bmc-standing-committee-meeting-corporators-complaints-dadar-borivali-bhandup-water-supply-mumbai-print-news-amy-95-5757711/",
+      "title": "मार्च महिन्यातच सर्व मुंबईत पाणी टंचाई; स्थायी समितीत पडसाद (Loksatta)",
+      "date": "2026-03-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-05-22",
+     "category": "Raised an issue",
+     "what": "Told the Standing Committee that nullah desilting had not been done in Zone 5 (Chembur, Govandi, Deonar, Mankhurd) because no contractor was found.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-monsoon-bmc-nallah-safai-controversy-bjp-shiv-sena-congress-clash-sap-05-5914948/",
+      "title": "कागदावरची नालेसफाई प्रत्यक्षात कधी दिसणार (Loksatta)",
+      "date": "2026-05-22",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Anjali Naik Shiv Sena corporator Chembur ward 148 standing committee",
+    "Loksatta site search (wp-json posts, search='अंजली नाईक', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": null
+  },
+  "cor-149": {
+   "record": [
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named by the BJP to the BMC Education Committee.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-standing-committee-chairman-prabhakar-shinde-rajashree-shirwadkar-bjp-nominations-2026-ssb-93-5722427/",
+      "title": "स्थायी समिती अध्यक्षपदासाठी प्रभाकर शिंदे यांना भाजपने दिली संधी, शिक्षण समिती अध्यक्षपदी राजेश्री शिरवडकर (Loksatta)",
+      "date": "2026-02-18",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='सुषम सावंत', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-150": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='वैशाली शेंडकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-151": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='काशिश फुलवारिया', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: कशिश फुलवारिया"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-152": {
+   "record": [
+    {
+     "date": "2026-03-09",
+     "category": "Recognition",
+     "what": "Elected unopposed as chairperson of the M-West ward committee for 2026-27.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-ward-committee-elections-bjp-sakshi-dalvi-wins-mumbai-corporation-politics-mumbai-print-news-rds-00-5761802/",
+      "title": "दोन मते अवैध ठरल्यामुळे भाजपच्या साक्षी दळवी यांचा विजय; १७ प्रभाग समित्यांपैकी ९ ठिकाणी भाजपचा विजय (Loksatta)",
+      "date": "2026-03-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-26",
+     "category": "Raised an issue",
+     "what": "Alleged that MMRDA built the Metro 2B line over a Chembur prayer hall after removing its dome instead of relocating it, raised safety concerns and sought an inquiry against the officials.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mmrda-planning-failure-metro-2b-line-passes-over-prayer-hall-in-chembur-mumbai-print-news-rub-99-5739352/",
+      "title": "चेंबूरमधील प्रार्थनास्थळावरून धावणार मेट्रो, एमएमआरडीएचा नियोजनशून्य कारभार उघड (Loksatta)",
+      "date": "2026-02-26",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='आशा मराठे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-153": {
+   "record": [
+    {
+     "date": "2026-01-14",
+     "category": "Politics",
+     "what": "As Shiv Sena (UBT) candidate, complained to the election authorities and Govandi police that workers of Shiv Sena (Shinde) rival Tanvi Kate distributed money near Ghatle village, and alleged police had not acted against a man handed over to them; Kate said her worker was only distributing pamphlets.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/shiv-sena-candidate-accused-of-distributing-money-in-chembur-mumbai-print-news-amy-95-5639906/",
+      "title": "चेंबूरमध्ये शिवसेना उमेदवाराने पैसे वाटल्याचा आरोप, निवडणूक आयोगात तक्रार (Loksatta)",
+      "date": "2026-01-14",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named to the BMC Standing Committee for Shiv Sena (UBT).",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees (Free Press Journal)",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-09",
+     "category": "Raised an issue",
+     "what": "Questioned the need for Rs 91 lakh of tables and chairs for education department staff, saying the money should go to students' needs.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-education-department-spending-91-lakh-on-office-furniture-controversy-standing-committee-mumbai-print-news-amy-95-5824235/",
+      "title": "पालिकेच्या शिक्षण विभागातील अधिकारी – कर्मचाऱ्यांसाठी तब्बल ९१ लाख रुपयांच्या टेबल- खुर्च्या (Loksatta)",
+      "date": "2026-04-09",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-06",
+     "category": "Raised an issue",
+     "what": "Demanded awareness drives in schools and colleges about Plaster of Paris Ganesh idols.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-pop-ganesh-idol-recycling-akarma-foundation-project-mumbai-print-news-rnb-99-5942845/",
+      "title": "पीओपी गणेशमूर्तींवर प्रायोगिक तत्वावर पुनर्प्रक्रिया, पुनर्वापर (Loksatta)",
+      "date": "2026-06-06",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='मीनाक्षी पाटणकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-154": {
+   "record": [
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named by the BJP to the BMC Improvement Committee.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-improvement-committee-chairman-sandhya-doshi-elected-unopposed-mumbai-municipal-corporation-mumbai-print-news-rds-00-5732086/",
+      "title": "बृहन्मुंबई महानगरपालिका सुधार समिती अध्यक्षपदी संध्या विपुल दोशी (सक्रे) यांची बिनविरोध निवड (Loksatta)",
+      "date": "2026-02-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='महादेव शिवगण', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-155": {
+   "record": [
+    {
+     "date": "2026-01-19",
+     "category": "Politics",
+     "what": "A first-time candidate and homemaker from a chawl family, won ward 155 (Chembur, Suman Nagar) for Shiv Sena (UBT); said she would focus on Suman Nagar's development.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/snehal-shivkar-won-in-ward-no-155-from-thackeray-shivsena-in-mumbai-bmc-election-2026-sgk-96-5655903/",
+      "title": "Snehal Shivkar : चाळीतलं घर, साधी माणसं अन् लाखमोलाचा पाठिंबा (Loksatta)",
+      "date": "2026-01-19",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='स्नेहल शिवकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-156": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='अश्विनी मातेकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-157": {
+   "record": [
+    {
+     "date": "2026-01-22",
+     "category": "Politics",
+     "what": "Was unreachable for about two days and missed Shiv Sena (UBT)'s group registration, prompting reports she might join the Shinde Sena; she resurfaced, said she remained with Shiv Sena (UBT), attributed her absence to a religious vow at Tuljapur and to party seniors' advice to switch off her phone, and completed registration.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/shiv-sena-ubt-corporator-dr-sarita-mhaske-reappears-quells-defection-buzz",
+      "title": "Shiv Sena (UBT) Corporator Dr Sarita Mhaske Reappears, Quells Defection Buzz (Free Press Journal)",
+      "date": "2026-01-22",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "(FPJ Mhaske articles surfaced in earlier queries)",
+    "Loksatta site search (wp-json posts, search='सरिता म्हस्के', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-158": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='चित्रा सांगळे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-159": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='प्रकाश मोरे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-160": {
+   "record": [
+    {
+     "date": "2026-02-16",
+     "category": "Recognition",
+     "what": "Named by Shiv Sena (Shinde) to the BMC Improvement Committee.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-improvement-committee-chairman-sandhya-doshi-elected-unopposed-mumbai-municipal-corporation-mumbai-print-news-rds-00-5732086/",
+      "title": "बृहन्मुंबई महानगरपालिका सुधार समिती अध्यक्षपदी संध्या विपुल दोशी (सक्रे) यांची बिनविरोध निवड (Loksatta)",
+      "date": "2026-02-23",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='किरण लांडगे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-161": {
+   "record": [
+    {
+     "date": "2026-03-09",
+     "category": "Recognition",
+     "what": "Elected unopposed as chairperson of the L ward committee for 2026-27.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-ward-committee-elections-bjp-sakshi-dalvi-wins-mumbai-corporation-politics-mumbai-print-news-rds-00-5761802/",
+      "title": "दोन मते अवैध ठरल्यामुळे भाजपच्या साक्षी दळवी यांचा विजय; १७ प्रभाग समित्यांपैकी ९ ठिकाणी भाजपचा विजय (Loksatta)",
+      "date": "2026-03-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-13",
+     "category": "Raised an issue",
+     "what": "After a landslide at Ashok Nagar, Kurla killed eight, alleged administrative neglect and said he had sought geo-netting on the steep slope.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/kurla-landslide-accident-death-toll-rises-mumbai-ashok-nagar-mumbai-print-news-zws-70-6075754/",
+      "title": "कुर्ला दरड दुर्घटनेत आणखी एकाचा मृत्यू, मृतांची संख्या ८ वर (Loksatta)",
+      "date": "2026-08-13",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='विजयेंद्र शिंदे', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: विजेंद्र शिंदे"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-162": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='अमीर खान', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: आमिर खान"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-163": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='शैला लांडे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-164": {
+   "record": [
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named by the BJP to the BMC Standing Committee.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees (Free Press Journal)",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-21",
+     "category": "Raised an issue",
+     "what": "As chairman of the Public Health Committee, wrote to the Commissioner seeking a stay and an independent inquiry into a proposal to extend the existing contractor's KEM hospital pharmacy contract by five years while a generic-medicine shop was delayed.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/kem-hospital-generic-medicine-shop-delay-bmc-investigation-harish-bhandirge-mumbai-print-news-rub-99-6204961/",
+      "title": "जेनरिक औषधांचे दुकान सुरू करण्यास केईएमकडून दिरंगाई; प्रस्तावाला स्थगिती देऊन चौकशी करण्याची आरोग्य समितीच्या अध्यक्षांची मागणी (Loksatta)",
+      "date": "2026-10-21",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='हरीश भांदिर्गे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-165": {
+   "record": [
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named to the BMC Standing Committee for Congress.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/bjp-picks-new-defector-corporators-for-key-committees",
+      "title": "BJP Picks New & Defector Corporators For Key Committees (Free Press Journal)",
+      "date": "2026-02-18",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-08-05",
+     "category": "Raised an issue",
+     "what": "Criticised a Rs 2.9 crore tender linked to the Mayor's residence while the city faced potholes and drainage problems, and demanded disclosure of spending.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/mumbai-mayors-residence-renovation-row-bmc-cancels-29-crore-tender-after-political-backlash",
+      "title": "Mumbai Mayor's Residence Renovation Row: BMC Cancels ₹2.9-Crore Tender After Political Backlash (Free Press Journal)",
+      "date": "2026-08-05",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-09-10",
+     "category": "Raised an issue",
+     "what": "Through a point of order in the Standing Committee, demanded a BMC job and Rs 25 lakh for the family of Aslam Shaikh, who died in the July 2 Sakinaka manhole accident.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-manhole-death-bmc-job-compensation-demand-congress-mumbai-print-news-amy-95-6129596/",
+      "title": "मॅनहोल दुर्घटनेतील मृत व्यक्तीच्या कुटुंबातील एकाला महापालिकेत नोकरी द्यावी; काँग्रेसच्या गटनेत्याची मागणी (Loksatta)",
+      "date": "2026-09-10",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-10-20",
+     "category": "Raised an issue",
+     "what": "Opposed an Improvement Committee proposal to lease a Worli plot at the ready-reckoner value of Rs 56 crore, claiming a market value of about Rs 400 crore and a Rs 344 crore loss, and asked the Commissioner to cancel it and hold an open auction.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/worli-plot-lease-scam-bmc-committee-congress-protest-mumbai-print-news-rnb-99-6201627/",
+      "title": "वरळीतील ४०० कोटींचा भूखंड ५६ कोटींना भाडेपट्ट्याने सुधार, समितीतील प्रस्तावाला काँग्रेसचा विरोध (Loksatta)",
+      "date": "2026-10-20",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='अश्रफ आझमी', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: अशरफ आजमी"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-166": {
+   "record": [
+    {
+     "date": "2026-05-11",
+     "category": "Work for the area",
+     "what": "As chairperson of the Women and Child Welfare Committee, conceived a summer food festival at ward offices for products made by women's self-help groups.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/bmc-walvan-mahotsav-2026-mumbai-mahila-bachat-gat-summer-food-festival-details-mumbai-print-news-sap-05-5891327/",
+      "title": "पापड, लोणचे, कुरडया मिळणार महापालिकेच्या विभाग कार्यालयात (Loksatta)",
+      "date": "2026-05-11",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='मीनल तुर्डे', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-167": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='समन आझमी', 2016-06 onward), results filtered for corporator/ward context",
+    "Loksatta site search: सामन आजमी / समन आझमी"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-168": {
+   "record": [
+    {
+     "date": "2026-02-18",
+     "category": "Recognition",
+     "what": "Named to the BMC Standing Committee; she is from NCP (Ajit Pawar), nominated through the Shiv Sena (Shinde) group.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-municipal-corporation-announces-members-for-standing-education-improvement-and-best-committees-mumbai-print-news-amy-95-5719376/",
+      "title": "समित्यांवर भाजपकडून पक्षांतरितांना संधी (Loksatta)",
+      "date": "2026-02-17",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-03-07",
+     "category": "Raised an issue",
+     "what": "In the Standing Committee, questioned why water shortages had arisen and why distribution was failing.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-water-shortage-crisis-bmc-standing-committee-meeting-corporators-complaints-dadar-borivali-bhandup-water-supply-mumbai-print-news-amy-95-5757711/",
+      "title": "मार्च महिन्यातच सर्व मुंबईत पाणी टंचाई; स्थायी समितीत पडसाद (Loksatta)",
+      "date": "2026-03-07",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-04-30",
+     "category": "Raised an issue",
+     "what": "Alleged in the Standing Committee, presenting evidence, that debris was being illegally dumped along the Mithi river and that the desilting contractor covered it with river silt to mislead officials, casting doubt on desilting figures; she demanded strict action and AI and satellite monitoring.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-mithi-river-desilting-scam-saida-khan-bmc-contractor-allegations-mumbai-print-news-zws-70-5868815/",
+      "title": "मिठी नदीच्या गाळातून राडारोड्याची अवैध विल्हेवाट; कंत्राटदाराकडून अधिकाऱ्यांच्या डोळ्यात धूळफेक (Loksatta)",
+      "date": "2026-04-30",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    },
+    {
+     "date": "2026-06-13",
+     "category": "Raised an issue",
+     "what": "Demanded an audit of how BEST spent earlier BMC financial aid during debate on a Rs 906 crore aid proposal.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/mumbai-bmc-standing-committee-stalls-best-bus-rs-1000-crore-funds-prabhakar-shinde-mumbai-print-news-sap-05-5955882/",
+      "title": "आर्थिक मदतीचा बेस्ट प्रशासन कसा वापर करणार? (Loksatta)",
+      "date": "2026-06-13",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='सईदा खान', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-169": {
+   "record": [
+    {
+     "date": "2019-08-08",
+     "category": "Raised an issue",
+     "what": "2017-2022 term: moved a notice of motion in the BMC house seeking a policy making it compulsory for cable operators to lay TV cables underground.",
+     "source": {
+      "url": "https://www.loksatta.com/mumbai/forced-tv-cable-underground-abn-97-1946269/",
+      "title": "टीव्ही केबल भूमिगत करण्याची सक्ती (Loksatta)",
+      "date": "2019-08-08",
+      "language": "mr"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='प्रवीणा मोरजकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-170": {
+   "record": [
+    {
+     "date": "2026-07-10",
+     "category": "Legal matter",
+     "what": "The Akola district caste scrutiny committee rejected her OBC caste validity certificate on July 2; Mayor Ritu Tawde announced her membership terminated with effect from that date.",
+     "source": {
+      "url": "https://www.freepressjournal.in/mumbai/two-more-bmc-corporators-disqualified-after-caste-certificates-invalidated-by-panels",
+      "title": "Two More BMC Corporators Disqualified After Caste Certificates Invalidated By Panels (Free Press Journal)",
+      "date": "2026-07-11",
+      "language": "en"
+     },
+     "verified": "2026-11-17"
+    }
+   ],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='बुशरा मलिक', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
+  },
+  "cor-171": {
+   "record": [],
+   "searched": [
+    "Loksatta site search (wp-json posts, search='राणी येरुणकर', 2016-06 onward), results filtered for corporator/ward context"
+   ],
+   "verified": "2026-11-17",
+   "coverageNote": "Searched with fewer sources than most corporators."
   }
  },
  "mps": {
