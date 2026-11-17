@@ -126,6 +126,7 @@ def scrape():
             if not tender_id:
                 continue
             ref = parts[-2] if len(parts) >= 3 else None
+            detail_link = next((BASE + h for h in hrefs if "FrontEndViewTender" in h), None)
             title = parts[0] if parts else title_cell
             chain = t[6]
             segs = [s.strip() for s in chain.split("||")]
@@ -140,11 +141,47 @@ def scrape():
                 "published": parse_date(t[1]),
                 "closing": parse_date(t[2]),
                 "opening": parse_date(t[3]),
+                "_detail": detail_link,
             })
             n += 1
         print(f"{ORGS[org]}: {n} live tenders", file=sys.stderr)
         time.sleep(2)
     return items
+
+
+DETAIL_FIELDS = {
+    "Tender Value in ₹": "valueRs", "EMD Amount in ₹": "emdRs", "Tender Fee in ₹": "feeRs",
+    "Tender Type": "type", "Tender Category": "category", "Form Of Contract": "formOfContract",
+    "Product Category": "productCategory", "Work Description": "description", "Location": "location",
+    "Pincode": "pincode", "Period Of Work(Days)": "periodDays", "Tenderer Class": "bidderClass",
+    "Bid Opening Date": "bidOpening", "Bid Validity(Days)": "bidValidityDays",
+}
+
+
+def fetch_detail(op, url):
+    """Fields from a tender's public detail page. 'NA' becomes None; rupee amounts become numbers."""
+    page = get(op, url)
+    pairs = re.findall(r'<td[^>]*class="td_caption"[^>]*>(.*?)</td>\s*<td[^>]*class="td_field"[^>]*>(.*?)</td>', page, re.S)
+    out, inviting = {}, {}
+    for k, v in pairs:
+        k, v = text(k), text(v)
+        if k in DETAIL_FIELDS:
+            key = DETAIL_FIELDS[k]
+            if v in ("", "NA", "Nil", "--"):
+                v = None
+            elif key.endswith("Rs"):
+                try:
+                    v = float(v.replace(",", ""))
+                except ValueError:
+                    v = None
+            elif key == "bidOpening":
+                v = parse_date(v)
+            out[key] = v
+        elif k in ("Name", "Address") and k.lower() not in inviting:
+            inviting[k.lower()] = v or None
+    if inviting:
+        out["invitedBy"] = inviting  # "Tender Inviting Authority" block
+    return out
 
 
 def load_previous():
@@ -164,6 +201,25 @@ def main():
     if not live:
         sys.exit("no tenders scraped; leaving data/tenders.js unchanged")
     prev = load_previous()
+    # Detail pages: fetch for tenders we have not detailed before (politely, one request a second).
+    op = opener()
+    get(op, ORG_LIST)
+    fetched = 0
+    for t in live:
+        link = t.pop("_detail", None)
+        old = prev.get(t["id"], {})
+        if old.get("detail"):
+            t["detail"] = old["detail"]
+            continue
+        if not link:
+            continue
+        try:
+            t["detail"] = fetch_detail(op, link)
+            fetched += 1
+            time.sleep(1)
+        except Exception as e:  # keep going; detail is optional
+            print("detail failed", t["id"], e, file=sys.stderr)
+    print(f"fetched {fetched} detail pages", file=sys.stderr)
     merged = {}
     for t in prev.values():
         t = dict(t)

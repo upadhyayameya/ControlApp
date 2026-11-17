@@ -270,6 +270,7 @@
       "<h2>" + PROJECTS.length + " government projects worth " + crore(total) + ". <em>" + late.length + " are delayed or stalled.</em></h2>" +
       "<p>Every major BMC, state and central government work in the city: what it costs, who pays, who runs it, which ward it is in and who the local MLA is. Each project links to the reports it is based on.</p></section>" +
 
+      '<section class="panel hero-search"><div><div class="eyebrow">Your area</div><h3 style="margin:2px 0 10px;font-family:var(--font-display);font-stretch:92%;font-size:1.2rem">See what\u2019s being built near you, who to ask, and the air quality now</h3></div><div class="field search">' + ICON_SEARCH + '<input type="search" id="home-q" placeholder="Type your locality, a project, an MLA or a corporator" aria-label="Search" autocomplete="off"></div><div class="search-results" id="home-results" hidden></div></section>' +
       '<section class="stats" aria-label="Summary">' +
       '<div class="stat"><span class="label">Total value</span><span class="value">' + (total / 100000).toFixed(2) + '<small>lakh cr</small></span><span class="sub">latest sanctioned or revised cost</span></div>' +
       '<div class="stat alert"><span class="label">Delayed or stalled</span><span class="value">' + late.length + "<small>of " + PROJECTS.length + '</small></span><span class="sub">' + (counts.Stalled || 0) + " stalled outright</span></div>" +
@@ -303,6 +304,7 @@
     renderStatusChips(counts);
     renderFilters();
     renderExplorer();
+    mountSearch(document.getElementById("home-q"), document.getElementById("home-results"));
   }
 
   function renderStatusChips(counts) {
@@ -390,6 +392,7 @@
     app.innerHTML = '<section class="lead"><div class="eyebrow">Map</div><h2>Where the work is happening</h2><p>Lines follow each project’s stations, sites and junctions over the BMC ward boundaries. Points are approximate, within a few hundred metres. Tap a line or a ward for details.</p></section>' +
       '<div class="map-layout"><div id="map" role="region" aria-label="Map of projects"></div><aside class="map-side">' +
       '<div class="panel"><div class="eyebrow" style="margin-bottom:8px">Show</div><div class="legend" id="map-status"></div>' +
+      (AQI.stations.length ? '<div class="legend" style="margin-top:8px"><button type="button" class="chip" id="aq-toggle" aria-pressed="false"><span class="swatch" style="background:#92d050;border-radius:50%"></span>Air quality stations</button></div>' : "") +
       (EWARD_GEO.length ? '<div class="legend" style="margin-top:8px"><button type="button" class="chip" id="ew-toggle" aria-pressed="false"><span class="swatch" style="background:transparent;border:2px dashed var(--accent)"></span>Corporator wards (227)</button></div>' : "") + '</div>' +
       '<div class="panel"><div class="field search" style="margin-bottom:8px">' + ICON_SEARCH + '<input type="search" id="map-q" placeholder="Find on map" aria-label="Find a project on the map" value="' + esc(state.q) + '"></div><div class="list" id="map-list"></div></div>' +
       "</aside></div>";
@@ -410,6 +413,18 @@
       },
     }).addTo(leafletMap);
     leafletMap.fitBounds(wl.getBounds(), { padding: [8, 8] });
+    var aqLayer = null, aqBtn = document.getElementById("aq-toggle");
+    if (aqBtn) aqBtn.addEventListener("click", function () {
+      var on = aqBtn.getAttribute("aria-pressed") !== "true";
+      aqBtn.setAttribute("aria-pressed", String(on));
+      if (aqLayer) { leafletMap.removeLayer(aqLayer); aqLayer = null; }
+      if (!on) return;
+      aqLayer = L.layerGroup(AQI.stations.map(function (st) {
+        return L.circleMarker([st.lat, st.lng], { radius: 11, color: "#fff", weight: 2, fillColor: AQI_COLORS[st.category], fillOpacity: 1 })
+          .bindTooltip(String(st.aqi), { permanent: true, direction: "center", className: "aqi-label" })
+          .bindPopup("<b>" + esc(stationName(st)) + "</b><br>AQI " + aqiBadge(st) + "<br>PM2.5 " + (st.pm25 != null ? st.pm25 : "—") + " · PM10 " + (st.pm10 != null ? st.pm10 : "—") + " µg/m³<br><span style=\"color:" + ink3 + "\">24-hour average · " + esc(fmtDT((AQI.fetchedAt || "").replace("Z", ""))) + " UTC</span>");
+      })).addTo(leafletMap);
+    });
     var ewLayer = null, ewBtn = document.getElementById("ew-toggle");
     if (ewBtn) ewBtn.addEventListener("click", function () {
       var on = ewBtn.getAttribute("aria-pressed") !== "true";
@@ -541,9 +556,15 @@
       }).join("") + "</tbody></table></div>" : '<p class="muted">No mapped projects in this ward yet.</p>') +
       '<div class="section-head" style="margin-top:22px"><div><h3>Open tenders</h3><p>Works the ward and BMC departments have put out to bid right now.</p></div>' + (s.tenders.length ? '<a href="#tenders" data-tw="' + esc(w) + '" class="btn">All tenders for this ward</a>' : "") + "</div>" +
       (s.tenders.length ? '<ul class="tenders">' + s.tenders.slice(0, 8).map(function (t) {
-        return "<li><span>" + esc(t.title) + '</span><span class="closes">closes ' + esc(fmtDT(t.closing)) + '</span><span class="meta">' + esc(t.dept || t.org) + (t.ward !== w ? " · ward " + esc(t.ward) : "") + ' · <span class="mono">' + esc(t.id) + "</span></span></li>";
+        return '<li><a href="#t-' + tenderSlug(t.id) + '">' + esc(t.title) + '</a><span class="closes">closes ' + esc(fmtDT(t.closing)) + '</span><span class="meta">' + esc(t.dept || t.org) + (t.ward !== w ? " · ward " + esc(t.ward) : "") + ' · <span class="mono">' + esc(t.id) + "</span></span></li>";
       }).join("") + "</ul>" + (s.tenders.length > 8 ? '<p class="axis-note">+' + (s.tenders.length - 8) + " more on the Tenders tab</p>" : "") : '<p class="muted">No open tenders tagged to this ward today.</p>') +
       '<p class="axis-note" style="margin-top:18px">Also in every ward: ' + citywide.map(function (p) { return '<a href="#p-' + esc(p.id) + '">' + esc(p.shortName || p.name) + "</a>"; }).join(", ") + ".</p>";
+    var wf = WARD_FEATURE[w];
+    if (wf && AQI.stations.length) {
+      var ring = wf.geometry.coordinates.reduce(function (a, p) { return p[0].length > a.length ? p[0] : a; }, []);
+      var cx = 0, cy = 0; ring.forEach(function (c) { cx += c[0]; cy += c[1]; });
+      box.insertAdjacentHTML("beforeend", '<div style="margin-top:18px">' + aqiCard(cy / ring.length, cx / ring.length).replace('class="panel"', 'class="panel" style="box-shadow:none"') + "</div>");
+    }
     bindClicks(box, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
     var tw = box.querySelector("[data-tw]");
     if (tw) tw.addEventListener("click", function () { tstate.ward = w; tstate.status = "Open"; tstate.q = ""; tstate.org = ""; });
@@ -594,10 +615,11 @@
     var box = document.getElementById("t-results");
     box.innerHTML = '<div class="toolbar"><span><b class="tnum">' + list.length + "</b> tenders</span></div>" +
       (list.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Work</th><th>Body and department</th><th>Ward</th><th>Closes</th></tr></thead><tbody>' + shown.map(function (t) {
-        return "<tr><td><b>" + esc(t.title) + '</b><div class="sub"><span class="mono">' + esc(t.id) + "</span>" + (t.ref ? " · " + esc(t.ref) : "") + " · published " + esc(fmtDT(t.published)) + (t.status === "Closed" ? " · closed, last seen " + fmtDate(t.lastSeen) : "") + "</div></td><td>" + esc(t.org) + '<div class="sub">' + esc(t.unit || "") + "</div></td><td>" + (t.ward ? wcode(t.ward) : '<span class="muted">—</span>') + '</td><td class="num" style="text-align:left">' + esc(fmtDT(t.closing)) + "</td></tr>";
+        return '<tr class="click" data-tender="' + esc(tenderSlug(t.id)) + '" tabindex="0"><td><b>' + esc(t.title) + '</b><div class="sub"><span class="mono">' + esc(t.id) + "</span>" + (t.ref ? " · " + esc(t.ref) : "") + " · published " + esc(fmtDT(t.published)) + (t.status === "Closed" ? " · closed, last seen " + fmtDate(t.lastSeen) : "") + "</div></td><td>" + esc(t.org) + '<div class="sub">' + esc(t.unit || "") + "</div></td><td>" + (t.ward ? wcode(t.ward) : '<span class="muted">—</span>') + '</td><td class="num" style="text-align:left">' + esc(fmtDT(t.closing)) + "</td></tr>";
       }).join("") + "</tbody></table></div>" : '<div class="empty">No tenders match.</div>') +
       (list.length > shown.length ? '<div class="more"><button type="button" class="btn" id="t-more">Show more</button></div>' : "");
     var more = document.getElementById("t-more"); if (more) more.addEventListener("click", function () { tlimit += 60; renderTenders(); });
+    bindClicks(box, "[data-tender]", function (el) { go("#t-" + el.dataset.tender); });
   }
 
   // ---------------------------------------------------------------- MLAs
@@ -1007,7 +1029,7 @@
   }
   function closeDrawer() {
     drawer.classList.remove("open"); overlay.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
-    if (/^#p-/.test(location.hash)) {
+    if (/^#(p|t)-/.test(location.hash)) {
       if (history.length > 1 && lastHash) history.replaceState(null, "", lastHash);
       else location.hash = lastHash;
     }
@@ -1042,8 +1064,186 @@
     document.body.appendChild(a); a.click(); a.remove();
   }
 
+  // ---------------------------------------------------------------- air quality (official stations)
+  var AQI = window.PUBLIC_WORKS_AQI || { stations: [] };
+  // CPCB National AQI colours; always shown with the category name.
+  var AQI_COLORS = { "Good": "#00b050", "Satisfactory": "#92d050", "Moderate": "#e6c700", "Poor": "#ff9900", "Very poor": "#ff0000", "Severe": "#c00000" };
+  function kmBetween(a, b, c, d) { var kx = 111.32 * Math.cos(a * Math.PI / 180); return Math.hypot((d - b) * kx, (c - a) * 110.57); }
+  function nearestStations(lat, lng, n) {
+    return AQI.stations.map(function (s) { return { s: s, km: kmBetween(lat, lng, s.lat, s.lng) }; })
+      .sort(function (x, y) { return x.km - y.km; }).slice(0, n || 2);
+  }
+  function stationName(s) { return s.name.replace(/, Mumbai.*$/, "").replace(/_/g, " "); }
+  function aqiBadge(s) {
+    return '<span class="aqi-badge"><span class="aqi-dot" style="background:' + AQI_COLORS[s.category] + '"></span><b>' + s.aqi + "</b> " + esc(s.category) + "</span>";
+  }
+  function aqiCard(lat, lng) {
+    if (!AQI.stations.length) return "";
+    var near = nearestStations(lat, lng, 2);
+    return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Air quality now</div><h3>Nearest official monitoring stations</h3></div><p>AQI on the CPCB scale from the last 24 hours of PM2.5 and PM10.</p></div>' +
+      '<div class="aqi-list">' + near.map(function (x) {
+        return '<div class="aqi-row"><div><b>' + esc(stationName(x.s)) + '</b><div class="sub">' + esc(x.km.toFixed(1)) + " km away · " + esc((x.s.name.match(/- (\w+)$/) || [])[1] || "") + "</div></div>" + aqiBadge(x.s) +
+          '<div class="sub" style="grid-column:1/-1">PM2.5 ' + (x.s.pm25 != null ? x.s.pm25 + " µg/m³" : "—") + " · PM10 " + (x.s.pm10 != null ? x.s.pm10 + " µg/m³" : "—") + " · driven by " + esc(x.s.driver === "pm25" ? "PM2.5" : "PM10") + "</div></div>";
+      }).join("") + '</div><p class="axis-note">Updated ' + esc(fmtDT((AQI.fetchedAt || "").replace("Z", ""))) + " UTC. " + esc(AQI.source || "") + '. <a href="' + esc(safeUrl(AQI.sourceUrl)) + '" target="_blank" rel="noopener">Live readings</a></p></section>';
+  }
+
+  // ---------------------------------------------------------------- places: everything we can locate by name
+  var PLACES = [];
+  (function buildPlaces() {
+    var seen = {};
+    function add(name, lat, lng, kind) {
+      if (!name || lat == null) return;
+      var key = name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      PLACES.push({ name: name, lat: lat, lng: lng, kind: kind });
+    }
+    function centroid(geom) {
+      var ring = geom.coordinates.reduce(function (a, p) { return p[0].length > a.length ? p[0] : a; }, []);
+      var x = 0, y = 0; ring.forEach(function (c) { x += c[0]; y += c[1]; });
+      return [y / ring.length, x / ring.length];
+    }
+    EWARD_GEO.forEach(function (f) {
+      var c = CORP_BY_WARD[f.properties.ward]; if (!c || !c.area) return;
+      var ce = centroid(f.geometry);
+      c.area.split(/\s*[-,\/]\s*|\s+and\s+/i).forEach(function (part) { if (part.length > 2) add(part.trim(), ce[0], ce[1], "Locality"); });
+    });
+    PROJECTS.forEach(function (p) { (ROUTES[p.id] || []).forEach(function (path) { path.forEach(function (pt) { if (!/\(/.test(pt[2])) add(pt[2], pt[0], pt[1], "Landmark"); }); }); });
+    AQI.stations.forEach(function (s) { add(stationName(s), s.lat, s.lng, "Locality"); });
+  })();
+  function placeSlug(lat, lng) { return "at-" + Math.round(lat * 10000) + "-" + Math.round(lng * 10000); }
+
+  // ---------------------------------------------------------------- global search
+  var searchIndex = null;
+  function buildIndex() {
+    var items = [];
+    PLACES.forEach(function (pl) { items.push({ group: "Areas", label: pl.name, sub: pl.kind, href: "#" + placeSlug(pl.lat, pl.lng) + "-" + slug(pl.name), hay: pl.name }); });
+    PROJECTS.forEach(function (p) { items.push({ group: "Projects", label: p.shortName || p.name, sub: p.agency + " · " + p.status, href: "#p-" + p.id, hay: [p.name, p.shortName, p.agency, (p.areas || []).join(" ")].join(" ") }); });
+    MLAS.forEach(function (m) { items.push({ group: "MLAs", label: m.name, sub: m.constituency + " · " + m.party, href: "#mla-" + m.no, hay: m.name + " " + m.constituency }); });
+    CORP.corporators.forEach(function (c) { items.push({ group: "Corporators", label: c.name, sub: "Ward " + c.ward + " · " + (c.area || "") + " · " + c.party, href: "#ward-" + wardSlug(WARD_PARENT[c.adminWard] || c.adminWard), hay: c.name + " " + (c.area || "") + " ward " + c.ward }); });
+    WARD_NAMES.forEach(function (w) { var i = WARD_INFO[w] || {}; items.push({ group: "BMC wards", label: wardTitle(w), sub: (i.localities || []).slice(0, 4).join(", "), href: "#ward-" + wardSlug(w), hay: wardTitle(w) + " " + w + " " + (i.localities || []).join(" ") + " " + (i.assistantCommissioner || "") }); });
+    CONTRACTS.companies.forEach(function (c) { items.push({ group: "Companies", label: c.name, sub: plural((c.mumbaiContracts || []).length, "Mumbai contract"), href: "#co-" + c.slug, hay: [c.name].concat(c.aliases || []).join(" ") }); });
+    YOJANAS.forEach(function (y) { items.push({ group: "Schemes", label: y.name, sub: y.level, href: "#schemes", hay: y.name + " " + (y.nameLocal || "") }); });
+    items.forEach(function (it) { it.h = it.hay.toLowerCase(); });
+    return items;
+  }
+  function searchAll(q) {
+    searchIndex = searchIndex || buildIndex();
+    q = q.toLowerCase().trim(); if (!q) return [];
+    var terms = q.split(/\s+/);
+    if (/^\d{4}_[a-z0-9]+_\d+/i.test(q) || /^2\d{3}_/.test(q)) {
+      var t = TENDERS.items.find(function (x) { return x.id.toLowerCase() === q; });
+      if (t) return [{ group: "Tenders", label: t.title, sub: t.id, href: "#t-" + tenderSlug(t.id) }];
+    }
+    var hits = searchIndex.filter(function (it) { return terms.every(function (x) { return it.h.indexOf(x) !== -1; }); });
+    hits.forEach(function (it) { it.score = (it.label.toLowerCase().indexOf(q) === 0 ? 0 : it.h.indexOf(q) !== -1 ? 1 : 2) + (it.group === "Areas" ? -0.5 : 0); });
+    hits.sort(function (a, b) { return a.score - b.score; });
+    var byGroup = {}, out = [];
+    hits.forEach(function (h) { byGroup[h.group] = (byGroup[h.group] || 0) + 1; if (byGroup[h.group] <= 5) out.push(h); });
+    return out.slice(0, 24);
+  }
+  function mountSearch(input, box, onPick) {
+    var active = -1, results = [];
+    function render() {
+      if (!results.length) { box.hidden = !input.value.trim(); box.innerHTML = input.value.trim() ? '<div class="sr-empty">Nothing found. Try a locality, project, MLA or ward.</div>' : ""; return; }
+      var html = "", g = null;
+      results.forEach(function (r, i) {
+        if (r.group !== g) { g = r.group; html += '<div class="sr-group">' + esc(g) + "</div>"; }
+        html += '<a class="sr-item' + (i === active ? " on" : "") + '" href="' + esc(r.href) + '" data-i="' + i + '"><span>' + esc(r.label) + '</span><span class="sub">' + esc(r.sub || "") + "</span></a>";
+      });
+      box.innerHTML = html; box.hidden = false;
+    }
+    input.addEventListener("input", debounce(function () { results = searchAll(input.value); active = results.length ? 0 : -1; render(); }, 120));
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { active = Math.min(results.length - 1, active + 1); render(); e.preventDefault(); }
+      else if (e.key === "ArrowUp") { active = Math.max(0, active - 1); render(); e.preventDefault(); }
+      else if (e.key === "Enter" && results[active]) { location.hash = results[active].href; close(); e.preventDefault(); }
+      else if (e.key === "Escape") { close(); input.blur(); }
+    });
+    box.addEventListener("click", function (e) { if (e.target.closest(".sr-item")) close(); });
+    document.addEventListener("click", function (e) { if (!box.contains(e.target) && e.target !== input) box.hidden = true; });
+    function close() { box.hidden = true; input.value = ""; results = []; if (onPick) onPick(); }
+  }
+
+  // ---------------------------------------------------------------- your area
+  function viewArea(slugStr) {
+    var m = slugStr.match(/^at-(\d+)-(\d+)(?:-(.*))?$/);
+    if (!m) { viewAreaPicker(); return; }
+    var lat = +m[1] / 10000, lng = +m[2] / 10000;
+    var label = m[3] ? (PLACES.find(function (p) { return slug(p.name) === m[3]; }) || {}).name : null;
+    var aw = wardAt(lat, lng), info = WARD_INFO[aw] || {};
+    var ews = ewardsNear(lat, lng);
+    var nearby = [];
+    PROJECTS.forEach(function (p) {
+      var best = Infinity, part = "";
+      (ROUTES[p.id] || []).forEach(function (path) { path.forEach(function (pt) { var d = kmBetween(lat, lng, pt[0], pt[1]); if (d < best) { best = d; part = pt[2]; } }); });
+      if (best <= 1.5) nearby.push({ p: p, km: best, part: part });
+    });
+    nearby.sort(function (a, b) { return a.km - b.km; });
+    var tenders = aw ? OPEN_TENDERS.filter(function (t) { return tenderMapWard(t) === aw; }) : [];
+    var ac = (window.PUBLIC_WORKS_PRABHAG_AC || {});
+    var mlaConst = uniq(ews.map(function (n) { return ac[n]; }).filter(Boolean));
+
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Your area' + (aw ? " · " + esc(wardTitle(aw)) : "") + (ews.length ? " · electoral ward " + esc(ews.join(", ")) : "") + '</div><h2>' + esc(label || "This spot") + '</h2><p>Who to ask, what is being built nearby, and the air you are breathing. <a href="#area">Pick another place</a></p></section>' +
+      '<div class="people people-4">' +
+      (ews.length ? ews.map(function (n) { var c = CORP_BY_WARD[n] || {}; return '<div class="person"><div class="role">Corporator · ward ' + esc(n) + '</div><div class="name">' + (c.vacant ? "Seat vacant" : esc(c.name || "—")) + '</div><div class="detail">' + esc(c.vacant ? c.statusNote : (c.party || "") + (c.area ? " · " + c.area : "")) + "</div></div>"; }).join("") : "") +
+      (mlaConst.length ? mlaConst.map(function (cn) { var mm = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(mm.no) + '"><div class="role">MLA · ' + esc(cn) + '</div><div class="name">' + esc(mm.name || "—") + '</div><div class="detail">' + esc(mm.party || "") + " · profile →</div></a>"; }).join("")
+        : '<a class="person" style="text-decoration:none;color:inherit" href="#mlas"><div class="role">MLA</div><div class="name" style="font-weight:500">Not mapped for this spot yet</div><div class="detail">Find your constituency on the MLAs tab →</div></a>') +
+      (aw ? '<a class="person" style="text-decoration:none;color:inherit" href="#ward-' + wardSlug(aw) + '"><div class="role">Ward officer · ' + esc(wardTitle(aw)) + '</div><div class="name">' + esc(info.assistantCommissioner || "Not on file") + '</div><div class="detail">' + esc(info.phone || "") + " · ward page →</div></a>" : "") +
+      "</div>" +
+      '<div class="grid-2">' + aqiCard(lat, lng) +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Out to bid</div><h3>' + plural(tenders.length, "open tender") + " in this ward</h3></div></div>" +
+      (tenders.length ? '<ul class="tenders">' + tenders.slice(0, 6).map(function (t) { return '<li><a href="#t-' + tenderSlug(t.id) + '">' + esc(t.title) + '</a><span class="closes">closes ' + esc(fmtDT(t.closing)) + '</span><span class="meta">' + esc(t.dept || t.org) + "</span></li>"; }).join("") + "</ul>" : '<p class="muted" style="margin:0">None open today.</p>') + "</section></div>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Within 1.5 km</div><h3>' + plural(nearby.length, "project") + ' near here</h3></div><p>Distance to the nearest station, site or junction of each project.</p></div>' +
+      (nearby.length ? '<div class="table-scroll"><table class="data"><tbody>' + nearby.map(function (x) {
+        return '<tr class="click" data-open="' + esc(x.p.id) + '" tabindex="0"><td class="num" style="width:1%">' + (x.km < 0.1 ? "here" : x.km.toFixed(1) + " km") + "</td><td><b>" + esc(x.p.shortName || x.p.name) + '</b><div class="sub">' + esc(x.part) + " · " + esc(x.p.agency) + "</div></td><td>" + pill(x.p.status) + '</td><td class="num">' + crore(cost(x.p)) + "</td></tr>";
+      }).join("") + "</tbody></table></div>" : '<p class="muted" style="margin:0">No tracked projects within 1.5 km.</p>') + "</section>" +
+      '<section class="panel"><div class="eyebrow">Private construction</div><p style="margin:6px 0 0;font-size:.9rem">Private building projects are registered with MahaRERA, the state real-estate regulator. Its registry blocks access from outside India, so these are not shown yet. Search it directly at <a href="https://maharera.maharashtra.gov.in" target="_blank" rel="noopener">maharera.maharashtra.gov.in</a>.</p></section>';
+    bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
+  }
+  function viewAreaPicker() {
+    var popular = ["Dadar", "Andheri", "Bandra", "Kurla", "Worli", "Borivali", "Ghatkopar", "Chembur", "Colaba", "Malad", "Mulund", "Powai", "Dharavi", "Goregaon", "Byculla", "Sion"];
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Your area</div><h2>What’s happening where you live?</h2><p>Type your locality to see your corporator and ward officer, projects within 1.5 km, open tenders and the air quality now.</p></section>' +
+      '<section class="panel hero-search"><div class="field search">' + ICON_SEARCH + '<input type="search" id="area-q" placeholder="Your locality, e.g. Lalbaug, Chakala, Mahim" aria-label="Search for your locality" autocomplete="off"></div><div class="search-results" id="area-results" hidden></div>' +
+      '<div class="chips" style="margin-top:12px">' + popular.map(function (n) {
+        var pl = PLACES.find(function (p) { return p.name.toLowerCase().indexOf(n.toLowerCase()) === 0; });
+        return pl ? '<a class="chip" href="#' + placeSlug(pl.lat, pl.lng) + "-" + slug(pl.name) + '">' + esc(n) + "</a>" : "";
+      }).join("") + "</div></section>";
+    var input = document.getElementById("area-q");
+    mountSearch(input, document.getElementById("area-results"));
+    input.focus({ preventScroll: true });
+  }
+
+  // ---------------------------------------------------------------- tender detail
+  function tenderSlug(id) { return id.replace(/_/g, "-"); }
+  function openTender(slugId) {
+    var t = TENDERS.items.find(function (x) { return tenderSlug(x.id) === slugId; });
+    if (!t) { closeDrawer(); return; }
+    lastFocus = document.activeElement;
+    var d = t.detail || {}, by = d.invitedBy || {};
+    function row(k, v) { return v == null || v === "" ? "" : "<dt>" + k + "</dt><dd>" + v + "</dd>"; }
+    drawer.innerHTML = '<div class="d-head"><h2 id="drawer-title">' + esc(t.title) + '</h2><button type="button" class="close" id="close" aria-label="Close">×</button>' +
+      '<div class="meta"><span class="pill" style="color:var(' + (t.status === "Open" ? "--st-progress" : "--st-notstarted") + ')">' + esc(t.status === "Open" ? "Open for bids" : "Closed") + "</span><span>" + esc(t.org) + "</span>" + (t.ward ? wcode(t.ward) : "") + "</div></div>" +
+      '<div class="d-body">' +
+      (d.description && d.description !== t.title ? '<p class="d-summary">' + esc(d.description) + "</p>" : "") +
+      '<dl class="kv"><div><dt>Estimated value</dt><dd>' + (d.valueRs ? "₹" + Math.round(d.valueRs).toLocaleString("en-IN") : '<span class="muted" style="font-size:1rem">not disclosed</span>') + "<small>" + (d.valueRs ? "as published" : "BMC often withholds it on the portal") + "</small></dd></div>" +
+      "<div><dt>Earnest money (EMD)</dt><dd>" + (d.emdRs ? "₹" + Math.round(d.emdRs).toLocaleString("en-IN") : "—") + "<small>deposit bidders pay</small></dd></div>" +
+      "<div><dt>Closes</dt><dd>" + esc(fmtDate((t.closing || "").slice(0, 10))) + "<small>" + esc((t.closing || "").slice(11, 16)) + "</small></dd></div></dl>" +
+      '<section class="panel"><h3>Who is putting it out</h3><dl class="facts-list">' + row("Body", esc(t.org)) + row("Department", esc(t.unit || t.dept || "")) +
+      row("Issued by", by.name ? "<b>" + esc(by.name) + "</b>" + (by.address ? '<div class="sub">' + esc(by.address) + "</div>" : "") : null) + row("Ward officer", t.ward && WARD_INFO[tenderMapWard(t)] ? esc(WARD_INFO[tenderMapWard(t)].assistantCommissioner) : null) + "</dl></section>" +
+      '<section class="panel"><h3>The work</h3><dl class="facts-list">' + row("Category", esc([d.category, d.productCategory].filter(Boolean).join(" · "))) + row("Location", esc([d.location, d.pincode].filter(Boolean).join(", "))) +
+      row("Work period", d.periodDays ? esc(d.periodDays) + " days" : null) + row("Contract form", esc(d.formOfContract || "")) + row("Who may bid", d.bidderClass ? "Contractors registered in " + esc(d.bidderClass) : null) +
+      row("Tender type", esc(d.type || "")) + row("Published", esc(fmtDT(t.published))) + row("Bids open", esc(fmtDT(d.bidOpening || t.opening))) + row("Reference", '<span class="mono">' + esc(t.ref || "") + "</span>") + row("Tender ID", '<span class="mono">' + esc(t.id) + "</span>") + "</dl></section>" +
+      '<section class="panel"><h3>Who won, and for how much</h3><p style="margin:0 0 8px;font-size:.9rem">Not collected yet. The state portal publishes award results only behind a captcha, so they cannot be gathered automatically. To check this one: open <a href="' + esc(safeUrl(TENDERS.sourceUrl)) + '" target="_blank" rel="noopener">Mahatenders</a>, choose <b>Results of Tenders</b> and search Tender ID <span class="mono">' + esc(t.id) + "</span>.</p>" +
+      '<p class="axis-note" style="margin:0">BMC contracts above ₹50 lakh also go to the Standing Committee, whose proposals state the estimate and the winning bid. Large awards appear on the Contracts tab.</p></section>' +
+      '<p class="axis-note">Source: Mahatenders, Government of Maharashtra e-procurement. First seen ' + esc(fmtDate(t.firstSeen)) + ", last seen " + esc(fmtDate(t.lastSeen)) + ".</p></div>";
+    drawer.classList.add("open"); overlay.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); drawer.scrollTop = 0;
+    document.getElementById("close").addEventListener("click", closeDrawer);
+    document.getElementById("close").focus({ preventScroll: true });
+  }
+
   // ---------------------------------------------------------------- router
-  var VIEWS = { overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewMlas, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
+  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewMlas, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
   function setTab(tab) {
     document.querySelectorAll("nav.tabs a").forEach(function (a) {
       var on = a.dataset.tab === tab;
@@ -1065,6 +1265,7 @@
       } else viewWards(w);
       return;
     }
+    if (/^at-\d+-\d+/.test(name)) { setTab("area"); if (leafletMap) { leafletMap.remove(); leafletMap = null; } viewArea(name); window.scrollTo(0, 0); return; }
     var sub = name.match(/^(mla|co)-(.+)$/);
     if (sub) {
       setTab(sub[1] === "mla" ? "mlas" : "contracts");
@@ -1082,6 +1283,8 @@
   }
   function route() {
     var h = location.hash;
+    var tm = h.match(/^#t-(.+)$/);
+    if (tm) { if (!app.innerHTML) render(lastHash); openTender(tm[1]); return; }
     var m = h.match(/^#p-(.+)$/);
     if (m) {
       if (!app.innerHTML) render(lastHash);
@@ -1107,6 +1310,11 @@
   var pc = document.querySelector('nav.tabs a[data-tab="overview"]');
   if (pc) pc.insertAdjacentHTML("beforeend", '<span class="count">' + PROJECTS.length + "</span>");
   document.getElementById("footer").innerHTML = "<span>Data updated " + fmtDate(META.lastUpdated) + ". Costs in ₹ crore (1 crore = 10 million).</span><span>Built from public sources. <a href=\"#about\">About the data</a></span>";
+  var hq = document.getElementById("site-q");
+  if (hq) {
+    mountSearch(hq, document.getElementById("site-results"));
+    document.addEventListener("keydown", function (e) { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); hq.focus(); } });
+  }
   window.addEventListener("hashchange", route);
   if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (leafletMap) viewMap(); });
   route();
