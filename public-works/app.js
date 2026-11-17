@@ -93,6 +93,42 @@
     });
     WARD_PARTS[p.id] = parts;
   });
+  // BMC electoral wards (227) and their corporators. A point counts toward every electoral ward within 150 m.
+  var CORP = window.PUBLIC_WORKS_CORPORATORS || { corporators: [], boundaries: { features: [] }, office: [] };
+  var CORP_BY_WARD = {};
+  CORP.corporators.forEach(function (c) { CORP_BY_WARD[c.ward] = c; });
+  var EWARD_GEO = CORP.boundaries.features;
+  function ewardsNear(lat, lng) {
+    var hits = [];
+    EWARD_GEO.forEach(function (f) {
+      var inside = false, near = false;
+      f.geometry.coordinates.forEach(function (poly) {
+        if (inRing(lng, lat, poly[0])) inside = true;
+        for (var s = 1; s < poly[0].length && !near && !inside; s++) if (segDistKm(lat, lng, poly[0][s - 1], poly[0][s]) < 0.15) near = true;
+      });
+      if (inside || near) hits.push(f.properties.ward);
+    });
+    return hits;
+  }
+  var CORP_PARTS = {}; // project id -> { electoral ward no: [part names] }
+  if (EWARD_GEO.length) {
+    var ewCache = {};
+    PROJECTS.forEach(function (p) {
+      var parts = {};
+      (ROUTES[p.id] || []).forEach(function (path) {
+        path.forEach(function (pt) {
+          var k = pt[0] + "," + pt[1];
+          (ewCache[k] = ewCache[k] || ewardsNear(pt[0], pt[1])).forEach(function (n) { (parts[n] = parts[n] || []).push(pt[2]); });
+        });
+      });
+      CORP_PARTS[p.id] = parts;
+    });
+  }
+  function corpLine(c) {
+    if (!c) return "";
+    return c.vacant ? '<span class="muted">Seat vacant</span> <span class="flag">' + esc(c.name) + " disqualified</span>" : "<b>" + esc(c.name) + '</b> <span class="muted">· ' + esc(c.party) + "</span>";
+  }
+
   function wardsOf(p) { return Object.keys(WARD_PARTS[p.id] || {}).filter(function (w) { return w !== "outside"; }).sort(function (a, b) { return WARD_ORDER.indexOf(a) - WARD_ORDER.indexOf(b); }); }
 
   var WARD_PARENT = { "K/N": "K/E", "K/S": "K/E", "P/E": "P/N" }; // newer wards inside older map wards
@@ -353,7 +389,8 @@
   function viewMap() {
     app.innerHTML = '<section class="lead"><div class="eyebrow">Map</div><h2>Where the work is happening</h2><p>Lines follow each project’s stations, sites and junctions over the BMC ward boundaries. Points are approximate, within a few hundred metres. Tap a line or a ward for details.</p></section>' +
       '<div class="map-layout"><div id="map" role="region" aria-label="Map of projects"></div><aside class="map-side">' +
-      '<div class="panel"><div class="eyebrow" style="margin-bottom:8px">Show</div><div class="legend" id="map-status"></div></div>' +
+      '<div class="panel"><div class="eyebrow" style="margin-bottom:8px">Show</div><div class="legend" id="map-status"></div>' +
+      (EWARD_GEO.length ? '<div class="legend" style="margin-top:8px"><button type="button" class="chip" id="ew-toggle" aria-pressed="false"><span class="swatch" style="background:transparent;border:2px dashed var(--accent)"></span>Corporator wards (227)</button></div>' : "") + '</div>' +
       '<div class="panel"><div class="field search" style="margin-bottom:8px">' + ICON_SEARCH + '<input type="search" id="map-q" placeholder="Find on map" aria-label="Find a project on the map" value="' + esc(state.q) + '"></div><div class="list" id="map-list"></div></div>' +
       "</aside></div>";
     if (!window.L) { document.getElementById("map").innerHTML = '<div class="empty">The map library didn’t load. The other tabs still work.</div>'; return; }
@@ -373,6 +410,21 @@
       },
     }).addTo(leafletMap);
     leafletMap.fitBounds(wl.getBounds(), { padding: [8, 8] });
+    var ewLayer = null, ewBtn = document.getElementById("ew-toggle");
+    if (ewBtn) ewBtn.addEventListener("click", function () {
+      var on = ewBtn.getAttribute("aria-pressed") !== "true";
+      ewBtn.setAttribute("aria-pressed", String(on));
+      if (ewLayer) { leafletMap.removeLayer(ewLayer); ewLayer = null; }
+      if (!on) return;
+      ewLayer = L.geoJSON({ type: "FeatureCollection", features: EWARD_GEO }, {
+        style: function () { return { color: accent, weight: 1, dashArray: "4 3", fill: true, fillOpacity: 0 }; },
+        onEachFeature: function (f, layer) {
+          var c = CORP_BY_WARD[f.properties.ward] || {};
+          layer.bindTooltip("Ward " + f.properties.ward + (c.name ? ": " + c.name : ""), { sticky: true });
+          layer.bindPopup("<b>Electoral ward " + esc(f.properties.ward) + "</b>" + (c.area ? "<br>" + esc(c.area) : "") + "<br>Corporator: " + corpLine(c));
+        },
+      }).addTo(leafletMap);
+    });
 
     var layers = [];
     var mapState = { hide: {} };
@@ -474,6 +526,14 @@
       '<div class="person"><div class="role">Zone ' + esc(info.zone || "") + " deputy commissioner</div>" + '<div class="name">' + esc(info.zonalDmc || "Not on file") + '</div><div class="detail">Oversees the zone’s wards</div></div></div>' +
       (info.office ? '<p class="muted" style="font-size:.85rem;margin:10px 0 0">Ward office: ' + esc(info.office) + (info.phone ? ' · <span class="tnum">' + esc(info.phone) + "</span>" : "") + "</p>" : "") +
       (info.note ? '<div class="note">' + esc(info.note) + "</div>" : "") +
+      (function () {
+        var cs = CORP.corporators.filter(function (c) { return c.adminWard === w || WARD_PARENT[c.adminWard] === w; });
+        if (!cs.length) return "";
+        return '<details style="margin-top:16px"><summary>' + plural(cs.length, "corporator") + " elected for this ward (2026)</summary>" + '<div class="table-scroll"><table class="data"><tbody>' + cs.map(function (c) {
+          var n = PROJECTS.filter(function (p) { return CORP_PARTS[p.id] && CORP_PARTS[p.id][c.ward]; }).length;
+          return '<tr><td class="muted" style="width:1%;white-space:nowrap">Ward ' + esc(c.ward) + "</td><td>" + corpLine(c) + '<div class="sub">' + esc(c.area || "") + (c.vacant ? " · " + esc(c.statusNote) : "") + '</div></td><td class="sub" style="white-space:nowrap">' + (n ? plural(n, "project") : "") + "</td></tr>";
+        }).join("") + "</tbody></table></div></details>";
+      })() +
       '<div class="section-head" style="margin-top:22px"><div><h3>Projects with a part in this ward</h3><p>' + (value ? "Combined project value " + crore(value) + " (whole projects, not just this ward’s share)" : "") + "</p></div></div>" +
       (s.ps.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Project and the part here</th><th>Status</th><th>Run by</th></tr></thead><tbody>' + s.ps.sort(function (a, b) { return STATUS_RANK[a.status] - STATUS_RANK[b.status]; }).map(function (p) {
         var hs = headsFor(p);
@@ -546,6 +606,8 @@
     app.innerHTML = '<section class="lead"><div class="eyebrow">Elected representatives</div><h2>Your MLA, and the projects in their constituency</h2><p>All 36 Mumbai assembly seats from the November 2024 election. An MLA represents the area and can raise a project in the Assembly; the implementing agency is responsible for delivering it.</p></section>' +
       (OFFICIALS.length ? '<section class="panel"><div class="section-head"><div><div class="eyebrow">Accountable at the top</div><h3>Who oversees the big projects</h3></div></div><div class="people" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin:0">' +
         OFFICIALS.map(function (o) { return '<div class="person"><div class="role">' + esc(o.role) + '</div><div class="name">' + esc(o.name) + "</div></div>"; }).join("") + "</div></section>" : "") +
+      ((CORP.office || []).length ? '<section class="panel"><div class="section-head"><div><div class="eyebrow">BMC, elected February 2026</div><h3>Who runs the corporation</h3></div><p>' + esc(CORP.corporators.filter(function (c) { return !c.vacant; }).length) + " sitting corporators across 227 wards; open a ward on the Wards tab to see its corporators.</p></div>" + '<div class="people" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr));margin:0">' +
+        CORP.office.map(function (o) { return '<div class="person"><div class="role">' + esc(o.role) + '</div><div class="name">' + esc(o.name) + '</div><div class="detail">' + esc(o.party) + (o.ward ? " · ward " + esc(o.ward) : "") + "</div></div>"; }).join("") + "</div></section>" : "") +
       '<section class="panel"><div class="filters" style="grid-template-columns:1fr;margin-bottom:6px"><div class="field search">' + ICON_SEARCH + '<input type="search" id="m-q" placeholder="Search MLA, constituency or party" aria-label="Search MLAs" value="' + esc(mq) + '"></div></div><div id="m-results"></div></section>';
     document.getElementById("m-q").addEventListener("input", debounce(function (e) { mq = e.target.value; renderMlas(); }, 150));
     renderMlas();
@@ -917,6 +979,9 @@
       '<section class="panel"><h3>Elected MLAs for this area</h3>' + (mls.length ? '<div class="mla-list">' + mls.map(function (m) {
         return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(m.no) + '"><div class="name">' + esc(m.name || "MLA not on file") + '</div><div class="detail">' + esc(m.constituency) + (m.party ? " · " + esc(m.party) : "") + " · profile →</div></a>";
       }).join("") + "</div>" : '<p class="muted" style="margin:0">' + (p.citywide ? "Citywide project: every MLA’s area." : "Not mapped to a constituency.") + "</p>") + "</section>" +
+      (Object.keys(CORP_PARTS[p.id] || {}).length ? '<section class="panel"><h3>Local corporators</h3><p class="axis-note" style="margin:-4px 0 10px">BMC electoral wards (2026) the project\u2019s sites fall in. A site within 150 m of a ward edge lists both wards.</p><div class="table-scroll"><table class="data"><tbody>' +
+        Object.keys(CORP_PARTS[p.id]).sort(function (a, b) { return a - b; }).map(function (n) { var c = CORP_BY_WARD[n]; return '<tr><td style="width:1%;white-space:nowrap" class="muted">Ward ' + esc(n) + "</td><td>" + corpLine(c) + (c && c.area ? '<div class="sub">' + esc(c.area) + "</div>" : "") + '</td><td class="sub">' + esc(uniq(CORP_PARTS[p.id][n]).join(", ")) + "</td></tr>"; }).join("") +
+        "</tbody></table></div></section>" : "") +
       '<section class="panel"><h3>Sources</h3>' + (sources ? '<ul class="sources">' + sources + "</ul>" : '<p class="muted">No source on file.</p>') +
       (p.lastVerified ? '<p class="axis-note">Status last checked ' + fmtDate(p.lastVerified) + ". Areas: " + esc((p.areas || []).join(", ")) + "</p>" : "") + "</section>" +
       "</div>";
