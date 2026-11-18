@@ -72,7 +72,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex justify-center lg:justify-end" aria-hidden="true">
-            <Logo animated size={340} title="" className="max-w-[70vw] [&>svg]:h-auto [&>svg]:w-full" />
+            <Logo animated size={360} title="" className="w-[70vw] max-w-[300px] justify-center" />
           </div>
         </Container>
       </section>

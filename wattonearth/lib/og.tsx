@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { LOGO_PATH } from "@/components/Logo";
+import { MARK, WORDMARK } from "@/components/brand/paths";
 
 export const ogSize = { width: 1200, height: 630 };
 
@@ -39,10 +39,12 @@ export async function renderOgImage({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
-            <path d={LOGO_PATH} stroke="#e9dcc2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width={Math.round((64 * MARK.width) / MARK.height)} height="64" viewBox={`0 0 ${MARK.width} ${MARK.height}`}>
+            <path d={MARK.d} fill="#e9dcc2" fillRule="evenodd" />
           </svg>
-          <div style={{ fontSize: 24, letterSpacing: 6, fontWeight: 600 }}>WATT ON EARTH</div>
+          <svg width={Math.round((26 * WORDMARK.width) / WORDMARK.height)} height="26" viewBox={`0 0 ${WORDMARK.width} ${WORDMARK.height}`}>
+            <path d={WORDMARK.d} fill="#f3efe6" fillRule="evenodd" />
+          </svg>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 24, color: "#dcc6a0", letterSpacing: 4, textTransform: "uppercase" }}>{eyebrow}</div>

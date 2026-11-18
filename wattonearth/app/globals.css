@@ -19,8 +19,7 @@
   --accent: #7a5a2e; /* bronze — 6.3:1 on --bg */
   --accent-fg: #ffffff;
   --accent-soft: #efe4d0;
-  --logo-stroke: #9b7a4a;
-  --logo-bolt: #7a5a2e;
+  --logo-ink: #1f1d1a;
   --good: #2e7d44;
   --typical: #b58500;
   --poor: #c62828;
@@ -41,8 +40,7 @@
   --accent: #dcc6a0; /* cream-beige — 11:1 on --bg */
   --accent-fg: #16140f;
   --accent-soft: #2a241a;
-  --logo-stroke: #e9dcc2;
-  --logo-bolt: #dcc6a0;
+  --logo-ink: #e9dcc2;
   --good: #36a17a;
   --typical: #d0901c;
   --poor: #e5534b;
@@ -144,20 +142,19 @@ body {
   }
 }
 
-/* Logo stroke-draw animation (see components/Logo.tsx) */
-.logo-draw {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: logo-draw 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+/* Logo reveal animation (see components/Logo.tsx) */
+.logo-reveal {
+  clip-path: circle(0% at 50% 45%);
+  animation: logo-reveal 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
 }
-@keyframes logo-draw {
+@keyframes logo-reveal {
   to {
-    stroke-dashoffset: 0;
+    clip-path: circle(75% at 50% 45%);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .logo-draw {
+  .logo-reveal {
     animation: none;
-    stroke-dashoffset: 0;
+    clip-path: none;
   }
 }

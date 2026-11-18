@@ -1,5 +1,5 @@
 import { Document, Page, Path, Rect, StyleSheet, Svg, Text, View, Line } from "@react-pdf/renderer";
-import { LOGO_PATH } from "@/components/Logo";
+import { MARK, WORDMARK } from "@/components/brand/paths";
 import { facilityLabel, subTypeLabel } from "@/components/check/draft";
 import { CHECK_DISCLAIMER } from "@/lib/check/disclaimer";
 import { allAssumptions, assumptionStatus } from "@/data/assumptions";
@@ -19,7 +19,7 @@ const C = {
   line: "#e2dccf",
   subtle: "#f4f0e8",
   accent: "#7a5a2e",
-  logo: "#9b7a4a",
+  logo: "#1f1d1a",
   good: "#2e7d44",
   typical: "#b58500",
   poor: "#c62828",
@@ -32,7 +32,6 @@ const s = StyleSheet.create({
   header: { position: "absolute", top: 22, left: 44, right: 44, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   footer: { position: "absolute", bottom: 22, left: 44, right: 44, flexDirection: "row", justifyContent: "space-between", fontSize: 7.5, color: C.muted },
   brand: { flexDirection: "row", alignItems: "center", gap: 6 },
-  brandText: { fontSize: 8, letterSpacing: 1.6, fontWeight: 600 },
   h1: { fontSize: 24, fontWeight: 600, letterSpacing: -0.4, marginTop: 8, lineHeight: 1.2 },
   h2: { fontSize: 13, fontWeight: 600, marginTop: 18, marginBottom: 8, lineHeight: 1.25 },
   h3: { fontSize: 10.5, fontWeight: 600, marginBottom: 3, lineHeight: 1.3 },
@@ -55,10 +54,12 @@ const bandText = { good: "Good", typical: "Typical", poor: "Poor" } as const;
 function Brand() {
   return (
     <View style={s.brand}>
-      <Svg width={16} height={16} viewBox="0 0 64 64">
-        <Path d={LOGO_PATH} stroke={C.logo} strokeWidth={4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <Svg width={(20 * MARK.width) / MARK.height} height={20} viewBox={`0 0 ${MARK.width} ${MARK.height}`}>
+        <Path d={MARK.d} fill={C.logo} fillRule="evenodd" />
       </Svg>
-      <Text style={s.brandText}>WATT ON EARTH</Text>
+      <Svg width={(8 * WORDMARK.width) / WORDMARK.height} height={8} viewBox={`0 0 ${WORDMARK.width} ${WORDMARK.height}`}>
+        <Path d={WORDMARK.d} fill={C.logo} fillRule="evenodd" />
+      </Svg>
     </View>
   );
 }

@@ -10,7 +10,7 @@ export function Footer() {
     <footer className="mt-24 border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.3fr_1fr_1fr]">
         <div>
-          <Logo size={36} withWordmark title="" />
+          <Logo size={40} withWordmark />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
             Energy and carbon advisory for Indian buildings and manufacturers. {site.tagline}
           </p>

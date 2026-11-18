@@ -2,7 +2,7 @@
 
 The public site for **wattonearth.in**: an India-focused energy and carbon advisory. Stage 1 generates leads and shows credibility:
 
-- **Home, Services (5), About, Contact, Privacy** with an animated single-line logo, dark/light theme and a CCTS countdown driven by the tracker data.
+- **Home, Services (5), About, Contact, Privacy** with the Watt on Earth logo (traced from the supplied artwork), dark/light theme and a CCTS countdown driven by the tracker data.
 - **Energy & Carbon Check** (`/check`): a free tool that runs entirely in the browser. It gives EPI or SEC against a benchmark band, flags unusual months, estimates a savings range in ₹, calculates Scope 1 & 2 emissions, and shows which of CCTS, CBAM, BRSR and ECBC are likely to apply. The branded PDF report unlocks after a lead form submitted to Formspree.
 - **News** (`/news`): MDX posts with tag and sector filters in the URL, search, pagination, highlighted weekly roundups, RSS, Open Graph images and JSON-LD.
 - **Regulation Tracker** (`/tracker`): timeline and table views of CCTS/CBAM/BRSR/ECBC milestones, each linked to its official source.
@@ -56,7 +56,8 @@ app/                  routes (home, services/[slug], check, news, news/[slug], t
   news/rss.xml/       RSS 2.0 feed (published posts only)
   sitemap.ts robots.ts opengraph-image.tsx icon.svg
 components/
-  Logo.tsx            <Logo animated /> (stroke-draw, honours prefers-reduced-motion)
+  Logo.tsx            <Logo animated withWordmark /> (CSS-mask of /public/brand SVGs; reveal honours prefers-reduced-motion)
+  brand/paths.ts      Traced logo paths, shared by the OG images and the PDF report
   check/              Check tool: form, results, gauge, chart, lead gate, PDF report
   news/ tracker/ site/ forms/ ui/
 content/news/         MDX posts
@@ -146,6 +147,16 @@ Every numeric input to the Check is in `data/assumptions.ts`. For each value:
 4. Run `npm test`. The sample-hotel test asserts a plausible EPI range, so adjust it if your benchmarks move the result.
 
 The `/check` page has a *Methodology & assumptions* table showing every value, its source and a *Verified*, *Estimate*, *Default* or *Provisional* badge. The PDF report includes the same table.
+
+## Brand assets
+
+The logo was traced to vector from `docs/brand/logo-reference.png`. Ready-made SVGs in `public/brand/` are dark ink on a transparent background:
+
+- `logo.svg`: stacked lockup
+- `mark.svg`: globe only
+- `wordmark.svg`: the WATT ON EARTH lettering
+
+`app/icon.svg` is the favicon. On the site the logo takes its colour from `--logo-ink` in `app/globals.css`: ink in light mode, cream in dark mode.
 
 ## Deploying to Vercel
 
