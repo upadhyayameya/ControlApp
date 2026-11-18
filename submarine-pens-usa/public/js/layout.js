@@ -206,7 +206,7 @@ const NAV = [
   ["/about", "Our Story"],
 ];
 const ANNOUNCEMENTS = [
-  'Free US shipping on orders over <strong>$50</strong>',
+  'Free US shipping on orders over <strong data-cfg="shipping.free_over_usd" data-fmt="usd0">$120</strong>',
   'New: the <strong>2026–27 collection</strong> has arrived',
   '<strong>30-day</strong> easy returns · Secure checkout by Square',
 ];
@@ -274,7 +274,7 @@ function footerHtml() {
   return `
   <section class="trust" aria-label="Why shop with us">
     <div class="wrap trust-grid">
-      <div class="trust-item">${icon("truck")}<div><strong>Free US shipping</strong><span>On orders over $50</span></div></div>
+      <div class="trust-item">${icon("truck")}<div><strong>Free US shipping</strong><span>On orders over <span data-cfg="shipping.free_over_usd" data-fmt="usd0">$120</span></span></div></div>
       <div class="trust-item">${icon("return")}<div><strong><span data-cfg="returns.window_days">30</span>-day returns</strong><span>Easy, no-fuss returns</span></div></div>
       <div class="trust-item">${icon("lock")}<div><strong>Secure checkout</strong><span>Payments by Square</span></div></div>
       <div class="trust-item">${icon("gift")}<div><strong>Gift-ready</strong><span>Premium boxes &amp; sets</span></div></div>
@@ -468,6 +468,7 @@ export function fillConfig(config, root = document) {
     let v = get(el.dataset.cfg);
     if (v == null || v === "") { if (el.dataset.fallback) el.textContent = el.dataset.fallback; return; }
     if (el.dataset.fmt === "usd") v = usd(Math.round(Number(v) * 100));
+    if (el.dataset.fmt === "usd0") v = "$" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 2 });
     el.textContent = v;
     if (/^\[REVIEW/.test(String(v))) el.classList.add("review");
   });
@@ -543,7 +544,7 @@ function mountChrome() {
     ai = (ai + d + ANNOUNCEMENTS.length) % ANNOUNCEMENTS.length;
     const m = $("#annMsg");
     m.style.opacity = 0;
-    setTimeout(() => { m.innerHTML = ANNOUNCEMENTS[ai]; m.style.opacity = 1; }, 200);
+    setTimeout(() => { m.innerHTML = ANNOUNCEMENTS[ai]; if (store) fillConfig(store.config, m); m.style.opacity = 1; }, 200);
   };
   $("#annPrev").addEventListener("click", () => showAnn(-1));
   $("#annNext").addEventListener("click", () => showAnn(1));

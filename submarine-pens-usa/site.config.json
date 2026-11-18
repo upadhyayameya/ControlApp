@@ -10,7 +10,7 @@
 
   "shipping": {
     "flat_rate_usd": 5.99,
-    "free_over_usd": 50,
+    "free_over_usd": 120,
     "ships_from": "[REVIEW: where US orders ship from, e.g. 'our US warehouse in New Jersey' or 'Mumbai, India']",
     "processing_days": "1–2 business days",
     "delivery_estimate": "[REVIEW: e.g. 3–7 business days within the contiguous US]",

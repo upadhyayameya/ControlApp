@@ -16,6 +16,7 @@ function render(product, summary) {
   let selected = [...initial.options];
   let qty = 1;
   let activeImage = initial.image || product.images[0]?.src;
+  let lastVariant = null; // only jump to the variant's photo when the variant changes, so thumbnails stay clickable
   const allSwatches = hasOptions && product.variants.every((v) => swatch(v.title));
 
   const optionHtml = product.options
@@ -111,7 +112,10 @@ function render(product, summary) {
       add.disabled = buy.disabled = $("#stickyAdd").disabled = !v.purchasable;
       $("#stock").textContent = v.purchasable ? "In stock, ready to ship" : "Coming soon to the US";
       $("#sku").textContent = `Catalogue code ${v.sku}`;
-      if (v.image) activeImage = v.image;
+      if (v.id !== lastVariant) {
+        if (v.image) activeImage = v.image;
+        lastVariant = v.id;
+      }
       if (v.id !== preselect && hasOptions) history.replaceState(null, "", `?v=${encodeURIComponent(v.id)}`);
     }
     if (!activeImage) activeImage = product.images[0]?.src;
@@ -129,7 +133,7 @@ function render(product, summary) {
   root.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b) return;
-    if (b.dataset.opt) { selected[Number(b.dataset.opt)] = b.dataset.val; activeImage = null; update(); }
+    if (b.dataset.opt) { selected[Number(b.dataset.opt)] = b.dataset.val; update(); }
     if (b.dataset.img) { activeImage = b.dataset.img; update(); }
     if (b.id === "qDec") { qty = Math.max(1, qty - 1); $("#qVal").textContent = qty; }
     if (b.id === "qInc") { qty = Math.min(20, qty + 1); $("#qVal").textContent = qty; }

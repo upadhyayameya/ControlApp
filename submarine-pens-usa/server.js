@@ -220,7 +220,9 @@ async function serveFile(req, res, rel, status = 200) {
     const ext = path.extname(filePath);
     res.writeHead(status, {
       "Content-Type": MIME[ext] || "application/octet-stream",
-      "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=3600",
+      // pages, scripts and styles are revalidated on every visit so updates never mix old and new code;
+      // photos can be cached for a day
+      "Cache-Control": [".html", ".js", ".css", ".json"].includes(ext) ? "no-cache" : "public, max-age=86400",
     });
     res.end(req.method === "HEAD" ? undefined : data);
   } catch {

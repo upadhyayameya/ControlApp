@@ -41,14 +41,21 @@ import { $, $$, esc, img, icon, usd, priceLabel, productCard, wireRail, swatch, 
 })();
 
 // marquee text (duplicated for a seamless loop)
-const MSGS = ["Free US shipping over $50", "30-day returns", "Secure checkout by Square", "Crafted since 1995", "Gift-ready packaging", "New 2026–27 collection"];
-$("#marquee").innerHTML = [...MSGS, ...MSGS].map((m) => `<span>${m}</span>`).join("");
+function marquee(freeOver) {
+  const MSGS = [
+    freeOver ? `Free US shipping over $${freeOver}` : "Shipping to all 50 states",
+    "30-day returns", "Secure checkout by Square", "Crafted since 1995", "Gift-ready packaging", "New 2026–27 collection",
+  ];
+  $("#marquee").innerHTML = [...MSGS, ...MSGS].map((m) => `<span>${m}</span>`).join("");
+}
+marquee(null);
 
 // rail arrow icons
 for (const id of ["newPrev", "sigPrev"]) $("#" + id).innerHTML = icon("left");
 for (const id of ["newNext", "sigNext"]) $("#" + id).innerHTML = icon("right");
 
-ready.then(({ products }) => {
+ready.then(({ products, config }) => {
+  marquee(Number(config.shipping?.free_over_usd) || null);
   // category counts
   const counts = products.reduce((m, p) => ((m[p.category] = (m[p.category] || 0) + 1), m), {});
   $$("[data-count]").forEach((el) => {
