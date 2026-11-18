@@ -180,7 +180,7 @@
   function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
   function pill(s) {
     var st = statusOf(s);
-    return '<span class="pill" style="color:' + statusColor(s) + '"><svg viewBox="0 0 12 12" aria-hidden="true">' + st.icon + "</svg>" + esc(s) + "</span>";
+    return '<span class="pill" style="color:' + statusColor(s) + '"' + (GLOSS[s] ? ' data-tip="' + esc("<b>" + s + "</b><br>" + GLOSS[s]) + '"' : "") + '><svg viewBox="0 0 12 12" aria-hidden="true">' + st.icon + "</svg>" + esc(s) + "</span>";
   }
   function wcode(w) { return '<span class="wcode">' + esc(w) + "</span>"; }
   var ICON_SEARCH = '<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
@@ -270,6 +270,8 @@
     anchor: '<circle cx="10" cy="4.5" r="1.8"/><path d="M10 6.3V17M6 9h8M3.5 12c.5 3 3.2 5 6.5 5s6-2 6.5-5"/>',
     book: '<path d="M3 4.5C5 3.5 8 3.5 10 5c2-1.5 5-1.5 7-.5V16c-2-1-5-1-7 .5-2-1.5-5-1.5-7-.5z"/><path d="M10 5v11.5"/>',
     bolt: '<path d="M11 2L4 11h5l-1 7 7-9h-5z"/>',
+    clock: '<circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/>',
+    compare: '<path d="M4 3v14M16 3v14M4 7h5M4 12h3M16 9h-6M16 14h-4"/>',
     dot: '<circle cx="10" cy="10" r="3"/>',
   };
   function icon(name, size) { return '<svg class="ic" width="' + (size || 18) + '" height="' + (size || 18) + '" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + (IC[name] || IC.dot) + "</svg>"; }
@@ -286,6 +288,8 @@
       ["#contracts", "rupee", "Money", "Who wins contracts, live tenders, and who funds what.", CONTRACTS.companies.length + " companies · " + OPEN_TENDERS.length + " open tenders"],
       ["#map", "air", "Air and map", "Official air-quality stations and every project on the map.", worst ? "Worst now: " + stationName(worst) + ", AQI " + worst.aqi : "Map of all projects"],
       ["#schemes", "scheme", "Schemes", "Government yojanas reaching Mumbai, their status and how to apply.", YOJANAS.length + " schemes"],
+      ["#latest", "clock", "Latest", "Everything reported recently: project milestones, representatives, schemes, contractors.", feedItems().filter(function (x) { return String(x.date) >= new Date(TODAY - 30 * 864e5).toISOString().slice(0, 10); }).length + " updates in the last 30 days"],
+      ["#compare", "compare", "Compare", "Two wards or two MLAs side by side, and a table ranking all 24 wards.", "Wards and MLAs"],
     ];
     return '<section class="explore" aria-label="Explore">' + tiles.map(function (t) {
       return '<a class="tile" href="' + t[0] + '"><span class="tile-ic">' + icon(t[1], 22) + '</span><span class="tile-t">' + esc(t[2]) + '</span><span class="tile-d">' + esc(t[3]) + '</span><span class="tile-m">' + esc(t[4]) + " →</span></a>";
@@ -314,6 +318,7 @@
       '<div class="hero-search"><div class="field search">' + ICON_SEARCH + '<input type="search" id="home-q" placeholder="Search a locality, project, MLA, corporator or company" aria-label="Search" autocomplete="off"></div><div class="search-results" id="home-results" hidden></div></div></div>' +
       '<dl class="hero-figs"><div><dt>Projects tracked</dt><dd>' + PROJECTS.length + "<small>worth " + crore(total) + '</small></dd></div><div class="alert"><dt>Delayed or stalled</dt><dd>' + late.length + "<small>" + Math.round(100 * late.length / PROJECTS.length) + "% of all</small></dd></div><div><dt>Added by cost overruns</dt><dd>" + Math.round(overAmt / 1000).toLocaleString("en-IN") + "k<small>crore across " + over.length + " projects</small></dd></div></dl></section>" +
       exploreTiles({ late: late.length }) +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Latest</div><h3>Recently reported</h3></div><a class="btn" href="#latest">All updates</a></div>' + feedList(feedItems().slice(0, 6)) + "</section>" +
 
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Status</div><h3>Where every project stands</h3></div><p>Tap a status to filter the list below.</p></div>' +
       '<div class="statusbar" role="img" aria-label="Projects by status">' + STATUSES.map(function (s) {
@@ -574,7 +579,8 @@
         var s = wardStats(x);
         return '<button type="button" data-ward="' + esc(x) + '" aria-pressed="' + (x === selectedWard) + '">' + wcode(x) + '<span class="wp-meta">' + plural(s.ps.length, "project") + "</span>" + '<span class="wp-meta">' + plural(s.tenders.length, "tender") + "</span></button>";
       }).join("") + '</div><p class="axis-note">Newer wards K/North, K/South and P/East are shown inside K/East and P/North, the wards they were carved from.</p></section>' +
-      '<section class="panel" id="ward-detail"></section></div>';
+      '<section class="panel" id="ward-detail"></section></div><section class="panel" id="ward-compare"></section>';
+    mountWardTable(document.getElementById("ward-compare"));
     bindClicks(document.getElementById("picker"), "[data-ward]", function (el) { go("#ward-" + wardSlug(el.dataset.ward)); });
     renderWard(selectedWard);
   }
@@ -586,8 +592,8 @@
     var unconfirmed = info.confidence === "low" ? '<span class="flag">unconfirmed</span>' : "";
     box.innerHTML = '<div class="ward-hero"><div><h2>' + wcode(w) + esc(wardTitle(w)) + "</h2>" +
       (info.localities ? '<p class="muted" style="margin:6px 0 0">' + esc(info.localities.join(", ")) + "</p>" : "") +
-      '<div class="mini-stats"><span><b>' + s.ps.length + "</b>projects</span><span><b>" + s.late + "</b>delayed or stalled</span><span><b>" + s.tenders.length + "</b>open tenders</span></div></div>" +
-      '<div class="ward-shape">' + wardShape(w, s.ps) + "</div></div>" +
+      "</div>" +
+      '<div class="ward-shape">' + wardShape(w, s.ps) + "</div></div>" + wardScorecard(w) +
       '<div class="people"><div class="person"><div class="role">Ward officer</div><div class="name">' + esc(info.assistantCommissioner || "Not on file") + unconfirmed + '</div><div class="detail">Assistant Commissioner' + (info.asOf ? ", as of " + fmtDate(info.asOf) : "") + "</div></div>" +
       '<div class="person"><div class="role">Zone ' + esc(info.zone || "") + " deputy commissioner</div>" + '<div class="name">' + esc(info.zonalDmc || "Not on file") + '</div><div class="detail">Oversees the zone’s wards</div></div></div>' +
       (info.office ? '<p class="muted" style="font-size:.85rem;margin:10px 0 0">Ward office: ' + esc(info.office) + (info.phone ? ' · <span class="tnum">' + esc(info.phone) + "</span>" : "") + "</p>" : "") +
@@ -791,6 +797,12 @@
       '<div class="stat"><span class="label">Contracts listed</span><span class="value">' + all.length + '</span><span class="sub">since 2015, from orders and reports</span></div>' +
       '<div class="stat"><span class="label">Value with a published figure</span><span class="value">' + Math.round(value).toLocaleString("en-IN") + '<small>cr</small></span><span class="sub">award amounts as reported</span></div>' +
       '<div class="stat alert"><span class="label">Companies with formal action</span><span class="value">' + withEvents + "<small>of " + cos.length + '</small></span><span class="sub">penalty, notice, termination, ban, audit, case or ruling</span></div></section>' +
+      (function () {
+        var oc = {}; all.forEach(function (x) { var o = x.k.outcome || "Not reported"; oc[o] = (oc[o] || 0) + 1; });
+        var col = { "Completed": "var(--st-completed)", "Completed on time": "var(--st-completed)", "Completed late": "var(--st-partial)", "Ongoing": "var(--st-progress)", "Ongoing, delayed": "var(--st-delayed)", "Not started": "var(--st-notstarted)", "Terminated": "var(--st-stalled)" };
+        return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Outcomes</div><h3>How the listed contracts turned out</h3></div><p>Status of each contract as reported, across all ' + all.length + ' contracts.</p></div>' +
+          hbars(Object.keys(oc).sort(function (a, b) { return oc[b] - oc[a]; }).map(function (k) { return { label: k, value: oc[k], display: plural(oc[k], "contract"), color: col[k] || "var(--ink-3)" }; })) + "</section>";
+      })() +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Repeat relationships</div><h3>Which body awards to which company</h3></div><p>Number of contracts each company holds from each body. Darker means more. Tap a company to see its record.</p></div>' +
       '<div class="table-scroll"><table class="data heat"><thead><tr><th>Company</th>' + agCols.map(function (a) { return '<th class="num">' + esc(a) + "</th>"; }).join("") + '<th class="num">Total</th><th>Formal actions</th></tr></thead><tbody>' +
       rows.map(function (c) {
@@ -965,6 +977,8 @@
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Disclosed amounts</div><h3>' + crore(known) + " with a published figure, by source</h3></div></div>" +
       '<div class="fundbar" style="height:18px" role="img" aria-label="Disclosed funding by source type">' + types.map(function (t) { return '<span style="flex:' + byType[t.key] + ";background:" + fundColor(t.key) + '" data-tip="<b>' + esc(t.key) + "</b><br>" + crore(byType[t.key]) + " (" + Math.round(100 * byType[t.key] / known) + '%)"></span>'; }).join("") + "</div>" +
       '<div class="legend">' + types.map(function (t) { return '<span class="chip" style="cursor:default"><span class="swatch" style="background:' + fundColor(t.key) + '"></span>' + esc(t.key) + " <b>" + crore(byType[t.key]) + "</b></span>"; }).join("") + "</div></section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Largest funders</div><h3>Top 10 by disclosed amount</h3></div></div>' +
+      hbars(funders.filter(function (f) { return f.amount; }).slice(0, 10).map(function (f) { return { label: f.name, value: f.amount, display: crore(f.amount), color: fundColor(f.type), tip: "<b>" + esc(f.name) + "</b><br>" + esc(f.type) + " · " + plural(f.projects.length, "project") + (f.unknown ? " (" + f.unknown + " undisclosed)" : "") }; }), { note: "Only commitments with a published figure. Colour shows the type of funder." }) + "</section>" +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Every funder</div><h3>Who has put money into what</h3></div></div><div class="table-scroll"><table class="data"><thead><tr><th>Funder</th><th class="num">Disclosed</th><th>Projects</th></tr></thead><tbody>' +
       funders.map(function (f) {
         return '<tr><td style="min-width:200px"><b>' + esc(f.name) + '</b><div class="sub"><span class="swatch" style="display:inline-block;vertical-align:-1px;margin-right:5px;background:' + fundColor(f.type) + '"></span>' + esc(f.type) + '</div></td><td class="num">' + (f.amount ? crore(f.amount) : '<span class="muted">not disclosed</span>') + (f.amount && f.unknown ? '<div class="sub">+' + f.unknown + " undisclosed</div>" : "") + '</td><td style="font-size:.85rem">' +
@@ -992,6 +1006,8 @@
       "<dt>Affidavits</dt><dd>MLA case counts are what each candidate declared under oath in their 2024 nomination affidavit, as compiled by ADR. Some entries are writ petitions or election matters, not police cases.</dd>" +
       "<dt>Fairness</dt><dd>Cases filed after the 2024 election are not shown for anyone until they have been checked for all 36 MLAs. People are named only when formally charged, arrested, convicted or named in an official order.</dd>" +
       "<dt>What we don\u2019t do</dt><dd>We don\u2019t estimate missing numbers, treat delay as wrongdoing, or attribute cases to an MLA\u2019s associates without a report that formally links them.</dd></dl></section>" +
+      freshnessPanel(false) +
+      '<section class="panel" id="glossary"><h3 class="eyebrow" style="margin:0 0 10px">What the words mean</h3><dl class="facts-list">' + Object.keys(GLOSS).map(function (k) { return "<dt>" + esc(k) + "</dt><dd>" + esc(GLOSS[k]) + "</dd>"; }).join("") + "</dl></section>" +
       '<section class="panel"><h3 class="eyebrow" style="margin:0 0 10px">Main sources</h3><ul class="sources">' + srcs + '</ul><h3 class="eyebrow" style="margin:18px 0 8px">Something wrong or missing?</h3><p style="margin:0;font-size:.9rem">Every figure should trace to a public document. If you have a newer progress report, an RTI reply or a correction, send it with the source link and the record will be updated.</p></section></div>';
   }
 
@@ -1289,10 +1305,10 @@
 
     app.innerHTML = '<section class="lead"><div class="eyebrow">Your area' + (aw ? " · " + esc(wardTitle(aw)) : "") + (ews.length ? " · electoral ward " + esc(ews.join(", ")) : "") + '</div><h2>' + esc(label || "This spot") + '</h2><p>Who to ask, what is being built nearby, and the air you are breathing. <a href="#area">Pick another place</a></p></section>' +
       '<div class="people people-4">' +
-      (ews.length ? ews.map(function (n) { var c = CORP_BY_WARD[n] || {}; return '<div class="person"><div class="role">Corporator · ward ' + esc(n) + '</div><div class="name">' + (c.vacant ? "Seat vacant" : esc(c.name || "—")) + '</div><div class="detail">' + esc(c.vacant ? c.statusNote : (c.party || "") + (c.area ? " · " + c.area : "")) + "</div></div>"; }).join("") : "") +
-      (mlaConst.length ? mlaConst.map(function (cn) { var mm = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(mm.no) + '"><div class="role">MLA · ' + esc(cn) + (splitNote ? " · " + acShare[cn] + "% of voters" : "") + '</div><div class="name">' + esc(mm.name || "—") + '</div><div class="detail">' + esc(mm.party || "") + " · profile →</div></a>"; }).join("")
+      (ews.length ? ews.map(function (n) { var c = CORP_BY_WARD[n] || {}; return '<div class="person"><div class="role">' + gl("Corporator") + ' · ward ' + esc(n) + '</div><div class="name">' + (c.vacant ? "Seat vacant" : esc(c.name || "—")) + '</div><div class="detail">' + esc(c.vacant ? c.statusNote : (c.party || "") + (c.area ? " · " + c.area : "")) + "</div></div>"; }).join("") : "") +
+      (mlaConst.length ? mlaConst.map(function (cn) { var mm = mlaByConst[cn] || {}; return '<a class="person" style="text-decoration:none;color:inherit" href="#mla-' + esc(mm.no) + '"><div class="role">' + gl("MLA") + ' · ' + esc(cn) + (splitNote ? " · " + acShare[cn] + "% of voters" : "") + '</div><div class="name">' + esc(mm.name || "—") + '</div><div class="detail">' + esc(mm.party || "") + " · profile →</div></a>"; }).join("")
         : '<a class="person" style="text-decoration:none;color:inherit" href="#mlas"><div class="role">MLA</div><div class="name" style="font-weight:500">Not mapped for this spot yet</div><div class="detail">Find your constituency on the MLAs tab →</div></a>') +
-      (aw ? '<a class="person" style="text-decoration:none;color:inherit" href="#ward-' + wardSlug(aw) + '"><div class="role">Ward officer · ' + esc(wardTitle(aw)) + '</div><div class="name">' + esc(info.assistantCommissioner || "Not on file") + '</div><div class="detail">' + esc(info.phone || "") + " · ward page →</div></a>" : "") +
+      (aw ? '<a class="person" style="text-decoration:none;color:inherit" href="#ward-' + wardSlug(aw) + '"><div class="role">' + gl("Ward officer") + ' · ' + esc(wardTitle(aw)) + '</div><div class="name">' + esc(info.assistantCommissioner || "Not on file") + '</div><div class="detail">' + esc(info.phone || "") + " · ward page →</div></a>" : "") +
       "</div>" +
       '<div class="grid-2">' + aqiCard(lat, lng) +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Out to bid</div><h3>' + plural(tenders.length, "open tender") + " in this ward</h3></div></div>" +
@@ -1336,7 +1352,7 @@
       '<div class="d-body">' +
       (d.description && d.description !== t.title ? '<p class="d-summary">' + esc(d.description) + "</p>" : "") +
       '<dl class="kv"><div><dt>Estimated value</dt><dd>' + (d.valueRs ? "₹" + Math.round(d.valueRs).toLocaleString("en-IN") : '<span class="muted" style="font-size:1rem">not disclosed</span>') + "<small>" + (d.valueRs ? "as published" : "BMC often withholds it on the portal") + "</small></dd></div>" +
-      "<div><dt>Earnest money (EMD)</dt><dd>" + (d.emdRs ? "₹" + Math.round(d.emdRs).toLocaleString("en-IN") : "—") + "<small>deposit bidders pay</small></dd></div>" +
+      "<div><dt>Earnest money (" + gl("EMD") + ")</dt><dd>" + (d.emdRs ? "₹" + Math.round(d.emdRs).toLocaleString("en-IN") : "—") + "<small>deposit bidders pay</small></dd></div>" +
       "<div><dt>Closes</dt><dd>" + esc(fmtDate((t.closing || "").slice(0, 10))) + "<small>" + esc((t.closing || "").slice(11, 16)) + "</small></dd></div></dl>" +
       '<section class="panel"><h3>Who is putting it out</h3><dl class="facts-list">' + row("Body", esc(t.org)) + row("Department", esc(t.unit || t.dept || "")) +
       row("Issued by", by.name ? "<b>" + esc(by.name) + "</b>" + (by.address ? '<div class="sub">' + esc(by.address) + "</div>" : "") : null) + row("Ward officer", t.ward && WARD_INFO[tenderMapWard(t)] ? esc(WARD_INFO[tenderMapWard(t)].assistantCommissioner) : null) + "</dl></section>" +
@@ -1500,7 +1516,225 @@
   }
 
   // ---------------------------------------------------------------- router
-  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout };
+  // ================================================================ v5: information layer
+  // ---- glossary: plain-language meanings, shown on hover/tap and listed on About
+  var GLOSS = {
+    "Corporator": "Elected member of the BMC for one of 227 electoral wards. Votes on the city budget and civic contracts and raises local complaints.",
+    "MLA": "Member of the Maharashtra Legislative Assembly. Mumbai has 36. Makes state laws, gets a local development fund, and takes up issues with state agencies like MMRDA and MSRDC.",
+    "MP": "Member of Parliament (Lok Sabha). Mumbai has 6. Makes national laws and recommends works under the MP local area fund (MPLADS).",
+    "Ward officer": "The Assistant Commissioner who heads a BMC administrative ward: roads, drains, encroachments, licences and complaints. Appointed, not elected.",
+    "BMC ward": "One of 24 administrative wards (A to T) the BMC uses to run the city. Each has a ward office. Different from the 227 electoral wards.",
+    "Electoral ward": "One of 227 areas that each elect a corporator. Several electoral wards make up one administrative ward.",
+    "Tender": "A public invitation to bid for a contract. The issuing office sets the work, the estimated value and the closing date; the contract usually goes to the lowest qualified bidder.",
+    "EMD": "Earnest money deposit: a sum bidders pay to show they are serious. It is returned to unsuccessful bidders.",
+    "Delayed": "Still being built but past the deadline first announced, or the deadline has been pushed back.",
+    "Stalled": "Work has stopped, for example over land, permissions, a court case or a contract dispute.",
+    "Not started": "Approved or announced, but construction has not begun on the ground.",
+    "Partially open": "Some sections are open to the public while others are still being built.",
+    "Cost overrun": "How much the latest approved cost exceeds the original approved cost.",
+    "FIR": "First Information Report: the police record that starts an investigation. Being named in an FIR is not being charged or convicted.",
+    "Chargesheet": "The police report filed in court after an investigation, listing the charges. A court then decides.",
+    "Affidavit": "The sworn statement every candidate files with their nomination, listing pending criminal cases, assets and liabilities.",
+    "AQI": "Air Quality Index on India’s national scale: 0–50 Good, 51–100 Satisfactory, 101–200 Moderate, 201–300 Poor, 301–400 Very poor, above 400 Severe.",
+    "Crore": "1 crore = 10 million = 100 lakh. ₹1,000 crore = ₹10 billion.",
+    "MahaRERA": "Maharashtra’s real-estate regulator. Private housing projects above a set size must register there before selling.",
+  };
+  function gl(key, label) { return GLOSS[key] ? '<span class="term" tabindex="0" data-tip="<b>' + esc(key) + "</b><br>" + esc(GLOSS[key]) + '">' + (label || esc(key)) + "</span>" : (label || esc(key)); }
+
+  // ---- freshness: how current each dataset is
+  function maxDate(list) { return list.filter(Boolean).map(String).sort().pop() || null; }
+  function daysSince(d) { return d ? Math.floor((TODAY - Date.parse(String(d).slice(0, 10) + "T00:00:00Z")) / 864e5) : null; }
+  function datasets() {
+    var recs = Object.values((window.PUBLIC_WORKS_RECORDS || {}).people || {});
+    return [
+      { name: "Projects", what: "status, cost, dates, funders", date: maxDate(PROJECTS.map(function (p) { return p.lastVerified; })), kind: "checked", every: 45, href: "#explorer" },
+      { name: "Tenders", what: "open tenders from Mahatenders", date: TENDERS.fetchedAt, kind: "fetched", every: 3, href: "#tenders" },
+      { name: "Air quality", what: "official monitoring stations", date: AQI.fetchedAt, kind: "fetched", every: 1, href: "#map" },
+      { name: "Construction sites", what: "OpenStreetMap", date: CONS.fetchedAt, kind: "fetched", every: 120, href: "#map" },
+      { name: "MLA profiles", what: "affidavits, funds, work, news", date: MLA_DATA.workVerified || MLA_DATA.compiled, kind: "checked", every: 120, href: "#mlas" },
+      { name: "Corporator and MP records", what: "work, issues, controversies, cases", date: maxDate(recs.map(function (r) { return r.verified; })), kind: "checked", every: 120, href: "#mlas" },
+      { name: "Contractors and agencies", what: "contracts, penalties, cases", date: CONTRACTS.verified || CONTRACTS.compiled, kind: "checked", every: 180, href: "#contracts" },
+      { name: "Schemes", what: "government yojanas", date: maxDate(YOJ_LIST().map(function (y) { return y.verified || maxDate((y.recent || []).map(function (r) { return r.date; })); })), kind: "latest item", every: 180, href: "#schemes" },
+    ].map(function (d) { d.age = daysSince(d.date); d.stale = d.age == null || d.age > d.every; return d; });
+  }
+  function YOJ_LIST() { var y = window.PUBLIC_WORKS_YOJANAS; return Array.isArray(y) ? y : (y && y.schemes) || []; }
+  function freshnessPanel(compact) {
+    var ds = datasets();
+    return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Freshness</div><h3>How current each part is</h3></div><p>When each dataset was last fetched or re-checked. Anything past its normal refresh interval is flagged.</p></div>' +
+      '<div class="fresh">' + ds.map(function (d) {
+        return '<a class="fresh-row' + (d.stale ? " stale" : "") + '" href="' + d.href + '"><span class="fr-n"><b>' + esc(d.name) + "</b>" + (compact ? "" : '<span class="sub">' + esc(d.what) + "</span>") + '</span><span class="fr-d">' + (d.date ? esc(d.kind) + " " + esc(fmtDate(String(d.date).slice(0, 10))) : "no date") + '</span><span class="fr-a">' + (d.age == null ? "" : d.age <= 0 ? "today" : d.age === 1 ? "1 day ago" : d.age + " days ago") + '</span><span class="fr-s">' + (d.stale ? '<span class="pill" style="color:var(--st-delayed)">Due for refresh</span>' : '<span class="pill" style="color:var(--st-completed)">Current</span>') + "</span></a>";
+      }).join("") + "</div></section>";
+  }
+
+  // ---- latest: every dated event in the data, newest first
+  var FEED = null;
+  function feedItems() {
+    if (FEED) return FEED;
+    var out = [], today = new Date(TODAY).toISOString().slice(0, 10);
+    function add(o) { if (o.date && String(o.date) <= today && o.what) out.push(o); }
+    var D = window.PUBLIC_WORKS_DELAYS || {};
+    Object.keys(D).forEach(function (id) {
+      var p = PROJECTS.find(function (q) { return q.id === id; }); var l = D[id] && D[id].latest;
+      if (p && l) add({ date: l.date, type: "Projects", cat: "Project update", who: p.shortName || p.name, href: "#p-" + id, what: l.what, src: l.source });
+    });
+    MLAS.forEach(function (m) {
+      var prof = (MLA_DATA.profiles || {})[m.no] || {}, aff = prof.affidavit || {};
+      var who = m.name + " (MLA, " + m.constituency + ")", href = "#mla-" + m.no;
+      (prof.work || []).forEach(function (w) { add({ date: w.date, type: "MLAs", cat: itemCategory(w, false), who: who, href: href, what: w.what, src: w.source }); });
+      (prof.news || []).forEach(function (n) { add({ date: n.date, type: "MLAs", cat: itemCategory(n, true), who: who, href: href, what: n.headline, src: n.source }); });
+      (aff.laterCases || []).forEach(function (c) { add({ date: c.date, type: "MLAs", cat: "Legal matter", who: who, href: href, what: c.kind + ": " + c.summary, src: (c.sources || [])[0] }); });
+    });
+    var people = (RECORDS.people || {});
+    Object.keys(people).forEach(function (id) {
+      var who, href, type;
+      if (id.indexOf("cor-") === 0) { var c = CORP_BY_WARD[+id.slice(4)] || {}; who = (c.name || "Corporator") + " (corporator, ward " + id.slice(4) + ")"; href = "#" + id; type = "Corporators"; }
+      else { var mp = MPS.find(function (x) { return "mp-" + x.id === id; }) || {}; who = (mp.name || "MP") + " (MP, " + (mp.constituency || "") + ")"; href = "#" + id; type = "MPs"; }
+      (people[id].record || []).forEach(function (r) { add({ date: r.date, type: type, cat: r.category, who: who, href: href, what: r.what, src: r.source }); });
+    });
+    YOJ_LIST().forEach(function (y) { (y.recent || []).forEach(function (r) { add({ date: r.date, type: "Schemes", cat: "Scheme update", who: y.name, href: "#schemes", what: r.what, src: r.source }); }); });
+    (CONTRACTS.companies || []).forEach(function (c) { (c.events || []).forEach(function (e) { add({ date: e.date, type: "Companies", cat: e.kind, who: c.name, href: "#co-" + c.slug, what: e.summary, src: (e.sources || [e.source])[0] }); }); });
+    out.sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+    return (FEED = out);
+  }
+  function feedList(items) {
+    return '<ol class="feed">' + items.map(function (x) {
+      var u = x.src && safeUrl(x.src.url);
+      return '<li><span class="fd-date">' + esc(fmtDate(x.date)) + '</span><div class="fd-body"><div class="fd-head"><a href="' + esc(x.href) + '">' + esc(x.who) + "</a> " + (CATS.some(function (c) { return c.key === x.cat; }) ? catPill(x.cat) : '<span class="pill" style="color:var(--ink-3)">' + esc(x.cat) + "</span>") + "</div><div>" + esc(x.what) + "</div>" +
+        (u ? '<div class="sub"><a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc((x.src.title || u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]).slice(0, 90)) + " ↗</a></div>" : "") + "</div></li>";
+    }).join("") + "</ol>";
+  }
+  var lstate = { type: "", cat: "", days: 90, q: "" };
+  function viewLatest() {
+    var all = feedItems();
+    var TYPES = ["Projects", "MLAs", "Corporators", "MPs", "Schemes", "Companies"];
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Latest</div><h2>What happened recently</h2><p>Every dated event in this portal, newest first: project milestones and blockers, what representatives did or were reported for, scheme changes and actions against contractors. Each one is a checked fact with its source. Dates are when it happened or was reported.</p></section>' +
+      '<section class="panel"><div class="legend" id="lf-type"><button type="button" class="chip" data-v="" aria-pressed="' + !lstate.type + '">Everything</button>' + TYPES.map(function (t) { var n = all.filter(function (x) { return x.type === t; }).length; return n ? '<button type="button" class="chip" data-v="' + t + '" aria-pressed="' + (lstate.type === t) + '">' + t + " <b>" + n + "</b></button>" : ""; }).join("") + "</div>" +
+      '<div class="legend" id="lf-days" style="margin-top:8px">' + [[30, "Last 30 days"], [90, "Last 3 months"], [365, "Last year"], [0, "All time"]].map(function (d) { return '<button type="button" class="chip" data-v="' + d[0] + '" aria-pressed="' + (lstate.days === d[0]) + '">' + d[1] + "</button>"; }).join("") + "</div>" +
+      '<div class="field search" style="margin-top:10px;max-width:420px">' + ICON_SEARCH + '<input type="search" id="lf-q" placeholder="Filter by name, place or word" aria-label="Filter updates" value="' + esc(lstate.q) + '"></div>' +
+      '<div id="lf-out" style="margin-top:14px"></div></section>';
+    function draw() {
+      var cut = lstate.days ? new Date(TODAY - lstate.days * 864e5).toISOString().slice(0, 10) : "";
+      var q = lstate.q.trim().toLowerCase();
+      var list = all.filter(function (x) { return (!lstate.type || x.type === lstate.type) && (!cut || String(x.date) >= cut) && (!q || (x.who + " " + x.what).toLowerCase().indexOf(q) !== -1); });
+      document.getElementById("lf-out").innerHTML = '<p class="axis-note" style="margin:0 0 6px">' + plural(list.length, "update") + (list.length > 150 ? ", showing the newest 150" : "") + "</p>" + (list.length ? feedList(list.slice(0, 150)) : '<p class="muted">Nothing in this range.</p>');
+    }
+    ["lf-type", "lf-days"].forEach(function (id) {
+      var box = document.getElementById(id);
+      bindClicks(box, "[data-v]", function (el) { box.querySelectorAll("[data-v]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === el)); }); if (id === "lf-type") lstate.type = el.dataset.v; else lstate.days = +el.dataset.v; draw(); });
+    });
+    document.getElementById("lf-q").addEventListener("input", function (e) { lstate.q = e.target.value; draw(); });
+    draw();
+  }
+
+  // ---- ward scorecards and comparison
+  var WARD_CENTRE = {};
+  function wardCentre(w) {
+    if (WARD_CENTRE[w]) return WARD_CENTRE[w];
+    var f = WARD_FEATURE[w]; if (!f) return null;
+    var ring = f.geometry.coordinates.reduce(function (a, p) { return p[0].length > a.length ? p[0] : a; }, []);
+    var cx = 0, cy = 0; ring.forEach(function (c) { cx += c[0]; cy += c[1]; });
+    return (WARD_CENTRE[w] = [cy / ring.length, cx / ring.length]);
+  }
+  function wardCard(w) {
+    var s = wardStats(w), c = wardCentre(w);
+    var cons = CONS.sites.filter(function (x) { return x.ward === w; });
+    var cors = CORP.corporators.filter(function (x) { return x.adminWard === w; });
+    var st = c && AQI.stations.length ? nearestStations(c[0], c[1], 1)[0] : null;
+    return {
+      ward: w, projects: s.ps.length, late: s.late, value: s.ps.reduce(function (a, p) { return a + (cost(p) || 0); }, 0),
+      tenders: s.tenders.length, cons: cons.length, consLive: cons.filter(function (x) { return !consStale(x); }).length,
+      cors: cors.length, vacant: cors.filter(function (x) { return x.vacant; }).length, officer: (WARD_INFO[w] || {}).assistantCommissioner || null,
+      aqi: st && st.km <= 4 ? st.s : null, aqiKm: st ? st.km : null,
+    };
+  }
+  var WARD_COLS = [
+    { k: "projects", t: "Projects", f: function (r) { return r.projects; } },
+    { k: "late", t: "Delayed or stalled", f: function (r) { return r.late ? '<span class="up">' + r.late + "</span>" : "0"; } },
+    { k: "value", t: "Cost of projects passing through", tip: "Full cost of every project with a part in the ward. A metro line crossing five wards counts in full in each, so these do not add up to a city total.", f: function (r) { return r.value ? crore(r.value) : "—"; } },
+    { k: "tenders", t: "Open tenders", f: function (r) { return r.tenders; } },
+    { k: "consLive", t: "Construction sites", tip: "Mapped on OpenStreetMap; first number updated in the last 18 months", f: function (r) { return r.consLive + '<span class="sub"> / ' + r.cons + "</span>"; } },
+    { k: "cors", t: "Corporators", f: function (r) { return r.cors + (r.vacant ? '<span class="sub"> (' + r.vacant + " vacant)</span>" : ""); } },
+    { k: "aqi", t: "Air now", tip: "Nearest official station within 4 km of the ward centre", f: function (r) { return r.aqi ? aqiBadge(r.aqi) : '<span class="muted">no station</span>'; }, v: function (r) { return r.aqi ? r.aqi.aqi : -1; } },
+  ];
+  var wsort = { k: "projects", d: -1 };
+  function wardTable() {
+    var rows = WARD_NAMES.map(wardCard);
+    var col = WARD_COLS.find(function (c) { return c.k === wsort.k; }) || WARD_COLS[0];
+    var val = col.v || function (r) { return r[col.k]; };
+    rows.sort(function (a, b) { return wsort.d * (val(a) - val(b)) || WARD_ORDER.indexOf(a.ward) - WARD_ORDER.indexOf(b.ward); });
+    return '<div class="table-scroll"><table class="data sortable" id="ward-table"><thead><tr><th>Ward</th>' + WARD_COLS.map(function (c) { return '<th class="num"><button type="button" class="th-sort" data-k="' + c.k + '"' + (c.tip ? ' data-tip="' + esc(c.tip) + '"' : "") + ">" + esc(c.t) + (wsort.k === c.k ? (wsort.d < 0 ? " ↓" : " ↑") : "") + "</button></th>"; }).join("") + "</tr></thead><tbody>" +
+      rows.map(function (r) { return '<tr class="click" data-ward-go="' + esc(r.ward) + '" tabindex="0"><td>' + wcode(r.ward) + "<b>" + esc(wardTitle(r.ward)) + "</b>" + (r.officer ? '<div class="sub">' + esc(r.officer) + "</div>" : "") + "</td>" + WARD_COLS.map(function (c) { return '<td class="num">' + c.f(r) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>";
+  }
+  function mountWardTable(box) {
+    box.innerHTML = '<div class="section-head"><div><div class="eyebrow">All 24 wards</div><h3>Compare wards</h3></div><p>Tap a column to sort, a row to open the ward. Or <a href="#compare">compare two side by side</a>.</p></div>' + wardTable();
+    bindClicks(box, "[data-ward-go]", function (el) { go("#ward-" + wardSlug(el.dataset.wardGo)); });
+    box.querySelectorAll(".th-sort").forEach(function (b) { b.addEventListener("click", function (e) { e.stopPropagation(); wsort = { k: b.dataset.k, d: wsort.k === b.dataset.k ? -wsort.d : -1 }; mountWardTable(box); }); });
+  }
+  function wardScorecard(w) {
+    var r = wardCard(w), n = WARD_NAMES.length;
+    function rank(k, desc) { var vals = WARD_NAMES.map(function (x) { return wardCard(x)[k]; }); var v = r[k]; return 1 + vals.filter(function (x) { return desc ? x > v : x < v; }).length; }
+    return '<div class="scorecard">' +
+      '<div><span class="sc-v">' + r.projects + '</span><span class="sc-l">projects</span><span class="sc-r">#' + rank("projects", true) + " of " + n + "</span></div>" +
+      '<div><span class="sc-v' + (r.late ? " alert" : "") + '">' + r.late + '</span><span class="sc-l">delayed or stalled</span><span class="sc-r">' + (r.projects ? Math.round(100 * r.late / r.projects) + "% of its projects" : "&nbsp;") + "</span></div>" +
+      '<div><span class="sc-v">' + (r.value ? crore(r.value) : "—") + '</span><span class="sc-l"><span class="term" tabindex="0" data-tip="Full cost of every project with a part in this ward, not this ward\u2019s share.">cost of projects passing through</span></span><span class="sc-r">#' + rank("value", true) + " of " + n + "</span></div>" +
+      '<div><span class="sc-v">' + r.tenders + '</span><span class="sc-l">open tenders</span><span class="sc-r">#' + rank("tenders", true) + " of " + n + "</span></div>" +
+      '<div><span class="sc-v">' + r.consLive + '</span><span class="sc-l">active construction sites</span><span class="sc-r">' + r.cons + " mapped in all</span></div>" +
+      '<div><span class="sc-v">' + r.cors + '</span><span class="sc-l">' + gl("Corporator", "corporators") + '</span><span class="sc-r">' + (r.vacant ? r.vacant + " seat vacant" : "all seats filled") + "</span></div>" +
+      "</div>";
+  }
+
+  // ---- compare two wards or two MLAs
+  var cstate = { kind: "wards", a: "", b: "" };
+  function mlaCard(m) {
+    var prof = (MLA_DATA.profiles || {})[m.no] || {}, aff = prof.affidavit || {}, f = prof.funds || {};
+    var ps = PROJECTS.filter(function (p) { return (p.constituencies || []).indexOf(m.constituency) !== -1; });
+    var items = (prof.work || []).map(function (w) { return itemCategory(w, false); }).concat((prof.news || []).map(function (n) { return itemCategory(n, true); }));
+    var byCat = {}; items.forEach(function (c) { byCat[c] = (byCat[c] || 0) + 1; });
+    return { m: m, aff: aff, f: f, ps: ps, late: ps.filter(isLate).length, byCat: byCat, later: (aff.laterCases || []).length };
+  }
+  function viewCompare() {
+    var isW = cstate.kind === "wards";
+    var opts = isW ? WARD_NAMES.map(function (w) { var loc = ((WARD_INFO[w] || {}).localities || []).slice(0, 2).join(", "); return [w, wardTitle(w) + (loc ? " · " + loc : "")]; }) : MLAS.slice().sort(function (a, b) { return a.constituency.localeCompare(b.constituency); }).map(function (m) { return [String(m.no), m.constituency + " · " + m.name]; });
+    if (!opts.some(function (o) { return o[0] === cstate.a; })) cstate.a = opts[0][0];
+    if (!opts.some(function (o) { return o[0] === cstate.b; })) cstate.b = opts[1][0];
+    function sel(id, v) { return '<select id="' + id + '" aria-label="Choose">' + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === v ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select>"; }
+    var rows;
+    if (isW) {
+      var A = wardCard(cstate.a), B = wardCard(cstate.b);
+      rows = [["Ward officer", A.officer || "—", B.officer || "—"]].concat(WARD_COLS.map(function (c) { return [c.t, c.f(A), c.f(B), c.v ? null : [A[c.k], B[c.k]]]; }));
+      rows.unshift(["", '<a href="#ward-' + wardSlug(A.ward) + '"><b>' + esc(wardTitle(A.ward)) + "</b></a>", '<a href="#ward-' + wardSlug(B.ward) + '"><b>' + esc(wardTitle(B.ward)) + "</b></a>"]);
+    } else {
+      var ma = mlaCard(MLAS.find(function (m) { return String(m.no) === cstate.a; })), mb = mlaCard(MLAS.find(function (m) { return String(m.no) === cstate.b; }));
+      var row = function (label, fn, num) { return [label, fn(ma), fn(mb), num ? [num(ma), num(mb)] : null]; };
+      rows = [
+        ["", '<a href="#mla-' + ma.m.no + '"><b>' + esc(ma.m.name) + "</b></a>", '<a href="#mla-' + mb.m.no + '"><b>' + esc(mb.m.name) + "</b></a>"],
+        row("Constituency", function (x) { return esc(x.m.constituency); }),
+        row("Party", function (x) { return esc(x.m.party); }),
+        row("MLA since", function (x) { return esc(x.m.since); }),
+        row("Projects in the constituency", function (x) { return x.ps.length; }, function (x) { return x.ps.length; }),
+        row("Delayed or stalled", function (x) { return x.late; }),
+        row(gl("Affidavit", "Cases declared pending (2024 affidavit)"), function (x) { return x.aff.pendingCases != null ? x.aff.pendingCases + (x.aff.convictedCases ? " + " + x.aff.convictedCases + " conviction" : "") : "—"; }),
+        row("Cases reported since the election", function (x) { return x.later; }),
+        row("Declared assets", function (x) { return x.aff.totalAssetsCr != null ? "₹" + x.aff.totalAssetsCr.toLocaleString("en-IN") + " cr" : "—"; }),
+        row("Praja report card", function (x) { return x.f.score != null ? x.f.score.toFixed(1) + "/100 · rank " + x.f.rank : '<span class="muted">not rated</span>'; }),
+        row("Assembly attendance (Praja)", function (x) { return esc(x.f.attendanceBand || "—"); }),
+        row("MLA fund use (Praja)", function (x) { return esc(x.f.fundUtilisationBand || "—"); }),
+      ].concat(CATS.map(function (c) { return row("Record: " + c.key.toLowerCase(), function (x) { return x.byCat[c.key] || 0; }); }));
+    }
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Compare</div><h2>Side by side</h2><p>Pick two ' + (isW ? "BMC wards" : "MLAs") + ". Every figure comes from the same pages as the rest of the portal, with the same sources.</p></section>" +
+      '<section class="panel"><div class="legend" id="cmp-kind"><button type="button" class="chip" data-v="wards" aria-pressed="' + isW + '">Wards</button><button type="button" class="chip" data-v="mlas" aria-pressed="' + !isW + '">MLAs</button></div>' +
+      '<div class="cmp-pick"><label>' + sel("cmp-a", cstate.a) + '</label><span class="vs">vs</span><label>' + sel("cmp-b", cstate.b) + "</label></div>" +
+      '<div class="table-scroll"><table class="data cmp"><tbody>' + rows.map(function (r, i) {
+        var hi = r[3] && typeof r[3][0] === "number" && r[3][0] !== r[3][1] ? (r[3][0] > r[3][1] ? 1 : 2) : 0;
+        return (i === 0 ? "<tr class=\"cmp-h\">" : "<tr>") + "<th>" + r[0] + '</th><td class="' + (hi === 1 ? "more" : "") + '">' + r[1] + '</td><td class="' + (hi === 2 ? "more" : "") + '">' + r[2] + "</td></tr>";
+      }).join("") + "</tbody></table></div>" +
+      (isW ? "" : '<p class="axis-note">Record counts are items found and checked so far; coverage is not equal for every MLA, so a low count does not mean nothing was done.</p>') + "</section>";
+    var k = document.getElementById("cmp-kind");
+    bindClicks(k, "[data-v]", function (el) { cstate.kind = el.dataset.v; cstate.a = cstate.b = ""; viewCompare(); });
+    ["a", "b"].forEach(function (s) { document.getElementById("cmp-" + s).addEventListener("change", function (e) { cstate[s] = e.target.value; viewCompare(); }); });
+  }
+
+  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout, latest: viewLatest, compare: viewCompare };
   var MONEY = { contracts: "Contracts", tenders: "Tenders", funding: "Funding" };
   function moneyTabs(active) {
     return '<nav class="subtabs" aria-label="Money">' + Object.keys(MONEY).map(function (k) { return '<a href="#' + k + '"' + (k === active ? ' aria-current="page" class="on"' : "") + ">" + MONEY[k] + (k === "tenders" ? ' <span class="count">' + OPEN_TENDERS.length + "</span>" : "") + "</a>"; }).join("") + "</nav>";
@@ -1577,9 +1811,9 @@
 
   document.getElementById("footer").innerHTML =
     '<div class="f-col f-about"><div class="board board-sm"><span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span><span class="latin">Mumbai Public Works</span></div><p>An independent public record of government projects in Mumbai, the people responsible and the money involved. Built from official records and news reports; claims about people are checked twice.</p><p class="muted">Data updated ' + esc(fmtDate(META.lastUpdated)) + ". Costs in ₹ crore (1 crore = 10 million).</p></div>" +
-    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a></div>' +
+    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a><a href="#latest">Latest updates</a><a href="#compare">Compare</a></div>' +
     '<div class="f-col"><h4>Money</h4><a href="#contracts">Contracts</a><a href="#tenders">Tenders</a><a href="#funding">Funding</a><a href="#schemes">Schemes</a></div>' +
-    '<div class="f-col"><h4>About</h4><a href="#about">Sources and method</a><a href="#about">How we check</a><span class="muted">Corrections: send the source link.</span></div>';
+    '<div class="f-col"><h4>About</h4><a href="#about">Sources and method</a><a href="#about">How we check</a><a href="#glossary">What the words mean</a><span class="muted">Corrections: send the source link.</span></div>';
   var hq = document.getElementById("site-q");
   if (hq) {
     mountSearch(hq, document.getElementById("site-results"));

@@ -538,3 +538,61 @@ main { gap: 26px; }
 @media (max-width: 560px) { .cons.nokm li { grid-template-columns: minmax(0, 1fr); } .cons.nokm .cs { grid-column: 1; } }
 .leaflet-top, .leaflet-bottom { z-index: 800; }
 .f-about .board-sm { justify-self: start; width: max-content; }
+
+/* ======================================================= v5 information layer */
+.explore { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .explore { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .explore { grid-template-columns: 1fr; } }
+
+.term { border-bottom: 1px dotted currentColor; cursor: help; }
+.term:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.pill[data-tip] { cursor: help; }
+
+.feed { list-style: none; margin: 0; padding: 0; }
+.feed li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.feed li:last-child { border-bottom: 0; }
+.fd-date { font-family: var(--font-data); font-size: 0.8rem; color: var(--ink-3); padding-top: 2px; }
+.fd-body { display: grid; gap: 4px; min-width: 0; font-size: 0.93rem; }
+.fd-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.fd-head a { font-weight: 650; color: var(--ink); text-decoration: none; }
+.fd-head a:hover { color: var(--accent); text-decoration: underline; }
+.fd-body .sub a { color: var(--ink-3); overflow-wrap: anywhere; }
+@media (max-width: 560px) { .feed li { grid-template-columns: 1fr; gap: 4px; } }
+
+.fresh { display: grid; }
+.fresh-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 7em auto; gap: 6px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.fresh-row:last-child { border-bottom: 0; }
+.fresh-row:hover b { color: var(--accent); }
+.fresh-row .fr-n { display: grid; gap: 1px; }
+.fresh-row .fr-d { font-size: 0.85rem; color: var(--ink-2); }
+.fresh-row .fr-a { font-family: var(--font-data); font-size: 0.8rem; color: var(--ink-3); }
+@media (max-width: 640px) { .fresh-row { grid-template-columns: minmax(0, 1fr) auto; } .fresh-row .fr-d { grid-column: 1; } .fresh-row .fr-a { grid-column: 2; grid-row: 1; text-align: right; } .fresh-row .fr-s { grid-column: 2; grid-row: 2; justify-self: end; } }
+
+.scorecard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 16px 0 6px; }
+.scorecard > div { background: var(--surface); padding: 12px 14px; display: grid; gap: 1px; }
+.sc-v { font-family: var(--font-display); font-weight: 750; font-stretch: 88%; font-size: 1.55rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sc-v.alert { color: var(--st-delayed); }
+.sc-l { font-size: 0.82rem; color: var(--ink-2); }
+.sc-r { font-size: 0.75rem; color: var(--ink-3); }
+@media (max-width: 560px) { .scorecard { grid-template-columns: 1fr 1fr; } }
+
+.th-sort { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: right; }
+.th-sort:hover { color: var(--accent); }
+#ward-table td .sub { display: inline; font-size: 0.8rem; color: var(--ink-3); }
+#ward-table td:first-child .sub { display: block; }
+
+.cmp-pick { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: center; margin: 14px 0; }
+.cmp-pick select { width: 100%; height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); padding: 0 10px; font: inherit; }
+.cmp-pick .vs { font-family: var(--font-display); font-weight: 700; color: var(--ink-3); }
+table.cmp th { text-align: left; font-weight: 500; color: var(--ink-2); width: 34%; }
+table.cmp td { width: 33%; }
+table.cmp td.more { font-weight: 700; }
+table.cmp tr.cmp-h td { font-size: 1.05rem; }
+@media (max-width: 560px) { .cmp-pick { grid-template-columns: 1fr; } .cmp-pick .vs { justify-self: center; } }
+table.cmp th { white-space: normal; text-transform: none; letter-spacing: 0; font-size: 0.85rem; }
+table.cmp td .sub { display: inline; }
+@media (max-width: 560px) { table.cmp th, table.cmp td { padding: 8px 6px; } table.cmp th { width: 36%; } }
+table.cmp { table-layout: fixed; }
+table.cmp td { overflow-wrap: anywhere; white-space: normal; }
+table.cmp td .aqi-badge { white-space: normal; }
+table.cmp td.more { font-weight: inherit; }
