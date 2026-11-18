@@ -235,6 +235,15 @@ export interface PenaltyEstimate {
    * caveat. See beps/standards.ts.
    */
   verified: boolean
+  /**
+   * Whether the performance standard behind the shortfall was read off the
+   * published rule. Separate from the rate because they are verified
+   * independently, and the caveat shown to a customer is much weaker — and
+   * much more useful — when only one of the two is provisional.
+   */
+  standardVerified: boolean
+  /** Whether the money rate itself was read off the published rule. */
+  penaltyRateVerified: boolean
   citationUrl: string | null
 }
 

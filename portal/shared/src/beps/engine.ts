@@ -20,6 +20,7 @@ import {
   type BepsStandard,
   type PenaltyModel,
   type PenaltySchedule,
+  type Verification,
   cyclesForBuilding,
   penaltyFor,
   standardFor,
@@ -131,7 +132,7 @@ export function assessBuilding(
   const schedule = penaltyFor(building.jurisdiction, cycle.id)
   const estimatedPenalty =
     status === 'non-compliant' && schedule
-      ? estimatePenalty(building.grossFloorAreaSqFt, gapPct ?? 0, schedule)
+      ? estimatePenalty(building.grossFloorAreaSqFt, gapPct ?? 0, schedule, standard.verification)
       : null
 
   return {
@@ -230,10 +231,16 @@ function percentOfTarget(current: number, standard: BepsStandard): number | null
   return clamp(round(raw, 1), 0, 200)
 }
 
+/**
+ * `standardVerification` defaults to the unverified state on purpose: a caller
+ * that forgets to pass it gets the caveat rather than a figure that silently
+ * claims more provenance than it has.
+ */
 export function estimatePenalty(
   grossFloorAreaSqFt: number,
   gapPct: number,
   schedule: PenaltySchedule,
+  standardVerification: Verification = 'needs-verification',
 ): PenaltyEstimate {
   const amount = applyPenaltyModel(grossFloorAreaSqFt, gapPct, schedule.model)
   // The band widens as the provenance weakens, so nobody mistakes a
@@ -250,8 +257,14 @@ export function estimatePenalty(
     low: round(amount * (1 - spread), 0),
     high: round(amount * (1 + spread), 0),
     basis: schedule.basis,
-    // Only the published rule clears the caveat; see isConfirmed.
-    verified: isConfirmed(schedule.verification),
+    // Only the published rule clears the caveat; see isConfirmed. A dollar
+    // figure rests on two separate constants — the standard that decides
+    // whether the building is short, and the rate that prices the shortfall —
+    // so it is verified only when both are, and it reports which is which so
+    // the caveat can name the actual gap rather than disclaiming everything.
+    verified: isConfirmed(schedule.verification) && isConfirmed(standardVerification),
+    standardVerified: isConfirmed(standardVerification),
+    penaltyRateVerified: isConfirmed(schedule.verification),
     citationUrl: schedule.citationUrl,
   }
 }

@@ -157,11 +157,24 @@ export function renderHtml(report: ComplianceReport): string {
     })
     .join('\n')
 
+  // Say which constant is provisional rather than disclaiming the whole
+  // report: the performance standards have been read off the published rule,
+  // and a caveat that claims otherwise both throws that work away and teaches
+  // the reader to skip it.
+  const everyStandardVerified = report.buildings.every(
+    (b) => b.assessment?.estimatedPenalty?.standardVerified !== false,
+  )
   const caveat = report.totals.exposureVerified
     ? ''
-    : `<p class="caveat"><strong>Provisional figures.</strong> Penalty rates and one or more
-       performance standards in this report are placeholders pending verification against the
-       published rule. Treat the exposure column as an order of magnitude, not a quotation.</p>`
+    : everyStandardVerified
+      ? `<p class="caveat"><strong>The standards are confirmed; the price is not.</strong> Whether
+         each building meets its standard is judged against the published rule. The rate used to
+         turn a shortfall into dollars is not published in a citable form, and the commentary that
+         quotes one disagrees on whether it is charged annually or once per compliance cycle. Treat
+         the exposure column as an order of magnitude, not a quotation.</p>`
+      : `<p class="caveat"><strong>Provisional figures.</strong> Penalty rates and one or more
+         performance standards in this report are pending verification against the published rule.
+         Treat the exposure column as an order of magnitude, not a quotation.</p>`
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">

@@ -229,3 +229,19 @@ test('DC score standards are read off the published rule, EUI ceilings included'
     assert.equal(standardFor('dc', 'dc-cycle-1', type)!.verification, 'verified')
   }
 })
+
+test('an estimate reports which of its two constants is provisional', () => {
+  // A dollar figure rests on the standard that decides the shortfall and the
+  // rate that prices it. They are verified independently, and the caveat a
+  // customer reads is much more useful when it names the one that is actually
+  // provisional rather than disclaiming both.
+  const schedule = penaltyFor('dc', 'dc-cycle-1')!
+  const est = estimatePenalty(100_000, 20, schedule, 'verified')
+  assert.equal(est.standardVerified, true, 'DC standards are read off 20 DCMR 3530')
+  assert.equal(est.penaltyRateVerified, false, 'the rate is not published in a citable form')
+  assert.equal(est.verified, false, 'one unverified constant is enough to caveat the figure')
+
+  // Forgetting to say where the standard came from must not upgrade the
+  // figure's provenance.
+  assert.equal(estimatePenalty(100_000, 20, schedule).standardVerified, false)
+})

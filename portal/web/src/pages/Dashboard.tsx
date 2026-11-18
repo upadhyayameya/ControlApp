@@ -103,7 +103,16 @@ export function Dashboard(): JSX.Element {
       </div>
 
       {!t.exposureVerified && t.estimatedPenaltyExposure > 0 && (
-        <ProvisionalNotice className="mb-6" />
+        <ProvisionalNotice
+          className="mb-6"
+          // The portfolio total has no single estimate behind it, so the
+          // notice is told whether every building's standard was read off the
+          // published rule. One provisional standard anywhere weakens the
+          // claim for the whole column, which is the honest reading of a sum.
+          standardVerified={(portfolio?.entries ?? []).every(
+            (e) => e.assessment?.estimatedPenalty?.standardVerified !== false,
+          )}
+        />
       )}
 
       <SectionHead

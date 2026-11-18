@@ -67,6 +67,8 @@ function entry(
           high: opts.penalty * 1.4,
           basis: 'test',
           verified: opts.verified ?? true,
+          standardVerified: opts.verified ?? true,
+          penaltyRateVerified: opts.verified ?? true,
           citationUrl: null,
         }
       : null,

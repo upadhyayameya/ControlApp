@@ -53,25 +53,51 @@ export function Reading({
 /**
  * The caveat that must accompany any figure resting on an unverified constant.
  *
- * Load-bearing, not decoration: the BEPS targets and penalty rates shipped
- * today are placeholders, and a dollar figure shown without this reads to a
- * customer as a bill.
+ * Load-bearing, not decoration: a dollar figure shown without it reads to a
+ * customer as a bill. It names the constant that is actually provisional
+ * rather than disclaiming the whole estimate, because those are now different
+ * things — the DC performance standards have been read off 20 DCMR § 3530,
+ * while the rate that prices a shortfall has not been published in a form
+ * anyone can cite. Saying "the standards are placeholders" when they are not
+ * would throw away the verification work and teach the reader to skip the
+ * banner, which is the one outcome this must avoid.
  */
 export function ProvisionalNotice({
   penalty,
+  standardVerified,
   className = '',
 }: {
   penalty?: PenaltyEstimate | null
+  /**
+   * For an aggregate figure that has no single estimate behind it, such as a
+   * portfolio's total exposure. Omitted, the notice assumes the weaker
+   * provenance and caveats both constants — a caller that forgets to say must
+   * not get the stronger claim.
+   */
+  standardVerified?: boolean
   className?: string
 }): JSX.Element | null {
   if (penalty?.verified) return null
+  const standardIsConfirmed = penalty ? penalty.standardVerified : (standardVerified ?? false)
   return (
     <aside
       className={`border-l-2 border-warn bg-warn-soft/50 px-3 py-2.5 text-tiny text-ink-2 ${className}`}
     >
-      <strong className="font-semibold text-ink">Provisional figures.</strong> The performance
-      standards and penalty rates behind this estimate are placeholders pending verification
-      against the published rule. Treat them as an order of magnitude, not a quotation.
+      {standardIsConfirmed ? (
+        <>
+          <strong className="font-semibold text-ink">The standard is confirmed; the price is not.</strong>{' '}
+          Whether this building meets the standard is judged against the published rule. The rate
+          used to turn that shortfall into dollars is not published in a citable form, and the
+          commentary that quotes one disagrees on whether it is charged annually or once per
+          compliance cycle. Treat the money as an order of magnitude, not a quotation.
+        </>
+      ) : (
+        <>
+          <strong className="font-semibold text-ink">Provisional figures.</strong> The performance
+          standard and the penalty rate behind this estimate are both pending verification against
+          the published rule. Treat them as an order of magnitude, not a quotation.
+        </>
+      )}
       {penalty?.citationUrl && (
         <>
           {' '}
