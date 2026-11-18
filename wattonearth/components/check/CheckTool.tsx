@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "r
 import { Button, Field, inputClass } from "@/components/ui/primitives";
 import { climateZoneLabels, states, suggestZone } from "@/data/climate";
 import { SAMPLE_CSV_PATH, TEMPLATE_CSV_PATH } from "@/data/sample";
+import { conversions } from "@/data/assumptions";
 import { runCheck } from "@/lib/check/calc";
 import { parseConsumptionCsv } from "@/lib/check/csv";
 import { formatMonth, formatNumber } from "@/lib/format";
@@ -335,6 +336,7 @@ export function CheckTool() {
               <p className="text-sm text-muted">Annual totals for the same 12 months. Leave blank if not applicable.</p>
               <div className="grid gap-6 sm:grid-cols-2">
                 <NumberField id="dieselLitres" label="Diesel (HSD)" suffix="litres/yr" value={draft.dieselLitres} onChange={(v) => set("dieselLitres", v)} error={err("dieselLitres")} hint="Assumed to run DG sets." />
+                <NumberField id="dgKwhPerLitre" label="DG output (optional)" suffix="kWh/litre" value={draft.dgKwhPerLitre} onChange={(v) => set("dgKwhPerLitre", v)} error={err("dgKwhPerLitre")} hint={`From your DG log book. Leave blank to use ${conversions.dgSpecificOutput.value}.`} />
                 <NumberField id="lpgKg" label="LPG" suffix="kg/yr" value={draft.lpgKg} onChange={(v) => set("lpgKg", v)} error={err("lpgKg")} hint="A 19 kg commercial cylinder = 19 kg." />
                 <NumberField id="pngScm" label="PNG / natural gas" suffix="SCM/yr" value={draft.pngScm} onChange={(v) => set("pngScm", v)} error={err("pngScm")} />
                 <NumberField id="solarKwh" label="Solar / on-site generation" suffix="kWh/yr" value={draft.solarKwh} onChange={(v) => set("solarKwh", v)} error={err("solarKwh")} hint="Self-consumed generation, not exported units." />

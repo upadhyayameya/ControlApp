@@ -1,21 +1,41 @@
 /**
  * ALL numeric assumptions used by the Energy & Carbon Check live here.
  *
- * ⚠️  Every value below is a PLACEHOLDER (`verified: false`). They are
- * order-of-magnitude figures so the tool works end-to-end — they are NOT
- * official numbers and must not be quoted. To verify one:
- *   1. Open `sourceUrl`, find the current edition of the publication.
- *   2. Replace `value` (and `unit` if needed) with the published figure.
- *   3. Set `verified: true` and `lastChecked` to today's date (YYYY-MM-DD).
- * `npm run assumptions` lists everything still unverified. A dev-only banner
- * is shown on every page while any assumption is unverified.
+ * Each value records where it comes from (`basis`):
+ *   - official  — read directly from a government publication;
+ *   - derived   — calculated from published defaults (method in `notes`);
+ *   - estimate  — a Watt on Earth estimate built from published averages,
+ *                 clearly labelled as such in the UI and the PDF;
+ *   - default   — a fallback the user can replace with their own data;
+ *   - judgement — Watt on Earth engineering judgement, still provisional.
+ * `verified: true` means Ameya approved the value against the source on
+ * `lastChecked`. `npm run assumptions` lists everything still unverified
+ * (defaults are excluded — they are meant to be overridden). A dev-only
+ * banner is shown while any assumption is unverified.
  */
-import type { Assumption, ClimateZone, FacilityType, ManufacturingSubType } from "@/lib/types";
+import type { Assumption, AssumptionBasis, ClimateZone, FacilityType, ManufacturingSubType } from "@/lib/types";
 
-const PLACEHOLDER = "PLACEHOLDER — confirm against";
+const PROVISIONAL = "Provisional —";
+/** Date the approved values below were checked against their sources. */
+const CHECKED = "2026-11-18";
 
-function placeholder(a: Omit<Assumption, "verified" | "lastChecked">): Assumption {
-  return { ...a, verified: false, lastChecked: null };
+const CEA_V22_URL = "https://cea.nic.in/api/cdm-report-version/view-pdf/en/82";
+const IPCC_CH2_URL = "https://www.ipcc-nggip.iges.or.jp/public/2006gl/pdf/2_Volume2/V2_2_Ch2_Stationary_Combustion.pdf";
+const BEE_OFFICE_URL = "https://beeindia.gov.in/sites/default/files/BEE%20Star%20Rating%20for%20existing%20Office%20Buildings.pdf";
+const BEE_MALL_URL = "https://beeindia.gov.in/sites/default/files/BEE%20Star%20Rating%20-%20Shopping%20Mall.pdf";
+const BEE_UNDP_FLYER_URL = "https://www.beeindia.gov.in/sites/default/files/Flyer_22nd%20Jan.pdf";
+
+function placeholder(a: Omit<Assumption, "verified" | "lastChecked" | "basis">, basis: AssumptionBasis = "judgement"): Assumption {
+  return { ...a, basis, verified: false, lastChecked: null };
+}
+
+function approved(a: Omit<Assumption, "verified" | "lastChecked">): Assumption {
+  return { ...a, verified: true, lastChecked: CHECKED };
+}
+
+/** A fallback value the user replaces with their own data. Not an official figure. */
+function userDefault(a: Omit<Assumption, "verified" | "lastChecked" | "basis">): Assumption {
+  return { ...a, basis: "default", verified: false, lastChecked: null };
 }
 
 /* ------------------------------------------------------------------ */
@@ -23,34 +43,46 @@ function placeholder(a: Omit<Assumption, "verified" | "lastChecked">): Assumptio
 /* ------------------------------------------------------------------ */
 
 export const emissionFactors = {
-  gridElectricity: placeholder({
-    label: "Grid electricity emission factor (India, weighted average)",
-    value: 0.72,
-    unit: "tCO₂e/MWh",
-    source: `${PLACEHOLDER} CEA CO₂ Baseline Database for the Indian Power Sector (latest version, weighted average)`,
-    sourceUrl: "https://cea.nic.in/cdm-co2-baseline-database/?lang=en",
-    notes: "Location-based Scope 2. Use the latest CEA version's 'weighted average' emission factor.",
+  gridElectricity: approved({
+    label: "Grid electricity emission factor (India, weighted average, FY 2025-26)",
+    value: 0.675,
+    unit: "tCO₂/MWh",
+    basis: "official",
+    source:
+      "CEA CO₂ Baseline Database for the Indian Power Sector, User Guide Version 22.0 (Aug 2026), Table S — weighted average incl. RES & captive, adjusted for cross-border transfers",
+    sourceUrl: CEA_V22_URL,
+    notes: "Location-based Scope 2. Replace when CEA publishes the next version (FY 2024-25 was 0.710).",
   }),
-  diesel: placeholder({
+  diesel: approved({
     label: "Diesel (HSD) combustion",
-    value: 2.68,
+    value: 2.65,
     unit: "kgCO₂e/litre",
-    source: `${PLACEHOLDER} IPCC 2006 Guidelines Vol. 2 (default CO₂/CH₄/N₂O factors) with Indian HSD density and NCV`,
-    sourceUrl: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html",
+    basis: "derived",
+    source:
+      "IPCC 2006 Guidelines Vol. 2 Ch. 2 Table 2.4 (74,100 kg CO₂/TJ; CH₄ 10, N₂O 0.6 kg/TJ) × NCV 43.0 TJ/Gg (Ch. 1 Table 1.2) × PPAC Ready Reckoner density (1 t HSD = 1.21 kL); AR5 GWPs",
+    sourceUrl: IPCC_CH2_URL,
+    notes: "35.54 MJ/L × 74.1 kg/GJ = 2.633 kg CO₂/L, plus CH₄/N₂O = 2.649 kgCO₂e/L. Within 1% of UK DESNZ 2025 (2.662, 100% mineral diesel).",
   }),
-  lpg: placeholder({
+  lpg: approved({
     label: "LPG combustion",
     value: 2.99,
     unit: "kgCO₂e/kg",
-    source: `${PLACEHOLDER} IPCC 2006 Guidelines Vol. 2, LPG default factor × NCV`,
-    sourceUrl: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html",
+    basis: "derived",
+    source:
+      "IPCC 2006 Guidelines Vol. 2 Ch. 2 Table 2.4 (63,100 kg CO₂/TJ; CH₄ 5, N₂O 0.1 kg/TJ) × NCV 47.3 TJ/Gg (Ch. 1 Table 1.2); AR5 GWPs",
+    sourceUrl: IPCC_CH2_URL,
+    notes: "2.985 kg CO₂/kg plus CH₄/N₂O = 2.993 kgCO₂e/kg. UK DESNZ 2025: 2.939.",
   }),
-  png: placeholder({
+  png: approved({
     label: "Piped natural gas (PNG) combustion",
-    value: 2.0,
+    value: 2.12,
     unit: "kgCO₂e/SCM",
-    source: `${PLACEHOLDER} IPCC 2006 Guidelines Vol. 2 natural gas factor × your city gas distributor's declared GCV/NCV`,
-    sourceUrl: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html",
+    basis: "derived",
+    source:
+      "IPCC 2006 Guidelines Vol. 2 Ch. 2 Table 2.4 (56,100 kg CO₂/TJ; CH₄ 5, N₂O 0.1 kg/TJ) × PPAC Ready Reckoner Table 9.5 (GAIL): GCV 10,000 kcal/SCM, NCV = 90% of GCV; AR5 GWPs",
+    sourceUrl: IPCC_CH2_URL,
+    notes:
+      "37.68 MJ/SCM NCV. City gas is often supplied below 10,000 kcal/SCM; each 1,000 kcal/SCM lower GCV reduces the factor by about 0.24.",
   }),
 } satisfies Record<string, Assumption>;
 
@@ -59,12 +91,12 @@ export const emissionFactors = {
 /* ------------------------------------------------------------------ */
 
 export const conversions = {
-  dgSpecificOutput: placeholder({
-    label: "Diesel generator specific output",
+  dgSpecificOutput: userDefault({
+    label: "Diesel generator specific output (default — enter your own)",
     value: 3.2,
     unit: "kWh/litre",
-    source: `${PLACEHOLDER} site DG log books / BEE guide book for energy auditors (DG set performance)`,
-    sourceUrl: "https://beeindia.gov.in/",
+    source: "Default for a reasonably loaded DG set. Replace it with the kWh/litre from your DG log book in the Check.",
+    sourceUrl: "https://wattonearth.in/check",
     notes: "Used to convert diesel litres into on-site electricity, assuming diesel is burned in DG sets.",
   }),
 } satisfies Record<string, Assumption>;
@@ -74,20 +106,20 @@ export const conversions = {
 /* ------------------------------------------------------------------ */
 
 export const tariffs = {
-  commercial: placeholder({
-    label: "Default commercial electricity tariff (all-in)",
+  commercial: userDefault({
+    label: "Commercial electricity tariff, all-in (default — enter your bills)",
     value: 9.5,
     unit: "₹/kWh",
-    source: `${PLACEHOLDER} the relevant State Electricity Regulatory Commission tariff order (HT/LT commercial)`,
-    sourceUrl: "https://cea.nic.in/?lang=en",
-    notes: "Only used if no bill amounts are entered. Tariffs vary widely by state and category.",
+    source: "Default only. Tariffs vary by state and category; enter monthly bill amounts in the Check to use your actual effective rate.",
+    sourceUrl: "https://wattonearth.in/check",
+    notes: "Only used if no bill amounts are entered.",
   }),
-  industrial: placeholder({
-    label: "Default industrial electricity tariff (all-in)",
+  industrial: userDefault({
+    label: "Industrial electricity tariff, all-in (default — enter your bills)",
     value: 8.0,
     unit: "₹/kWh",
-    source: `${PLACEHOLDER} the relevant State Electricity Regulatory Commission tariff order (HT industrial)`,
-    sourceUrl: "https://cea.nic.in/?lang=en",
+    source: "Default only. Tariffs vary by state and category; enter monthly bill amounts in the Check to use your actual effective rate.",
+    sourceUrl: "https://wattonearth.in/check",
     notes: "Only used if no bill amounts are entered.",
   }),
 } satisfies Record<string, Assumption>;
@@ -103,6 +135,7 @@ export interface BandAssumption {
   /** EPI/SEC above this = "poor". */
   poorMin: number;
   unit: string;
+  basis: AssumptionBasis;
   source: string;
   sourceUrl: string;
   verified: boolean;
@@ -110,131 +143,102 @@ export interface BandAssumption {
   notes?: string;
 }
 
-function band(b: Omit<BandAssumption, "verified" | "lastChecked">): BandAssumption {
-  return { ...b, verified: false, lastChecked: null };
-}
+export type BuildingType = Exclude<FacilityType, "manufacturing">;
 
-/** Building EPI bands (kWh/m²/yr of site electricity) for the composite zone. */
-export const buildingBenchmarks: Record<Exclude<FacilityType, "manufacturing">, BandAssumption> = {
-  office: band({
-    label: "Office EPI band",
-    goodMax: 110,
-    poorMin: 200,
-    unit: "kWh/m²/yr",
-    source: `${PLACEHOLDER} BEE Star Rating for Office Buildings (EPI bands by climate zone)`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  hotel: band({
-    label: "Hotel EPI band",
-    goodMax: 200,
-    poorMin: 330,
-    unit: "kWh/m²/yr",
-    source: `${PLACEHOLDER} BEE Star Rating for Hotels / published Indian hotel benchmarking studies`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  hospital: band({
-    label: "Hospital EPI band",
-    goodMax: 250,
-    poorMin: 400,
-    unit: "kWh/m²/yr",
-    source: `${PLACEHOLDER} BEE Star Rating for Hospitals`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  retail: band({
-    label: "Mall / retail EPI band",
-    goodMax: 250,
-    poorMin: 420,
-    unit: "kWh/m²/yr",
-    source: `${PLACEHOLDER} BEE Star Rating for Shopping Malls`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-};
-
-/** Multiplier applied to building bands by ECBC climate zone (composite = 1). */
-export const climateZoneMultipliers: Record<ClimateZone, Assumption> = {
-  composite: placeholder({
-    label: "Climate multiplier — Composite",
-    value: 1.0,
-    unit: "×",
-    source: `${PLACEHOLDER} BEE star-rating band tables for each climate zone`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  hot_dry: placeholder({
-    label: "Climate multiplier — Hot & Dry",
-    value: 1.05,
-    unit: "×",
-    source: `${PLACEHOLDER} BEE star-rating band tables for each climate zone`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  warm_humid: placeholder({
-    label: "Climate multiplier — Warm & Humid",
-    value: 1.05,
-    unit: "×",
-    source: `${PLACEHOLDER} BEE star-rating band tables for each climate zone`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  temperate: placeholder({
-    label: "Climate multiplier — Temperate",
-    value: 0.85,
-    unit: "×",
-    source: `${PLACEHOLDER} BEE star-rating band tables for each climate zone`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  cold: placeholder({
-    label: "Climate multiplier — Cold",
-    value: 0.8,
-    unit: "×",
-    source: `${PLACEHOLDER} BEE star-rating band tables for each climate zone`,
-    sourceUrl: "https://beeindia.gov.in/",
-    notes: "Cold-zone buildings often use fuel for heating, which is outside the electricity EPI.",
-  }),
+const EPI_UNIT = "kWh/m²/yr";
+const zoneName: Record<ClimateZone, string> = {
+  composite: "Composite",
+  warm_humid: "Warm & Humid",
+  hot_dry: "Hot & Dry",
+  temperate: "Temperate",
+  cold: "Cold",
 };
 
 /**
- * Plant specific electricity consumption (kWh of site electricity per tonne).
- * `null` = no benchmark (the metric is shown without a band).
+ * A BEE star-rating band. We read "good" as the upper limit of the 4-star band
+ * (4 or 5 stars) and "poor" as above the upper limit of the 2-star band
+ * (1 star or unrated). That reading is Watt on Earth's, not BEE's.
+ */
+function beeBand(type: string, zone: ClimateZone, goodMax: number, poorMin: number, source: string, sourceUrl: string): BandAssumption {
+  return {
+    label: `${type} EPI band — ${zoneName[zone]}`,
+    goodMax,
+    poorMin,
+    unit: EPI_UNIT,
+    basis: "official",
+    source,
+    sourceUrl,
+    verified: true,
+    lastChecked: CHECKED,
+    notes: "Good = 4★ or better; poor = below 2★ (Watt on Earth's reading of the BEE star bands).",
+  };
+}
+
+/** Watt on Earth estimate: good ≤ 0.8 × the published average, poor > 1.2 ×. Not a BEE rating. */
+function estimateBand(type: string, zone: ClimateZone, average: number, averageLabel: string): BandAssumption {
+  return {
+    label: `${type} EPI band — ${zoneName[zone]} (Watt on Earth estimate)`,
+    goodMax: Math.round(average * 0.8),
+    poorMin: Math.round(average * 1.2),
+    unit: EPI_UNIT,
+    basis: "estimate",
+    source: `Watt on Earth estimate (±20%) around the BEE/UNDP-GEF benchmark average of ${average} kWh/m²/yr for ${averageLabel} — not a BEE star rating`,
+    sourceUrl: BEE_UNDP_FLYER_URL,
+    verified: true,
+    lastChecked: CHECKED,
+    notes: "The flyer's \"Moderate\" zone is used for Temperate.",
+  };
+}
+
+const OFFICE_SRC = "BEE Star Rating Scheme for Office Buildings (2009), Annexure — >50% air-conditioned built-up area";
+const MALL_SRC = "BEE Star Rating Scheme for Shopping Malls (2011), Annexure 3";
+
+/**
+ * Building EPI bands by ECBC climate zone. `null` = no published basis for a
+ * band; the EPI is shown without a rating. BEE publishes no Cold-zone bands.
+ */
+export const buildingBenchmarks: Record<BuildingType, Record<ClimateZone, BandAssumption | null>> = {
+  office: {
+    composite: beeBand("Office", "composite", 115, 165, OFFICE_SRC, BEE_OFFICE_URL),
+    warm_humid: beeBand("Office", "warm_humid", 125, 175, OFFICE_SRC, BEE_OFFICE_URL),
+    hot_dry: beeBand("Office", "hot_dry", 105, 155, OFFICE_SRC, BEE_OFFICE_URL),
+    temperate: estimateBand("Office", "temperate", 179, "offices with more than 50% AC, Moderate zone"),
+    cold: null,
+  },
+  retail: {
+    composite: beeBand("Mall / retail", "composite", 200, 300, MALL_SRC, BEE_MALL_URL),
+    warm_humid: beeBand("Mall / retail", "warm_humid", 300, 400, MALL_SRC, BEE_MALL_URL),
+    hot_dry: beeBand("Mall / retail", "hot_dry", 150, 250, MALL_SRC, BEE_MALL_URL),
+    temperate: beeBand("Mall / retail", "temperate", 200, 250, MALL_SRC, BEE_MALL_URL),
+    cold: null,
+  },
+  hotel: {
+    composite: estimateBand("Hotel", "composite", 290, "hotels above 3 star, Composite zone"),
+    warm_humid: estimateBand("Hotel", "warm_humid", 333, "hotels above 3 star, Warm & Humid zone"),
+    hot_dry: estimateBand("Hotel", "hot_dry", 250, "hotels above 3 star, Hot & Dry zone"),
+    temperate: estimateBand("Hotel", "temperate", 313, "hotels above 3 star, Moderate zone"),
+    cold: null,
+  },
+  hospital: {
+    composite: estimateBand("Hospital", "composite", 264, "hospitals, Composite zone"),
+    warm_humid: estimateBand("Hospital", "warm_humid", 275, "hospitals, Warm & Humid zone"),
+    hot_dry: estimateBand("Hospital", "hot_dry", 261, "hospitals, Hot & Dry zone"),
+    temperate: estimateBand("Hospital", "temperate", 247, "hospitals, Moderate zone"),
+    cold: null,
+  },
+};
+
+/**
+ * Plant specific electricity consumption bands (kWh per tonne). None are
+ * published in a form we can use yet, so plants see their SEC without a
+ * good/poor rating. Add a `BandAssumption` here once one is verified.
  */
 export const plantBenchmarks: Record<ManufacturingSubType, BandAssumption | null> = {
-  steel: band({
-    label: "Steel SEC band (electricity)",
-    goodMax: 550,
-    poorMin: 800,
-    unit: "kWh/t",
-    source: `${PLACEHOLDER} PAT cycle sector baselines / BEE sector reports (varies strongly by route: EAF, IF, BF-BOF, rolling)`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  aluminium: band({
-    label: "Aluminium SEC band (electricity)",
-    goodMax: 13500,
-    poorMin: 15000,
-    unit: "kWh/t",
-    source: `${PLACEHOLDER} PAT cycle sector baselines (primary smelting; downstream extrusion/rolling is far lower)`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  cement: band({
-    label: "Cement SEC band (electricity)",
-    goodMax: 70,
-    poorMin: 95,
-    unit: "kWh/t",
-    source: `${PLACEHOLDER} PAT cycle sector baselines / CII cement benchmarking (electrical SEC per tonne cement)`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  textiles: band({
-    label: "Textiles SEC band (electricity)",
-    goodMax: 2500,
-    poorMin: 4500,
-    unit: "kWh/t",
-    source: `${PLACEHOLDER} PAT textile sector baselines (varies by spinning/weaving/processing)`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
-  auto_components: band({
-    label: "Auto components SEC band (electricity)",
-    goodMax: 1200,
-    poorMin: 2500,
-    unit: "kWh/t",
-    source: `${PLACEHOLDER} BEE SME cluster studies / ACMA publications (varies by process: forging, casting, machining)`,
-    sourceUrl: "https://beeindia.gov.in/",
-  }),
+  steel: null,
+  aluminium: null,
+  cement: null,
+  textiles: null,
+  auto_components: null,
   other: null,
 };
 
@@ -247,7 +251,7 @@ export const savingsMethod = {
     label: "Share of gap-to-good captured (low case)",
     value: 0.5,
     unit: "fraction",
-    source: `${PLACEHOLDER} Watt on Earth engineering judgement — review against completed audit outcomes`,
+    source: `${PROVISIONAL} Watt on Earth engineering judgement — review against completed audit outcomes`,
     sourceUrl: "https://wattonearth.in/check",
     notes: "High case assumes the full gap to the 'good' threshold is closed.",
   }),
@@ -255,14 +259,14 @@ export const savingsMethod = {
     label: "Residual optimisation for 'good' sites (low)",
     value: 0.03,
     unit: "fraction of site kWh",
-    source: `${PLACEHOLDER} Watt on Earth engineering judgement`,
+    source: `${PROVISIONAL} Watt on Earth engineering judgement`,
     sourceUrl: "https://wattonearth.in/check",
   }),
   residualHigh: placeholder({
     label: "Residual optimisation for 'good' sites (high)",
     value: 0.08,
     unit: "fraction of site kWh",
-    source: `${PLACEHOLDER} Watt on Earth engineering judgement`,
+    source: `${PROVISIONAL} Watt on Earth engineering judgement`,
     sourceUrl: "https://wattonearth.in/check",
   }),
 } satisfies Record<string, Assumption>;
@@ -278,6 +282,7 @@ export interface AssumptionRow {
   unit: string;
   source: string;
   sourceUrl: string;
+  basis: AssumptionBasis;
   verified: boolean;
   lastChecked: string | null;
 }
@@ -294,6 +299,7 @@ export function allAssumptions(): AssumptionRow[] {
         unit: a.unit,
         source: a.source,
         sourceUrl: a.sourceUrl,
+        basis: a.basis,
         verified: a.verified,
         lastChecked: a.lastChecked,
       });
@@ -309,6 +315,7 @@ export function allAssumptions(): AssumptionRow[] {
         unit: b.unit,
         source: b.source,
         sourceUrl: b.sourceUrl,
+        basis: b.basis,
         verified: b.verified,
         lastChecked: b.lastChecked,
       });
@@ -317,13 +324,21 @@ export function allAssumptions(): AssumptionRow[] {
   pushScalar("emissionFactors", emissionFactors);
   pushScalar("conversions", conversions);
   pushScalar("tariffs", tariffs);
-  pushBands("buildingBenchmarks", buildingBenchmarks);
-  pushScalar("climateZoneMultipliers", climateZoneMultipliers);
+  for (const [type, zones] of Object.entries(buildingBenchmarks)) pushBands(`buildingBenchmarks.${type}`, zones);
   pushBands("plantBenchmarks", plantBenchmarks);
   pushScalar("savingsMethod", savingsMethod);
   return rows;
 }
 
+/** Values still awaiting verification. User-replaceable defaults are excluded. */
 export function unverifiedAssumptions(): AssumptionRow[] {
-  return allAssumptions().filter((a) => !a.verified);
+  return allAssumptions().filter((a) => !a.verified && a.basis !== "default");
+}
+
+/** Short public label for an assumption's status (methodology table and PDF). */
+export function assumptionStatus(a: Pick<AssumptionRow, "basis" | "verified">): { label: string; tone: "good" | "neutral" } {
+  if (a.basis === "default") return { label: "Default — replace with yours", tone: "neutral" };
+  if (!a.verified) return { label: "Provisional", tone: "neutral" };
+  if (a.basis === "estimate") return { label: "Estimate", tone: "neutral" };
+  return { label: "Verified", tone: "good" };
 }

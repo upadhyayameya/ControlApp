@@ -2,7 +2,7 @@ import { Document, Page, Path, Rect, StyleSheet, Svg, Text, View, Line } from "@
 import { LOGO_PATH } from "@/components/Logo";
 import { facilityLabel, subTypeLabel } from "@/components/check/draft";
 import { CHECK_DISCLAIMER } from "@/lib/check/disclaimer";
-import { allAssumptions } from "@/data/assumptions";
+import { allAssumptions, assumptionStatus } from "@/data/assumptions";
 import { measuresFor } from "@/data/measures";
 import { climateZoneLabels } from "@/data/climate";
 import { SAMPLE_LABEL } from "@/data/sample";
@@ -139,7 +139,7 @@ export function CheckReportDocument({
   const measures = measuresFor(input.facilityType, input.manufacturingSubType);
   const dateText = generatedAt.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
   const assumptions = allAssumptions();
-  const unverified = assumptions.filter((a) => !a.verified).length;
+  const unverified = assumptions.filter((a) => !a.verified && a.basis !== "default").length;
 
   return (
     <Document title={`Energy & Carbon Check — ${contact.company}`} author={site.name} subject="Screening-level energy and carbon report">
@@ -178,7 +178,7 @@ export function CheckReportDocument({
             {r.band ? (
               <Text style={{ marginTop: 2 }}>
                 <Text style={{ color: bandColor[r.band], fontWeight: 600 }}>● </Text>
-                {bandText[r.band]} against the benchmark band
+                {bandText[r.band]} against the {r.benchmark?.basis === "estimate" ? "Watt on Earth estimated band" : "BEE star-rating band"}
               </Text>
             ) : (
               <Text style={s.muted}>No benchmark band available</Text>
@@ -341,8 +341,8 @@ export function CheckReportDocument({
               {a.value} {a.unit}
             </Text>
             <Text style={{ width: "34%", fontSize: 7, color: C.muted }}>{a.source}</Text>
-            <Text style={{ width: "12%", fontSize: 7.5, color: a.verified ? C.good : C.muted }}>
-              {a.verified ? "Verified" : "Provisional"}
+            <Text style={{ width: "12%", fontSize: 7.5, color: assumptionStatus(a).tone === "good" ? C.good : C.muted }}>
+              {assumptionStatus(a).label}
             </Text>
           </View>
         ))}

@@ -22,6 +22,7 @@ export const sampleHotelInput: Omit<CheckInput, "months"> = {
   lpgKg: 24000,
   pngScm: null,
   solarKwh: 60000,
+  dgKwhPerLitre: null,
   exportsToEU: false,
   listedOrSupplierToListed: true,
 };

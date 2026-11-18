@@ -8,7 +8,7 @@ The public site for **wattonearth.in**: an India-focused energy and carbon advis
 - **Regulation Tracker** (`/tracker`): timeline and table views of CCTS/CBAM/BRSR/ECBC milestones, each linked to its official source.
 - **Weekly news drafting**: a GitHub Action fetches RSS feeds, drafts summaries with Claude and opens a PR. Every post it creates is a draft.
 
-> ⚠️ **Placeholders.** Every benchmark, emission factor, tariff and regulatory date in this repo is a placeholder that still needs checking. See [Placeholders to replace before launch](#placeholders-to-replace-before-launch). `npm run assumptions` prints the current list, and a banner appears on every page during development until the list is empty.
+> ⚠️ **Placeholders.** The Check's emission factors and building benchmarks were verified on 2026-11-18 (see below). Regulatory dates, news feeds, contact details and the three savings-method values are still placeholders. See [Placeholders to replace before launch](#placeholders-to-replace-before-launch). `npm run assumptions` prints the current list, and a banner appears on every page during development until the list is empty.
 
 ---
 
@@ -145,7 +145,7 @@ Every numeric input to the Check is in `data/assumptions.ts`. For each value:
 3. Set `verified: true` and `lastChecked: "YYYY-MM-DD"`.
 4. Run `npm test`. The sample-hotel test asserts a plausible EPI range, so adjust it if your benchmarks move the result.
 
-The `/check` page has a *Methodology & assumptions* table showing every value, its source and a *Provisional* or *Verified* badge. The PDF report includes the same table.
+The `/check` page has a *Methodology & assumptions* table showing every value, its source and a *Verified*, *Estimate*, *Default* or *Provisional* badge. The PDF report includes the same table.
 
 ## Deploying to Vercel
 
@@ -170,31 +170,29 @@ CI (`.github/workflows/wattonearth-ci.yml`) runs lint, typecheck, tests and buil
 
 ## Placeholders to replace before launch
 
-### 1. Assumptions (`data/assumptions.ts`), 24 values, all `verified: false`
+### 1. Assumptions (`data/assumptions.ts`)
 
-These are order-of-magnitude placeholders so the tool works end to end. **They are not official figures.** The sandbox these were written in had no web access, so the source URLs themselves (mostly landing pages such as `beeindia.gov.in`) also need checking.
+Verified on 2026-11-18 against the primary documents:
 
-| Key | Placeholder | Confirm against |
+| Key | Value | Source |
 |---|---|---|
-| `emissionFactors.gridElectricity` | 0.72 tCO₂e/MWh | CEA CO₂ Baseline Database for the Indian Power Sector (latest version, weighted average) |
-| `emissionFactors.diesel` | 2.68 kgCO₂e/litre | IPCC 2006 Guidelines Vol. 2 (default CO₂/CH₄/N₂O factors) with Indian HSD density and NCV |
-| `emissionFactors.lpg` | 2.99 kgCO₂e/kg | IPCC 2006 Guidelines Vol. 2, LPG default factor × NCV |
-| `emissionFactors.png` | 2 kgCO₂e/SCM | IPCC 2006 Guidelines Vol. 2 natural-gas factor × the city gas distributor's declared calorific value |
-| `conversions.dgSpecificOutput` | 3.2 kWh/litre | Site DG log books / BEE guide book for energy auditors |
-| `tariffs.commercial` | 9.5 ₹/kWh | State Electricity Regulatory Commission tariff orders (used only when no bills are entered) |
-| `tariffs.industrial` | 8 ₹/kWh | State Electricity Regulatory Commission tariff orders (used only when no bills are entered) |
-| `buildingBenchmarks.office` | good ≤ 110 · poor > 200 kWh/m²/yr | BEE Star Rating for Office Buildings |
-| `buildingBenchmarks.hotel` | good ≤ 200 · poor > 330 kWh/m²/yr | BEE Star Rating for Hotels / Indian hotel benchmarking studies |
-| `buildingBenchmarks.hospital` | good ≤ 250 · poor > 400 kWh/m²/yr | BEE Star Rating for Hospitals |
-| `buildingBenchmarks.retail` | good ≤ 250 · poor > 420 kWh/m²/yr | BEE Star Rating for Shopping Malls |
-| `climateZoneMultipliers.*` (5) | 1.0 / 1.05 / 1.05 / 0.85 / 0.8 | BEE star-rating band tables per climate zone. You may prefer to replace the multipliers with full per-zone bands |
-| `plantBenchmarks.steel` | good ≤ 550 · poor > 800 kWh/t | PAT sector baselines / BEE sector reports (depends on route) |
-| `plantBenchmarks.aluminium` | good ≤ 13,500 · poor > 15,000 kWh/t | PAT sector baselines (primary smelting) |
-| `plantBenchmarks.cement` | good ≤ 70 · poor > 95 kWh/t | PAT sector baselines / CII cement benchmarking |
-| `plantBenchmarks.textiles` | good ≤ 2,500 · poor > 4,500 kWh/t | PAT textile sector baselines |
-| `plantBenchmarks.auto_components` | good ≤ 1,200 · poor > 2,500 kWh/t | BEE SME cluster studies / ACMA |
-| `savingsMethod.gapCaptureLow` | 0.5 | Your engineering judgement / past audit outcomes |
-| `savingsMethod.residualLow` / `residualHigh` | 0.03 / 0.08 | Your engineering judgement |
+| `emissionFactors.gridElectricity` | 0.675 tCO₂/MWh | CEA CO₂ Baseline Database v22.0 (Aug 2026), FY 2025-26, Table S |
+| `emissionFactors.diesel` | 2.65 kgCO₂e/L | IPCC 2006 Vol. 2 Table 2.4 × NCV 43.0 TJ/Gg × PPAC density (1 t = 1.21 kL) |
+| `emissionFactors.lpg` | 2.99 kgCO₂e/kg | IPCC 2006 Vol. 2 Table 2.4 × NCV 47.3 TJ/Gg |
+| `emissionFactors.png` | 2.12 kgCO₂e/SCM | IPCC 2006 Vol. 2 Table 2.4 × PPAC/GAIL 10,000 kcal/SCM GCV, NCV = 90% |
+| `buildingBenchmarks.office.*` | per-zone BEE bands | BEE Star Rating for Office Buildings (2009), >50% AC |
+| `buildingBenchmarks.retail.*` | per-zone BEE bands | BEE Star Rating for Shopping Malls (2011) |
+| `buildingBenchmarks.hotel.*`, `.hospital.*`, `office.temperate` | Watt on Earth estimate, ±20% of the BEE/UNDP-GEF average | BEE/UNDP-GEF benchmark flyer; labelled "Estimate" in the UI and the PDF |
+
+Design decisions that came with verification:
+- Good = BEE 4-star or better; poor = below 2-star. This reading is ours, not BEE's.
+- The building EPI excludes on-site solar, as BEE does. Solar still reduces grid kWh and Scope 2.
+- There are no bands for the Cold zone (BEE publishes none) or for plants (`plantBenchmarks` are all `null` until verified SEC benchmarks are added). Those results show the metric without a rating.
+- `tariffs.*` and `conversions.dgSpecificOutput` are **defaults** (`basis: "default"`). Users replace them with their bill amounts and the DG log-book kWh/litre, so they are not counted as unverified.
+
+Still provisional (Watt on Earth engineering judgement): `savingsMethod.gapCaptureLow` (0.5) and `residualLow` / `residualHigh` (0.03 / 0.08). Review them against completed audit outcomes.
+
+To refresh the grid factor each year, download the latest user guide from the CEA site (the v22.0 PDF is at `https://cea.nic.in/api/cdm-report-version/view-pdf/en/82`), then update `value`, `source`, `sourceUrl` and `lastChecked`.
 
 ### 2. Regulation Tracker (`data/regulations.json`), 9 entries, all `dateStatus: "tbc"`
 

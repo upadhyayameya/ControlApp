@@ -29,6 +29,7 @@ export interface CheckDraft {
   lpgKg: string;
   pngScm: string;
   solarKwh: string;
+  dgKwhPerLitre: string;
   exportsToEU: "" | "yes" | "no";
   listed: "" | "yes" | "no";
   isSample: boolean;
@@ -53,6 +54,7 @@ export function emptyDraft(): CheckDraft {
     lpgKg: "",
     pngScm: "",
     solarKwh: "",
+    dgKwhPerLitre: "",
     exportsToEU: "",
     listed: "",
     isSample: false,
@@ -110,7 +112,7 @@ export function validateStep(d: CheckDraft, step: number): Record<string, string
     });
   }
   if (step === 3) {
-    for (const k of ["dieselLitres", "lpgKg", "pngScm", "solarKwh"] as const) {
+    for (const k of ["dieselLitres", "dgKwhPerLitre", "lpgKg", "pngScm", "solarKwh"] as const) {
       if (!isNumberish(d[k])) e[k] = "Enter a number or leave blank.";
     }
     if (!d.exportsToEU) e.exportsToEU = "Please answer.";
@@ -141,6 +143,7 @@ export function draftToInput(d: CheckDraft): CheckInput {
     lpgKg: num(d.lpgKg),
     pngScm: num(d.pngScm),
     solarKwh: num(d.solarKwh),
+    dgKwhPerLitre: num(d.dgKwhPerLitre),
     exportsToEU: d.exportsToEU === "yes",
     listedOrSupplierToListed: d.listed === "yes",
   };
@@ -166,6 +169,7 @@ export function sampleDraft(readings: MonthlyReading[]): CheckDraft {
     lpgKg: str(s.lpgKg),
     pngScm: str(s.pngScm),
     solarKwh: str(s.solarKwh),
+    dgKwhPerLitre: str(s.dgKwhPerLitre),
     exportsToEU: s.exportsToEU ? "yes" : "no",
     listed: s.listedOrSupplierToListed ? "yes" : "no",
     isSample: true,

@@ -1,6 +1,6 @@
 import { CheckTool } from "@/components/check/CheckTool";
 import { Badge, Container, SectionHeading } from "@/components/ui/primitives";
-import { allAssumptions } from "@/data/assumptions";
+import { allAssumptions, assumptionStatus } from "@/data/assumptions";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -31,9 +31,12 @@ export default function CheckPage() {
           <summary className="cursor-pointer font-medium">Methodology &amp; assumptions</summary>
           <div className="mt-6 space-y-4 text-sm leading-relaxed text-muted">
             <p>
-              <strong className="text-fg">EPI</strong> = annual site electricity (grid + diesel-generator output + self-consumed
-              solar) ÷ built-up area. For plants, <strong className="text-fg">SEC</strong> = site electricity ÷ annual
-              production. Bands are adjusted by climate zone for buildings.
+              <strong className="text-fg">EPI</strong> = annual grid electricity + diesel-generator output ÷ built-up area,
+              excluding on-site solar, as in BEE&apos;s star-rating schemes. For plants, <strong className="text-fg">SEC</strong> =
+              all site electricity ÷ annual production. Office and mall bands come from BEE&apos;s star-rating tables for your
+              climate zone (good = 4-star or better, poor = below 2-star). Where BEE has no bands (hotels, hospitals, temperate
+              offices), we show a clearly labelled Watt on Earth estimate of ±20% around the BEE/UNDP-GEF published average.
+              No rating is shown for the Cold zone or for plants until verified benchmarks exist.
             </p>
             <p>
               <strong className="text-fg">Savings</strong>: if you are above the “good” threshold, the high case closes the full
@@ -69,7 +72,16 @@ export default function CheckPage() {
                         </a>
                       </td>
                       <td className="py-2">
-                        {a.verified ? <Badge tone="good">Verified {a.lastChecked}</Badge> : <Badge>Provisional</Badge>}
+                        {(() => {
+                          const st = assumptionStatus(a);
+                          return st.tone === "good" ? (
+                            <Badge tone="good">
+                              {st.label} {a.lastChecked}
+                            </Badge>
+                          ) : (
+                            <Badge>{st.label}</Badge>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))}

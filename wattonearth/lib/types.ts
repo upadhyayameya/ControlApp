@@ -21,6 +21,9 @@ export const REGIMES: readonly Regime[] = ["CCTS", "CBAM", "BRSR", "ECBC"] as co
 /* Assumptions (benchmarks, emission factors, tariffs)                 */
 /* ------------------------------------------------------------------ */
 
+/** Where an assumption comes from. See data/assumptions.ts. */
+export type AssumptionBasis = "official" | "derived" | "estimate" | "default" | "judgement";
+
 export interface Assumption {
   /** Numeric value used in calculations. */
   value: number;
@@ -30,6 +33,7 @@ export interface Assumption {
   /** Publication the value should come from. */
   source: string;
   sourceUrl: string;
+  basis: AssumptionBasis;
   /** `false` until Ameya has checked the value against the source. */
   verified: boolean;
   /** Date the value was last checked against the source. `null` = never. */
@@ -83,6 +87,8 @@ export interface CheckInput {
   lpgKg: number | null;
   pngScm: number | null;
   solarKwh: number | null;
+  /** DG set output from the site's log book; `null` = use the default. */
+  dgKwhPerLitre: number | null;
   exportsToEU: boolean;
   listedOrSupplierToListed: boolean;
 }
@@ -96,6 +102,10 @@ export interface BenchmarkRange {
   poorMin: number;
   unit: string;
   verified: boolean;
+  /** "official" = BEE star band; "estimate" = Watt on Earth estimate. */
+  basis: AssumptionBasis;
+  /** Short citation shown next to the band. */
+  source: string;
 }
 
 export interface MonthFlag {

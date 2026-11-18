@@ -75,12 +75,20 @@ export function CheckResults({
                   vs {facility.toLowerCase()} benchmark{r.metricKind === "EPI" ? `, ${climateZoneLabels[input.climateZone]} zone` : ""}
                 </span>
               </p>
+              <p className="mt-1 text-xs text-muted">
+                {r.benchmark.basis === "estimate" ? "Watt on Earth estimate, not a BEE rating. " : "BEE star-rating band. "}
+                {r.benchmark.source}
+              </p>
               <div className="mt-6">
                 <Gauge value={r.metricValue} benchmark={r.benchmark} band={r.band} unit={r.metricUnit} />
               </div>
             </>
           ) : (
-            <p className="mt-4 text-sm text-muted">No benchmark band is available for this sub-sector yet.</p>
+            <p className="mt-4 text-sm text-muted">
+              {r.metricKind === "SEC"
+                ? "Verified benchmarks for this sub-sector are not in the tool yet, so no rating is shown."
+                : "BEE publishes no EPI bands for this building type in this climate zone, so no rating is shown."}
+            </p>
           )}
         </Card>
         <div className="grid grid-cols-2 gap-4">

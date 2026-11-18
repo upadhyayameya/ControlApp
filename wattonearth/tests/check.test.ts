@@ -6,7 +6,7 @@ import { runCheck, bandFor, flagMonths, CheckInputError } from "@/lib/check/calc
 import { parseConsumptionCsv, normaliseMonth, parseNumber } from "@/lib/check/csv";
 import { formatInr, formatIndianCompact } from "@/lib/format";
 import { sampleHotelInput } from "@/data/sample";
-import { emissionFactors } from "@/data/assumptions";
+import { emissionFactors, unverifiedAssumptions, buildingBenchmarks } from "@/data/assumptions";
 
 const sampleCsv = fs.readFileSync(path.join(process.cwd(), "public/templates/sample-mumbai-hotel.csv"), "utf8");
 
@@ -71,7 +71,7 @@ test("manufacturing uses SEC and CBAM exposure", () => {
 
 test("validation and banding", () => {
   assert.throws(() => runCheck({ ...sampleHotelInput, months: [] }), CheckInputError);
-  const b = { goodMax: 100, poorMin: 200, unit: "x", verified: false };
+  const b = { goodMax: 100, poorMin: 200, unit: "x", verified: false, basis: "official" as const, source: "test" };
   assert.equal(bandFor(100, b), "good");
   assert.equal(bandFor(150, b), "typical");
   assert.equal(bandFor(201, b), "poor");
@@ -83,4 +83,35 @@ test("Indian number formatting", () => {
   assert.equal(formatIndianCompact(98500), "98,500");
   assert.equal(formatIndianCompact(1240000), "12.4 lakh");
   assert.equal(formatInr(32500000), "₹3.25 crore");
+});
+
+test("sample hotel EPI excludes on-site solar and uses the estimated W&H hotel band", () => {
+  const { readings } = parseConsumptionCsv(sampleCsv);
+  const r = runCheck({ ...sampleHotelInput, months: readings });
+  const grid = readings.reduce((s, m) => s + m.kwh, 0);
+  const dg = (sampleHotelInput.dieselLitres as number) * 3.2;
+  assert.ok(Math.abs(r.metricValue - (grid + dg) / (sampleHotelInput.floorArea as number)) < 1e-9);
+  assert.equal(r.benchmark?.basis, "estimate");
+  assert.equal(r.benchmark?.goodMax, 266);
+  assert.equal(r.benchmark?.poorMin, 400);
+});
+
+test("BEE bands by zone, Cold has none, user DG output overrides the default", () => {
+  const { readings } = parseConsumptionCsv(sampleCsv);
+  const office = { ...sampleHotelInput, facilityType: "office" as const, rooms: null, months: readings };
+  assert.deepEqual([runCheck({ ...office, climateZone: "composite" }).benchmark?.goodMax, runCheck({ ...office, climateZone: "composite" }).benchmark?.poorMin], [115, 165]);
+  assert.equal(runCheck({ ...office, climateZone: "hot_dry" }).benchmark?.basis, "official");
+  const cold = runCheck({ ...office, climateZone: "cold" });
+  assert.equal(cold.benchmark, null);
+  assert.equal(cold.band, null);
+  const a = runCheck({ ...office, dgKwhPerLitre: null }).annualSiteElectricityKwh;
+  const b = runCheck({ ...office, dgKwhPerLitre: 4 }).annualSiteElectricityKwh;
+  assert.ok(Math.abs(b - a - 18000 * 0.8) < 1e-6);
+  assert.equal(buildingBenchmarks.retail.warm_humid?.goodMax, 300);
+});
+
+test("approved factors are verified; only engineering-judgement values remain provisional", () => {
+  assert.equal(emissionFactors.gridElectricity.value, 0.675);
+  assert.ok(Object.values(emissionFactors).every((f) => f.verified && f.lastChecked));
+  assert.ok(unverifiedAssumptions().every((a) => a.basis === "judgement"), JSON.stringify(unverifiedAssumptions().map((a) => a.key)));
 });

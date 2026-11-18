@@ -4,7 +4,6 @@
  */
 import {
   buildingBenchmarks,
-  climateZoneMultipliers,
   conversions,
   emissionFactors,
   plantBenchmarks,
@@ -39,18 +38,15 @@ export function areaInM2(input: Pick<CheckInput, "floorArea" | "areaUnit">): num
 }
 
 export function benchmarkFor(input: CheckInput): BenchmarkRange | null {
-  if (input.facilityType === "manufacturing") {
-    const b = input.manufacturingSubType ? plantBenchmarks[input.manufacturingSubType] : null;
-    return b ? { goodMax: b.goodMax, poorMin: b.poorMin, unit: b.unit, verified: b.verified } : null;
-  }
-  const b = buildingBenchmarks[input.facilityType];
-  const m = climateZoneMultipliers[input.climateZone];
-  return {
-    goodMax: Math.round(b.goodMax * m.value),
-    poorMin: Math.round(b.poorMin * m.value),
-    unit: b.unit,
-    verified: b.verified && m.verified,
-  };
+  const b =
+    input.facilityType === "manufacturing"
+      ? input.manufacturingSubType
+        ? plantBenchmarks[input.manufacturingSubType]
+        : null
+      : buildingBenchmarks[input.facilityType][input.climateZone];
+  return b
+    ? { goodMax: b.goodMax, poorMin: b.poorMin, unit: b.unit, verified: b.verified, basis: b.basis, source: b.source }
+    : null;
 }
 
 export function bandFor(value: number, b: BenchmarkRange): BenchmarkBand {
@@ -119,13 +115,16 @@ export function runCheck(input: CheckInput): CheckResult {
 
   // Energy
   const annualGridKwh = input.months.reduce((s, m) => s + m.kwh, 0);
-  const dgKwh = (input.dieselLitres ?? 0) * conversions.dgSpecificOutput.value;
+  const dgOutput = input.dgKwhPerLitre && input.dgKwhPerLitre > 0 ? input.dgKwhPerLitre : conversions.dgSpecificOutput.value;
+  const dgKwh = (input.dieselLitres ?? 0) * dgOutput;
   const solarKwh = input.solarKwh ?? 0;
   const annualSiteElectricityKwh = annualGridKwh + dgKwh + solarKwh;
 
-  // Metric
+  // Metric. Building EPI follows BEE: grid + DG electricity, excluding on-site
+  // renewables. Plant SEC covers all site electricity.
   const denominator = isPlant ? (input.annualProductionTonnes as number) : areaInM2(input);
-  const metricValue = annualSiteElectricityKwh / denominator;
+  const metricKwh = isPlant ? annualSiteElectricityKwh : annualGridKwh + dgKwh;
+  const metricValue = metricKwh / denominator;
   const benchmark = benchmarkFor(input);
   const band = benchmark ? bandFor(metricValue, benchmark) : null;
 
@@ -145,7 +144,7 @@ export function runCheck(input: CheckInput): CheckResult {
   let kwhHigh: number;
   if (benchmark && band !== "good") {
     const gap = (metricValue - benchmark.goodMax) * denominator;
-    kwhHigh = Math.min(gap, annualSiteElectricityKwh);
+    kwhHigh = Math.min(gap, metricKwh);
     kwhLow = kwhHigh * savingsMethod.gapCaptureLow.value;
   } else {
     kwhLow = annualSiteElectricityKwh * savingsMethod.residualLow.value;
@@ -177,12 +176,28 @@ export function runCheck(input: CheckInput): CheckResult {
   const measures = measuresFor(input.facilityType, input.manufacturingSubType).map((m) => m.title);
 
   // Notes
-  if (dgKwh > 0) notes.push("Diesel is assumed to be used in DG sets; its electricity output is included in the energy metric.");
+  if (dgKwh > 0)
+    notes.push(
+      input.dgKwhPerLitre && input.dgKwhPerLitre > 0
+        ? `Diesel is assumed to run DG sets at your stated ${input.dgKwhPerLitre} kWh/litre; that electricity is included in the energy metric.`
+        : `Diesel is assumed to run DG sets at a default ${conversions.dgSpecificOutput.value} kWh/litre; enter your DG log-book figure for a better estimate.`,
+    );
+  if (!isPlant && solarKwh > 0)
+    notes.push("On-site solar is excluded from the EPI, as in BEE's star-rating method. It still lowers your grid electricity and Scope 2 emissions.");
   if (!isPlant && ((input.lpgKg ?? 0) > 0 || (input.pngScm ?? 0) > 0))
     notes.push("LPG/PNG is counted in Scope 1 emissions but not in the electricity-based EPI.");
   if (isPlant)
     notes.push("Plant SEC here covers electricity only. Coal, pet coke, furnace oil and biomass are not captured by this screening tool.");
-  if (isPlant && !benchmark) notes.push("No benchmark band is available for this sub-sector; the metric is shown for reference.");
+  if (isPlant && !benchmark)
+    notes.push("Verified SEC benchmarks for this sub-sector are not yet in the tool, so your SEC is shown without a good/poor rating.");
+  if (!isPlant && !benchmark)
+    notes.push("BEE publishes no EPI bands for this building type in the Cold zone, so your EPI is shown without a rating.");
+  if (benchmark?.basis === "estimate")
+    notes.push("BEE has no star-rating bands for this building type and zone. The band shown is a Watt on Earth estimate: ±20% around the BEE/UNDP-GEF published average EPI.");
+  if (!isPlant && benchmark?.basis === "official")
+    notes.push("Good = BEE 4-star or better; poor = below BEE 2-star. Office bands assume more than 50% of the built-up area is air-conditioned.");
+  if (input.facilityType === "hotel" && benchmark)
+    notes.push("Hotel bands use the BEE/UNDP-GEF average for hotels above 3 star; budget hotels typically use less.");
   if (input.climateZone === "cold" && !isPlant)
     notes.push("In cold climates, heating fuel can be significant and is not reflected in the electricity EPI.");
 
