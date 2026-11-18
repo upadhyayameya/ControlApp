@@ -209,6 +209,10 @@ const ANNOUNCEMENTS = [
   '<strong>30-day</strong> easy returns · Secure checkout by Square',
 ];
 
+// Logo lockup: the Submarine logo with "USA" centred beneath it between two gold rules
+const brandLockup = () =>
+  `<img src="/img/logo.png" alt="Submarine Pens" width="330" height="145" /><span class="brand-usa" aria-hidden="true"><i></i>USA<i></i></span>`;
+
 function isCurrent(href) {
   const u = new URL(href, location.origin);
   if (u.pathname !== location.pathname) return false;
@@ -231,10 +235,7 @@ function headerHtml() {
         <button class="icon-btn only-mobile" id="menuBtn" aria-label="Open menu" aria-expanded="false">${icon("menu")}</button>
         <button class="search-pill" type="button" data-open-search>${icon("search")}<span>Search pens, sets, inks…</span></button>
       </div>
-      <a class="brand" href="/" aria-label="Submarine Pens USA home">
-        <img src="/img/logo.png" alt="Submarine Pens" width="132" height="58" />
-        <span class="brand-usa">USA</span>
-      </a>
+      <a class="brand" href="/" aria-label="Submarine Pens USA home">${brandLockup()}</a>
       <div class="header-actions">
         <button class="icon-btn only-mobile" type="button" data-open-search aria-label="Search">${icon("search")}</button>
         <button class="icon-btn" id="cartBtn" aria-label="Open bag">${icon("bag")}<span class="badge" id="cartCount" hidden>0</span></button>
@@ -246,7 +247,7 @@ function headerHtml() {
   </header>
   <aside class="menu-drawer" id="menuDrawer" aria-label="Menu" aria-hidden="true" inert>
     <div class="menu-drawer-head">
-      <img src="/img/logo.png" alt="Submarine Pens" width="96" height="42" />
+      <a class="brand menu-brand" href="/" aria-label="Submarine Pens USA home">${brandLockup()}</a>
       <button class="icon-btn" id="menuClose" aria-label="Close menu">${icon("close")}</button>
     </div>
     <nav>${NAV.map(([href, label]) => `<a href="${href}">${label}<span>›</span></a>`).join("")}<a href="/contact">Contact<span>›</span></a></nav>
@@ -281,7 +282,7 @@ function footerHtml() {
   <footer class="site-footer">
     <div class="wrap footer-grid">
       <div>
-        <img class="footer-logo" src="/img/logo.png" alt="Submarine Pens" width="132" height="58" />
+        <a class="brand footer-brand" href="/" aria-label="Submarine Pens USA home">${brandLockup()}</a>
         <p>Power to Express. Crafting writing instruments since 1995: ball, roller and fountain pens made to be used and gifted.</p>
       </div>
       <div>
