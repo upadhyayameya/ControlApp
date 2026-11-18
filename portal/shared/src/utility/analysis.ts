@@ -561,14 +561,38 @@ function buildSeries(
   return [...acc.values()].sort((a, b) => a.key.localeCompare(b.key))
 }
 
+/**
+ * Every 'YYYY-MM' touched by a gap, on either side of a comparison.
+ *
+ * A month missing a bill on one meter is not comparable with anything. The
+ * case that forced this: a building whose gas bill for one March never
+ * arrived reported a 43% "cost spike" for that month — the gas was missing,
+ * so the month's mix shifted towards much pricier electricity and cost per
+ * unit rose. The arithmetic was right and the conclusion was nonsense, and it
+ * pointed a customer at their supplier when the actual problem was a missing
+ * bill the report already flagged two lines above.
+ */
+function monthsWithGaps(findings: UtilityFinding[]): Set<string> {
+  const out = new Set<string>()
+  for (const f of findings) {
+    if (f.kind !== 'gap' && f.kind !== 'overlap' && f.kind !== 'duplicate-period') continue
+    if (!f.periodStart) continue
+    const end = f.periodEnd ?? f.periodStart
+    for (const slice of monthSlices(f.periodStart, end)) out.add(slice.key)
+  }
+  return out
+}
+
 /** Year-on-year comparison of the same calendar month. */
-function spikeFindings(monthly: PeriodRollup[]): UtilityFinding[] {
+function spikeFindings(monthly: PeriodRollup[], unreliable: Set<string>): UtilityFinding[] {
   const out: UtilityFinding[] = []
   const index = new Map(monthly.map((m) => [m.key, m]))
   for (const row of monthly) {
     const [y, m] = row.key.split('-')
     const prior = index.get(`${Number(y) - 1}-${m}`)
     if (!prior || prior.kbtu <= 0 || row.days === 0 || prior.days === 0) continue
+    // Either side being incomplete makes the comparison meaningless.
+    if (unreliable.has(row.key) || unreliable.has(prior.key)) continue
     // Per-day, so a 28-day February is not compared against a 31-day one.
     const now = row.kbtu / row.days
     const then = prior.kbtu / prior.days
@@ -708,6 +732,50 @@ function reconcile(
     }
   }
   return null
+}
+
+/**
+ * One stale meter is a meter problem. Every meter stale at once is a feed
+ * problem, and saying it three times says it worse than saying it once.
+ *
+ * The distinction matters because the remedies differ: a single meter that
+ * stopped reporting usually means an account closed or a meter was replaced,
+ * while a whole building going quiet on the same date means the data stopped
+ * arriving — a broken utility download, an expired Portfolio Manager share,
+ * or a sync that has not run. Listing it per meter buries that.
+ */
+function collapseStaleMeters(rollups: MeterRollup[]): UtilityFinding[] {
+  const all = rollups.flatMap((r) => r.findings)
+  const stale = all.filter((f) => f.kind === 'stale-meter')
+  const activeWithBills = rollups.filter((r) => r.active && r.billCount > 0)
+  if (stale.length < 2 || stale.length < activeWithBills.length) return all
+
+  // Only collapse when they stopped together; meters that went quiet months
+  // apart are separate stories and stay separate findings.
+  const lastDates = activeWithBills.map((r) => r.lastPeriodEnd).filter((d): d is string => d !== null)
+  const spreadDays =
+    lastDates.length > 1
+      ? Math.round(
+          (parseDay(lastDates.reduce((a, b) => (a > b ? a : b))) -
+            parseDay(lastDates.reduce((a, b) => (a < b ? a : b)))) /
+            DAY_MS,
+        )
+      : 0
+  if (spreadDays > 45) return all
+
+  const latest = lastDates.reduce((a, b) => (a > b ? a : b))
+  const days = Math.max(...stale.map((f) => f.magnitude ?? 0))
+  return [
+    ...all.filter((f) => f.kind !== 'stale-meter'),
+    {
+      kind: 'stale-meter',
+      severity: 'warning',
+      meterId: null,
+      meterName: null,
+      message: `No meter on this building has a bill after ${latest}, ${Math.round(days)} days ago — all ${stale.length} stopped together. That points at the data feed rather than at any one meter: check the utility download, the Portfolio Manager share, and whether the sync is running.`,
+      magnitude: days,
+    },
+  ]
 }
 
 // --- Score ----------------------------------------------------------------
@@ -869,9 +937,10 @@ export function analyzeUtilityAccounts(input: {
 
   const reconciliation = reconcile(annual, metrics, sqft, onsiteByYear, coveredByYear)
 
+  const meterFindings = collapseStaleMeters(rollups)
   const findings: UtilityFinding[] = [
-    ...rollups.flatMap((r) => r.findings),
-    ...spikeFindings(monthly),
+    ...meterFindings,
+    ...spikeFindings(monthly, monthsWithGaps(meterFindings)),
   ]
   if (reconciliation && reconciliation.verdict === 'material-variance') {
     findings.push({

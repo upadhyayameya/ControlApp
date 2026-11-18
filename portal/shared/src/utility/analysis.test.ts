@@ -443,3 +443,85 @@ test('clean data scores 100 and each problem costs something', () => {
   // Findings are ordered worst first, so a UI can show the top three.
   assert.equal(messy.findings[0]!.severity, 'critical')
 })
+
+// --- Findings that would mislead -----------------------------------------
+
+test('a month with a missing bill is not compared year on year', () => {
+  // This is a real false positive, found against live data: one month's gas
+  // bill never arrived, so that month's mix shifted towards much pricier
+  // electricity and the engine reported a 43% "cost spike". The arithmetic
+  // was right and the conclusion was nonsense — it pointed the customer at
+  // their supplier when the problem was the missing bill flagged two lines
+  // above.
+  const elec = year2024('e', 100_000, 10_000)
+  const gas = year2024('g', 50_000, 5_000)
+  const entries = [
+    ...elec,
+    ...gas,
+    // A year later: March gas never arrived, everything else is flat.
+    ...Array.from({ length: 12 }, (_, i) => {
+      const m = String(i + 1).padStart(2, '0')
+      const lastDay = new Date(Date.UTC(2025, i + 1, 0)).getUTCDate()
+      return bill('e', `2025-${m}-01`, `2025-${m}-${lastDay}`, 100_000, 10_000)
+    }),
+    ...Array.from({ length: 12 }, (_, i) => {
+      const m = String(i + 1).padStart(2, '0')
+      const lastDay = new Date(Date.UTC(2025, i + 1, 0)).getUTCDate()
+      return bill('g', `2025-${m}-01`, `2025-${m}-${lastDay}`, 50_000, 5_000)
+    }).filter((b) => !b.startDate.startsWith('2025-03')),
+  ]
+  const a = analyzeUtilityAccounts({
+    building: building(),
+    meters: [
+      meter('e', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
+      meter('g', 'Natural Gas', 'therms'),
+    ],
+    entries,
+    asOf: '2026-01-15',
+  })
+  // The gap itself must still be reported — loudly.
+  assert.ok(a.findings.some((f) => f.kind === 'gap' && f.severity === 'critical'))
+  // But March must not be reported as a spike of any kind.
+  for (const f of a.findings) {
+    if (f.kind === 'usage-spike' || f.kind === 'cost-spike') {
+      assert.ok(!f.periodStart?.startsWith('2025-03'), `${f.kind} reported for a month with a gap`)
+    }
+  }
+})
+
+test('every meter going quiet on the same date is one finding, not one each', () => {
+  const a = analyzeUtilityAccounts({
+    building: building(),
+    meters: [
+      meter('e', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
+      meter('g', 'Natural Gas', 'therms'),
+      meter('w', 'Potable Water', 'Gallons (US)'),
+    ],
+    entries: [...year2024('e', 100_000, 10_000), ...year2024('g', 50_000, 5_000), ...year2024('w', 20_000, 300)],
+    asOf: '2025-09-01',
+  })
+  const stale = a.findings.filter((f) => f.kind === 'stale-meter')
+  assert.equal(stale.length, 1, 'three meters stopping together is one fact')
+  assert.equal(stale[0]!.meterId, null, 'it is a building-level finding')
+  // And it names the real suspect rather than blaming a meter.
+  assert.match(stale[0]!.message, /data feed/)
+  assert.match(stale[0]!.message, /2024-12-31/)
+})
+
+test('meters that go quiet months apart stay separate findings', () => {
+  // One account closing is not a broken feed, and collapsing them would hide
+  // which meter actually stopped.
+  const gas = year2024('g', 50_000, 5_000).filter((b) => b.startDate < '2024-04')
+  const a = analyzeUtilityAccounts({
+    building: building(),
+    meters: [
+      meter('e', 'Electric - Grid', 'kWh (thousand Watt-hours)'),
+      meter('g', 'Natural Gas', 'therms'),
+    ],
+    entries: [...year2024('e', 100_000, 10_000), ...gas],
+    asOf: '2025-09-01',
+  })
+  const stale = a.findings.filter((f) => f.kind === 'stale-meter')
+  assert.equal(stale.length, 2)
+  assert.ok(stale.every((f) => f.meterId !== null))
+})
