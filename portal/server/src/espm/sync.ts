@@ -42,6 +42,28 @@ export interface SyncResult {
 /** Years of metric history to pull on a full sync. */
 const HISTORY_YEARS = 4
 
+/**
+ * The years to ask ESPM for metrics on.
+ *
+ * Walking back from last year is right for a building that is being
+ * benchmarked now, and wrong for one whose data stops earlier — and that is
+ * not a hypothetical: every EPA sample property ends in 2016, so a fixed
+ * four-year window asked for years that hold nothing and stored no metrics at
+ * all, which in turn left the utility analysis with no ESPM figure to check
+ * the bills against. Anchoring on the last year with a reading keeps both
+ * cases working, and asking for the recent years as well costs little.
+ */
+export function metricYearsToPull(lastBillYear: number | null, thisYear: number): number[] {
+  const years = new Set<number>()
+  for (let i = 0; i < HISTORY_YEARS; i++) years.add(thisYear - 1 - i)
+  if (lastBillYear !== null && lastBillYear < thisYear) {
+    for (let i = 0; i < HISTORY_YEARS; i++) years.add(lastBillYear - i)
+  }
+  // Newest first: the years a customer is most likely to be asked about get
+  // stored even if a later call fails.
+  return [...years].sort((a, b) => b - a)
+}
+
 // --- Pull -----------------------------------------------------------------
 
 /**
@@ -250,10 +272,17 @@ async function pullMetrics(
   const thisYear = new Date().getUTCFullYear()
   const keys = Object.keys(METRIC_NAMES) as MetricKey[]
 
-  for (let i = 0; i < HISTORY_YEARS; i++) {
-    // ESPM's metrics for the current year are incomplete until the year ends,
-    // so start from last year and walk back.
-    const year = thisYear - 1 - i
+  // ESPM's metrics for the current year are incomplete until the year ends,
+  // so the recent window starts at last year; the year of the building's last
+  // reading is pulled too, for buildings whose data stops earlier.
+  const lastBill = db
+    .prepare<[string], { year: string | null }>(
+      'SELECT MAX(substr(end_date, 1, 4)) AS year FROM consumption_entries WHERE building_id = ?',
+    )
+    .get(buildingId)
+  const lastBillYear = lastBill?.year ? Number(lastBill.year) : null
+
+  for (const year of metricYearsToPull(lastBillYear, thisYear)) {
     let metrics: Partial<Record<MetricKey, number | null>>
     try {
       metrics = await client.getPropertyMetrics(espmPropertyId, { year, keys })

@@ -15,7 +15,7 @@ import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { Router } from 'express'
 import { z } from 'zod'
-import { emptyTotals, mergeTotals } from '@hbs/shared'
+import { analyzeUtilityAccounts, emptyTotals, mergeTotals } from '@hbs/shared'
 import type {
   BuildingDetailResponse,
   StaffClientSummary,
@@ -309,6 +309,48 @@ api.post(
     } satisfies PushResultResponse)
   }),
 )
+
+/**
+ * Utility account analysis for one building.
+ *
+ * Computed on request from the bills rather than stored: the analysis is a
+ * pure function of the rows, so caching it would only create a second version
+ * of the truth that goes stale the moment a reading is entered or a sync runs.
+ * Scoping is the same `assertBuildingAccess` every other building route uses,
+ * so a client admin sees their own building's meters and nobody else's.
+ */
+api.get('/buildings/:id/utility', requireAuth, (req, res) => {
+  const db = getDb()
+  const buildingId = param(req, 'id')
+  const { organizationId } = assertBuildingAccess(req, buildingId)
+
+  const building = listBuildings(db, organizationId).find((b) => b.id === buildingId)
+  if (!building) throw new HttpError(404, 'No such building.')
+
+  const meters = db
+    .prepare<[string], MeterRow>('SELECT * FROM meters WHERE building_id = ? ORDER BY name')
+    .all(buildingId)
+    .map(toMeter)
+
+  // Every bill, not a recent page: a gap in 2022 is exactly the kind of thing
+  // this is meant to find, and year-on-year comparison needs the history.
+  const entries = db
+    .prepare<[string], ConsumptionRow>(
+      'SELECT * FROM consumption_entries WHERE building_id = ? ORDER BY start_date',
+    )
+    .all(buildingId)
+    .map(toConsumptionEntry)
+
+  res.json({
+    analysis: analyzeUtilityAccounts({
+      building,
+      meters,
+      entries,
+      metrics: metricsFor(db, buildingId),
+      asOf: new Date().toISOString().slice(0, 10),
+    }),
+  })
+})
 
 api.get('/buildings/:id/consumption', requireAuth, (req, res) => {
   const buildingId = param(req, 'id')

@@ -10,6 +10,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { isWaterMeter, meterTypeFor } from './mapper.js'
+import { metricYearsToPull } from './sync.js'
 
 /**
  * Read off <type> for every meter of the six EPA sample properties in ESPM's
@@ -51,4 +52,26 @@ test('display labels still resolve, so existing fixtures and rows keep working',
   assert.equal(meterTypeFor('Electric - Grid'), 'Electric - Grid')
   assert.equal(meterTypeFor('Fuel Oil No. 2'), 'Fuel Oil No. 2')
   assert.equal(meterTypeFor('  Natural Gas  '), 'Natural Gas')
+})
+
+// --- Which years to ask ESPM for metrics on -------------------------------
+
+test('metric years follow the data, not just the calendar', () => {
+  // A building being benchmarked now: last four complete years.
+  assert.deepEqual(metricYearsToPull(2026, 2026), [2025, 2024, 2023, 2022])
+
+  // A building whose readings stop in 2016 — every EPA sample property is
+  // like this. The fixed recent window asked only for years that hold
+  // nothing, so no metrics were stored at all and the utility analysis had
+  // no ESPM figure to check the bills against.
+  const stale = metricYearsToPull(2016, 2026)
+  assert.ok(stale.includes(2016), 'the last year with a reading must be pulled')
+  assert.ok(stale.includes(2015))
+  assert.ok(stale.includes(2025), 'recent years are still pulled')
+  // Newest first, no duplicates.
+  assert.deepEqual(stale, [...stale].sort((a, b) => b - a))
+  assert.equal(new Set(stale).size, stale.length)
+
+  // No readings at all: nothing to anchor on, so just the recent window.
+  assert.deepEqual(metricYearsToPull(null, 2026), [2025, 2024, 2023, 2022])
 })
