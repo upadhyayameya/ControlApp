@@ -1,0 +1,25 @@
+# Render Blueprint for the Submarine Pens USA store (https://render.com/docs/blueprint-spec).
+# Deploy: https://render.com/deploy?repo=https://github.com/upadhyayameya/ControlApp/tree/claude/vibrant-maxwell-cygb89
+services:
+  - type: web
+    name: submarine-pens-usa
+    runtime: node
+    plan: free
+    rootDir: submarine-pens-usa
+    buildCommand: "true"        # no dependencies to install
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: SQUARE_ENVIRONMENT
+        value: sandbox
+      # Leave the Square keys empty to stay in demo mode (no payments taken).
+      - key: SQUARE_ACCESS_TOKEN
+        sync: false
+      - key: SQUARE_LOCATION_ID
+        sync: false
+      # Optional: your own domain once you add one, e.g. https://us.submarinepens.com
+      - key: SITE_URL
+        sync: false

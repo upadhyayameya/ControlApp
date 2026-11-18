@@ -1,0 +1,48 @@
+{
+  "store_name": "Submarine Pens USA",
+  "legal_name": "Submarine Pens Limited",
+  "tagline": "Power to Express. Crafting writing instruments since 1995, now shipping across the USA.",
+  "india_site_url": "https://www.submarinepens.com",
+  "support_email": "online@submarinepens.co.in",
+  "support_phone": "",
+  "support_hours": "Monday to Saturday, 10 am – 7 pm IST",
+  "business_address": "Unit No. 2, Building No 4, Plot No. B, Survey No. 73/8/3, Near Khodiyar Dham, Village Bapane, Naigaon (East), Taluka Vasai, District Palghar 401208, Maharashtra, India",
+
+  "shipping": {
+    "flat_rate_usd": 5.99,
+    "free_over_usd": 120,
+    "ships_from": "[REVIEW: where US orders ship from, e.g. 'our US warehouse in New Jersey' or 'Mumbai, India']",
+    "processing_days": "1–2 business days",
+    "delivery_estimate": "[REVIEW: e.g. 3–7 business days within the contiguous US]",
+    "regions": "all 50 US states, Puerto Rico and APO/FPO addresses",
+    "duties_note": "[REVIEW: who pays US import duties. If orders ship from a US warehouse, delete this. If they ship from India, e.g. 'Any US import duties are included in our prices, so you won't pay extra on delivery.']"
+  },
+  "returns": {
+    "window_days": 30,
+    "who_pays_return_shipping": "[REVIEW: 'we do' or 'the customer, unless the item arrived damaged or incorrect']",
+    "refund_days": "5–10 business days"
+  },
+  "legal": {
+    "governing_law": "[REVIEW: e.g. the State of New York]",
+    "effective_date": "[REVIEW: launch date]"
+  },
+  "pricing": {
+    "_how_it_works": "US price = the higher of (cost-based price) and (India M.R.P. x pack size / inr_per_usd x min_multiple_of_india_price), rounded up to .99. A usd_price_override in data/us-range.csv always wins.",
+    "inr_per_usd": 95,
+    "min_multiple_of_india_price": 3,
+    "export_cost_pct_of_mrp": 0.30,
+    "freight_per_unit_usd": 0.35,
+    "duty_pct": 0.154,
+    "duty_per_unit_usd": 0.008,
+    "clearance_pct": 0.05,
+    "fulfilment_per_unit_usd": 1.00,
+    "card_fee_pct": 0.029,
+    "card_fee_per_unit_usd": 0.15,
+    "target_margin": 0.50
+  },
+
+  "import": {
+    "source_url": "https://www.submarinepens.com",
+    "exclude_title_patterns": ["mystery gift", "customi[sz]ation charge"]
+  }
+}
