@@ -35,9 +35,22 @@ can see your repositories without any extra setup — and authorise it for
 
 In the Render dashboard: **New → Blueprint**.
 
-Pick the `ControlApp` repository. Render finds `portal/render.yaml` and shows
-you what it is about to create: one web service called `hbs-portal` with a 1 GB
-disk. If you have not merged the branch, change the branch to
+Pick the `ControlApp` repository.
+
+Two fields on the next screen need setting, and the defaults are wrong for
+this repository:
+
+| Field | Value |
+| --- | --- |
+| **Branch** | `claude/espm-client-portal-l0re0p` (clear the box, type `espm`, pick it from the list) |
+| **Blueprint Path** | `portal/render.yaml` — the file is not at the repository root, and the grey text in that box is a placeholder, not a value |
+
+Set the branch first: the path box searches for files on the selected branch,
+so it finds nothing until the branch is right. If you leave either as it comes,
+the error is `Blueprint file render.yaml not found on <branch>`.
+
+Render then shows what it is about to create: one web service called
+`hbs-portal` with a 1 GB disk. If you have not merged the branch, change the branch to
 `claude/espm-client-portal-l0re0p` on this screen.
 
 Click **Apply**.
@@ -57,6 +70,39 @@ Two lines in that log are warnings, and both are expected on a first deploy:
 ```
 
 Steps 5 and 6 turn each of those off.
+
+## Checking it works without paying
+
+If the point is only to prove the thing deploys and talks to ENERGY STAR,
+deploy `portal/render-free.yaml` instead, as the Blueprint Path. It asks for a
+free instance and no disk.
+
+Understand what you are getting. A free instance has no persistent disk, and
+the entire application state is one SQLite file, so **everything in the
+database is deleted on every deploy and every time the instance spins down**
+after about fifteen minutes of no traffic. Accounts, buildings, meters, bills.
+The first request after a quiet spell also takes roughly a minute while the
+instance wakes, which looks like a hang and is not one.
+
+To keep that usable, the free blueprint sets two extra variables:
+
+| Key | Value |
+| --- | --- |
+| `BOOTSTRAP_ADMIN_EMAIL` | the address you will sign in with |
+| `BOOTSTRAP_ADMIN_PASSWORD` | at least 12 characters |
+
+On any boot where the database has no users at all, the server creates that one
+HBS staff account from those variables. So a reset costs you the data, not the
+way in: sign in and press **Pull from Portfolio Manager** to bring the
+buildings back.
+
+It will not touch a database that already has users, so it cannot be used to
+add an account to a running portal, and it never generates a password — a
+generated one would have to be printed in the log to be useful, and a password
+in a log is not a password. On a deployment with a real disk, leave both
+variables unset and the whole mechanism is inert.
+
+Use this to check. Use `render.yaml` to actually run anything.
 
 ## 3. Create your account
 

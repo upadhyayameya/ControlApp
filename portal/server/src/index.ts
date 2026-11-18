@@ -13,6 +13,7 @@ import { platform } from './routes/platform.js'
 import { errorHandler } from './middleware/errors.js'
 import { loadSession } from './middleware/auth.js'
 import { purgeExpiredSessions } from './services/auth.js'
+import { ensureBootstrapAdmin } from './services/bootstrap.js'
 import { startScheduler } from './services/scheduler.js'
 
 const app = express()
@@ -84,6 +85,12 @@ const db = getDb()
 const purged = purgeExpiredSessions(db)
 const scheduler = startScheduler(db)
 
+// On a host with no persistent disk the database is empty after every restart,
+// and a deployment nobody can sign into is a deployment nobody can check. This
+// is inert unless BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD are set,
+// and it only ever fires on an empty user table.
+const bootstrap = await ensureBootstrapAdmin(db)
+
 const server = app.listen(config.port, () => {
   console.log(`[portal] listening on http://localhost:${config.port}`)
   console.log(`[portal] database  ${config.databasePath}`)
@@ -95,6 +102,8 @@ const server = app.listen(config.port, () => {
     }`,
   )
   if (purged > 0) console.log(`[portal] purged ${purged} expired session(s)`)
+  if (bootstrap.status === 'created') console.log(`[portal] ${bootstrap.message}`)
+  if (bootstrap.status === 'refused') console.error(`[portal] WARNING: ${bootstrap.message}`)
 
   if (config.isProduction && config.espm.mode === 'fixture') {
     // Running a deployment on recorded responses would look like it worked

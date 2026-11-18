@@ -1,0 +1,75 @@
+# ---------------------------------------------------------------------------
+# Render blueprint — free tier, for checking the deployment works.
+#
+# This is NOT the one to run the portal on. Use render.yaml for that.
+#
+# The difference is the disk. A free instance cannot have one, and the whole
+# application state is a single SQLite file, so everything in the database is
+# deleted on every deploy and whenever the instance spins down after idling —
+# about fifteen minutes of no traffic. Accounts, buildings, meters, bills: all
+# of it, every time.
+#
+# That makes this fine for one thing and useless for everything else. Fine for:
+# proving the build works, the service boots, ENERGY STAR authenticates, a pull
+# brings real properties in, and the pages render. Useless for: showing a
+# customer, keeping readings anyone types in, or anything with a second visit.
+#
+# Two consequences to expect:
+#
+#   - The first request after a quiet spell takes roughly a minute while the
+#     instance wakes. It is not broken.
+#   - After every wake the database is empty again. BOOTSTRAP_ADMIN_EMAIL and
+#     BOOTSTRAP_ADMIN_PASSWORD below recreate the sign-in automatically, so the
+#     only manual step is pressing "Pull from Portfolio Manager" to bring the
+#     buildings back.
+#
+# When you want it to stop forgetting, deploy render.yaml instead and remove
+# the two bootstrap variables.
+# ---------------------------------------------------------------------------
+
+services:
+  - type: web
+    name: hbs-portal-check
+    runtime: node
+    plan: free
+    region: ohio
+    rootDir: portal
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+
+    # No disk: the free plan does not allow one. DATABASE_PATH is left at its
+    # default inside the service directory, which exists and is writable and
+    # does not survive a restart. That is the deal on this tier.
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CREDENTIAL_KEY
+        generateValue: true
+
+      # The sign-in, recreated on each empty boot. Without these a reset leaves
+      # a portal with no accounts and no way to make one short of a shell.
+      # Set both in the dashboard; the password must be at least 12 characters.
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: BOOTSTRAP_ADMIN_NAME
+        sync: false
+
+      # Portfolio Manager. Set these or the check proves nothing: the portal
+      # comes up in fixture mode and syncs recorded responses rather than
+      # talking to ENERGY STAR at all.
+      - key: ESPM_USERNAME
+        sync: false
+      - key: ESPM_PASSWORD
+        sync: false
+      - key: ESPM_ENVIRONMENT
+        sync: false
+      - key: ESPM_ACCOUNT_ID
+        sync: false
