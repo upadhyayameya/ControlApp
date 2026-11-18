@@ -130,15 +130,25 @@ At checkout, the server recalculates every price from `us-range.csv` and the pri
 changed in the browser. Square collects the shipping address, emails the receipt, and
 lists the order in your Square Dashboard.
 
-## Putting it online
+## Putting it online (Render)
 
-Any Node host works: Render, Railway, Fly.io, or a small VPS.
+The repository has a `render.yaml` at its root, so Render can set everything up for you:
 
-1. Create a **Web Service** from this repo, with the root directory set to `submarine-pens-usa`.
-2. Build command: *(none)*. Start command: `npm start`.
-3. Add the variables from `.env.example` in the host's dashboard, and set `SITE_URL`
-   to the public address (e.g. `https://us.submarinepens.com`).
-4. Point a domain or subdomain at it and link to it from the Indian site.
+1. Open **https://render.com/deploy?repo=https://github.com/upadhyayameya/ControlApp/tree/claude/vibrant-maxwell-cygb89**
+   (once this branch is merged, use `.../ControlApp` without the `/tree/...` part).
+2. Sign in to Render with GitHub and allow it to access the `ControlApp` repository.
+3. Leave the Square keys empty for now (the store runs in demo mode) and click **Apply** / **Deploy**.
+4. After a few minutes the store is live at `https://submarine-pens-usa.onrender.com` (or a similar address Render shows).
+5. Later: add your own domain under **Settings → Custom Domains** (e.g. `us.submarinepens.com`), then set `SITE_URL` to it.
+
+Notes for the free plan:
+- The site **sleeps after ~15 minutes without visitors**; the first visit after that takes 30–60 seconds. A paid instance stays awake.
+- The disk is temporary: contact-form messages and newsletter sign-ups saved in `data/*.jsonl` are lost when the
+  service restarts. Turn on contact emails (`RESEND_*` variables) and use a paid plan with a disk, or a mailing-list
+  service, before launch.
+- Every push to the deployed branch redeploys automatically.
+
+Any other Node host works too (Railway, Fly.io, a VPS): root directory `submarine-pens-usa`, start command `npm start`.
 
 ## Tests
 

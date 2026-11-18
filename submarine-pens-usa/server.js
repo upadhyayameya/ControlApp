@@ -20,7 +20,8 @@ const PORT = Number(process.env.PORT || 3000);
 const SQUARE_ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN || "";
 const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID || "";
 const SQUARE_ENV = (process.env.SQUARE_ENVIRONMENT || "sandbox").toLowerCase();
-const SITE_URL = (process.env.SITE_URL || `http://localhost:${PORT}`).replace(/\/$/, "");
+// SITE_URL, else the address Render gives the service, else localhost
+const SITE_URL = (process.env.SITE_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`).replace(/\/$/, "");
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const CONTACT_FROM_EMAIL = process.env.CONTACT_FROM_EMAIL || "";
 const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || "";
