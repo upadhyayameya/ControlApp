@@ -76,7 +76,6 @@ export function CheckResults({
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted">
-                {r.benchmark.basis === "estimate" ? "Watt on Earth estimate, not a BEE rating. " : "BEE star-rating band. "}
                 {r.benchmark.source}
               </p>
               <div className="mt-6">
