@@ -134,7 +134,13 @@ function render(product, summary) {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.opt) { selected[Number(b.dataset.opt)] = b.dataset.val; update(); }
-    if (b.dataset.img) { activeImage = b.dataset.img; update(); }
+    if (b.dataset.img) {
+      // a thumbnail that is a colourway's photo also selects that colourway
+      const owner = hasOptions && product.variants.find((v) => v.image === b.dataset.img);
+      if (owner) selected = [...owner.options];
+      activeImage = b.dataset.img;
+      update();
+    }
     if (b.id === "qDec") { qty = Math.max(1, qty - 1); $("#qVal").textContent = qty; }
     if (b.id === "qInc") { qty = Math.min(20, qty + 1); $("#qVal").textContent = qty; }
     if (b.id === "addBtn") { const v = current(); if (v?.purchasable) addToCart(v.id, qty); }
