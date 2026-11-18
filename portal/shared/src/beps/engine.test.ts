@@ -4,8 +4,8 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import type { Building, MetricYear } from '../types.js'
-import { assessBuilding, currentAssessment, estimatePenalty } from './engine.js'
-import { CYCLES, cycleById, penaltyFor, standardFor } from './standards.js'
+import { assessBuilding, assessBuildingAllCycles, currentAssessment, estimatePenalty } from './engine.js'
+import { CYCLES, cycleById, mocoGroupFor, penaltyFor, standardFor } from './standards.js'
 
 function building(overrides: Partial<Building> = {}): Building {
   return {
@@ -78,9 +78,9 @@ test('sitting just above the standard reports at-risk, not compliant', () => {
 })
 
 test('an EUI standard runs the other way: lower is better', () => {
-  const cycle = cycleById('moco-interim-2030')!
+  const cycle = cycleById('moco-g2-interim')!
   const b = building({ jurisdiction: 'montgomery-md', state: 'MD', city: 'Rockville' })
-  const target = standardFor('montgomery-md', 'moco-interim-2030', 'Office')!.targetValue
+  const target = standardFor('montgomery-md', 'moco-g2-interim', 'Office')!.targetValue
 
   const under = assessBuilding(b, metric({ weatherNormalizedSiteEui: target - 20 }), cycle)
   assert.equal(under.status, 'compliant')
@@ -91,7 +91,7 @@ test('an EUI standard runs the other way: lower is better', () => {
 })
 
 test('weather-normalized site EUI is preferred over raw site EUI', () => {
-  const cycle = cycleById('moco-interim-2030')!
+  const cycle = cycleById('moco-g2-interim')!
   const b = building({ jurisdiction: 'montgomery-md' })
   const a = assessBuilding(b, metric({ siteEui: 999, weatherNormalizedSiteEui: 42 }), cycle)
   assert.equal(a.currentValue, 42)
@@ -151,7 +151,7 @@ test('DC exposure is capped per building', () => {
 })
 
 test('Montgomery County is a daily fine, not a per-square-foot payment', () => {
-  const schedule = penaltyFor('montgomery-md', 'moco-interim-2030')!
+  const schedule = penaltyFor('montgomery-md', 'moco-g2-interim')!
   assert.equal(schedule.model.kind, 'per-day')
   // The whole point of the correction: exposure does not scale with area.
   const small = estimatePenalty(30_000, 40, schedule)
@@ -173,5 +173,59 @@ test('every cycle has a penalty schedule on file', () => {
       penaltyFor(cycle.jurisdiction, cycle.id),
       `no penalty schedule for ${cycle.id}`,
     )
+  }
+})
+
+test('a Montgomery County building is judged on its own size-and-use group only', () => {
+  // Groups 1-3 are non-residential, 4-5 multifamily, and the brackets differ,
+  // so the same floor area lands on different deadlines by use.
+  assert.equal(mocoGroupFor('Office', 300_000)?.id, 'g1')
+  assert.equal(mocoGroupFor('Office', 100_000)?.id, 'g2')
+  assert.equal(mocoGroupFor('Office', 30_000)?.id, 'g3')
+  assert.equal(mocoGroupFor('Multifamily Housing', 300_000)?.id, 'g4')
+  assert.equal(mocoGroupFor('Multifamily Housing', 100_000)?.id, 'g5')
+  // Under the county's 25,000 ft² floor there is no group at all.
+  assert.equal(mocoGroupFor('Office', 20_000), null)
+  // Bracket edges belong to the larger group, not both.
+  assert.equal(mocoGroupFor('Office', 250_000)?.id, 'g1')
+  assert.equal(mocoGroupFor('Office', 50_000)?.id, 'g2')
+})
+
+test('a MoCo building sees two deadlines, not every group\'s', () => {
+  const office = building({ jurisdiction: 'montgomery-md', grossFloorAreaSqFt: 100_000 })
+  const cycles = assessBuildingAllCycles(office, metric()).map((a) => a.cycleId)
+  assert.deepEqual(cycles, ['moco-g2-interim', 'moco-g2-final'])
+
+  // Same area, multifamily: a later group, so later deadlines.
+  const apartments = building({
+    jurisdiction: 'montgomery-md',
+    propertyType: 'Multifamily Housing',
+    grossFloorAreaSqFt: 100_000,
+  })
+  const mf = assessBuildingAllCycles(apartments, metric()).map((a) => a.cycleId)
+  assert.deepEqual(mf, ['moco-g5-interim', 'moco-g5-final'])
+})
+
+test('MoCo deadlines are the June 1 reporting date, not the end of the performance year', () => {
+  // The performance period is the full calendar year; the obligation is due to
+  // DEP by June 1 of the year after. Quoting December 31 would be five months
+  // early and would read as a missed deadline the customer has not missed.
+  assert.equal(cycleById('moco-g2-interim')!.periodEnd, '2028-12-31')
+  assert.equal(cycleById('moco-g2-interim')!.complianceDate, '2029-06-01')
+  assert.equal(cycleById('moco-g5-final')!.complianceDate, '2037-06-01')
+})
+
+test('DC score standards are read off the published rule, EUI ceilings included', () => {
+  // These are the values in 20 DCMR § 3530.1. Six of them were wrong before
+  // they were checked at source, so the test pins the ones that moved most.
+  assert.equal(standardFor('dc', 'dc-cycle-1', 'Non-Refrigerated Warehouse')!.targetValue, 19)
+  assert.equal(standardFor('dc', 'dc-cycle-1', 'Worship Facility')!.targetValue, 17)
+  assert.equal(standardFor('dc', 'dc-cycle-1', 'Office')!.targetValue, 71)
+  // 'Other' has no score, so it falls through to its source-EUI ceiling.
+  const other = standardFor('dc', 'dc-cycle-1', 'Other')!
+  assert.equal(other.metric, 'source-eui')
+  assert.equal(other.targetValue, 229.4)
+  for (const type of ['Office', 'Worship Facility', 'Other'] as const) {
+    assert.equal(standardFor('dc', 'dc-cycle-1', type)!.verification, 'verified')
   }
 })

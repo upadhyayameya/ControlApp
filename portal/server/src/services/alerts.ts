@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------------
 
 import { randomUUID } from 'node:crypto'
-import { cyclesFor, currentAssessment, type Alert, type AlertSeverity } from '@hbs/shared'
+import { cyclesForBuilding, currentAssessment, type Alert, type AlertSeverity } from '@hbs/shared'
 import type { Db } from '../db/index.js'
 import { toAlert, type AlertRow, type ConsumptionRow, type MeterRow } from '../db/rows.js'
 import { listBuildings, metricsFor, latestMetric, today } from './portfolio.js'
@@ -99,7 +99,7 @@ export function runMonitor(db: Db, organizationId?: string): MonitorResult {
     }
 
     // --- Deadlines ---
-    for (const cycle of cyclesFor(building.jurisdiction)) {
+    for (const cycle of cyclesForBuilding(building)) {
       const days = daysUntil(cycle.complianceDate)
       if (days > 0 && days <= DEADLINE_WARNING_DAYS && building.grossFloorAreaSqFt >= cycle.coverageMinSqFt) {
         upsert(db, result, {

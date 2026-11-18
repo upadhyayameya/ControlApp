@@ -20,7 +20,7 @@ import {
   type BepsStandard,
   type PenaltyModel,
   type PenaltySchedule,
-  cyclesFor,
+  cyclesForBuilding,
   penaltyFor,
   standardFor,
 } from './standards.js'
@@ -152,7 +152,7 @@ export function assessBuildingAllCycles(
   building: Building,
   metric: MetricYear | null,
 ): ComplianceAssessment[] {
-  return cyclesFor(building.jurisdiction)
+  return cyclesForBuilding(building)
     .map((cycle) => assessBuilding(building, metric, cycle))
     .sort((a, b) => a.complianceDate.localeCompare(b.complianceDate))
 }
