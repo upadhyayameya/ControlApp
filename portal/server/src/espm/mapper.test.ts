@@ -1,0 +1,54 @@
+// Tests for the ESPM → portal mapping.
+//
+// The meter type map is the part that failed silently in production-like use:
+// fixtures were written against Portfolio Manager's *display labels*, while
+// the API sends different strings, and an unrecognised string used to default
+// to grid electricity. A live pull therefore recorded gallons of water as
+// kilowatt-hours without any error. These tests pin the strings ESPM really
+// sends, so the next person to extend the map cannot regress it against
+// hand-written fixtures.
+import { strict as assert } from 'node:assert'
+import { test } from 'node:test'
+import { isWaterMeter, meterTypeFor } from './mapper.js'
+
+/**
+ * Read off <type> for every meter of the six EPA sample properties in ESPM's
+ * test environment on 2026-11-18. Left side: what ESPM sends. Right side:
+ * what the portal must record.
+ */
+const LIVE_TYPES: Array<[string, string]> = [
+  ['Electric', 'Electric - Grid'],
+  ['Electric on Site Solar', 'Electric - Solar'],
+  ['Natural Gas', 'Natural Gas'],
+  ['Fuel Oil No 2', 'Fuel Oil No. 2'],
+  ['Municipally Supplied Potable Water - Indoor', 'Potable Water'],
+  ['Municipally Supplied Potable Water - Outdoor', 'Potable Water'],
+  ['Municipally Supplied Potable Water - Mixed Indoor/Outdoor', 'Potable Water'],
+]
+
+test('every meter type ESPM actually sends maps to the right fuel', () => {
+  for (const [espmType, expected] of LIVE_TYPES) {
+    assert.equal(meterTypeFor(espmType), expected, `ESPM type "${espmType}"`)
+  }
+})
+
+test('an unrecognised meter type is Unknown, never guessed as electricity', () => {
+  // The old default. A new ESPM fuel must not arrive as purchased grid power.
+  assert.equal(meterTypeFor('Coal Anthracite'), 'Unknown')
+  assert.equal(meterTypeFor(''), 'Unknown')
+})
+
+test('water is recognised from the type string even if the map misses it', () => {
+  // ESPM has added water type names before; the fallback catches them as
+  // water rather than as an energy fuel, which would corrupt every EUI.
+  assert.equal(meterTypeFor('Reclaimed Potable Water - Indoor'), 'Potable Water')
+  // District chilled water is energy, not water use, despite the name.
+  assert.equal(isWaterMeter('District Chilled Water'), false)
+  assert.equal(meterTypeFor('District Chilled Water'), 'District Chilled Water')
+})
+
+test('display labels still resolve, so existing fixtures and rows keep working', () => {
+  assert.equal(meterTypeFor('Electric - Grid'), 'Electric - Grid')
+  assert.equal(meterTypeFor('Fuel Oil No. 2'), 'Fuel Oil No. 2')
+  assert.equal(meterTypeFor('  Natural Gas  '), 'Natural Gas')
+})

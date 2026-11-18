@@ -132,17 +132,46 @@ function normalizeFloorArea(p: EspmProperty): number {
   return 0
 }
 
+/**
+ * ESPM meter type → portal meter type.
+ *
+ * ⚠ The keys on the left are the strings ESPM actually sends in the <type>
+ * element, which are NOT the labels the Portfolio Manager web UI displays.
+ * Six of the seven types the HBS test account returns did not match the
+ * labels this map was originally written against: ESPM sends "Electric", not
+ * "Electric - Grid"; "Fuel Oil No 2" with no period; and water arrives as
+ * "Municipally Supplied Potable Water - Indoor" and two siblings. Every one
+ * of them fell through to the old `?? 'Electric - Grid'` default, so a live
+ * pull booked gallons of water and gallons of fuel oil as kilowatt-hours of
+ * purchased electricity — invisibly, because the default always produced a
+ * plausible-looking row.
+ *
+ * Verified 2026-11-18 by reading <type> off every meter of the six EPA sample
+ * properties in ESPM's test environment. The display labels are kept as
+ * aliases so hand-written fixtures and older rows keep working.
+ */
 const METER_TYPE_MAP: Record<string, MeterType> = {
-  'Electric - Grid': 'Electric - Grid',
-  'Electric on Site Solar': 'Electric - Grid',
+  // --- Strings observed from live ESPM ---
+  Electric: 'Electric - Grid',
+  'Electric on Site Solar': 'Electric - Solar',
   'Natural Gas': 'Natural Gas',
+  'Fuel Oil No 2': 'Fuel Oil No. 2',
+  'Municipally Supplied Potable Water - Indoor': 'Potable Water',
+  'Municipally Supplied Potable Water - Outdoor': 'Potable Water',
+  'Municipally Supplied Potable Water - Mixed Indoor/Outdoor': 'Potable Water',
+  // --- Display-label aliases, and types not present in the sample account ---
+  'Electric - Grid': 'Electric - Grid',
+  'Electric on Site Wind': 'Electric - Solar',
   'Fuel Oil No. 2': 'Fuel Oil No. 2',
   'District Steam': 'District Steam',
   'District Chilled Water': 'District Chilled Water',
   'District Chilled Water - Electric-Driven Chiller': 'District Chilled Water',
+  'District Hot Water': 'District Steam',
   Propane: 'Propane',
   'Potable Indoor Water': 'Potable Water',
+  'Potable: Indoor': 'Potable Water',
   'Potable: Mixed Indoor/Outdoor': 'Potable Water',
+  'Potable Water': 'Potable Water',
 }
 
 export interface MappedMeter {
@@ -157,10 +186,26 @@ export function mapMeter(m: EspmMeter): MappedMeter {
   return {
     espmMeterId: m.id,
     name: m.name,
-    type: METER_TYPE_MAP[m.type.trim()] ?? 'Electric - Grid',
+    type: meterTypeFor(m.type),
     unit: m.unitOfMeasure,
     active: m.inUse,
   }
+}
+
+/**
+ * The portal type for an ESPM type string.
+ *
+ * An unrecognised type becomes 'Unknown' — never a guess. ESPM adds meter
+ * types, and the portal finding out by mislabelling a customer's bills is the
+ * failure this avoids: water still resolves to water from the type string
+ * alone, and anything genuinely new is surfaced rather than absorbed.
+ */
+export function meterTypeFor(espmType: string): MeterType {
+  const key = espmType.trim()
+  const mapped = METER_TYPE_MAP[key]
+  if (mapped) return mapped
+  if (isWaterMeter(key)) return 'Potable Water'
+  return 'Unknown'
 }
 
 /** True when this ESPM meter type is water rather than energy. */

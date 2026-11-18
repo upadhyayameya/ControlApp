@@ -132,12 +132,26 @@ export interface Meter {
 
 export type MeterType =
   | 'Electric - Grid'
+  /**
+   * On-site generation, kept apart from grid supply on purpose. It is not
+   * purchased energy, it does not carry a grid emissions factor, and
+   * Montgomery County nets it out of the NN EUI it judges a building on —
+   * folding it into grid supply overstates both the bill and the intensity.
+   */
+  | 'Electric - Solar'
   | 'Natural Gas'
   | 'Fuel Oil No. 2'
   | 'District Steam'
   | 'District Chilled Water'
   | 'Propane'
   | 'Potable Water'
+  /**
+   * A meter whose ESPM type this portal does not recognise. Deliberately a
+   * real state rather than a default: a meter guessed into the wrong fuel
+   * corrupts every intensity and cost figure derived from it, and does so
+   * invisibly. Unknown meters are reported, not quietly totalled.
+   */
+  | 'Unknown'
 
 /**
  * A single billing period of consumption. This is the record the customer
