@@ -21,7 +21,8 @@ import type {
   StaffOverviewResponse,
   UpdateGroupRequest,
 } from '@hbs/shared'
-import { emptyTotals, mergeTotals } from '@hbs/shared'
+import { analyzeUtilityAccounts, emptyTotals, mergeTotals } from '@hbs/shared'
+import type { UtilityAnalysis } from '@hbs/shared'
 import type {
   AcceptInviteRequest,
   AuditEvent,
@@ -313,6 +314,32 @@ export const demoApi = {
 
   consumption: async (buildingId: string): Promise<{ entries: ConsumptionEntry[] }> =>
     settle({ entries: data.buildings[buildingId]?.recentEntries ?? [] }),
+
+  /**
+   * Utility analysis, computed in the browser by the same function the server
+   * calls rather than captured as a response.
+   *
+   * The analysis is a pure function of the building, its meters and its bills,
+   * so running it here gives the demo the real engine — including the real
+   * findings about the demo data — and makes it impossible for a captured blob
+   * to drift from what the server would say. The one difference from the live
+   * portal is the input: the demo carries the captured recent window of bills
+   * rather than every bill ever recorded, so the billing history it reasons
+   * over starts where that window starts.
+   */
+  utility: async (buildingId: string): Promise<{ analysis: UtilityAnalysis }> => {
+    const detail = data.buildings[buildingId]
+    if (!detail) throw new ApiError('No such building.', 404)
+    return settle({
+      analysis: analyzeUtilityAccounts({
+        building: detail.building,
+        meters: detail.meters,
+        entries: detail.recentEntries,
+        metrics: detail.metrics,
+        asOf: new Date().toISOString().slice(0, 10),
+      }),
+    })
+  },
 
   syncStatus: async (): Promise<SyncStatusResponse> => {
     const record = requireUser()

@@ -17,6 +17,17 @@ export function usdCompact(value: number | null | undefined): string {
   return `$${Math.round(value)}`
 }
 
+/**
+ * Money that needs its cents: a cost per ft² is a figure customers compare
+ * between buildings, and rounding $1.95 to "$2" throws away the comparison.
+ */
+export function usdCents(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '—'
+  // Normalizes -0, which otherwise renders as "$-0.00".
+  const v = value === 0 ? 0 : value
+  return `$${v.toFixed(2)}`
+}
+
 export function num(value: number | null | undefined, places = 1): string {
   if (value === null || value === undefined) return '—'
   return value.toLocaleString('en-US', {

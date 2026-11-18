@@ -24,6 +24,7 @@ import type {
   CreateGroupRequest,
   StaffOverviewResponse,
   UpdateGroupRequest,
+  UtilityAnalysis,
 } from '@hbs/shared'
 import type {
   AcceptInviteRequest,
@@ -112,6 +113,14 @@ const liveApi = {
     }),
   consumption: (buildingId: string) =>
     request<{ entries: ConsumptionEntry[] }>(`/buildings/${buildingId}/consumption`),
+
+  /**
+   * Utility account analysis. Fetched on demand rather than with the building:
+   * it reads every bill a building has, which is far more than the building
+   * page needs, and only the utility tab shows it.
+   */
+  utility: (buildingId: string) =>
+    request<{ analysis: UtilityAnalysis }>(`/buildings/${buildingId}/utility`),
 
   syncStatus: () => request<SyncStatusResponse>('/sync/status'),
   push: (buildingId?: string) =>

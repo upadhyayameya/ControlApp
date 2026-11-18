@@ -14,6 +14,7 @@ import { TrendCharts } from '../components/TrendCharts'
 import { DataEntry } from '../components/DataEntry'
 import { Recommendations } from '../components/Recommendations'
 import { AlertList } from '../components/AlertList'
+import { UtilityAccounts } from '../components/UtilityAccounts'
 import {
   Empty,
   ErrorNote,
@@ -24,11 +25,12 @@ import {
 } from '../components/primitives'
 import { int, penaltyText } from '../lib/format'
 
-type Tab = 'standing' | 'history' | 'data' | 'services'
+type Tab = 'standing' | 'history' | 'utility' | 'data' | 'services'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'standing', label: 'Standing' },
   { id: 'history', label: 'History' },
+  { id: 'utility', label: 'Utility accounts' },
   { id: 'data', label: 'Energy data' },
   { id: 'services', label: 'What we can do' },
 ]
@@ -168,6 +170,8 @@ export function BuildingDetail(): JSX.Element {
       )}
 
       {tab === 'history' && <TrendCharts metrics={metrics} assessment={currentAssessment} />}
+
+      {tab === 'utility' && id && <UtilityAccounts buildingId={id} />}
 
       {tab === 'data' && <DataEntry detail={building} onChanged={() => id && loadBuilding(id)} />}
 
