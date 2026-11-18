@@ -22,6 +22,23 @@ import { listBuildings, metricsFor, latestMetric, today } from './portfolio.js'
 
 /** A reading this many robust deviations from its seasonal norm is flagged. */
 const SPIKE_THRESHOLD = 3.5
+/**
+ * With only a handful of readings for a calendar month, the spread cannot be
+ * estimated well enough to trust a sigma figure: three observations of a
+ * meter that varies 3% month to month produce a MAD small enough to make an
+ * ordinary 5% month look like a 3.5-sigma event. Below this many prior
+ * observations a reading must also be a large relative jump before it counts.
+ */
+const CONFIDENT_SAMPLES = 5
+/** The relative jump a thin history has to clear, on top of the sigma test. */
+const THIN_HISTORY_JUMP_PCT = 35
+/**
+ * How far back from a meter's most recent reading an anomaly is still worth
+ * raising as an alert. An alert is a call to action; a spike from three years
+ * ago is history, and history belongs in the utility analysis, which reports
+ * it without demanding anyone do something about it today.
+ */
+const ANOMALY_WINDOW_DAYS = 365
 /** Below this many prior samples for a month, we do not have a norm to judge against. */
 const MIN_SAMPLES = 2
 /** Warn this far ahead of a compliance deadline. */
@@ -115,15 +132,20 @@ export function runMonitor(db: Db, organizationId?: string): MonitorResult {
     }
 
     // --- Consumption anomalies ---
+    //
+    // Keyed on the meter rather than the reading. Keyed on the reading, three
+    // years of bills produced sixty near-identical rows on one building and
+    // buried the compliance alerts underneath them — the alert list has to be
+    // a queue someone works through, not a log.
     for (const finding of detectAnomalies(db, building.id)) {
       upsert(db, result, {
         organizationId: building.organizationId,
         buildingId: building.id,
         kind: 'usage-spike',
         severity: 'warning',
-        title: `Unusual usage on ${finding.meterName}`,
+        title: `${building.name}: unusual usage on ${finding.meterName}`,
         detail: finding.detail,
-        dedupeKey: `spike:${finding.entryId}`,
+        dedupeKey: `spike:${finding.meterId}`,
       })
     }
   }
@@ -147,9 +169,11 @@ export function runMonitor(db: Db, organizationId?: string): MonitorResult {
 // --- Anomaly detection ----------------------------------------------------
 
 interface AnomalyFinding {
-  entryId: string
+  meterId: string
   meterName: string
   detail: string
+  /** Sigmas above the seasonal median, for picking the worst per meter. */
+  deviations: number
 }
 
 /**
@@ -171,6 +195,16 @@ export function detectAnomalies(db: Db, buildingId: string): AnomalyFinding[] {
         'SELECT * FROM consumption_entries WHERE meter_id = ? ORDER BY start_date',
       )
       .all(meter.id)
+    if (entries.length === 0) continue
+
+    // The window is measured from the meter's own latest reading rather than
+    // from today, so a portfolio whose feed has stopped still reports what its
+    // last year of bills showed. That the data is old is a separate alert with
+    // a separate fix, and conflating the two hides one of them.
+    const latestEnd = entries.reduce((a, e) => (e.end_date > a ? e.end_date : a), entries[0]!.end_date)
+    const windowStart = new Date(Date.parse(`${latestEnd}T00:00:00Z`) - ANOMALY_WINDOW_DAYS * 86_400_000)
+      .toISOString()
+      .slice(0, 10)
 
     // Bucket by calendar month so each reading is judged against its own season.
     const byMonth = new Map<number, ConsumptionRow[]>()
@@ -181,6 +215,7 @@ export function detectAnomalies(db: Db, buildingId: string): AnomalyFinding[] {
       byMonth.set(month, list)
     }
 
+    let worst: AnomalyFinding | null = null
     for (const [month, rows] of byMonth) {
       if (rows.length < MIN_SAMPLES + 1) continue
       const usages = rows.map((r) => r.quantity)
@@ -192,19 +227,26 @@ export function detectAnomalies(db: Db, buildingId: string): AnomalyFinding[] {
       if (spread <= 0) continue
 
       for (const row of rows) {
+        if (row.end_date < windowStart) continue
         const deviations = (row.quantity - med) / spread
         if (deviations < SPIKE_THRESHOLD) continue
         const pct = med > 0 ? ((row.quantity - med) / med) * 100 : 0
-        findings.push({
-          entryId: row.id,
+        // A thin history cannot support a sigma claim on its own.
+        if (rows.length < CONFIDENT_SAMPLES && pct < THIN_HISTORY_JUMP_PCT) continue
+        if (worst && worst.deviations >= deviations) continue
+        worst = {
+          meterId: meter.id,
           meterName: meter.name,
+          deviations,
           detail:
             `${row.start_date} to ${row.end_date} used ${fmtNum(row.quantity)} ${meter.unit}, ` +
             `about ${Math.round(pct)}% above the usual ${monthName(month)} figure of ` +
-            `${fmtNum(med)}. Worth checking for a billing error, a stuck override, or equipment left running.`,
-        })
+            `${fmtNum(med)}${rows.length < CONFIDENT_SAMPLES ? ` (from only ${rows.length} ${monthName(month)}s on record)` : ''}. ` +
+            'Worth checking for a billing error, a stuck override, or equipment left running.',
+        }
       }
     }
+    if (worst) findings.push(worst)
   }
 
   return findings

@@ -238,7 +238,7 @@ test('a missing bill is critical and a few missing days is not', () => {
   assert.equal(gap.severity, 'critical')
   assert.equal(gap.periodStart, '2024-03-01')
   assert.equal(gap.periodEnd, '2024-03-31')
-  assert.match(gap.message, /understated/)
+  assert.match(gap.message, /cost the whole benchmark year/)
 
   // A short gap is worth noting, not alarming.
   const short = analyzeUtilityAccounts({

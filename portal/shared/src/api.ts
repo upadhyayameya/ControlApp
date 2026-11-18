@@ -5,6 +5,7 @@
 // frontend build rather than a customer's dashboard.
 // ---------------------------------------------------------------------------
 
+import type { GapAnalysis } from './beps/gap.js'
 import type { BuildingGroup, GroupKind } from './tree.js'
 import type {
   AuditEvent,
@@ -177,6 +178,12 @@ export interface BuildingDetailResponse {
   recommendations: Recommendation[]
   alerts: Alert[]
   recentEntries: ConsumptionEntry[]
+  /**
+   * What closing the gap would take: the energy reduction implied, what it is
+   * worth at this building's own rates, and whether its trajectory gets there.
+   * Null when no standard applies or the building has no assessment.
+   */
+  gap: GapAnalysis | null
 }
 
 export interface CreateConsumptionRequest {

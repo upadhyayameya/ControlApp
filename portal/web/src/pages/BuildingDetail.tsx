@@ -15,6 +15,7 @@ import { DataEntry } from '../components/DataEntry'
 import { Recommendations } from '../components/Recommendations'
 import { AlertList } from '../components/AlertList'
 import { UtilityAccounts } from '../components/UtilityAccounts'
+import { GapToStandard } from '../components/GapToStandard'
 import {
   Empty,
   ErrorNote,
@@ -48,7 +49,7 @@ export function BuildingDetail(): JSX.Element {
   if (error) return <ErrorNote message={error} />
   if (!building) return <Empty title="Building not found." />
 
-  const { building: b, currentAssessment, assessments, metrics, alerts, recommendations } = building
+  const { building: b, currentAssessment, assessments, metrics, alerts, recommendations, gap } = building
 
   return (
     <div>
@@ -99,6 +100,15 @@ export function BuildingDetail(): JSX.Element {
             {currentAssessment ? (
               <>
                 <ThresholdBand assessment={currentAssessment} />
+                {gap && (
+                  <GapToStandard
+                    gap={gap}
+                    penalty={currentAssessment.estimatedPenalty}
+                    metricLabel={
+                      currentAssessment.metric === 'energy-star-score' ? 'points' : 'kBtu/ft²'
+                    }
+                  />
+                )}
                 {currentAssessment.estimatedPenalty && (
                   <section className="panel panel-pad">
                     <p className="eyebrow">Estimated exposure</p>

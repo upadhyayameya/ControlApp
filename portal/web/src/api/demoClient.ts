@@ -21,7 +21,7 @@ import type {
   StaffOverviewResponse,
   UpdateGroupRequest,
 } from '@hbs/shared'
-import { analyzeUtilityAccounts, emptyTotals, mergeTotals } from '@hbs/shared'
+import { analyzeGap, analyzeUtilityAccounts, marginalCostPerKbtu, emptyTotals, mergeTotals } from '@hbs/shared'
 import type { UtilityAnalysis } from '@hbs/shared'
 import type {
   AcceptInviteRequest,
@@ -263,7 +263,38 @@ export const demoApi = {
     // A fresh object, as the live API would produce. Handing back the same
     // reference makes a state update invisible to React and the screen stops
     // reflecting writes that did in fact happen.
-    return settle(structuredClone(detail))
+    const copy = structuredClone(detail)
+    // The gap analysis is computed here rather than captured, for the same
+    // reason the utility analysis is: it is a pure function of the building's
+    // own data, so running it gives the demo the real engine and removes any
+    // chance of a stored blob disagreeing with what the server would say.
+    if (copy.currentAssessment) {
+      const marginal =
+        copy.recentEntries.length > 0
+          ? marginalCostPerKbtu(
+              analyzeUtilityAccounts({
+                building: copy.building,
+                meters: copy.meters,
+                entries: copy.recentEntries,
+                metrics: copy.metrics,
+                asOf: new Date().toISOString().slice(0, 10),
+              }),
+            )
+          : null
+      copy.gap = analyzeGap({
+        assessment: copy.currentAssessment,
+        propertyType: copy.building.propertyType,
+        metrics: copy.metrics,
+        annualSiteKbtu:
+          [...copy.metrics].sort((x, y) => y.year - x.year)[0]?.totalSiteEnergyKbtu ?? null,
+        costPerKbtu: marginal?.value ?? null,
+        costBasis: marginal?.basis ?? null,
+        today: new Date().toISOString().slice(0, 10),
+      })
+    } else {
+      copy.gap = null
+    }
+    return settle(copy)
   },
 
   addConsumption: async (

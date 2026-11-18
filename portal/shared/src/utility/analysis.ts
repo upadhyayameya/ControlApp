@@ -461,7 +461,7 @@ function rollupMeter(
         'gap',
         gap >= MISSING_BILL_DAYS ? 'critical' : 'warning',
         gap >= MISSING_BILL_DAYS
-          ? `"${meter.name}" has no bills for ${gap} days (${toIso(parseDay(current.endDate) + DAY_MS)} to ${toIso(parseDay(next.startDate) - DAY_MS)}) — at least one whole bill is missing, so annual totals and the EUI are understated.`
+          ? `"${meter.name}" has no bills for ${gap} days (${toIso(parseDay(current.endDate) + DAY_MS)} to ${toIso(parseDay(next.startDate) - DAY_MS)}) — at least one whole bill is missing. ENERGY STAR will not report annual energy metrics at all for a year with a hole in it, so this does not merely understate the total: it can cost the whole benchmark year, and with it the ability to show compliance for that year.`
           : `"${meter.name}" has a ${gap}-day gap between bills around ${current.endDate}.`,
         {
           periodStart: toIso(parseDay(current.endDate) + DAY_MS),
@@ -984,5 +984,42 @@ export function analyzeUtilityAccounts(input: {
     reconciliation,
     findings,
     dataQualityScore: scoreFor(findings),
+  }
+}
+
+/**
+ * What one more kBtu costs this building, energy-weighted across its meters.
+ *
+ * This is the number to price a saving at. The blended cost per kBtu includes
+ * standing charges that do not move with consumption, so using it overstates
+ * what a retrofit returns — on a building paying $639 a bill in fixed charges,
+ * by enough to change whether a measure pays back.
+ *
+ * Only meters with a trustworthy fit contribute (r² ≥ 0.8), weighted by how
+ * much energy each carries, because a saving is far more likely to come out of
+ * the fuel the building uses most. Returns null rather than a guess when no
+ * meter has a usable fit, which leaves the saving unpriced instead of wrong.
+ */
+export function marginalCostPerKbtu(a: UtilityAnalysis): { value: number; basis: string } | null {
+  let weighted = 0
+  let weight = 0
+  const named: string[] = []
+  for (const m of a.meters) {
+    if (!m.isEnergy || m.type === 'Electric - Solar') continue
+    if (!m.rate || m.rate.rSquared < 0.8 || m.totalKbtu === null || m.totalKbtu <= 0) continue
+    // The fit is per billed unit; convert it to a cost per kBtu.
+    const kbtuPerUnit = toKbtu(1, m.unit, m.type)
+    if (kbtuPerUnit === null || kbtuPerUnit <= 0) continue
+    weighted += (m.rate.marginalRate / kbtuPerUnit) * m.totalKbtu
+    weight += m.totalKbtu
+    named.push(m.name)
+  }
+  if (weight === 0) return null
+  return {
+    value: weighted / weight,
+    basis:
+      named.length === 1
+        ? `the marginal rate fitted from ${named[0]}'s bills, excluding standing charges`
+        : `marginal rates fitted from this building's own bills across ${named.length} meters, weighted by energy and excluding standing charges`,
   }
 }

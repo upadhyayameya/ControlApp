@@ -3,6 +3,7 @@
 export * from './types.js'
 export * from './beps/standards.js'
 export * from './beps/engine.js'
+export * from './beps/gap.js'
 export * from './offerings.js'
 export * from './platform.js'
 export * from './api.js'

@@ -15,7 +15,8 @@ import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { Router } from 'express'
 import { z } from 'zod'
-import { analyzeUtilityAccounts, emptyTotals, mergeTotals } from '@hbs/shared'
+import { analyzeGap, analyzeUtilityAccounts, emptyTotals, marginalCostPerKbtu, mergeTotals } from '@hbs/shared'
+import type { GapAnalysis } from '@hbs/shared'
 import type {
   BuildingDetailResponse,
   StaffClientSummary,
@@ -164,12 +165,52 @@ api.get('/buildings/:id', requireAuth, (req, res) => {
     .all(buildingId)
     .map(toConsumptionEntry)
 
+  // What closing the gap would take, priced at this building's own rates.
+  //
+  // The marginal cost comes from the utility analysis rather than an assumed
+  // tariff, which means reading the building's bills here. That is the only
+  // honest source for it: a saving priced at a blended rate is overstated by
+  // whatever the standing charges are, and priced at a national average it is
+  // simply a different building's number.
+  const latestMetric = [...metrics].sort((x, y) => y.year - x.year)[0] ?? null
+  let gap: GapAnalysis | null = null
+  if (current) {
+    const entries = db
+      .prepare<[string], ConsumptionRow>(
+        'SELECT * FROM consumption_entries WHERE building_id = ? ORDER BY start_date',
+      )
+      .all(buildingId)
+      .map(toConsumptionEntry)
+    const marginal =
+      entries.length > 0
+        ? marginalCostPerKbtu(
+            analyzeUtilityAccounts({
+              building,
+              meters,
+              entries,
+              metrics,
+              asOf: new Date().toISOString().slice(0, 10),
+            }),
+          )
+        : null
+    gap = analyzeGap({
+      assessment: current,
+      propertyType: building.propertyType,
+      metrics,
+      annualSiteKbtu: latestMetric?.totalSiteEnergyKbtu ?? null,
+      costPerKbtu: marginal?.value ?? null,
+      costBasis: marginal?.basis ?? null,
+      today: new Date().toISOString().slice(0, 10),
+    })
+  }
+
   res.json({
     building,
     meters,
     metrics,
     assessments: all,
     currentAssessment: current,
+    gap,
     recommendations: recommendationsForBuilding(building, metrics, organization?.tier ?? 'benchmarking'),
     alerts: listAlerts(db, organizationId, buildingId),
     recentEntries,
