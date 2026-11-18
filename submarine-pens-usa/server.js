@@ -12,6 +12,7 @@ import { createCatalog, productSummary, publicConfig } from "./lib/catalog.js";
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(ROOT, "public");
 const MESSAGES_FILE = path.join(ROOT, "data", "messages.jsonl");
+const SUBSCRIBERS_FILE = path.join(ROOT, "data", "subscribers.jsonl");
 
 await loadDotEnv(path.join(ROOT, ".env"));
 
@@ -50,7 +51,7 @@ const MIME = {
 // Pretty URLs -> files in public/
 const PAGES = {
   "/": "index.html",
-  "/shop": "index.html",
+  "/shop": "shop.html",
   "/about": "about.html",
   "/contact": "contact.html",
   "/policies/shipping": "policies/shipping.html",
@@ -252,7 +253,7 @@ async function serveProductPage(res, handle) {
 
 async function sitemap(res) {
   const { products } = await catalog.get();
-  const urls = [...Object.keys(PAGES).filter((u) => u !== "/order/success" && u !== "/shop"), ...products.map((p) => `/products/${p.id}`)];
+  const urls = [...Object.keys(PAGES).filter((u) => u !== "/order/success"), ...products.map((p) => `/products/${p.id}`)];
   res.writeHead(200, { "Content-Type": MIME[".xml"] });
   res.end(
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
@@ -300,6 +301,15 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { url: "/order/success?demo=1" });
       }
       return sendJson(res, 200, { url: await createSquareCheckout(priced) });
+    }
+    if (pathname === "/api/subscribe" && req.method === "POST") {
+      const body = await readJsonBody(req, 4096);
+      const email = String(body.email || "").trim().toLowerCase().slice(0, 200);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(400, "Please enter a valid email address.");
+      if (rateLimited("sub:" + (req.socket.remoteAddress || "?"))) throw new HttpError(429, "Too many requests. Please try again later.");
+      await mkdir(path.dirname(SUBSCRIBERS_FILE), { recursive: true });
+      await appendFile(SUBSCRIBERS_FILE, JSON.stringify({ at: new Date().toISOString(), email }) + "\n");
+      return sendJson(res, 200, { ok: true });
     }
     if (pathname === "/api/contact" && req.method === "POST") {
       await handleContact(req);

@@ -6,14 +6,20 @@ with photos cut from the catalogue pages. **US prices are calculated from the In
 M.R.P.** (at least 3× the India price, covering duty, freight and fees), so when ₹ prices
 change you just update the M.R.P. Customers pay on **Square's secure hosted checkout**.
 
-**Pages:** Shop (filters, search, sort) · Product pages (gallery, colour/pack
-options) · Cart drawer with free-shipping progress · About · Contact (form) ·
-Shipping, Returns, Privacy and Terms policies · Order confirmation · 404 · `sitemap.xml`.
+**Pages:** Home (hero slider, category tiles, New & Noteworthy and Signature Pens
+carousels, Horizon feature, gift sets, scented inks, brand story) · Shop (`/shop`: category,
+price, colour-family and "new" filters, search, sort, load more) · Product pages (gallery
+with zoom, colour swatches, Add to bag / Buy it now, details accordions, related products,
+sticky buy bar on phones) · Live search overlay · Bag drawer with free-shipping progress ·
+About · Contact (form) · Newsletter sign-up (saved to `data/subscribers.jsonl`) · Shipping,
+Returns, Privacy and Terms policies · Order confirmation · 404 · `sitemap.xml`.
 
 ```
 data/us-range.csv           ← THE US RANGE (edit this): one row per catalogue code
 data/catalogue-2026-27.json ← catalogue facts per code: photo, packaging, details, page, NEW
 data/india-website.json     ← products from submarinepens.com, used for extra photos/descriptions
+data/product-copy.json      ← optional hand-written product descriptions (override the generated ones)
+public/img/brand/           ← banners, category tiles and lifestyle photos from submarinepens.com
 site.config.json            ← pricing assumptions, shipping, returns, contact details, policy wording
 public/img/products/        ← product photos cut from the catalogue
 public/              ← the website (HTML, CSS, JS, logo)

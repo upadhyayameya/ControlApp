@@ -59,6 +59,7 @@ export function createCatalog(root) {
     range: path.join(root, "data", "us-range.csv"),
     facts: path.join(root, "data", "catalogue-2026-27.json"),
     web: path.join(root, "data", "india-website.json"),
+    copy: path.join(root, "data", "product-copy.json"),
     config: path.join(root, "site.config.json"),
   };
   let cache = null;
@@ -79,6 +80,8 @@ export function createCatalog(root) {
     let web = [];
     try { web = JSON.parse(await readFile(files.web, "utf8")); } catch {}
     const webById = new Map(web.map((p) => [p.id, p]));
+    let copy = {};
+    try { copy = JSON.parse(await readFile(files.copy, "utf8")); } catch {}
     const facts = factsDoc.products || {};
 
     // group included rows into products, keeping the CSV's order
@@ -117,7 +120,7 @@ export function createCatalog(root) {
       if (!hasOptions) variants.forEach((v) => { v.options = []; });
       const webId = (factsDoc.india_website_match || {})[name];
       const wp = webId ? webById.get(webId) : null;
-      const description_html = wp?.description_html || describe(name, category, rows, facts);
+      const description_html = copy[name] || wp?.description_html || describe(name, category, rows, facts);
       const images = [];
       for (const v of variants) if (v.image && !images.some((i) => i.src === v.image)) images.push({ src: v.image, alt: v.title ? `${name} – ${v.title}` : name });
       for (const im of wp?.images || []) if (images.length < 12) images.push({ src: im.src, alt: im.alt || name });

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop All Pens | Submarine Pens USA</title>
+  <meta name="description" content="Shop Submarine fountain pens, roller pens, ball pens, gift sets, scented inks and refills. Free US shipping over $50." />
+  <meta name="theme-color" content="#141c3f" />
+  <link rel="icon" type="image/png" href="/img/mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main id="main">
+    <section class="shop-hero">
+      <div class="wrap">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><span id="crumbHere">Shop</span></nav>
+        <h1 id="shopTitle">Shop all pens</h1>
+        <p id="shopIntro">Fountain, roller and ball pens, gift sets and scented inks from the 2026–27 collection.</p>
+        <nav class="cat-pills" id="catPills" aria-label="Categories"></nav>
+      </div>
+    </section>
+
+    <div class="wrap shop-layout">
+      <aside class="filters" id="filters" aria-label="Filters" aria-hidden="false">
+        <div class="filters-head"><h2>Filters</h2><button class="icon-btn" type="button" id="filtersClose" aria-label="Close filters">✕</button></div>
+        <div class="filters-body">
+          <div class="filter-group">
+            <h3>Price</h3>
+            <div id="priceFilters"></div>
+          </div>
+          <div class="filter-group">
+            <h3>Colour</h3>
+            <div class="swatch-filter" id="colourFilters"></div>
+          </div>
+          <div class="filter-group">
+            <label class="toggle">New for 2026–27 <input type="checkbox" id="newOnly" /></label>
+          </div>
+        </div>
+        <div class="filters-foot">
+          <button class="btn ghost grow" type="button" id="filtersClear">Clear</button>
+          <button class="btn grow" type="button" id="filtersApply">Show results</button>
+        </div>
+      </aside>
+
+      <section aria-label="Products">
+        <div class="shop-toolbar">
+          <div class="left">
+            <button class="btn ghost small filter-btn" type="button" id="filtersOpen">Filters</button>
+            <label class="search-field"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr-only">Search</span><input type="search" id="q" placeholder="Search this collection" autocomplete="off" /></label>
+          </div>
+          <div class="left">
+            <span class="muted small" id="count" aria-live="polite"></span>
+            <label class="sr-only" for="sort">Sort by</label>
+            <select class="select" id="sort">
+              <option value="featured">Featured</option>
+              <option value="new">New arrivals</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </div>
+        </div>
+        <div class="active-filters" id="activeFilters"></div>
+        <div class="grid" id="grid"><p class="muted">Loading products…</p></div>
+        <div class="load-more" id="loadMore" hidden>
+          <span id="shown"></span>
+          <div class="bar"><i id="shownBar"></i></div>
+          <button class="btn ghost" type="button" id="moreBtn">Load more</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/js/layout.js"></script>
+  <script type="module" src="/js/shop.js"></script>
+</body>
+</html>

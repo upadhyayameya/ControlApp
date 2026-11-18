@@ -3,75 +3,172 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Submarine Pens USA | Fountain, Roller &amp; Ball Pens</title>
-  <meta name="description" content="Shop Submarine Pens in the USA: fountain pens, roller pens, ball pens and gift sets, shipped across all 50 states." />
+  <title>Submarine Pens USA | Fountain, Roller &amp; Ball Pens Since 1995</title>
+  <meta name="description" content="Submarine Pens, crafting writing instruments since 1995. Shop fountain pens, roller pens, ball pens, gift sets and scented inks, shipped across the USA." />
   <meta property="og:title" content="Submarine Pens USA" />
-  <meta property="og:description" content="Fountain pens, roller pens, ball pens and gift sets, shipped across the USA." />
+  <meta property="og:description" content="Fountain pens, roller pens, ball pens, gift sets and scented inks, shipped across the USA." />
+  <meta property="og:image" content="/img/brand/hero-lion-cover.jpg" />
   <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#141c3f" />
   <link rel="icon" type="image/png" href="/img/mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" />
+  <link rel="preload" as="image" href="/img/brand/hero-lion-cover.jpg" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <main id="main">
-    <section class="hero">
-      <div class="wrap hero-inner">
-        <div>
-          <p class="eyebrow">Crafting pens since 1995 · Now shipping across the USA</p>
-          <h1>Writing instruments with a <em>signature</em> of their own.</h1>
-          <p class="lede">Fountain pens, roller pens and ball pens from Submarine — designed and finished in India, now available to order in US dollars.</p>
-          <div class="hero-cta">
-            <a class="btn" href="#shop">Shop the collection</a>
-            <a class="btn ghost light" href="/about">Our story</a>
+    <!-- hero -->
+    <section class="hero" id="hero" aria-roledescription="carousel" aria-label="Featured collections">
+      <div class="slides">
+        <div class="slide slide-cover active" role="group" aria-roledescription="slide" aria-label="1 of 3">
+          <img src="/img/brand/hero-lion-cover.jpg" alt="Royal Edition Lion fountain pen in gunmetal with a gold nib" width="1500" height="1077" />
+          <div class="slide-content">
+            <p class="eyebrow">Collection 2026–27</p>
+            <h1>Inspired by Power.<br /><em>Designed</em> for Excellence.</h1>
+            <p class="lede">Fountain, roller and ball pens crafted since 1995, now shipping across the United States.</p>
+            <div class="hero-cta">
+              <a class="btn gold" href="/shop">Shop the collection</a>
+              <a class="btn light" href="/shop?category=Fountain%20Pens">Fountain pens</a>
+            </div>
+          </div>
+        </div>
+        <div class="slide slide-banner" role="group" aria-roledescription="slide" aria-label="2 of 3">
+          <img src="/img/brand/banner-lion.jpg" alt="Royal Edition Lion pen series: ball pen, roller pen and fountain pen" loading="lazy" width="1600" height="900" />
+          <div class="slide-content">
+            <div class="hero-cta"><a class="btn white" href="/shop?q=lion">Shop the Lion Series</a></div>
+          </div>
+        </div>
+        <div class="slide slide-banner" role="group" aria-roledescription="slide" aria-label="3 of 3">
+          <img src="/img/brand/banner-horizon.jpg" alt="Horizon pen series with scented inks" loading="lazy" width="1600" height="900" />
+          <div class="slide-content">
+            <div class="hero-cta"><a class="btn white" href="/products/horizon-dual-shade-fragrance-roller-and-fountain-pen-set">Discover Horizon</a></div>
           </div>
         </div>
       </div>
-    </section>
-
-    <section class="cats wrap" aria-label="Shop by category">
-      <a href="/?category=Fountain%20Pens#shop"><strong>Fountain Pens</strong><span>Classic nibs, converters &amp; cartridges</span></a>
-      <a href="/?category=Roller%20Pens#shop"><strong>Roller Pens</strong><span>Smooth, wet-ink everyday writers</span></a>
-      <a href="/?category=Ball%20Pens#shop"><strong>Ball Pens</strong><span>Reliable twist &amp; click ball pens</span></a>
-      <a href="/?category=Gift%20Sets#shop"><strong>Gift Sets</strong><span>Boxed pens &amp; diary sets for gifting</span></a>
-    </section>
-
-    <section class="wrap shop" id="shop">
-      <div class="shop-head">
-        <h2>Shop all pens</h2>
-        <span class="muted" id="count"></span>
+      <div class="hero-dots" role="tablist" aria-label="Choose slide"></div>
+      <div class="hero-arrows">
+        <button type="button" data-hero="-1" aria-label="Previous slide"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 6-6 6 6 6"/></svg></button>
+        <button type="button" data-hero="1" aria-label="Next slide"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 6 6 6-6 6"/></svg></button>
       </div>
-      <div class="toolbar">
-        <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
-        <div class="tools">
-          <label class="sr-only" for="search">Search products</label>
-          <input type="search" id="search" placeholder="Search pens…" autocomplete="off" />
-          <label class="sr-only" for="sort">Sort by</label>
-          <select id="sort">
-            <option value="featured">Featured</option>
-            <option value="price-asc">Price: low to high</option>
-            <option value="price-desc">Price: high to low</option>
-            <option value="name">Name A–Z</option>
-          </select>
+    </section>
+
+    <!-- categories -->
+    <section class="section" aria-labelledby="catTitle">
+      <div class="wrap">
+        <div class="section-head centered reveal">
+          <p class="eyebrow">Find your pen</p>
+          <h2 id="catTitle">Explore Writing Styles</h2>
+        </div>
+        <div class="cat-tiles reveal">
+          <a class="cat-tile" href="/shop?category=Fountain%20Pens"><figure><img src="/img/brand/cat-fountain.jpg" alt="" loading="lazy" width="640" height="800" /></figure><strong>Fountain Pens</strong><span data-count="Fountain Pens"></span></a>
+          <a class="cat-tile" href="/shop?category=Roller%20Pens"><figure><img src="/img/brand/cat-roller.jpg" alt="" loading="lazy" width="640" height="800" /></figure><strong>Roller Pens</strong><span data-count="Roller Pens"></span></a>
+          <a class="cat-tile" href="/shop?category=Ball%20Pens"><figure><img src="/img/brand/cat-ball.jpg" alt="" loading="lazy" width="640" height="800" /></figure><strong>Ball Pens</strong><span data-count="Ball Pens"></span></a>
+          <a class="cat-tile" href="/shop?category=Gift%20Sets"><figure><img src="/img/brand/cat-gift.jpg" alt="" loading="lazy" width="640" height="794" /></figure><strong>Gift Sets</strong><span data-count="Gift Sets"></span></a>
+          <a class="cat-tile" href="/shop?category=Ink%20%26%20Refills"><figure class="mock"><img class="contain" src="/img/products/16-0012-78-100.jpg" alt="" loading="lazy" width="800" height="800" /></figure><strong>Inks &amp; Refills</strong><span data-count="Ink &amp; Refills"></span></a>
         </div>
       </div>
-      <div class="grid" id="grid" aria-live="polite">
-        <p class="muted">Loading products…</p>
+    </section>
+
+    <!-- new -->
+    <section class="section ivory" aria-labelledby="newTitle">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Collection 2026–27</p><h2 id="newTitle">New &amp; Noteworthy</h2><p>Fresh launches and our most-loved designs, in every colour.</p></div>
+          <div class="rail-nav"><button type="button" id="newPrev" aria-label="Scroll left"></button><button type="button" id="newNext" aria-label="Scroll right"></button></div>
+        </div>
+        <div class="rail" id="newRail"></div>
+        <p class="center" style="margin-top:36px"><a class="btn ghost" href="/shop">Shop the full collection</a></p>
       </div>
     </section>
 
-    <section class="trust">
-      <div class="wrap trust-grid">
-        <div><strong>Ships to all 50 states</strong><span>Tracked delivery on every order</span></div>
-        <div><strong><span data-cfg="returns.window_days">30</span>-day returns</strong><span>Not the right fit? Send it back.</span></div>
-        <div><strong>Secure checkout</strong><span>Payments processed by Square</span></div>
-        <div><strong>Real people</strong><span><a href="/contact">Contact our team</a> about any order</span></div>
+    <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee"></div></div>
+
+    <!-- Horizon feature -->
+    <section class="section" aria-labelledby="horizonTitle">
+      <div class="wrap feature">
+        <div class="feature-media reveal">
+          <img src="/img/brand/life-horizon-blue.jpg" alt="Horizon Cool Water T-Blue roller and fountain pen set with scented ink" loading="lazy" width="900" height="900" />
+          <img src="/img/brand/life-horizon-coffee.jpg" alt="Horizon Morning Coffee roller and fountain pen set with scented ink" loading="lazy" width="900" height="900" />
+        </div>
+        <div class="reveal">
+          <p class="eyebrow">Scented writing experience</p>
+          <h2 id="horizonTitle">Horizon Dual Shade: a fragrance in every stroke</h2>
+          <p>A fountain pen and a roller pen in a two-tone ombre finish, paired with a bottle of scented ink that releases a subtle aroma as you write. Seven colourways, from Cool Water T-Blue to Morning Coffee.</p>
+          <ul class="feature-list">
+            <li>1 fountain pen + 1 roller pen, both converter-filled</li>
+            <li>Scented ink bottle matched to the colourway, plus a classic blue ink</li>
+            <li>Metal body with a matte finish and chrome accents</li>
+          </ul>
+          <div class="price-line" id="horizonPrice"></div>
+          <div class="swatch-links" id="horizonSwatches"></div>
+          <a class="btn" href="/products/horizon-dual-shade-fragrance-roller-and-fountain-pen-set">Shop Horizon sets</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- signature -->
+    <section class="section ivory" aria-labelledby="sigTitle">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Statement pieces</p><h2 id="sigTitle">Signature Pens</h2><p>Metal bodies, gold and rose-gold detailing, and the Royal Edition Lion crest.</p></div>
+          <div class="rail-nav"><button type="button" id="sigPrev" aria-label="Scroll left"></button><button type="button" id="sigNext" aria-label="Scroll right"></button></div>
+        </div>
+        <div class="rail" id="sigRail"></div>
+      </div>
+    </section>
+
+    <!-- gifts -->
+    <section class="section" aria-labelledby="giftTitle">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">For every occasion</p><h2 id="giftTitle">Gifts that leave an impression</h2></div>
+          <a class="link-arrow" href="/shop?category=Gift%20Sets">All gift sets</a>
+        </div>
+        <div class="gift-grid">
+          <a class="gift-banner reveal" href="/shop?category=Gift%20Sets">
+            <img src="/img/brand/banner-lion.jpg" alt="" loading="lazy" width="1600" height="900" style="object-position:72% 100%; scale:1.35; transform-origin:70% 100%" />
+            <h3>Gift-boxed &amp; ready to give</h3>
+            <p>Pen sets, diary combos and scented collections.</p>
+            <span class="btn white small" style="align-self:flex-start">Shop gift sets</span>
+          </a>
+          <div class="gift-cards" id="giftCards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- inks -->
+    <section class="section tight ivory" aria-labelledby="inkTitle">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Fragrance in every stroke</p><h2 id="inkTitle">Scented Fountain Pen Inks</h2></div>
+          <a class="link-arrow" href="/shop?category=Ink%20%26%20Refills">Inks &amp; refills</a>
+        </div>
+        <div class="ink-row reveal" id="inkRow"></div>
+      </div>
+    </section>
+
+    <!-- story -->
+    <section class="story" aria-labelledby="storyTitle">
+      <div class="wrap story-grid">
+        <div class="reveal">
+          <p class="eyebrow">Our story</p>
+          <h2 id="storyTitle">We don't just make pens. We create <em>instruments of expression.</em></h2>
+          <p>Since 1995, Submarine has crafted writing instruments that inspire ideas, build connections and leave a lasting impression. Innovation, craftsmanship and legacy, in every pen.</p>
+          <a class="btn light" href="/about">Read our story</a>
+        </div>
+        <div class="stats reveal">
+          <div class="stat"><b>1995</b><span>Crafting pens for three decades</span></div>
+          <div class="stat"><b>3</b><span>Writing styles: ball, roller &amp; fountain</span></div>
+          <div class="stat"><b>ISO</b><span>9001 certified manufacturing</span></div>
+          <div class="stat"><b>4</b><span>Airport stores across India</span></div>
+        </div>
       </div>
     </section>
   </main>
 
   <script type="module" src="/js/layout.js"></script>
-  <script type="module" src="/js/shop.js"></script>
+  <script type="module" src="/js/home.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
 .env
 node_modules
 data/messages.jsonl
+data/subscribers.jsonl
