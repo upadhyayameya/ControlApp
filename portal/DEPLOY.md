@@ -108,6 +108,7 @@ In Render: **Environment → Add Environment Variable**, three of them:
 | `ESPM_USERNAME` | your Portfolio Manager web-services username |
 | `ESPM_PASSWORD` | its password |
 | `ESPM_ENVIRONMENT` | `test` while you are trying it, `live` when you are not |
+| `ESPM_ACCOUNT_ID` | the account id those credentials belong to (`522791` for the HBS test account) |
 
 Save. Render restarts the service. The `fixture mode` warning should be gone
 from the log.
@@ -115,11 +116,17 @@ from the log.
 Then, in the portal, sign in as staff, pick an organization, and press **Pull
 from Portfolio Manager**.
 
-> Be prepared for this to need an hour of fiddling. The ENERGY STAR API was
-> unreachable from the environment this was built in, so the live path is
-> correct by construction and tested against recorded responses, but has never
-> spoken to the real service. The likeliest problem is metric names: see
-> *Known unknowns* in the README.
+> This path has since been exercised against the real service, so the warning
+> that used to sit here no longer applies. Account, property, meter,
+> consumption and metrics calls all work, and all eight metric names in
+> `METRIC_NAMES` were confirmed to return values — worth knowing because ESPM
+> silently omits a name it does not recognise rather than erroring, so a typo
+> shows up as a permanently empty column rather than a failure.
+>
+> One thing to expect: a property whose billing data has a gap gets **no**
+> annual energy metrics from ESPM for that year — not a reduced figure,
+> nothing. The portal says so where it matters, but it is surprising the first
+> time a year comes back empty.
 
 ## 6. Turn on email
 

@@ -76,3 +76,8 @@ services:
         sync: false
       - key: ESPM_ENVIRONMENT
         sync: false
+      # The ENERGY STAR account id the shared HBS connection syncs. Without it
+      # the first pull has to discover it, which works, but setting it saves a
+      # round trip and makes the connection legible in the dashboard.
+      - key: ESPM_ACCOUNT_ID
+        sync: false
