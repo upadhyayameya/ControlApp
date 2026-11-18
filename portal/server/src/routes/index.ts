@@ -32,9 +32,11 @@ import {
   toConnection,
   toConsumptionEntry,
   toMeter,
+  toSyncRun,
   type ConnectionRow,
   type ConsumptionRow,
   type MeterRow,
+  type SyncRunRow,
 } from '../db/rows.js'
 import { isFixtureMode } from '../espm/factory.js'
 import { connectionFor } from '../services/connections.js'
@@ -410,9 +412,9 @@ api.get('/sync/status', requireAuth, (req, res) => {
   const db = getDb()
   const connection = activeConnection(db, scopeOrganizationId(req))
   const runs = db
-    .prepare<[], never>('SELECT * FROM sync_runs ORDER BY started_at DESC LIMIT 20')
+    .prepare<[], SyncRunRow>('SELECT * FROM sync_runs ORDER BY started_at DESC LIMIT 20')
     .all()
-    .map((r) => r as never)
+    .map(toSyncRun)
 
   const counts = db
     .prepare<[], { pending: number; failed: number }>(
@@ -424,7 +426,7 @@ api.get('/sync/status', requireAuth, (req, res) => {
     .get()
 
   res.json({
-    runs: runs as SyncStatusResponse['runs'],
+    runs,
     lastPullAt: connection.lastPullAt,
     pendingPushes: counts?.pending ?? 0,
     failedPushes: counts?.failed ?? 0,
@@ -607,7 +609,7 @@ api.get('/staff/clients', requireAuth, requireStaff, (_req, res) => {
       entries,
       totals: clientTotals,
       memberCount,
-      connectionStatus: summaryFor(db, organization.id)?.status ?? 'none',
+      ...connectionFacts(db, organization.id),
     })
   }
 
@@ -637,4 +639,26 @@ api.get('/espm/connection', requireAuth, requireStaff, (_req, res) => {
  */
 function activeConnection(db: ReturnType<typeof getDb>, organizationId: string | null) {
   return connectionFor(db, organizationId)
+}
+
+/**
+ * How a tenant actually reaches Portfolio Manager, for the staff client list.
+ *
+ * Syncing falls back to the shared HBS service-provider account when a tenant
+ * has not connected its own, so asking only about the tenant's own connection
+ * reported "none" for organizations whose data was arriving perfectly well —
+ * on the one screen HBS staff use to see whether a client is set up. The two
+ * cases need telling apart rather than collapsing: a tenant on the shared
+ * account is working but cannot be handed its own credentials back, and a
+ * tenant with neither is genuinely not connected.
+ */
+function connectionFacts(
+  db: ReturnType<typeof getDb>,
+  organizationId: string,
+): { connectionStatus: StaffClientSummary['connectionStatus']; connectionVia: StaffClientSummary['connectionVia'] } {
+  const own = summaryFor(db, organizationId)
+  if (own) return { connectionStatus: own.status, connectionVia: 'own' }
+  const shared = summaryFor(db, null)
+  if (shared) return { connectionStatus: shared.status, connectionVia: 'hbs-shared' }
+  return { connectionStatus: 'none', connectionVia: 'none' }
 }

@@ -149,6 +149,12 @@ export interface StaffClientSummary {
   totals: PortfolioTotals
   memberCount: number
   connectionStatus: 'connected' | 'error' | 'unverified' | 'none'
+  /**
+   * Which connection that status describes: the tenant's own, the shared HBS
+   * service-provider account they fall back to, or nothing at all. Without
+   * this the list cannot tell "not set up" from "set up through us".
+   */
+  connectionVia: 'own' | 'hbs-shared' | 'none'
 }
 
 export interface StaffOverviewResponse {

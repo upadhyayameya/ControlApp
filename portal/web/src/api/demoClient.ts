@@ -856,7 +856,11 @@ export const demoApi = {
         entries,
         totals: clientTotals,
         memberCount: tenant?.members.length ?? 0,
-        connectionStatus: tenant?.connection?.status ?? 'none',
+        // The demo mirrors the server: a tenant without its own connection is
+        // still served by the shared HBS account, so it reads as connected
+        // through HBS rather than as not set up.
+        connectionStatus: tenant?.connection?.status ?? 'connected',
+        connectionVia: tenant?.connection ? 'own' : 'hbs-shared',
       })
     }
 

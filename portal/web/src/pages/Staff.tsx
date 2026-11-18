@@ -258,16 +258,27 @@ function ClientCard({ client }: { client: StaffClientSummary }): JSX.Element {
               {client.memberCount === 1 ? 'person' : 'people'} ·{' '}
               {int(client.totals.buildings)}{' '}
               {client.totals.buildings === 1 ? 'building' : 'buildings'} ·{' '}
+              {/* A tenant without its own connection is still synced through
+                  the shared HBS account, so "none" would be wrong about a
+                  client whose data is arriving perfectly well. The two cases
+                  need telling apart: one is working but on our credentials,
+                  the other is not set up at all. */}
               <span
                 className={
-                  client.connectionStatus === 'connected'
-                    ? 'text-good'
-                    : client.connectionStatus === 'error'
-                      ? 'text-bad'
-                      : 'text-ink-3'
+                  client.connectionVia === 'none'
+                    ? 'text-ink-3'
+                    : client.connectionStatus === 'connected'
+                      ? 'text-good'
+                      : client.connectionStatus === 'error'
+                        ? 'text-bad'
+                        : 'text-warn'
                 }
               >
-                ESPM {client.connectionStatus}
+                {client.connectionVia === 'none'
+                  ? 'ESPM not connected'
+                  : client.connectionVia === 'hbs-shared'
+                    ? `ESPM via HBS${client.connectionStatus === 'connected' ? '' : ` · ${client.connectionStatus}`}`
+                    : `ESPM own account · ${client.connectionStatus}`}
               </span>
             </p>
           </div>
