@@ -223,16 +223,14 @@ button { cursor: pointer; }
 .pill { background: #fff; color: var(--ink); font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; box-shadow: var(--shadow-sm); }
 .pill.new { background: var(--navy); color: #fff; }
 .pill.gold { background: var(--gold); color: #fff; }
-.quick-add { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2; opacity: 0; transform: translateY(8px); transition: opacity .25s, transform .25s var(--ease); }
+/* quick add: a small round bag button in the photo's corner (never covers the product) */
+.quick-add { position: absolute; z-index: 3; top: 12px; right: 12px; width: 42px; height: 42px; border-radius: 50%; border: 0; background: #fff; color: var(--ink); display: grid; place-items: center; box-shadow: var(--shadow-sm); opacity: 0; transform: scale(.85); transition: opacity .2s, transform .2s var(--ease), background .2s, color .2s; }
+.quick-add .icon { width: 20px; height: 20px; }
 .card:hover .quick-add, .card:focus-within .quick-add { opacity: 1; transform: none; }
-.quick-add .btn { width: 100%; padding: 11px 14px; font-size: .88rem; background: rgba(255,255,255,.95); color: var(--ink); border-color: transparent; backdrop-filter: blur(6px); }
-.quick-add .btn:hover { background: var(--navy); color: #fff; box-shadow: none; }
+.quick-add:hover { background: var(--navy); color: #fff; }
 /* touch screens have no hover: show a round bag button on single-option cards */
 @media (hover: none) {
-  .quick-add { opacity: 1; transform: none; left: auto; right: 10px; bottom: 10px; }
-  .quick-add:has(a) { display: none; }
-  .quick-add .btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 0; gap: 0; background: #fff; box-shadow: var(--shadow-sm); }
-  .quick-add .btn .icon { width: 20px; height: 20px; }
+  .quick-add { opacity: 1; transform: none; width: 40px; height: 40px; top: 10px; right: 10px; }
 }
 .card-body { padding: 14px 2px 0; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .card-cat { font-size: .7rem; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-weight: 600; }

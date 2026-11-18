@@ -107,12 +107,10 @@ export function productCard(p, { eager = false } = {}) {
       <div class="card-badges">${p.new ? `<span class="pill new">New</span>` : ""}</div>
     </a>
     ${
-      p.purchasable
-        ? `<div class="quick-add">${
-            single
-              ? `<button class="btn" data-add="${esc(p.variants[0].id)}">${icon("bag")} Quick add</button>`
-              : `<a class="btn" href="${href}">Choose ${sw.length ? "colour" : "option"}</a>`
-          }</div>`
+      // single-option products get a small round "add to bag" button in the corner; products with
+      // colours/options have none (the whole card opens the product page), so nothing covers the photo
+      single
+        ? `<button class="quick-add" type="button" data-add="${esc(p.variants[0].id)}" aria-label="Add ${esc(p.name)} to bag" title="Add to bag">${icon("bag")}</button>`
         : ""
     }
     <div class="card-body">
