@@ -1,0 +1,28 @@
+name: Correction to Mumbai Public Works
+description: Report something wrong or missing on the portal, with a source.
+title: "Correction: "
+labels: [correction]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page link
+      description: Copy the address of the page or item.
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong or missing?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source that shows the correct information
+      description: An official document, court record or news report. Corrections without a source cannot be made.
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Every correction is checked against its source before the portal changes. Changes are listed on the About page under "Changes and corrections".

@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""Air quality for Mumbai from official monitoring stations (CPCB / MPCB / IITM-SAFAR / BMC),
+read through the OpenAQ v3 API, written to data/aqi.js.
+
+    OPENAQ_API_KEY=... python3 tools/fetch_aqi.py
+
+For each station that reported in the last 6 hours, the script averages the last 24 hours of
+PM2.5 and PM10 readings and converts them with CPCB's National AQI breakpoints. The official
+AQI also uses NO2, SO2, O3, CO, NH3 and Pb where measured; this is the PM-based value, which
+decides the AQI in Mumbai on most days. The page labels it accordingly.
+Standard library only.
+"""
+import json
+import os
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta, timezone
+
+API = "https://api.openaq.org/v3"
+KEY = os.environ.get("OPENAQ_API_KEY", "")
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "..", "data", "aqi.js")
+
+# Mumbai (BMC limits, roughly) bounding box: lon_min, lat_min, lon_max, lat_max
+BBOX = (72.77, 18.89, 72.99, 19.28)
+
+# CPCB National AQI breakpoints (24-hour average, µg/m³)
+BREAKS = {
+    "pm25": [(0, 30, 0, 50), (31, 60, 51, 100), (61, 90, 101, 200), (91, 120, 201, 300), (121, 250, 301, 400), (251, 1000, 401, 500)],
+    "pm10": [(0, 50, 0, 50), (51, 100, 51, 100), (101, 250, 101, 200), (251, 350, 201, 300), (351, 430, 301, 400), (431, 2000, 401, 500)],
+}
+CATEGORY = [(50, "Good"), (100, "Satisfactory"), (200, "Moderate"), (300, "Poor"), (400, "Very poor"), (500, "Severe")]
+
+
+def get(path, params=None):
+    url = API + path + ("?" + urllib.parse.urlencode(params) if params else "")
+    req = urllib.request.Request(url, headers={"X-API-Key": KEY or "proxy-injected", "User-Agent": "public-works-dashboard"})
+    for i in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.load(r)
+        except Exception as e:
+            if i == 3:
+                raise
+            time.sleep(2 * (i + 1))
+
+
+def sub_index(param, c):
+    for lo, hi, ilo, ihi in BREAKS[param]:
+        if c <= hi:
+            c = max(c, lo)
+            return round(ilo + (ihi - ilo) * (c - lo) / (hi - lo))
+    return 500
+
+
+def category(aqi):
+    return next(name for top, name in CATEGORY if aqi <= top)
+
+
+def main():
+    now = datetime.now(timezone.utc)
+    locs = get("/locations", {"bbox": ",".join(map(str, BBOX)), "limit": 200})["results"]
+    stations = []
+    for loc in locs:
+        provider = (loc.get("provider") or {}).get("name") or ""
+        if provider not in ("CPCB", "caaqm") or "Mumbai" not in loc["name"] or "Navi Mumbai" in loc["name"]:
+            continue  # official Indian CAAQM stations inside Mumbai only (drops AirNow, Thane, Navi Mumbai)
+        last = (loc.get("datetimeLast") or {}).get("utc")
+        if not last or now - datetime.fromisoformat(last.replace("Z", "+00:00")) > timedelta(hours=6):
+            continue  # stale or retired station
+        sensors = {s["parameter"]["name"]: s["id"] for s in loc.get("sensors", []) if s["parameter"]["name"] in ("pm25", "pm10")}
+        if not sensors:
+            continue
+        means = {}
+        for param, sid in sensors.items():
+            hours = get(f"/sensors/{sid}/hours", {
+                "datetime_from": (now - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "datetime_to": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "limit": 48,
+            })["results"]
+            vals = [h["value"] for h in hours if h.get("value") is not None and h["value"] >= 0]
+            if len(vals) >= 16:  # CPCB needs at least 16 hours of data for a 24-hour value
+                means[param] = round(sum(vals) / len(vals), 1)
+            time.sleep(0.3)
+        if not means:
+            continue
+        subs = {p: sub_index(p, v) for p, v in means.items()}
+        aqi = max(subs.values())
+        stations.append({
+            "id": loc["id"], "name": loc["name"],
+            "lat": loc["coordinates"]["latitude"], "lng": loc["coordinates"]["longitude"],
+            "operator": (loc.get("provider") or {}).get("name"),
+            "pm25": means.get("pm25"), "pm10": means.get("pm10"),
+            "aqi": aqi, "category": category(aqi), "driver": max(subs, key=subs.get),
+            "lastReading": last,
+        })
+        print(f"{loc['name']}: AQI {aqi}", file=sys.stderr)
+    if not stations:
+        sys.exit("no current stations; leaving data/aqi.js unchanged")
+    payload = {
+        "fetchedAt": now.strftime("%Y-%m-%dT%H:%MZ"),
+        "method": "24-hour average of PM2.5 and PM10 converted with CPCB National AQI breakpoints (needs at least 16 hourly readings). Other pollutants are not included.",
+        "source": "Official CAAQM stations (CPCB, MPCB, IITM-SAFAR, BMC) via OpenAQ",
+        "sourceUrl": "https://explore.openaq.org",
+        "stations": sorted(stations, key=lambda s: -s["lat"]),
+    }
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write("// Generated by tools/fetch_aqi.py. Do not edit by hand.\n")
+        f.write("window.PUBLIC_WORKS_AQI = " + json.dumps(payload, ensure_ascii=False, indent=1) + ";\n")
+    print(f"{len(stations)} stations -> data/aqi.js", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

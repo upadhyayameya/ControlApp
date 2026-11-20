@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mumbai Public Works</title>
+  <meta name="claude:viewport-fit-sides" content="cover" />
+  <meta name="description" content="Open dashboard of government projects in Mumbai: status, cost, who funds them, who runs them, which BMC ward they are in, and the MLA for each area." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@600;700&family=Anek+Latin:wdth,wght@75..100,500..800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0e2a3d" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <a class="board" href="#overview" aria-label="Mumbai Public Works, home">
+        <span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span>
+        <span class="latin">Mumbai Public Works</span>
+      </a>
+      <p class="tagline">Every government project in the city: what it costs, who pays, who runs it, and who represents the area.</p>
+      <div class="site-search"><div class="field search"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input type="search" id="site-q" placeholder="Search areas, projects, people" aria-label="Search the site" autocomplete="off"><kbd>/</kbd></div><div class="search-results" id="site-results" hidden></div></div>
+      <nav class="tabs" aria-label="Sections">
+        <a href="#overview" data-tab="overview">Home</a>
+        <a href="#area" data-tab="area">Your area</a>
+        <a href="#map" data-tab="map">Map</a>
+        <a href="#wards" data-tab="wards">Wards</a>
+        <a href="#services" data-tab="services">City services</a>
+        <a href="#pulse" data-tab="pulse">City pulse</a>
+        <a href="#mlas" data-tab="mlas">Representatives</a>
+        <a href="#contracts" data-tab="money">Money</a>
+        <a href="#schemes" data-tab="schemes">Schemes</a>
+        <a href="#about" data-tab="about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap"><div id="notice" class="notice" hidden></div></div>
+
+  <main class="wrap" id="app" aria-live="polite"></main>
+
+  <footer class="site"><div class="wrap" id="footer"></div></footer>
+
+  <nav class="bottom-nav" aria-label="Sections">
+    <a href="#overview" data-tab="overview"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 9l7-6 7 6M5 8v9h10V8"/></svg>Home</a>
+    <a href="#area" data-tab="area"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10z"/><circle cx="10" cy="8" r="2.2"/></svg>Your area</a>
+    <a href="#map" data-tab="map"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 5l5-2 6 2 5-2v12l-5 2-6-2-5 2z"/><path d="M7 3v12M13 5v12"/></svg>Map</a>
+    <a href="#mlas" data-tab="mlas"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7" cy="7" r="2.6"/><path d="M2.5 16c.6-2.7 2.3-4 4.5-4s3.9 1.3 4.5 4"/><circle cx="14" cy="8" r="2.1"/><path d="M12.6 12.3c.4-.2.9-.3 1.4-.3 1.8 0 3.2 1.1 3.6 3.4"/></svg>People</a>
+    <a href="#contracts" data-tab="money"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4h9M6 7.5h9M6 4h3.5a3.5 3.5 0 0 1 0 7H6l7 6"/></svg>Money</a>
+  </nav>
+
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="drawer-title" role="dialog"></aside>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="data/projects.js"></script>
+  <script src="data/routes.js"></script>
+  <script src="data/projects-state.js"></script>
+  <script src="data/projects-bmc-infra.js"></script>
+  <script src="data/projects-bmc-services.js"></script>
+  <script src="data/projects-central.js"></script>
+  <script src="data/projects-more.js"></script>
+  <script src="data/wards.js"></script>
+  <script src="data/corporators.js"></script>
+  <script src="data/ward-constituencies.js"></script>
+  <script src="data/tenders.js"></script>
+  <script src="data/contracts.js"></script>
+  <script src="data/mla-profiles.js"></script>
+  <script src="data/delays.js"></script>
+  <script src="data/yojanas.js"></script>
+  <script src="data/aqi.js"></script>
+  <script src="data/mps.js"></script>
+  <script src="data/records.js"></script>
+  <script src="data/construction.js"></script>
+  <script src="data/history.js"></script>
+  <script src="data/civic.js"></script>
+  <script src="data/pulse.js"></script>
+  <script src="data/ward-metrics.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

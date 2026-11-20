@@ -1,0 +1,15 @@
+{
+  "name": "Mumbai Public Works",
+  "short_name": "Public Works",
+  "description": "Every government project in Mumbai: what it costs, who pays, who runs it, and who represents the area.",
+  "start_url": "./index.html#overview",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#0e2a3d",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
