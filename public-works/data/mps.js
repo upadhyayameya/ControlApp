@@ -27,7 +27,8 @@ window.PUBLIC_WORKS_MPS = {
     "education": "Graduate Professional Chartered Accountant From The Institute of Chartered Accountants of India In The Year 1987, LLB From Government Law College University of Mumbai In The Year 1987",
     "age": 59,
     "profession": "Chartered Accountant, Presently Cabinet Minister In Government Of India"
-   }
+   },
+   "verifiedPost": "2026-11-20"
   },
   {
    "id": "mp-mumbai-north-central",
@@ -139,7 +140,8 @@ window.PUBLIC_WORKS_MPS = {
     "education": "Post Graduate Master of Science fro Institute of Science,Mumbai Vidyapeeth In 2000",
     "age": 49,
     "profession": "Social Service, Salary"
-   }
+   },
+   "verifiedPost": "2026-11-20"
   },
   {
    "id": "mp-mumbai-north-east",
@@ -162,11 +164,12 @@ window.PUBLIC_WORKS_MPS = {
     "caseList": [],
     "convictionList": [],
     "totalAssetsCr": 3.99,
-    "liabilitiesCr": 0.0,
+    "liabilitiesCr": 0,
     "education": "Graduate B.Com from Mumbai University Year 1992...,HSC Pass from Mumbai Board Tear 1987,..,SSC from Pune Borad Year 1985",
     "age": 55,
     "profession": "Social Worker,Business"
-   }
+   },
+   "verifiedPost": "2026-11-20"
   },
   {
    "id": "mp-mumbai-north-west",
@@ -230,7 +233,8 @@ window.PUBLIC_WORKS_MPS = {
     "education": "Graduate Bachelor of Science From Patkar College Goregaon West In The Year 1982, SSC From Maharashtra State Secondary And Higher Secondary Education Board Pune Arvind Gandbhir High School In The Year ",
     "age": 65,
     "profession": "Business, Government of Maharashtra Salary, Allowances"
-   }
+   },
+   "verifiedPost": "2026-11-20"
   },
   {
    "id": "mp-mumbai-south",
@@ -266,11 +270,12 @@ window.PUBLIC_WORKS_MPS = {
     ],
     "convictionList": [],
     "totalAssetsCr": 5.05,
-    "liabilitiesCr": 0.0,
+    "liabilitiesCr": 0,
     "education": "Graduate B.SC. from Bhavan College, Andheri, Mumbai Year 1975",
     "age": 72,
     "profession": "Member of Parliament and Trade Union Leader"
-   }
+   },
+   "verifiedPost": "2026-11-20"
   },
   {
    "id": "mp-mumbai-south-central",
@@ -297,7 +302,8 @@ window.PUBLIC_WORKS_MPS = {
     "education": "Graduate Professional Bachelor of Law From Mumbai University In The Year 1982, B. Com From Lala Lajpat Rai College of Commerce And Economic, Mahalaxmi Mumbai University In The Year 1977",
     "age": 66,
     "profession": "Voluntary Retirement, Ex- Member, Rajya Sabha"
-   }
+   },
+   "verifiedPost": "2026-11-20"
   }
  ]
 };
