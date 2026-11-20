@@ -2775,7 +2775,7 @@ window.PUBLIC_WORKS_CONTRACTS = {
      "date": "2026-07-11",
      "kind": "Audit finding",
      "scope": "Mumbai",
-     "by": "Comptroller and Auditor General of India (State Finances Audit Report 2024-25)",
+     "by": "Comptroller and Auditor General of India (Report No. 3 of 2026, Compliance Audit for the year ended 31 March 2024, para 2.14; tabled 10 July 2026)",
      "summary": "The CAG found that delays in tendering MMRDA parking contracts led to cancelled tenders, unused parking facilities and a Rs 5.93 crore revenue loss. This is an audit observation.",
      "status": "unknown",
      "people": [],
