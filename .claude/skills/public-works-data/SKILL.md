@@ -69,6 +69,14 @@ DataMeet file failed (27/38) and would have attributed projects to the wrong MLA
 
 ## Keeping it current
 
+- After any change to projects or corporators, run `node public-works/tools/build-history.cjs`
+  before committing, so the public "Changes and corrections" log (About page, project and
+  corporator pages) includes it. Nothing about a project or seat should change silently.
+- Construction sites refresh weekly (`tools/fetch_construction.py`); a partial download leaves
+  the file unchanged.
+- Corrections from the public arrive as GitHub issues labelled `correction`. Treat them as
+  leads: verify against the source like any other claim before changing anything.
+
 - Tenders refresh daily via `.github/workflows/public-works.yml` (after merge to the
   default branch).
 - `validate.cjs` warns about projects not re-checked in 180 days

@@ -10,6 +10,7 @@ on:
   schedule:
     - cron: '17 2 * * *'   # tenders: 02:17 UTC = 07:47 IST, daily
     - cron: '41 */3 * * *' # air quality: every 3 hours
+    - cron: '23 21 * * 0'  # construction sites (OpenStreetMap): weekly, Sunday night
   workflow_dispatch: {}
   push:
     paths: ['public-works/**', '.github/workflows/public-works.yml']
@@ -79,3 +80,24 @@ jobs:
           git add public-works/data/tenders.js
           git commit -m "Public works: refresh tenders $(date -u +%F)"
           git push
+
+  refresh-construction:
+    if: (github.event_name == 'schedule' && github.event.schedule == '23 21 * * 0') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Fetch construction sites
+        # Leaves the file unchanged if any part of the city fails to download.
+        run: python3 public-works/tools/fetch_construction.py
+      - name: Commit if changed
+        run: |
+          git diff --quiet -- public-works/data/construction.js && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public-works/data/construction.js
+          git commit -m "Public works: refresh construction sites $(date -u +%F)"
+          git pull --rebase && git push

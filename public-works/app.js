@@ -270,6 +270,9 @@
     anchor: '<circle cx="10" cy="4.5" r="1.8"/><path d="M10 6.3V17M6 9h8M3.5 12c.5 3 3.2 5 6.5 5s6-2 6.5-5"/>',
     book: '<path d="M3 4.5C5 3.5 8 3.5 10 5c2-1.5 5-1.5 7-.5V16c-2-1-5-1-7 .5-2-1.5-5-1.5-7-.5z"/><path d="M10 5v11.5"/>',
     bolt: '<path d="M11 2L4 11h5l-1 7 7-9h-5z"/>',
+    share: '<circle cx="15" cy="4.5" r="2"/><circle cx="5" cy="10" r="2"/><circle cx="15" cy="15.5" r="2"/><path d="M6.8 9l6.4-3.5M6.8 11l6.4 3.5"/>',
+    image: '<rect x="2.5" y="4" width="15" height="12" rx="1.5"/><circle cx="7" cy="8.5" r="1.5"/><path d="M3 15l4.5-4 3 2.5 3-3 4 3.5"/>',
+    flag: '<path d="M4 18V3M4 3.5h10l-2 3.5 2 3.5H4"/>',
     clock: '<circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/>',
     compare: '<path d="M4 3v14M16 3v14M4 7h5M4 12h3M16 9h-6M16 14h-4"/>',
     dot: '<circle cx="10" cy="10" r="3"/>',
@@ -315,10 +318,10 @@
       '<section class="hero"><div class="hero-main"><div class="eyebrow">Mumbai · updated ' + esc(fmtDate(META.lastUpdated)) + '</div>' +
       "<h2>What\u2019s being built in Mumbai, who pays for it, and who answers for it.</h2>" +
       "<p>Every major BMC, state and central project in the city, the people you elect, the contracts they award and the air you breathe, each fact linked to its source.</p>" +
-      '<div class="hero-search"><div class="field search">' + ICON_SEARCH + '<input type="search" id="home-q" placeholder="Search a locality, project, MLA, corporator or company" aria-label="Search" autocomplete="off"></div><div class="search-results" id="home-results" hidden></div></div></div>' +
+      '<div class="hero-search"><div class="field search">' + ICON_SEARCH + '<input type="search" id="home-q" placeholder="Search a locality, project, MLA, corporator or company" aria-label="Search" autocomplete="off"></div><div class="search-results" id="home-results" hidden></div></div><div class="hero-acts">' + locateBtn() + myAreaLink() + '</div></div>' +
       '<dl class="hero-figs"><div><dt>Projects tracked</dt><dd>' + PROJECTS.length + "<small>worth " + crore(total) + '</small></dd></div><div class="alert"><dt>Delayed or stalled</dt><dd>' + late.length + "<small>" + Math.round(100 * late.length / PROJECTS.length) + "% of all</small></dd></div><div><dt>Added by cost overruns</dt><dd>" + Math.round(overAmt / 1000).toLocaleString("en-IN") + "k<small>crore across " + over.length + " projects</small></dd></div></dl></section>" +
       exploreTiles({ late: late.length }) +
-      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Latest</div><h3>Recently reported</h3></div><a class="btn" href="#latest">All updates</a></div>' + feedList(feedItems().slice(0, 6)) + "</section>" +
+      '<section class="panel"><div class="section-head"><div><div class="eyebrow">Latest</div><h3>Recently reported</h3>' + (PREV_VISIT ? '<p class="axis-note" style="margin:4px 0 0">' + plural(feedItems().filter(function (x) { return String(x.date) > PREV_VISIT; }).length, "update") + " dated after your last visit on " + esc(fmtDate(PREV_VISIT)) + "</p>" : "") + '</div><a class="btn" href="#latest">All updates</a></div>' + feedList(feedItems().slice(0, 6)) + "</section>" +
 
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Status</div><h3>Where every project stands</h3></div><p>Tap a status to filter the list below.</p></div>' +
       '<div class="statusbar" role="img" aria-label="Projects by status">' + STATUSES.map(function (s) {
@@ -1006,7 +1009,7 @@
       "<dt>Affidavits</dt><dd>MLA case counts are what each candidate declared under oath in their 2024 nomination affidavit, as compiled by ADR. Some entries are writ petitions or election matters, not police cases.</dd>" +
       "<dt>Fairness</dt><dd>Cases filed after the 2024 election are not shown for anyone until they have been checked for all 36 MLAs. People are named only when formally charged, arrested, convicted or named in an official order.</dd>" +
       "<dt>What we don\u2019t do</dt><dd>We don\u2019t estimate missing numbers, treat delay as wrongdoing, or attribute cases to an MLA\u2019s associates without a report that formally links them.</dd></dl></section>" +
-      freshnessPanel(false) +
+      freshnessPanel(false) + historyLog() +
       '<section class="panel" id="glossary"><h3 class="eyebrow" style="margin:0 0 10px">What the words mean</h3><dl class="facts-list">' + Object.keys(GLOSS).map(function (k) { return "<dt>" + esc(k) + "</dt><dd>" + esc(GLOSS[k]) + "</dd>"; }).join("") + "</dl></section>" +
       '<section class="panel"><h3 class="eyebrow" style="margin:0 0 10px">Main sources</h3><ul class="sources">' + srcs + '</ul><h3 class="eyebrow" style="margin:18px 0 8px">Something wrong or missing?</h3><p style="margin:0;font-size:.9rem">Every figure should trace to a public document. If you have a newer progress report, an RTI reply or a correction, send it with the source link and the record will be updated.</p></section></div>';
   }
@@ -1093,6 +1096,7 @@
       (Object.keys(CORP_PARTS[p.id] || {}).length ? '<section class="panel"><h3>Local corporators</h3><p class="axis-note" style="margin:-4px 0 10px">BMC electoral wards (2026) the project\u2019s sites fall in. A site within 150 m of a ward edge lists both wards.</p><div class="table-scroll"><table class="data"><tbody>' +
         Object.keys(CORP_PARTS[p.id]).sort(function (a, b) { return a - b; }).map(function (n) { var c = CORP_BY_WARD[n]; return '<tr><td style="width:1%;white-space:nowrap" class="muted">Ward ' + esc(n) + "</td><td>" + corpLine(c) + (c && c.area ? '<div class="sub">' + esc(c.area) + "</div>" : "") + '</td><td class="sub">' + esc(uniq(CORP_PARTS[p.id][n]).join(", ")) + "</td></tr>"; }).join("") +
         "</tbody></table></div></section>" : "") +
+      '<section class="panel"><h3>Change history</h3>' + histList((HIST.projects || {})[p.id], "No change to status, cost, deadlines or progress since it was added.") + "</section>" +
       '<section class="panel"><h3>Sources</h3>' + (sources ? '<ul class="sources">' + sources + "</ul>" : '<p class="muted">No source on file.</p>') +
       (p.lastVerified ? '<p class="axis-note">Status last checked ' + fmtDate(p.lastVerified) + ". Areas: " + esc((p.areas || []).join(", ")) + "</p>" : "") + "</section>" +
       "</div>";
@@ -1286,7 +1290,7 @@
     var m = slugStr.match(/^at-(\d+)-(\d+)(?:-(.*))?$/);
     if (!m) { viewAreaPicker(); return; }
     var lat = +m[1] / 10000, lng = +m[2] / 10000;
-    var label = m[3] ? (PLACES.find(function (p) { return slug(p.name) === m[3]; }) || {}).name : null;
+    var label = m[3] === "here" ? "Your location" : m[3] ? (PLACES.find(function (p) { return slug(p.name) === m[3]; }) || {}).name : null;
     var aw = wardAt(lat, lng), info = WARD_INFO[aw] || {};
     var ews = ewardsNear(lat, lng);
     var nearby = [];
@@ -1330,6 +1334,7 @@
     var popular = ["Dadar", "Andheri", "Bandra", "Kurla", "Worli", "Borivali", "Ghatkopar", "Chembur", "Colaba", "Malad", "Mulund", "Powai", "Dharavi", "Goregaon", "Byculla", "Sion"];
     app.innerHTML = '<section class="lead"><div class="eyebrow">Your area</div><h2>What’s happening where you live?</h2><p>Type your locality to see your corporator and ward officer, projects within 1.5 km, open tenders and the air quality now.</p></section>' +
       '<section class="panel hero-search"><div class="field search">' + ICON_SEARCH + '<input type="search" id="area-q" placeholder="Your locality, e.g. Lalbaug, Chakala, Mahim" aria-label="Search for your locality" autocomplete="off"></div><div class="search-results" id="area-results" hidden></div>' +
+      '<div class="locate-row">' + locateBtn() + '<span class="axis-note" style="margin:0">Your location is used only in your browser to find your ward. It is not sent or stored anywhere.</span></div>' +
       '<div class="chips" style="margin-top:12px">' + popular.map(function (n) {
         var pl = PLACES.find(function (p) { return p.name.toLowerCase().indexOf(n.toLowerCase()) === 0; });
         return pl ? '<a class="chip" href="#' + placeSlug(pl.lat, pl.lng) + "-" + slug(pl.name) + '">' + esc(n) + "</a>" : "";
@@ -1462,6 +1467,7 @@
       ((window.PUBLIC_WORKS_WARD_AC || {})[c.ward] ? "<dt>MLA" + ((window.PUBLIC_WORKS_WARD_AC[c.ward].length > 1) ? "s" : "") + "</dt><dd>" + window.PUBLIC_WORKS_WARD_AC[c.ward].map(function (x) { var mm = mlaByConst[x[0]] || {}; return '<a href="#mla-' + esc(mm.no) + '">' + esc(mm.name || x[0]) + "</a> (" + esc(x[0]) + (window.PUBLIC_WORKS_WARD_AC[c.ward].length > 1 ? ", " + x[1] + "% of voters" : "") + ")"; }).join("<br>") + "</dd>" : "") + '<dt>BMC ward office</dt><dd><a href="#ward-' + wardSlug(aw) + '">' + esc(wardTitle(aw)) + "</a> · officer " + esc(info.assistantCommissioner || "—") + "</dd>" + (info.phone ? "<dt>Ward control room</dt><dd>" + esc(info.phone) + "</dd>" : "") + "<dt>Source</dt><dd>" + srcLinks(CORP.sources) + "</dd></dl></section>" +
       aqiCardForWard(feat) + "</div>" +
       recordSection(rec || [], { empty: rec ? "Nothing found and checked yet." : "Not researched yet. Records for all 227 corporators are being compiled and checked.", note: "Searched the same way for every corporator. Few entries usually means little coverage, not little work." }) +
+      ((HIST.corporators || {})[n] && HIST.corporators[n].some(function (x) { return x.field !== "added"; }) ? '<section class="panel"><div class="eyebrow">Changes to this seat on the portal</div>' + histList(HIST.corporators[n], "") + "</section>" : "") +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">In this electoral ward</div><h3>' + plural(ps.length, "project") + " and " + plural(tenders.length, "open tender") + " in " + esc(wardTitle(aw)) + "</h3></div></div>" +
       (ps.length ? '<div class="cards">' + sortList(ps).map(card).join("") + "</div>" : '<p class="muted" style="margin:0">No tracked projects in this electoral ward.</p>') + "</section>";
     bindClicks(app, "[data-open]", function (el) { go("#p-" + el.dataset.open); });
@@ -1599,7 +1605,7 @@
   function feedList(items) {
     return '<ol class="feed">' + items.map(function (x) {
       var u = x.src && safeUrl(x.src.url);
-      return '<li><span class="fd-date">' + esc(fmtDate(x.date)) + '</span><div class="fd-body"><div class="fd-head"><a href="' + esc(x.href) + '">' + esc(x.who) + "</a> " + (CATS.some(function (c) { return c.key === x.cat; }) ? catPill(x.cat) : '<span class="pill" style="color:var(--ink-3)">' + esc(x.cat) + "</span>") + "</div><div>" + esc(x.what) + "</div>" +
+      return '<li><span class="fd-date">' + esc(fmtDate(x.date)) + (PREV_VISIT && String(x.date) > PREV_VISIT ? '<span class="newtag">New</span>' : "") + '</span><div class="fd-body"><div class="fd-head"><a href="' + esc(x.href) + '">' + esc(x.who) + "</a> " + (CATS.some(function (c) { return c.key === x.cat; }) ? catPill(x.cat) : '<span class="pill" style="color:var(--ink-3)">' + esc(x.cat) + "</span>") + "</div><div>" + esc(x.what) + "</div>" +
         (u ? '<div class="sub"><a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc((x.src.title || u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]).slice(0, 90)) + " ↗</a></div>" : "") + "</div></li>";
     }).join("") + "</ol>";
   }
@@ -1819,7 +1825,196 @@
     mountSearch(hq, document.getElementById("site-results"));
     document.addEventListener("keydown", function (e) { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); if (drawer.classList.contains("open")) closeDrawer(); hq.focus(); } });
   }
-  window.addEventListener("hashchange", route);
+
+  // ---- change history (from git history of the data files)
+  var HIST = window.PUBLIC_WORKS_HISTORY || { projects: {}, corporators: {} };
+  function histVal(f, v) {
+    if (v == null || v === "") return "—";
+    if (f === "cost") return crore(v).replace(/<[^>]+>/g, "");
+    if (f === "vacant") return v ? "yes" : "no";
+    if (/Date$/.test(f)) return fmtDate(v);
+    if (f === "progress") return v + "%";
+    return String(v);
+  }
+  function histList(list, empty) {
+    var ch = (list || []).filter(function (x) { return x.field !== "added"; });
+    var added = (list || []).find(function (x) { return x.field === "added"; });
+    return (ch.length ? '<ol class="events">' + ch.slice().reverse().map(function (x) {
+      return '<li><div class="ev-head"><span class="ev-date">' + esc(fmtDate(x.date)) + '</span></div><div><b>' + esc(x.label || x.field) + ":</b> " + esc(histVal(x.field, x.from)) + " → <b>" + esc(histVal(x.field, x.to)) + "</b></div></li>";
+    }).join("") + "</ol>" : '<p class="muted" style="margin:0">' + esc(empty) + "</p>") +
+      '<p class="axis-note">' + (added ? "Tracked on this portal since " + esc(fmtDate(added.date)) + ". " : "") + "Dates are when the change was made here, which can be later than the event itself.</p>";
+  }
+  function historyLog() {
+    var rows = [];
+    Object.keys(HIST.projects || {}).forEach(function (id) { var p = PROJECTS.find(function (q) { return q.id === id; }); (HIST.projects[id] || []).forEach(function (x) { if (x.field !== "added" && p) rows.push({ x: x, who: p.shortName || p.name, href: "#p-" + id }); }); });
+    Object.keys(HIST.corporators || {}).forEach(function (w) { (HIST.corporators[w] || []).forEach(function (x) { if (x.field !== "added") rows.push({ x: x, who: "Corporator, electoral ward " + w, href: "#cor-" + w }); }); });
+    rows.sort(function (a, b) { return String(b.x.date).localeCompare(String(a.x.date)); });
+    return '<section class="panel" id="changes"><div class="section-head"><div><div class="eyebrow">Changes and corrections</div><h3>Every change to a project or seat on this portal</h3></div><p>Status, cost, deadline and progress changes to projects, and corrections to corporator names, parties and vacancies, since ' + esc(fmtDate(HIST.since)) + '. Built automatically from the portal’s own history, so nothing is changed silently.</p></div>' +
+      (rows.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Date</th><th>Record</th><th>Change</th></tr></thead><tbody>' + rows.map(function (r) { return "<tr><td style=\"white-space:nowrap\">" + esc(fmtDate(r.x.date)) + '</td><td><a href="' + r.href + '">' + esc(r.who) + "</a></td><td>" + esc(r.x.label) + ": " + esc(histVal(r.x.field, r.x.from)) + " → <b>" + esc(histVal(r.x.field, r.x.to)) + "</b></td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="muted">No changes yet.</p>') +
+      '<p class="axis-note">Spotted a mistake? Use “Suggest a correction” on any page, or <a href="' + REPO + '/issues?q=label%3Acorrection" target="_blank" rel="noopener">see corrections people have reported</a>.</p></section>';
+  }
+
+  // ================================================================ v6: use & share
+  var REPO = "https://github.com/upadhyayameya/ControlApp";
+  var SHARE_BASE = EMBED ? "https://claude.ai/artifact/BhZ5q6rVZy9fFqtKAA7Seq" : location.href.split("#")[0];
+  function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem("pw-" + k)); localStorage.setItem("pw-" + k, JSON.stringify(v)); } catch (e) { return null; } }
+  // ---- last visit (read once per session, then stamp today)
+  var PREV_VISIT = (function () { var p = null; try { p = sessionStorage.getItem("pw-prev"); if (p == null) { p = store("visit") || ""; sessionStorage.setItem("pw-prev", p); } } catch (e) { p = store("visit") || ""; } store("visit", new Date(TODAY).toISOString().slice(0, 10)); return p || null; })();
+
+  // ---- toast
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("on"); }, 2600);
+  }
+
+  // ---- use my location
+  function locateMe() {
+    if (!navigator.geolocation) { toast("This browser can’t share its location. Type your locality instead."); return; }
+    toast("Finding your location…");
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var la = pos.coords.latitude, ln = pos.coords.longitude;
+      if (!wardAt(la, ln)) { toast("You seem to be outside BMC limits. Type a Mumbai locality instead."); return; }
+      go("#" + placeSlug(la, ln) + "-here");
+    }, function (err) {
+      toast(err && err.code === 1 ? "Location permission was refused. Type your locality instead." : "Couldn’t get your location. Type your locality instead.");
+    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
+  }
+  function locateBtn() { return '<button type="button" class="btn locate" data-locate>' + icon("pin", 16) + "<span>Use my location</span></button>"; }
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-locate]"); if (b) { e.preventDefault(); locateMe(); } });
+
+  // ---- share
+  function pageFacts() {
+    var h = location.hash, m;
+    if ((m = h.match(/^#p-(.+)$/))) {
+      var p = PROJECTS.find(function (x) { return x.id === decodeURIComponent(m[1]); }); if (!p) return null;
+      return { kind: "Project", title: p.shortName || p.name, lines: [p.status + (p.progress != null ? " · " + p.progress + "% built" : ""), "Cost " + crore(cost(p)).replace(/<[^>]+>/g, "") + (overrunPct(p) ? " (+" + overrunPct(p) + "% over original)" : ""), (p.completedDate ? "Opened " + fmtDate(p.completedDate) : "Due " + fmtDate(p.revisedTargetDate || p.targetDate)), "Run by " + p.agency] };
+    }
+    if ((m = h.match(/^#ward-(.+)$/))) {
+      var w = wardFromSlug(m[1]); if (WARD_NAMES.indexOf(w) === -1) return null; var r = wardCard(w);
+      return { kind: "BMC ward", title: wardTitle(w), lines: [plural(r.projects, "project") + " · " + r.late + " delayed or stalled", plural(r.tenders, "open tender"), r.consLive + " active construction sites", "Ward officer: " + (r.officer || "not on file")] };
+    }
+    if ((m = h.match(/^#mla-(\d+)$/))) {
+      var ml = MLAS.find(function (x) { return String(x.no) === m[1]; }); if (!ml) return null; var c = mlaCard(ml);
+      return { kind: "MLA", title: ml.name, lines: [ml.constituency + " · " + ml.party, plural(c.ps.length, "project") + " in the constituency, " + c.late + " delayed", "Cases declared pending (2024 affidavit): " + (c.aff.pendingCases != null ? c.aff.pendingCases : "—"), "Praja score: " + (c.f.score != null ? c.f.score.toFixed(1) + "/100" : "not rated")] };
+    }
+    if ((m = h.match(/^#cor-(\d+)$/))) {
+      var co = CORP_BY_WARD[+m[1]]; if (!co) return null;
+      return { kind: "Corporator", title: co.vacant ? "Electoral ward " + m[1] + " (vacant)" : co.name, lines: ["Electoral ward " + m[1] + (co.area ? " · " + co.area : ""), (co.party || "") + (co.adminWard ? " · BMC ward " + co.adminWard : "")] };
+    }
+    if ((m = h.match(/^#at-\d+-\d+(?:-(.*))?$/))) {
+      var t = (document.querySelector(".lead h2") || {}).textContent || "This area";
+      var people = [].slice.call(document.querySelectorAll(".people .person .name")).slice(0, 3).map(function (n) { return n.textContent; });
+      var aw = /^#at-(\d+)-(\d+)/.exec(h), awd = aw ? wardAt(+aw[1] / 1e4, +aw[2] / 1e4) : null;
+      if (t === "Your location" || t === "This spot") t = awd ? wardTitle(awd) : "This area"; else if (awd) t += ", " + wardTitle(awd);
+      return { kind: "Area", title: t, lines: people.length ? ["Representatives: " + people.join(", ")] : [] };
+    }
+    return null;
+  }
+  function shareUrl() { return SHARE_BASE + location.hash; }
+  function shareLink() {
+    var f = pageFacts() || { title: document.title, lines: [] }, url = shareUrl();
+    var text = f.title + "\n" + f.lines.join("\n");
+    if (navigator.share) { navigator.share({ title: f.title, text: text, url: url }).catch(function () {}); return; }
+    var done = function () { toast("Link copied"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + "\n" + url).then(done, function () { prompt("Copy this link", url); });
+    else prompt("Copy this link", url);
+  }
+  function cardCanvas(f) {
+    var W = 1200, H = 630, c = document.createElement("canvas"); c.width = W; c.height = H; var x = c.getContext("2d");
+    x.fillStyle = "#0e2a3d"; x.fillRect(0, 0, W, H); x.fillStyle = "#f4c400"; x.fillRect(0, H - 14, W, 14);
+    x.fillStyle = "#f4c400"; x.fillRect(64, 56, 360, 66); x.fillStyle = "#111"; x.font = "700 30px 'Anek Latin', Inter, sans-serif"; x.fillText("MUMBAI PUBLIC WORKS", 82, 100);
+    x.fillStyle = "#a9bccb"; x.font = "600 24px Inter, sans-serif"; x.fillText(f.kind.toUpperCase(), 64, 178);
+    x.fillStyle = "#f3f6f8"; x.font = "750 60px 'Anek Latin', Inter, sans-serif";
+    var words = f.title.split(" "), line = "", y = 248, lines = [];
+    words.forEach(function (w) { var t = line ? line + " " + w : w; if (x.measureText(t).width > W - 128 && line) { lines.push(line); line = w; } else line = t; }); lines.push(line);
+    lines.slice(0, 2).forEach(function (l, i) { x.fillText(l, 64, y + i * 66); }); y += Math.min(lines.length, 2) * 66 + 18;
+    x.font = "500 30px Inter, sans-serif"; x.fillStyle = "#dbe5ec";
+    f.lines.slice(0, 4).forEach(function (l, i) { var s = l; while (x.measureText(s).width > W - 128 && s.length > 4) s = s.slice(0, -2); if (s !== l) s = s.trim() + "…"; x.fillText(s, 64, y + i * 44); });
+    x.fillStyle = "#a9bccb"; x.font = "500 22px Inter, sans-serif"; x.fillText("Every fact linked to its source · " + fmtDate(new Date(TODAY).toISOString().slice(0, 10)), 64, H - 44);
+    return c;
+  }
+  function shareImage() {
+    var f = pageFacts(); if (!f) return;
+    var c = cardCanvas(f), name = "mumbai-public-works-" + slug(f.title) + ".png";
+    c.toBlob(function (blob) {
+      var file = blob && window.File ? new File([blob], name, { type: "image/png" }) : null;
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: f.title, text: f.title + " " + shareUrl() }).catch(function () {}); return; }
+      var url = c.toDataURL("image/png");
+      var m = document.getElementById("imgmodal");
+      if (!m) { m = document.createElement("div"); m.id = "imgmodal"; m.className = "imgmodal"; document.body.appendChild(m); m.addEventListener("click", function (e) { if (e.target === m || e.target.closest("[data-x]")) m.hidden = true; }); }
+      m.innerHTML = '<div class="imgbox" role="dialog" aria-label="Share image"><img src="' + url + '" alt="' + esc(f.title) + ' summary card"><div class="imgact"><a class="btn" download="' + esc(name) + '" href="' + url + '">Save image</a><button type="button" class="btn" data-x>Close</button></div><p class="axis-note">On a phone, press and hold the image to save or share it.</p></div>';
+      m.hidden = false;
+    }, "image/png");
+  }
+  function correctionUrl() {
+    var f = pageFacts() || { title: (document.querySelector(".lead h2") || {}).textContent || document.title };
+    var body = "**Page:** " + shareUrl() + "\n**Item:** " + f.title + "\n\n**What is wrong or missing:**\n\n\n**Source link that shows the correct information:**\n\n";
+    return REPO + "/issues/new?labels=correction&title=" + encodeURIComponent("Correction: " + f.title) + "&body=" + encodeURIComponent(body);
+  }
+  function actionBar() {
+    var hasCard = !!pageFacts();
+    return '<div class="actions" data-actions>' +
+      '<button type="button" class="btn ghost" data-share="link">' + icon("share", 16) + "<span>Share</span></button>" +
+      (hasCard ? '<button type="button" class="btn ghost" data-share="img">' + icon("image", 16) + "<span>Share as image</span></button>" : "") +
+      '<a class="btn ghost" target="_blank" rel="noopener" href="' + esc(correctionUrl()) + '">' + icon("flag", 16) + "<span>Suggest a correction</span></a></div>";
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (!b) return; e.preventDefault(); if (b.dataset.share === "img") shareImage(); else shareLink(); });
+  function decorate() {
+    var h = location.hash;
+    if (/^#p-/.test(h)) { var db = drawer.querySelector(".d-body"); if (db && !db.querySelector("[data-actions]")) db.insertAdjacentHTML("afterbegin", actionBar()); return; }
+    if (/^#(ward-|mla-\d|cor-\d|mp-|at-\d|co-)/.test(h)) {
+      var target = /^#ward-/.test(h) ? document.querySelector("#ward-detail .ward-hero > div") : app.querySelector(".lead");
+      if (target && !target.querySelector("[data-actions]")) target.insertAdjacentHTML("beforeend", actionBar());
+    }
+    var mh = h.match(/^#(at-\d+-\d+)(?:-(.*))?$/);
+    if (mh) { var lbl = (app.querySelector(".lead h2") || {}).textContent; store("area", { hash: "#" + mh[1] + (mh[2] && mh[2] !== "here" ? "-" + mh[2] : "-here"), label: mh[2] === "here" ? "Your location" : lbl, ward: wardAt(+mh[1].split("-")[1] / 1e4, +mh[1].split("-")[2] / 1e4) }); }
+  }
+  function myAreaLink() { var a = store("area"); return a && a.hash ? '<a class="myarea" href="' + esc(a.hash) + '">' + icon("pin", 15) + "<span>Your area: <b>" + esc(a.label || "saved place") + "</b>" + (a.ward ? " · " + esc(wardTitle(a.ward)) : "") + "</span> →</a>" : ""; }
+
+  // ---- language: translate the portal's fixed text; records stay in English
+  var I18N = window.PUBLIC_WORKS_I18N || { t: {}, langs: { en: "English" }, note: {} };
+  var LANG = store("lang") || "en";
+  var EN_OF = new WeakMap();
+  function trText(en) { var r = I18N.t[en]; return r ? (LANG === "mr" ? r[0] : LANG === "hi" ? r[1] : null) : null; }
+  function translateNode(root) {
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: function (n) { var p = n.parentNode; return p && /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
+    var n, list = []; while ((n = w.nextNode())) list.push(n);
+    list.forEach(function (node) {
+      var en = EN_OF.get(node); var cur = node.nodeValue;
+      if (en == null) { var k = cur.trim(); if (!k || !I18N.t[k]) return; en = cur; EN_OF.set(node, en); }
+      var key = en.trim(), out = LANG === "en" ? null : trText(key);
+      var want = out ? en.replace(key, out) : en;
+      if (cur !== want) node.nodeValue = want;
+    });
+    (root.querySelectorAll ? root.querySelectorAll("input[placeholder]") : []).forEach(function (i) {
+      if (!i.dataset.enPh) i.dataset.enPh = i.placeholder;
+      var tr = LANG === "en" ? null : trText("PH:" + i.dataset.enPh); var want = tr || i.dataset.enPh;
+      if (i.placeholder !== want) i.placeholder = want;
+    });
+  }
+  var trPending = false;
+  function applyLang() {
+    document.documentElement.lang = LANG === "en" ? "en" : LANG;
+    translateNode(document.body);
+    var ln = document.getElementById("lang-note");
+    if (ln) { ln.hidden = LANG === "en"; ln.textContent = I18N.note[LANG] || ""; }
+    document.querySelectorAll("#lang [data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === LANG)); });
+  }
+  if (window.MutationObserver) new MutationObserver(function () { if (LANG === "en" || trPending) return; trPending = true; requestAnimationFrame(function () { trPending = false; translateNode(document.body); }); }).observe(document.body, { childList: true, subtree: true });
+  (function mountLang() {
+    var hdr = document.querySelector("header.site .wrap"); if (!hdr) return;
+    hdr.insertAdjacentHTML("beforeend", '<div class="lang" id="lang" role="group" aria-label="Language">' + Object.keys(I18N.langs).map(function (k) { return '<button type="button" data-lang="' + k + '" lang="' + k + '" aria-pressed="' + (k === LANG) + '">' + esc(I18N.langs[k]) + "</button>"; }).join("") + "</div>");
+    var nt = document.getElementById("notice"); if (nt) nt.insertAdjacentHTML("afterend", '<p class="lang-note" id="lang-note" hidden></p>');
+    bindClicks(document.getElementById("lang"), "[data-lang]", function (el) { LANG = el.dataset.lang; store("lang", LANG); applyLang(); });
+  })();
+
+  function routeAll() { route(); decorate(); if (LANG !== "en") applyLang(); }
+  if (!EMBED && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+  window.addEventListener("hashchange", routeAll);
   if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (leafletMap) viewMap(); });
-  route();
+  routeAll();
+  applyLang();
 })();
