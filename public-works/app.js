@@ -999,6 +999,7 @@
       return "<li>" + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a>" : esc(s.name)) + (s.note ? ' <span class="muted">· ' + esc(s.note) + "</span>" : "") + "</li>";
     }).join("");
     app.innerHTML = '<section class="lead"><div class="eyebrow">About</div><h2>Where this data comes from</h2><p>' + esc(META.sourceNote || "") + "</p></section>" +
+      '<section class="panel disclose"><h3 class="eyebrow" style="margin:0 0 10px">How this was compiled</h3><p style="margin:0 0 8px">This portal was compiled with AI assistance from public sources: official documents, court and audit records, and reputable newspapers. No number is estimated; where a figure is not published, it says so. Every item links to its source.</p><p style="margin:0 0 8px">Each fact was collected by one reviewer and then re-checked against its sources by a second, independent reviewer, who confirmed, corrected or removed it. Items show the date they were re-checked and how strong their evidence is: <b>official source</b>, <b>two or more outlets</b>, or a <b>single report</b>.</p><p style="margin:0">Mistakes are still possible. If you find one, use “Suggest a correction” on any page with a source link; every change is listed below under “Changes and corrections”.</p></section>' +
       '<div class="grid-2"><section class="panel"><h3 class="eyebrow" style="margin:0 0 10px">How to read it</h3><dl class="facts-list">' +
       "<dt>Status</dt><dd>The latest reported state from the cited source. Each project shows the date of the report it rests on.</dd>" +
       "<dt>Cost</dt><dd>Latest sanctioned or revised estimate in ₹ crore (1 crore = 10 million). A red +% is the rise over the original cost.</dd>" +
@@ -1074,6 +1075,7 @@
     drawer.innerHTML = '<div class="d-head"><h2 id="drawer-title">' + esc(p.name) + '</h2><button type="button" class="close" id="close" aria-label="Close">×</button>' +
       '<div class="meta">' + pill(p.status) + "<span>" + esc(p.sector) + "</span><span>·</span><span>" + esc(p.agency) + "</span></div></div>" +
       '<div class="d-body">' +
+      evidenceBadge(p) +
       (p.summary ? '<p class="d-summary">' + esc(p.summary) + "</p>" : "") +
       (p.delayReason && p.status !== "Completed" ? '<div class="delay"><b>Why it’s late:</b> ' + esc(p.delayReason) + "</div>" : "") +
       '<dl class="kv"><div><dt>Cost now</dt><dd>' + crore(cost(p)) + (pct ? '<small><span class="up">+' + pct + "%</span> from " + crore(p.cost.original) + "</small>" : p.cost && p.cost.note ? "<small>see note below</small>" : "<small>&nbsp;</small>") + "</dd></div>" +
@@ -1528,6 +1530,11 @@
 
   // ---------------------------------------------------------------- router
   // ================================================================ v5: information layer
+  var EVIDENCE = { official: ["Official source", "--st-completed", "Core facts are supported by an official document (agency, government, court or auditor)."], multiple: ["Two or more outlets", "--st-progress", "Core facts are reported by two or more independent reputable outlets."], single: ["Single report", "--st-partial", "Core facts rest on one reputable report. Treat with more caution."] };
+  function evidenceBadge(p) {
+    var e = EVIDENCE[p.evidence]; if (!e && !p.recheckedAt) return "";
+    return '<div class="evidence">' + (e ? '<span class="pill" style="color:var(' + e[1] + ')" data-tip="' + esc(e[2]) + '">' + esc(e[0]) + "</span>" : "") + (p.recheckedAt ? '<span class="sub">Every fact re-checked against its sources by a second reviewer on ' + esc(fmtDate(p.recheckedAt)) + "</span>" : '<span class="sub">Not yet re-checked by a second reviewer</span>') + "</div>";
+  }
   // ---- glossary: plain-language meanings, shown on hover/tap and listed on About
   var GLOSS = {
     "Corporator": "Elected member of the BMC for one of 227 electoral wards. Votes on the city budget and civic contracts and raises local complaints.",
@@ -1796,14 +1803,13 @@
     var e = (ELEC.constituencies || []).find(function (x) { return x.no === m.no || x.constituency === m.constituency; }); if (!e) return "";
     function res(r, y) {
       if (!r || !r.winner) return "<tr><th>" + y + '</th><td colspan="3" class="muted">not available</td></tr>';
-      return "<tr><th>" + y + "</th><td><b>" + esc(r.winner) + "</b><div class=\"sub\">" + esc(r.party || "") + (r.votes != null ? " · " + fmtN(r.votes) + " votes" : "") + "</div></td><td>" + esc(r.runnerUp || "—") + '<div class="sub">' + esc(r.runnerUpParty || "") + (r.runnerUpVotes != null ? " · " + fmtN(r.runnerUpVotes) + " votes" : "") + '</div></td><td class="num">' + (r.margin != null ? fmtN(r.margin) : "—") + (r.turnoutPct != null ? '<div class="sub">turnout ' + r.turnoutPct + "%</div>" : "") + "</td></tr>";
+      return "<tr><th>" + y + "</th><td><b>" + esc(r.winner) + "</b><div class=\"sub\">" + esc(r.party || "") + (r.votes != null ? " · " + fmtN(r.votes) + " votes" : "") + "</div></td><td>" + esc(r.runnerUp || "—") + '<div class="sub">' + esc(r.runnerUpParty || "") + (r.runnerUpVotes != null ? " · " + fmtN(r.runnerUpVotes) + " votes" : "") + '</div></td><td class="num">' + (r.margin != null ? fmtN(r.margin) : "—") +  (r.unverified ? '<div class="sub">not confirmed by a second source</div>' : "") + "</td></tr>";
     }
     var a = e.assets || {}, ch = a.y2024 != null && a.y2019 != null && a.y2019 > 0 ? Math.round(100 * (a.y2024 - a.y2019) / a.y2019) : null;
     return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Elections</div><h3>How ' + esc(m.constituency) + ' voted</h3></div><p>Assembly results from the Election Commission. Margin is the winner’s lead over the runner-up.</p></div>' +
       '<div class="table-scroll"><table class="data"><thead><tr><th>Year</th><th>Winner</th><th>Runner-up</th><th class="num">Margin</th></tr></thead><tbody>' + res(e.r2024, "2024") + res(e.r2019, "2019") + "</tbody></table></div>" +
-      (a.y2024 != null ? '<p style="margin:12px 0 0;font-size:.92rem">Declared assets: <b>' + rs(a.y2024) + "</b> in 2024" + (a.y2019 != null ? ", " + rs(a.y2019) + " in 2019" + (ch != null ? " (" + (ch >= 0 ? "+" : "") + ch + "%)" : "") : "") + ". " + [a.y2024Url ? '<a href="' + esc(safeUrl(a.y2024Url)) + '" target="_blank" rel="noopener">2024 affidavit</a>' : "", a.y2019Url ? '<a href="' + esc(safeUrl(a.y2019Url)) + '" target="_blank" rel="noopener">2019 affidavit</a>' : ""].filter(Boolean).join(" · ") + "</p>" : "") +
+      (a.y2024 != null ? '<p style="margin:12px 0 0;font-size:.92rem">Declared assets: <b>' + rs(a.y2024) + "</b> in 2024" + (a.y2019 != null ? ", " + rs(a.y2019) + " in 2019" + (ch != null ? " (" + (ch >= 0 ? "+" : "") + ch + "%)" : "") : "; no 2019 declaration found on ADR (myneta)") + ". " + [a.y2024Url ? '<a href="' + esc(safeUrl(a.y2024Url)) + '" target="_blank" rel="noopener">2024 affidavit</a>' : "", a.y2019Url ? '<a href="' + esc(safeUrl(a.y2019Url)) + '" target="_blank" rel="noopener">2019 affidavit</a>' : ""].filter(Boolean).join(" · ") + "</p>" : "") +
       (a.note ? '<p class="axis-note">' + esc(a.note) + "</p>" : "") +
-      (e.partyChange && e.partyChange.note ? '<p class="axis-note">' + esc(e.partyChange.note) + " " + srcA(e.partyChange.source) + "</p>" : "") +
       '<p class="axis-note">' + srcA((e.r2024 || {}).source, "2024 result") + ((e.r2019 || {}).source ? " · " + srcA(e.r2019.source, "2019 result") : "") + " · Asset change is what the candidate declared; it is not an allegation.</p></section>";
   }
   function auditItems(filter) { return AUD ? (AUD.findings || []).filter(filter) : []; }
@@ -1956,7 +1962,7 @@
   if (tc) tc.insertAdjacentHTML("beforeend", '<span class="count">' + OPEN_TENDERS.length + "</span>");
 
   document.getElementById("footer").innerHTML =
-    '<div class="f-col f-about"><div class="board board-sm"><span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span><span class="latin">Mumbai Public Works</span></div><p>An independent public record of government projects in Mumbai, the people responsible and the money involved. Built from official records and news reports; claims about people are checked twice.</p><p class="muted">Data updated ' + esc(fmtDate(META.lastUpdated)) + ". Costs in ₹ crore (1 crore = 10 million).</p></div>" +
+    '<div class="f-col f-about"><div class="board board-sm"><span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span><span class="latin">Mumbai Public Works</span></div><p>An independent public record of government projects in Mumbai, the people responsible and the money involved. Built from official records and news reports; every fact is re-checked by a second reviewer. Compiled with AI assistance; <a href="#about">how</a>.</p><p class="muted">Data updated ' + esc(fmtDate(META.lastUpdated)) + ". Costs in ₹ crore (1 crore = 10 million).</p></div>" +
     '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a><a href="#latest">Latest updates</a><a href="#services">City services</a><a href="#compare">Compare</a></div>' +
     '<div class="f-col"><h4>Money</h4><a href="#contracts">Contracts</a><a href="#tenders">Tenders</a><a href="#funding">Funding</a><a href="#schemes">Schemes</a></div>' +
     '<div class="f-col"><h4>About</h4><a href="#about">Sources and method</a><a href="#about">How we check</a><a href="#glossary">What the words mean</a><span class="muted">Corrections: send the source link.</span></div>';

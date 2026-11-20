@@ -628,3 +628,6 @@ table.cmp td.more { font-weight: inherit; }
 .cons .pill { white-space: normal; text-align: left; line-height: 1.35; }
 .cons .cs { max-width: 260px; justify-self: end; }
 @media (max-width: 560px) { .cons .cs { max-width: none; justify-self: start; } }
+.evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; }
+.evidence .sub { font-size: 0.8rem; color: var(--ink-3); }
+.disclose { border-left: 4px solid var(--accent); }
