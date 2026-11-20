@@ -292,6 +292,7 @@
       ["#map", "air", "Air and map", "Official air-quality stations and every project on the map.", worst ? "Worst now: " + stationName(worst) + ", AQI " + worst.aqi : "Map of all projects"],
       ["#schemes", "scheme", "Schemes", "Government yojanas reaching Mumbai, their status and how to apply.", YOJANAS.length + " schemes"],
       ["#latest", "clock", "Latest", "Everything reported recently: project milestones, representatives, schemes, contractors.", feedItems().filter(function (x) { return String(x.date) >= new Date(TODAY - 30 * 864e5).toISOString().slice(0, 10); }).length + " updates in the last 30 days"],
+      ["#services", "ward", "City services", "Complaints and how fast each ward closes them, flooding spots, pumping stations and more.", "By ward, with sources"],
       ["#compare", "compare", "Compare", "Two wards or two MLAs side by side, and a table ranking all 24 wards.", "Wards and MLAs"],
     ];
     return '<section class="explore" aria-label="Explore">' + tiles.map(function (t) {
@@ -622,6 +623,7 @@
         var live = ws.filter(function (x) { return !consStale(x); });
         return '<div class="section-head" style="margin-top:22px"><div><h3>Construction sites</h3><p>' + plural(ws.length, "site") + ' mapped in this ward, ' + live.length + ' updated in the last 18 months. Most recently updated first.</p></div></div>' +
           (ws.length ? consRows(ws.slice(0, 12), false) + (ws.length > 12 ? '<p class="axis-note">+' + (ws.length - 12) + ' more on the Map tab</p>' : "") : '<p class="muted">None mapped.</p>') + consNote(); })() +
+      complaintsBlock(w) + floodBlock(w) + facilitiesPanel(w) + sraPanel(w) +
       '<p class="axis-note" style="margin-top:18px">Also in every ward: ' + citywide.map(function (p) { return '<a href="#p-' + esc(p.id) + '">' + esc(p.shortName || p.name) + "</a>"; }).join(", ") + ".</p>";
     var wf = WARD_FEATURE[w];
     if (wf && AQI.stations.length) {
@@ -876,6 +878,7 @@
         .concat((prof.news || []).map(function (n) { return { date: n.date, category: itemCategory(n, true), text: n.headline, source: n.source, verified: n.verified }; }))
         .concat(((aff || {}).laterCases || []).map(function (c) { return { date: c.date, category: "Legal matter", text: c.kind + ": " + c.summary, source: (c.sources || [])[0], verified: c.verified }; })),
         { note: "Work and news were searched the same way for every MLA, in English and Marathi papers, and each item was re-checked against its source." }) +
+      electionBlock(m) +
       '<div class="grid-2"><section class="panel"><div class="section-head"><div><div class="eyebrow">Money</div><h3>MLA local development fund</h3></div></div>' +
       (scheme ? '<p style="margin:0 0 10px;font-size:.92rem">Every Maharashtra MLA gets ' + (scheme.annualAllocationCr ? crore(scheme.annualAllocationCr) + " a year" : "an annual allocation") + " for local works. The MLA recommends works; the district Collector approves them and gets them built. Unspent money lapses at the end of the year. The state does not publish spending per MLA.</p>" : "") +
       (fund && fund.evaluated ? '<dl class="facts-list"><dt>Fund use</dt><dd>' + esc(band || "—") + " of the sanctioned amount</dd><dt>Attendance</dt><dd>" + esc((fund.attendanceBand || "—").replace(/\s*\(.*\)$/, "")) + "</dd>" +
@@ -1096,6 +1099,7 @@
       (Object.keys(CORP_PARTS[p.id] || {}).length ? '<section class="panel"><h3>Local corporators</h3><p class="axis-note" style="margin:-4px 0 10px">BMC electoral wards (2026) the project\u2019s sites fall in. A site within 150 m of a ward edge lists both wards.</p><div class="table-scroll"><table class="data"><tbody>' +
         Object.keys(CORP_PARTS[p.id]).sort(function (a, b) { return a - b; }).map(function (n) { var c = CORP_BY_WARD[n]; return '<tr><td style="width:1%;white-space:nowrap" class="muted">Ward ' + esc(n) + "</td><td>" + corpLine(c) + (c && c.area ? '<div class="sub">' + esc(c.area) + "</div>" : "") + '</td><td class="sub">' + esc(uniq(CORP_PARTS[p.id][n]).join(", ")) + "</td></tr>"; }).join("") +
         "</tbody></table></div></section>" : "") +
+      (auditItems(function (f) { return f.projectId === p.id; }).length ? '<section class="panel"><h3>Audit findings</h3>' + auditList(auditItems(function (f) { return f.projectId === p.id; })) + '<p class="axis-note">An audit finding is the auditor’s observation, not a criminal finding.</p></section>' : "") +
       '<section class="panel"><h3>Change history</h3>' + histList((HIST.projects || {})[p.id], "No change to status, cost, deadlines or progress since it was added.") + "</section>" +
       '<section class="panel"><h3>Sources</h3>' + (sources ? '<ul class="sources">' + sources + "</ul>" : '<p class="muted">No source on file.</p>') +
       (p.lastVerified ? '<p class="axis-note">Status last checked ' + fmtDate(p.lastVerified) + ". Areas: " + esc((p.areas || []).join(", ")) + "</p>" : "") + "</section>" +
@@ -1317,6 +1321,7 @@
       '<div class="grid-2">' + aqiCard(lat, lng) +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Out to bid</div><h3>' + plural(tenders.length, "open tender") + " in this ward</h3></div></div>" +
       (tenders.length ? '<ul class="tenders">' + tenders.slice(0, 6).map(function (t) { return '<li><a href="#t-' + tenderSlug(t.id) + '">' + esc(t.title) + '</a><span class="closes">closes ' + esc(fmtDT(t.closing)) + '</span><span class="meta">' + esc(t.dept || t.org) + "</span></li>"; }).join("") + "</ul>" : '<p class="muted" style="margin:0">None open today.</p>') + "</section></div>" +
+      (aw && wardComplaints(aw) ? '<section class="panel">' + complaintsBlock(aw, true).replace('style="margin-top:22px"', 'style="margin-top:0"') + '<p class="axis-note" style="margin-top:4px"><a href="#ward-' + wardSlug(aw) + '">Full ward picture →</a></p></section>' : "") +
       '<section class="panel"><div class="section-head"><div><div class="eyebrow">Within 1.5 km</div><h3>' + plural(nearby.length, "project") + ' near here</h3></div><p>Distance to the nearest station, site or junction of each project.</p></div>' +
       (nearby.length ? '<div class="table-scroll"><table class="data"><tbody>' + nearby.map(function (x) {
         return '<tr class="click" data-open="' + esc(x.p.id) + '" tabindex="0"><td class="num" style="width:1%">' + (x.km < 0.1 ? "here" : x.km.toFixed(1) + " km") + "</td><td><b>" + esc(x.p.shortName || x.p.name) + '</b><div class="sub">' + esc(x.part) + " · " + esc(x.p.agency) + "</div></td><td>" + pill(x.p.status) + '</td><td class="num">' + crore(cost(x.p)) + "</td></tr>";
@@ -1651,6 +1656,7 @@
       tenders: s.tenders.length, cons: cons.length, consLive: cons.filter(function (x) { return !consStale(x); }).length,
       cors: cors.length, vacant: cors.filter(function (x) { return x.vacant; }).length, officer: (WARD_INFO[w] || {}).assistantCommissioner || null,
       aqi: st && st.km <= 4 ? st.s : null, aqiKm: st ? st.km : null,
+      cdays: (window.PUBLIC_WORKS_CIVIC && PUBLIC_WORKS_CIVIC.complaints && PUBLIC_WORKS_CIVIC.complaints.wards[w] || {}).avgDays,
     };
   }
   var WARD_COLS = [
@@ -1660,6 +1666,7 @@
     { k: "tenders", t: "Open tenders", f: function (r) { return r.tenders; } },
     { k: "consLive", t: "Construction sites", tip: "Mapped on OpenStreetMap; first number updated in the last 18 months", f: function (r) { return r.consLive + '<span class="sub"> / ' + r.cons + "</span>"; } },
     { k: "cors", t: "Corporators", f: function (r) { return r.cors + (r.vacant ? '<span class="sub"> (' + r.vacant + " vacant)</span>" : ""); } },
+    { k: "cdays", t: "Days to close a complaint", tip: "Average days BMC took to close residents’ complaints in 2025 (Praja Foundation, from BMC data)", f: function (r) { return r.cdays != null ? String(r.cdays) : "—"; }, v: function (r) { return r.cdays != null ? r.cdays : -1; } },
     { k: "aqi", t: "Air now", tip: "Nearest official station within 4 km of the ward centre", f: function (r) { return r.aqi ? aqiBadge(r.aqi) : '<span class="muted">no station</span>'; }, v: function (r) { return r.aqi ? r.aqi.aqi : -1; } },
   ];
   var wsort = { k: "projects", d: -1 };
@@ -1722,6 +1729,8 @@
         row(gl("Affidavit", "Cases declared pending (2024 affidavit)"), function (x) { return x.aff.pendingCases != null ? x.aff.pendingCases + (x.aff.convictedCases ? " + " + x.aff.convictedCases + " conviction" : "") : "—"; }),
         row("Cases reported since the election", function (x) { return x.later; }),
         row("Declared assets", function (x) { return x.aff.totalAssetsCr != null ? "₹" + x.aff.totalAssetsCr.toLocaleString("en-IN") + " cr" : "—"; }),
+        row("2024 winning margin", function (x) { var e = ELEC && (ELEC.constituencies || []).find(function (c) { return c.no === x.m.no; }); return e && e.r2024 && e.r2024.margin != null ? fmtN(e.r2024.margin) + " votes" : "—"; }),
+        row("Assets declared, 2019 → 2024", function (x) { var e = ELEC && (ELEC.constituencies || []).find(function (c) { return c.no === x.m.no; }); var a = e && e.assets; return a && a.y2024 != null ? (a.y2019 != null ? rs(a.y2019) + " → " : "") + rs(a.y2024) : "—"; }),
         row("Praja report card", function (x) { return x.f.score != null ? x.f.score.toFixed(1) + "/100 · rank " + x.f.rank : '<span class="muted">not rated</span>'; }),
         row("Assembly attendance (Praja)", function (x) { return esc(x.f.attendanceBand || "—"); }),
         row("MLA fund use (Praja)", function (x) { return esc(x.f.fundUtilisationBand || "—"); }),
@@ -1740,8 +1749,138 @@
     ["a", "b"].forEach(function (s) { document.getElementById("cmp-" + s).addEventListener("change", function (e) { cstate[s] = e.target.value; viewCompare(); }); });
   }
 
-  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout, latest: viewLatest, compare: viewCompare };
-  var MONEY = { contracts: "Contracts", tenders: "Tenders", funding: "Funding" };
+  // ================================================================ v8: city services
+  var CIVIC = window.PUBLIC_WORKS_CIVIC || {};
+  var CMP = CIVIC.complaints || null, FLOOD = CIVIC.flooding || null;
+  function srcA(s, label) { var u = s && safeUrl(s.url); return u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(label || s.title || "source") + "</a>" + (s.date ? " · " + esc(fmtDate(s.date)) : "") : ""; }
+  function fmtN(n) { return n == null ? "—" : Number(n).toLocaleString("en-IN"); }
+  function wardComplaints(w) { return CMP && CMP.wards ? CMP.wards[w] || null : null; }
+  function complaintRank(w, k, asc) {
+    if (!CMP) return null; var ws = Object.keys(CMP.wards).filter(function (x) { return CMP.wards[x][k] != null; });
+    var v = (CMP.wards[w] || {})[k]; if (v == null) return null;
+    return { rank: 1 + ws.filter(function (x) { return asc ? CMP.wards[x][k] < v : CMP.wards[x][k] > v; }).length, of: ws.length };
+  }
+  function complaintsBlock(w, compact) {
+    var c = wardComplaints(w); if (!c) return "";
+    var rd = complaintRank(w, "avgDays", true), rr = complaintRank(w, "resolvedPct", false);
+    var cc = c.categoryCounts || {};
+    return '<div class="section-head" style="margin-top:22px"><div><h3>Civic complaints (' + esc(CMP.periodLabel || "2025") + ')</h3><p>Complaints residents filed with BMC about this ward, from BMC’s complaint system as published by Praja Foundation.</p></div></div>' +
+      '<div class="scorecard">' +
+      '<div><span class="sc-v">' + fmtN(c.received) + '</span><span class="sc-l">complaints received</span><span class="sc-r">city: ' + fmtN(CMP.city.received) + " in all</span></div>" +
+      '<div><span class="sc-v">' + (c.resolvedPct != null ? c.resolvedPct + "%" : "—") + '</span><span class="sc-l">closed</span><span class="sc-r">' + (rr ? "#" + rr.rank + " of " + rr.of + " wards" : "") + "</span></div>" +
+      '<div><span class="sc-v' + (c.avgDays != null && CMP.city.avgDays != null && c.avgDays > CMP.city.avgDays ? " alert" : "") + '">' + (c.avgDays != null ? c.avgDays : "—") + '</span><span class="sc-l">days on average to close</span><span class="sc-r">' + (rd ? "#" + rd.rank + " fastest of " + rd.of + " · city " + CMP.city.avgDays : "") + "</span></div>" +
+      (!compact && cc.solidWasteManagement ? '<div><span class="sc-v">' + fmtN(cc.solidWasteManagement.received) + '</span><span class="sc-l">about garbage and waste</span><span class="sc-r">' + (cc.solidWasteManagement.avgDays != null ? cc.solidWasteManagement.avgDays + " days on average" : "") + "</span></div>" : "") +
+      (!compact && cc.drainage ? '<div><span class="sc-v">' + fmtN(cc.drainage.received) + '</span><span class="sc-l">about drainage</span><span class="sc-r">' + (cc.drainage.avgDays != null ? cc.drainage.avgDays + " days on average" : "") + "</span></div>" : "") +
+      (!compact && c.actionNotInitiated != null ? '<div><span class="sc-v">' + fmtN(c.actionNotInitiated) + '</span><span class="sc-l">marked “action not initiated”</span><span class="sc-r">as recorded by BMC</span></div>' : "") +
+      "</div>" + '<p class="axis-note">' + srcA(c.source || CMP.source, "Praja Foundation report") + (c.note ? " · " + esc(c.note) : "") + "</p>";
+  }
+  function floodBlock(w) {
+    if (!FLOOD) return "";
+    var spots = (FLOOD.spots || []).filter(function (s) { return s.ward === w; }), ps = (FLOOD.pumpingStations || []).filter(function (s) { return s.ward === w; });
+    if (!spots.length && !ps.length) return "";
+    return '<div class="section-head" style="margin-top:22px"><div><h3>Flooding</h3><p>Reported flooding spots and stormwater pumping stations in this ward. BMC has not published a full ward-wise list, so this is what news reports and BMC statements name.</p></div></div>' +
+      '<ul class="cons nokm">' + spots.map(floodRow).concat(ps.map(pumpRow)).join("") + "</ul>";
+  }
+  function floodRow(s) {
+    var bad = /still|despite|flooded|flooding/i.test(s.status || "") && !/mitigated|resolved/i.test(s.status || "");
+    return '<li><span class="cn"><b>' + esc(s.name) + '</b><span class="sub">' + esc(s.action || "") + '</span><span class="sub">' + srcA(s.source) + (s.ward ? "" : " · ward not confirmed") + '</span></span><span class="cs"><span class="pill" style="color:var(' + (bad ? "--st-delayed" : /mitigat|resolv|addressed/i.test(s.status || "") ? "--st-completed" : "--st-notstarted") + ')">' + esc(s.status || "status not reported") + "</span></span></li>";
+  }
+  function pumpRow(s) {
+    return '<li><span class="cn"><b>' + esc(s.name) + ' pumping station</b><span class="sub">' + [s.commissioned ? "commissioned " + esc(s.commissioned) : "", s.capacity ? esc(s.capacity) : ""].filter(Boolean).join(" · ") + '</span><span class="sub">' + srcA(s.source) + '</span></span><span class="cs"><span class="pill" style="color:var(' + (/operational/i.test(s.status || "") ? "--st-completed" : "--st-progress") + ')">' + esc(s.status || "") + "</span></span></li>";
+  }
+  // ---- elections, audits, roads, facilities, slum redevelopment (render only when published)
+  var ELEC = CIVIC.elections || null, AUD = CIVIC.audits || null, ROADS = CIVIC.roads || null, FAC = CIVIC.facilities || null, SRA = CIVIC.sra || null;
+  function rs(n) { return n == null ? "—" : "₹" + (n >= 1e7 ? (n / 1e7).toLocaleString("en-IN", { maximumFractionDigits: 2 }) + " cr" : Number(n).toLocaleString("en-IN")); }
+  function electionBlock(m) {
+    if (!ELEC) return "";
+    var e = (ELEC.constituencies || []).find(function (x) { return x.no === m.no || x.constituency === m.constituency; }); if (!e) return "";
+    function res(r, y) {
+      if (!r || !r.winner) return "<tr><th>" + y + '</th><td colspan="3" class="muted">not available</td></tr>';
+      return "<tr><th>" + y + "</th><td><b>" + esc(r.winner) + "</b><div class=\"sub\">" + esc(r.party || "") + (r.votes != null ? " · " + fmtN(r.votes) + " votes" : "") + "</div></td><td>" + esc(r.runnerUp || "—") + '<div class="sub">' + esc(r.runnerUpParty || "") + (r.runnerUpVotes != null ? " · " + fmtN(r.runnerUpVotes) + " votes" : "") + '</div></td><td class="num">' + (r.margin != null ? fmtN(r.margin) : "—") + (r.turnoutPct != null ? '<div class="sub">turnout ' + r.turnoutPct + "%</div>" : "") + "</td></tr>";
+    }
+    var a = e.assets || {}, ch = a.y2024 != null && a.y2019 != null && a.y2019 > 0 ? Math.round(100 * (a.y2024 - a.y2019) / a.y2019) : null;
+    return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Elections</div><h3>How ' + esc(m.constituency) + ' voted</h3></div><p>Assembly results from the Election Commission. Margin is the winner’s lead over the runner-up.</p></div>' +
+      '<div class="table-scroll"><table class="data"><thead><tr><th>Year</th><th>Winner</th><th>Runner-up</th><th class="num">Margin</th></tr></thead><tbody>' + res(e.r2024, "2024") + res(e.r2019, "2019") + "</tbody></table></div>" +
+      (a.y2024 != null ? '<p style="margin:12px 0 0;font-size:.92rem">Declared assets: <b>' + rs(a.y2024) + "</b> in 2024" + (a.y2019 != null ? ", " + rs(a.y2019) + " in 2019" + (ch != null ? " (" + (ch >= 0 ? "+" : "") + ch + "%)" : "") : "") + ". " + [a.y2024Url ? '<a href="' + esc(safeUrl(a.y2024Url)) + '" target="_blank" rel="noopener">2024 affidavit</a>' : "", a.y2019Url ? '<a href="' + esc(safeUrl(a.y2019Url)) + '" target="_blank" rel="noopener">2019 affidavit</a>' : ""].filter(Boolean).join(" · ") + "</p>" : "") +
+      (a.note ? '<p class="axis-note">' + esc(a.note) + "</p>" : "") +
+      (e.partyChange && e.partyChange.note ? '<p class="axis-note">' + esc(e.partyChange.note) + " " + srcA(e.partyChange.source) + "</p>" : "") +
+      '<p class="axis-note">' + srcA((e.r2024 || {}).source, "2024 result") + ((e.r2019 || {}).source ? " · " + srcA(e.r2019.source, "2019 result") : "") + " · Asset change is what the candidate declared; it is not an allegation.</p></section>";
+  }
+  function auditItems(filter) { return AUD ? (AUD.findings || []).filter(filter) : []; }
+  function auditList(list) {
+    return '<ol class="events">' + list.map(function (f) {
+      var u = f.report && safeUrl(f.report.url);
+      return '<li><div class="ev-head"><span class="pill" style="color:var(--st-partial)">Audit finding</span><span class="ev-date">' + esc(fmtDate(f.date || (f.report || {}).year)) + "</span>" + (f.agency ? '<span class="sub">' + esc(f.agency) + "</span>" : "") + "</div><div><b>" + esc(f.subject || "") + "</b></div><div>" + esc(f.finding || "") + (f.amountCr != null ? " <b>(" + crore(f.amountCr) + ")</b>" : "") + "</div>" +
+        (f.response ? '<div class="sub">Agency’s response: ' + esc(f.response) + "</div>" : "") + (f.followUp ? '<div class="sub">Follow-up: ' + esc(f.followUp) + "</div>" : "") +
+        '<div class="sub">' + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc((f.report || {}).title || "Audit report") + "</a>" : esc((f.report || {}).title || "")) + (f.source && f.source.url && f.source.url !== (f.report || {}).url ? " · " + srcA(f.source) : "") + (f.verified ? " · source re-checked " + esc(fmtDate(f.verified)) : "") + "</div></li>";
+    }).join("") + "</ol>";
+  }
+  function viewAudits() {
+    var list = auditItems(function () { return true; }).sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+    var byAg = {}; list.forEach(function (f) { byAg[f.agency || "Other"] = (byAg[f.agency || "Other"] || 0) + 1; });
+    app.innerHTML = '<section class="lead"><div class="eyebrow">Money · audits</div><h2>What the auditors found</h2><p>Findings by the Comptroller and Auditor General (CAG), BMC’s chief auditor and the legislature’s Public Accounts Committee about Mumbai’s public works. An audit finding is the auditor’s observation: it is not a criminal finding, and the agency’s reply is shown where reported.</p></section>' +
+      (list.length ? '<section class="panel"><div class="section-head"><div><div class="eyebrow">By agency</div><h3>' + plural(list.length, "finding") + "</h3></div></div>" + hbars(Object.keys(byAg).sort(function (a, b) { return byAg[b] - byAg[a]; }).map(function (k) { return { label: k, value: byAg[k], display: String(byAg[k]) }; })) + "</section>" +
+        '<section class="panel">' + auditList(list) + "</section>" : '<p class="muted">Being compiled and checked.</p>');
+  }
+  function roadsPanel() {
+    if (!ROADS) return "";
+    return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Roads</div><h3>Concrete roads programme</h3></div><p>' + esc(ROADS.note || "") + "</p></div>" +
+      (ROADS.phases || []).map(function (ph) {
+        return '<h4 style="margin:14px 0 6px">' + esc(ph.phase) + "</h4>" + '<p style="margin:0 0 8px;font-size:.9rem">' + [ph.km != null ? fmtN(ph.km) + " km" : "", ph.roads != null ? fmtN(ph.roads) + " roads" : "", ph.value != null ? crore(ph.value) : "", ph.deadline ? "due " + esc(fmtDate(ph.deadline)) : "", ph.revisedDeadline ? "now " + esc(fmtDate(ph.revisedDeadline)) : ""].filter(Boolean).join(" · ") + (ph.progress && (ph.progress.pct != null || ph.progress.kmDone != null) ? " · <b>" + (ph.progress.pct != null ? ph.progress.pct + "% done" : fmtN(ph.progress.kmDone) + " km done") + "</b> (" + esc(fmtDate(ph.progress.asOf)) + ")" : "") + "</p>" +
+          ((ph.packages || []).length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Zone</th><th>Contractor</th><th class="num">Value</th><th>Status</th></tr></thead><tbody>' + ph.packages.map(function (k) { return "<tr><td>" + esc(k.zone || "") + (k.wards && k.wards.length ? '<div class="sub">wards ' + esc(k.wards.join(", ")) + "</div>" : "") + "</td><td>" + esc(k.contractor || "—") + '</td><td class="num">' + (k.value != null ? crore(k.value) : "—") + "</td><td>" + esc(k.status || "") + (k.note ? '<div class="sub">' + esc(k.note) + "</div>" : "") + "</td></tr>"; }).join("") + "</tbody></table></div>" : "") +
+          '<p class="axis-note">' + srcA(ph.source) + "</p>";
+      }).join("") +
+      ((ROADS.events || []).length ? '<h4 style="margin:14px 0 6px">Penalties and terminations</h4><ol class="events">' + ROADS.events.map(function (e) { return '<li><div class="ev-head"><span class="pill" style="color:var(--st-stalled)">' + esc(e.kind) + '</span><span class="ev-date">' + esc(fmtDate(e.date)) + "</span></div><div>" + esc(e.summary) + '</div><div class="sub">' + srcA(e.source) + "</div></li>"; }).join("") + "</ol>" : "") + "</section>";
+  }
+  function facilitiesPanel(w) {
+    if (!FAC) return "";
+    var hs = (FAC.hospitals || []).filter(function (h) { return !w || h.ward === w; });
+    var cl = w ? (FAC.clinicsByWard || {})[w] : null;
+    if (w && !hs.length && !cl) return "";
+    return (w ? '<div class="section-head" style="margin-top:22px"><div><h3>Public hospitals and clinics</h3></div></div>' : '<section class="panel"><div class="section-head"><div><div class="eyebrow">Health</div><h3>BMC hospitals</h3></div><p>' + esc(FAC.note || "") + "</p></div>") +
+      (hs.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Hospital</th><th>Type</th>' + (w ? "" : "<th>Ward</th>") + '<th class="num">Beds</th></tr></thead><tbody>' + hs.map(function (h) { return "<tr><td><b>" + esc(h.name) + '</b><div class="sub">' + esc(h.address || "") + "</div></td><td>" + esc(h.type || "") + "</td>" + (w ? "" : "<td>" + (h.ward ? '<a href="#ward-' + wardSlug(h.ward) + '">' + esc(h.ward) + "</a>" : "—") + "</td>") + '<td class="num">' + (h.beds != null ? fmtN(h.beds) : "—") + "</td></tr>"; }).join("") + "</tbody></table></div>" : "") +
+      (cl ? '<p style="font-size:.9rem;margin:10px 0 0">' + [cl.dispensaries != null ? fmtN(cl.dispensaries) + " dispensaries" : "", cl.aaplaDawakhana != null ? fmtN(cl.aaplaDawakhana) + " Aapla Dawakhana clinics" : "", cl.healthPosts != null ? fmtN(cl.healthPosts) + " health posts" : ""].filter(Boolean).join(" · ") + " " + srcA(cl.source) + "</p>" : "") +
+      (FAC.schools && FAC.schools.city && !w ? '<p style="font-size:.9rem;margin:12px 0 0">BMC schools: <b>' + fmtN(FAC.schools.city.count) + "</b>" + (FAC.schools.city.enrolment != null ? " with " + fmtN(FAC.schools.city.enrolment) + " students" : "") + (FAC.schools.city.year ? " (" + esc(FAC.schools.city.year) + ")" : "") + ". " + srcA(FAC.schools.city.source) + "</p>" : "") +
+      (w ? "" : "</section>");
+  }
+  function sraPanel(w) {
+    if (!SRA) return "";
+    var sc = (SRA.schemes || []).filter(function (s) { return !w || s.ward === w; });
+    if (w && !sc.length) return "";
+    var c = SRA.city || {};
+    return (w ? '<div class="section-head" style="margin-top:22px"><div><h3>Slum redevelopment schemes</h3><p>Schemes with a public record of delay or state action.</p></div></div>' : '<section class="panel"><div class="section-head"><div><div class="eyebrow">Slum redevelopment</div><h3>SRA schemes</h3></div><p>' + esc(c.note || SRA.note || "") + "</p></div>" +
+      ((c.approved != null || c.stalled != null) ? '<section class="stats" style="margin:0 0 14px">' + [["Approved", c.approved], ["Completed", c.completed], ["Ongoing", c.ongoing], ["Stalled", c.stalled], ["Tenements built", c.tenements]].filter(function (x) { return x[1] != null; }).map(function (x) { return '<div class="stat' + (x[0] === "Stalled" ? " alert" : "") + '"><span class="label">' + x[0] + '</span><span class="value">' + fmtN(x[1]) + '</span><span class="sub">' + esc(c.period || "") + "</span></div>"; }).join("") + "</section>" + '<p class="axis-note">' + srcA(c.source) + "</p>" : "") +
+      ((SRA.actions || []).length ? '<h4 style="margin:12px 0 6px">What the state has done</h4><ol class="events">' + SRA.actions.map(function (a) { return '<li><div class="ev-head"><span class="ev-date">' + esc(fmtDate(a.date)) + "</span></div><div>" + esc(a.what) + '</div><div class="sub">' + srcA(a.source) + "</div></li>"; }).join("") + "</ol>" : "")) +
+      (sc.length ? '<ul class="cons nokm">' + sc.map(function (s) { return '<li><span class="cn"><b>' + esc(s.name) + "</b>" + (!w && s.ward ? ' <a href="#ward-' + wardSlug(s.ward) + '">' + wcode(s.ward) + "</a>" : "") + '<span class="sub">' + esc([s.locality, s.developer ? "developer: " + s.developer : ""].filter(Boolean).join(" · ")) + "</span>" + (s.events || []).map(function (e) { return '<span class="sub">' + esc(fmtDate(e.date)) + ": " + esc(e.kind ? e.kind + " — " : "") + esc(e.summary) + "</span>"; }).join("") + '<span class="sub">' + srcA(s.source) + '</span></span><span class="cs"><span class="pill" style="color:var(' + (/stall/i.test(s.status || "") ? "--st-stalled" : /complet/i.test(s.status || "") ? "--st-completed" : "--st-delayed") + ')">' + esc(s.status || "") + "</span></span></li>"; }).join("") + "</ul>" : "") +
+      (w ? "" : "</section>");
+  }
+
+  function viewServices() {
+    var parts = [];
+    if (CMP) {
+      var ws = Object.keys(CMP.wards).filter(function (w) { return CMP.wards[w].avgDays != null; }).sort(function (a, b) { return CMP.wards[b].avgDays - CMP.wards[a].avgDays; });
+      var tr = CMP.city.receivedTrend || {};
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Complaints · ' + esc(CMP.periodLabel || "2025") + '</div><h3>How quickly each ward closes residents’ complaints</h3></div><p>Average days from complaint to closure, slowest first. City average ' + esc(CMP.city.avgDays) + " days; " + esc(CMP.city.resolvedPct) + "% of " + fmtN(CMP.city.received) + ' complaints closed. Tap a ward to open it.</p></div>' +
+        hbars(ws.map(function (w) { var c = CMP.wards[w]; return { label: wardTitle(w), value: c.avgDays, display: c.avgDays + " days", color: c.avgDays > CMP.city.avgDays ? "var(--st-delayed)" : "var(--accent)", attrs: ' data-ward-go="' + esc(w) + '"', tip: "<b>" + esc(wardTitle(w)) + "</b><br>" + fmtN(c.received) + " complaints · " + c.resolvedPct + "% closed" }; }), { note: "Orange: slower than the city average. " + srcA(CMP.source, "Praja Foundation, from BMC’s complaint system") + (CMP.note ? " · " + esc(CMP.note) : "") }) +
+        (Object.keys(tr).length ? '<h4 style="margin:18px 0 8px">Complaints filed each year, whole city</h4>' + hbars(Object.keys(tr).sort().map(function (y) { return { label: y, value: tr[y], display: fmtN(tr[y]) }; })) : "") +
+        ((CMP.city.topIssues || []).length ? '<h4 style="margin:18px 0 8px">What people complain about most</h4><div class="table-scroll"><table class="data"><thead><tr><th>Category</th><th class="num">Received</th><th class="num">Closed</th><th class="num">Avg days</th></tr></thead><tbody>' + CMP.city.topIssues.map(function (t) { return "<tr><td>" + esc(t.category) + '</td><td class="num">' + fmtN(t.received) + '</td><td class="num">' + (t.resolvedPct != null ? t.resolvedPct + "%" : fmtN(t.closed)) + '</td><td class="num">' + (t.avgDays != null ? t.avgDays : "—") + "</td></tr>"; }).join("") + "</tbody></table></div>" : "") +
+        "</section>");
+    }
+    if (FLOOD) {
+      var c = FLOOD.counts || {};
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Flooding · as of ' + esc(fmtDate(FLOOD.asOf)) + '</div><h3>Flood spots and pumping stations</h3></div><p>' + esc(c.summary || "") + "</p></div>" +
+        (c.spots != null ? '<section class="stats" style="margin:0 0 14px"><div class="stat"><span class="label">Flood-prone spots</span><span class="value">' + fmtN(c.spots) + '</span><span class="sub">as counted by BMC</span></div><div class="stat"><span class="label">Addressed</span><span class="value">' + fmtN(c.addressed) + '</span><span class="sub">as stated by BMC</span></div>' + (c.pumpingStations != null ? '<div class="stat"><span class="label">Pumping stations</span><span class="value">' + fmtN(c.pumpingStations) + '</span><span class="sub">' + (c.miniPumpingStations != null ? "+ " + c.miniPumpingStations + " mini stations" : "") + "</span></div>" : "") + (c.dewateringPumps != null ? '<div class="stat"><span class="label">Dewatering pumps</span><span class="value">' + fmtN(c.dewateringPumps) + '</span><span class="sub">deployed for monsoon</span></div>' : "") + "</section>" : "") +
+        '<h4 style="margin:6px 0 8px">Spots named in reports</h4><ul class="cons nokm">' + (FLOOD.spots || []).map(function (s) { return floodRow(s).replace("<b>" + esc(s.name) + "</b>", "<b>" + esc(s.name) + "</b>" + (s.ward ? ' <a class="wcode-link" href="#ward-' + wardSlug(s.ward) + '">' + wcode(s.ward) + "</a>" : "")); }).join("") + "</ul>" +
+        '<h4 style="margin:18px 0 8px">Stormwater pumping stations</h4><ul class="cons nokm">' + (FLOOD.pumpingStations || []).map(pumpRow).join("") + "</ul>" +
+        '<p class="axis-note">' + esc(FLOOD.note || "") + " " + srcA(FLOOD.source) + "</p></section>");
+    }
+    parts.push(roadsPanel(), facilitiesPanel(null), sraPanel(null));
+    app.innerHTML = '<section class="lead"><div class="eyebrow">City services</div><h2>How the city is serving you</h2><p>Complaints and how fast each ward deals with them, flooding, roads, hospitals and slum redevelopment: published figures from BMC, the state and Praja Foundation, each with its source and period.</p></section>' + (parts.join("") || '<p class="muted">Being compiled.</p>');
+    bindClicks(app, "[data-ward-go]", function (el) { go("#ward-" + wardSlug(el.dataset.wardGo)); });
+  }
+
+  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout, latest: viewLatest, compare: viewCompare, services: viewServices, audits: viewAudits };
+  var MONEY = { contracts: "Contracts", tenders: "Tenders", funding: "Funding", audits: "Audits" };
   function moneyTabs(active) {
     return '<nav class="subtabs" aria-label="Money">' + Object.keys(MONEY).map(function (k) { return '<a href="#' + k + '"' + (k === active ? ' aria-current="page" class="on"' : "") + ">" + MONEY[k] + (k === "tenders" ? ' <span class="count">' + OPEN_TENDERS.length + "</span>" : "") + "</a>"; }).join("") + "</nav>";
   }
@@ -1776,6 +1915,7 @@
       if (sub[1] === "co") setTimeout(function () { app.insertAdjacentHTML("afterbegin", moneyTabs("contracts")); }, 0);
       if (leafletMap) { leafletMap.remove(); leafletMap = null; }
       (sub[1] === "mla" ? viewMla : viewCompany)(sub[2]);
+      if (sub[1] === "co") { var ca = auditItems(function (f) { return f.companySlug === sub[2]; }); if (ca.length) app.insertAdjacentHTML("beforeend", '<section class="panel"><div class="section-head"><div><div class="eyebrow">Audits</div><h3>What auditors found</h3></div><p>Observations in official audit reports that name this company. An audit finding is not a criminal finding.</p></div>' + auditList(ca) + "</section>"); }
       window.scrollTo(0, 0);
       return;
     }
@@ -1817,7 +1957,7 @@
 
   document.getElementById("footer").innerHTML =
     '<div class="f-col f-about"><div class="board board-sm"><span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span><span class="latin">Mumbai Public Works</span></div><p>An independent public record of government projects in Mumbai, the people responsible and the money involved. Built from official records and news reports; claims about people are checked twice.</p><p class="muted">Data updated ' + esc(fmtDate(META.lastUpdated)) + ". Costs in ₹ crore (1 crore = 10 million).</p></div>" +
-    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a><a href="#latest">Latest updates</a><a href="#compare">Compare</a></div>' +
+    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a><a href="#latest">Latest updates</a><a href="#services">City services</a><a href="#compare">Compare</a></div>' +
     '<div class="f-col"><h4>Money</h4><a href="#contracts">Contracts</a><a href="#tenders">Tenders</a><a href="#funding">Funding</a><a href="#schemes">Schemes</a></div>' +
     '<div class="f-col"><h4>About</h4><a href="#about">Sources and method</a><a href="#about">How we check</a><a href="#glossary">What the words mean</a><span class="muted">Corrections: send the source link.</span></div>';
   var hq = document.getElementById("site-q");
