@@ -1806,11 +1806,11 @@
       return "<tr><th>" + y + "</th><td><b>" + esc(r.winner) + "</b><div class=\"sub\">" + esc(r.party || "") + (r.votes != null ? " · " + fmtN(r.votes) + " votes" : "") + "</div></td><td>" + esc(r.runnerUp || "—") + '<div class="sub">' + esc(r.runnerUpParty || "") + (r.runnerUpVotes != null ? " · " + fmtN(r.runnerUpVotes) + " votes" : "") + '</div></td><td class="num">' + (r.margin != null ? fmtN(r.margin) : "—") +  (r.unverified ? '<div class="sub">not confirmed by a second source</div>' : "") + "</td></tr>";
     }
     var a = e.assets || {}, ch = a.y2024 != null && a.y2019 != null && a.y2019 > 0 ? Math.round(100 * (a.y2024 - a.y2019) / a.y2019) : null;
-    return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Elections</div><h3>How ' + esc(m.constituency) + ' voted</h3></div><p>Assembly results from the Election Commission. Margin is the winner’s lead over the runner-up.</p></div>' +
+    return '<section class="panel"><div class="section-head"><div><div class="eyebrow">Elections</div><h3>How ' + esc(m.constituency) + ' voted</h3></div><p>Assembly election results, cross-checked between two sources (see the note below). Margin is the winner’s lead over the runner-up.</p></div>' +
       '<div class="table-scroll"><table class="data"><thead><tr><th>Year</th><th>Winner</th><th>Runner-up</th><th class="num">Margin</th></tr></thead><tbody>' + res(e.r2024, "2024") + res(e.r2019, "2019") + "</tbody></table></div>" +
       (a.y2024 != null ? '<p style="margin:12px 0 0;font-size:.92rem">Declared assets: <b>' + rs(a.y2024) + "</b> in 2024" + (a.y2019 != null ? ", " + rs(a.y2019) + " in 2019" + (ch != null ? " (" + (ch >= 0 ? "+" : "") + ch + "%)" : "") : "; no 2019 declaration found on ADR (myneta)") + ". " + [a.y2024Url ? '<a href="' + esc(safeUrl(a.y2024Url)) + '" target="_blank" rel="noopener">2024 affidavit</a>' : "", a.y2019Url ? '<a href="' + esc(safeUrl(a.y2019Url)) + '" target="_blank" rel="noopener">2019 affidavit</a>' : ""].filter(Boolean).join(" · ") + "</p>" : "") +
       (a.note ? '<p class="axis-note">' + esc(a.note) + "</p>" : "") +
-      '<p class="axis-note">' + srcA((e.r2024 || {}).source, "2024 result") + ((e.r2019 || {}).source ? " · " + srcA(e.r2019.source, "2019 result") : "") + " · Asset change is what the candidate declared; it is not an allegation.</p></section>";
+      '<p class="axis-note">' + esc(ELEC.note || "") + " " + srcA((e.r2024 || {}).source, "2024 result") + ((e.r2019 || {}).source ? " · " + srcA(e.r2019.source, "2019 result") : "") + " · Asset change is what the candidate declared; it is not an allegation.</p></section>";
   }
   function auditItems(filter) { return AUD ? (AUD.findings || []).filter(filter) : []; }
   function auditList(list) {
