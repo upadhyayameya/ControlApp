@@ -1532,8 +1532,8 @@
   // ================================================================ v5: information layer
   var EVIDENCE = { official: ["Official source", "--st-completed", "Core facts are supported by an official document (agency, government, court or auditor)."], multiple: ["Two or more outlets", "--st-progress", "Core facts are reported by two or more independent reputable outlets."], single: ["Single report", "--st-partial", "Core facts rest on one reputable report. Treat with more caution."] };
   function evidenceBadge(p) {
-    var e = EVIDENCE[p.evidence]; if (!e && !p.recheckedAt) return "";
-    return '<div class="evidence">' + (e ? '<span class="pill" style="color:var(' + e[1] + ')" data-tip="' + esc(e[2]) + '">' + esc(e[0]) + "</span>" : "") + (p.recheckedAt ? '<span class="sub">Every fact re-checked against its sources by a second reviewer on ' + esc(fmtDate(p.recheckedAt)) + "</span>" : '<span class="sub">Not yet re-checked by a second reviewer</span>') + "</div>";
+    var e = EVIDENCE[p.evidence]; if (!e && !p.recheckedAt && !p.statusUnchecked) return "";
+    return '<div class="evidence">' + (e ? '<span class="pill" style="color:var(' + e[1] + ')" data-tip="' + esc(e[2]) + '">' + esc(e[0]) + "</span>" : "") + (p.statusUnchecked ? '<span class="pill" style="color:var(--st-delayed)" data-tip="A second reviewer could not find a 2026 report on this project\u2019s current state.">Latest status not confirmed</span>' : "") + (p.recheckedAt ? '<span class="sub">Every fact re-checked against its sources by a second reviewer on ' + esc(fmtDate(p.recheckedAt)) + "</span>" : '<span class="sub">Not yet re-checked by a second reviewer</span>') + "</div>";
   }
   // ---- glossary: plain-language meanings, shown on hover/tap and listed on About
   var GLOSS = {
