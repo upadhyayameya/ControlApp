@@ -1943,6 +1943,7 @@
         mtable([].concat(V.carsPerKm || [], V.newRegistrationsTotal || [])) +
         '<h4 style="margin:18px 0 8px">Congestion</h4>' + mtable(T.congestion || []) + "</section>");
     }
+    if (!WM) parts.push('<section class="panel"><div class="eyebrow">Transport by ward</div><p style="margin:6px 0 0;font-size:.92rem">No public body publishes transport figures by ward (bus ridership, stops served, station access). We tried computing station and bus-stop reach for each ward from OpenStreetMap, but spot checks found stations missing or misassigned at ward borders and bus stops far less complete than BEST\u2019s network, so those numbers are not shown. City-wide figures are above.</p></section>');
     if (WM) {
       parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Transport by ward</div><h3>How well each ward is served</h3></div><p>' + esc((window.PUBLIC_WORKS_WARD_METRICS || {}).method || "") + ' Lowest reach first.</p></div>' +
         '<div class="table-scroll"><table class="data"><thead><tr><th>Ward</th><th class="num">Bus stops</th><th class="num">Stops per sq km</th><th class="num">Land within 400 m of a bus stop</th><th class="num">Rail stations</th><th class="num">Metro stations</th><th class="num">Land within 1 km of a station</th></tr></thead><tbody>' +
