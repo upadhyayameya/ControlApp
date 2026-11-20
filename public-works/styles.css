@@ -625,3 +625,6 @@ table.cmp td.more { font-weight: inherit; }
 .lang button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .lang-note { max-width: var(--maxw, 1240px); margin: 8px auto 0; padding: 0 16px; font-size: 0.82rem; color: var(--ink-3); }
 .lang-note[hidden] { display: none; }
+.cons .pill { white-space: normal; text-align: left; line-height: 1.35; }
+.cons .cs { max-width: 260px; justify-self: end; }
+@media (max-width: 560px) { .cons .cs { max-width: none; justify-self: start; } }
