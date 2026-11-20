@@ -1980,7 +1980,7 @@
       document.getElementById("nx-list").innerHTML = R.filter(function (r) { return !nstate.area || r.area === nstate.area; }).map(function (r) {
         var st = r.status || {};
         var col = /not started/i.test(st.label || "") ? "--st-notstarted" : /partly|partial/i.test(st.label || "") ? "--st-partial" : /progress/i.test(st.label || "") ? "--st-progress" : /done|complete/i.test(st.label || "") ? "--st-completed" : "--st-delayed";
-        return '<article class="rec"><div class="rec-head"><span class="eyebrow">' + esc(r.area) + '</span><span class="pill" style="color:var(' + col + ')">' + esc(st.label || "status not reported") + "</span></div><h3>" + esc(r.title) + "</h3>" +
+        return '<article class="rec"><div class="rec-head"><span class="eyebrow">' + esc(r.area) + '</span><span class="pill" style="color:var(' + col + ')">' + esc(st.label ? st.label.charAt(0).toUpperCase() + st.label.slice(1) : "Status not reported") + "</span></div><h3>" + esc(r.title) + "</h3>" +
           (r.problem ? '<p class="rec-prob"><b>The problem:</b> ' + esc(r.problem.text) + " " + srcA(r.problem.source) + "</p>" : "") +
           '<p><b>Recommended:</b> ' + esc(r.recommendation) + "</p>" +
           '<p class="sub">By ' + (r.recommendedBy || []).map(function (b) { var u = safeUrl(b.url); return (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' : "") + esc(b.body + (b.document ? ", " + b.document : "") + (b.year ? " (" + b.year + ")" : "")) + (u ? "</a>" : ""); }).join("; ") + "</p>" +
