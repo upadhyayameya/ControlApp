@@ -631,3 +631,15 @@ table.cmp td.more { font-weight: inherit; }
 .evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; }
 .evidence .sub { font-size: 0.8rem; color: var(--ink-3); }
 .disclose { border-left: 4px solid var(--accent); }
+
+/* ======================================================= v10 city pulse / what next */
+.recs { display: grid; gap: 12px; margin-top: 12px; }
+.rec { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--surface); }
+.rec h3 { margin: 6px 0 8px; font-size: 1.1rem; }
+.rec p { margin: 6px 0; font-size: 0.93rem; }
+.rec .sub { font-size: 0.83rem; color: var(--ink-2); }
+.rec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.rec details { margin: 8px 0; font-size: 0.9rem; }
+.rec summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+.rec ol { margin: 8px 0 0; padding-left: 20px; }
+.rec .pill { white-space: normal; }

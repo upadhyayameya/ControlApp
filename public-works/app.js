@@ -292,6 +292,8 @@
       ["#map", "air", "Air and map", "Official air-quality stations and every project on the map.", worst ? "Worst now: " + stationName(worst) + ", AQI " + worst.aqi : "Map of all projects"],
       ["#schemes", "scheme", "Schemes", "Government yojanas reaching Mumbai, their status and how to apply.", YOJANAS.length + " schemes"],
       ["#latest", "clock", "Latest", "Everything reported recently: project milestones, representatives, schemes, contractors.", feedItems().filter(function (x) { return String(x.date) >= new Date(TODAY - 30 * 864e5).toISOString().slice(0, 10); }).length + " updates in the last 30 days"],
+      ["#pulse", "people", "City pulse", "How many people live where, how the city moves, vehicles, voting and how Mumbai rates.", "Population, transport, voting"],
+      ["#next", "scheme", "What next", "Projects and reforms official plans, auditors and courts say Mumbai should take on, and where each stands.", "Recommended, with steps"],
       ["#services", "ward", "City services", "Complaints and how fast each ward closes them, flooding spots, pumping stations and more.", "By ward, with sources"],
       ["#compare", "compare", "Compare", "Two wards or two MLAs side by side, and a table ranking all 24 wards.", "Wards and MLAs"],
     ];
@@ -1885,7 +1887,113 @@
     bindClicks(app, "[data-ward-go]", function (el) { go("#ward-" + wardSlug(el.dataset.wardGo)); });
   }
 
-  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout, latest: viewLatest, compare: viewCompare, services: viewServices, audits: viewAudits };
+  // ================================================================ v10: city pulse + what next
+  var PULSE = window.PUBLIC_WORKS_PULSE || {};
+  function pStat(label, value, sub) { return '<div class="stat"><span class="label">' + label + '</span><span class="value">' + value + '</span><span class="sub">' + sub + "</span></div>"; }
+  var WM = (window.PUBLIC_WORKS_WARD_METRICS || {}).wards || null;
+  function numv(v) { return typeof v === "number" ? v.toLocaleString("en-IN") : esc(v == null ? "—" : v); }
+  function mtable(arr, opts) {
+    arr = (arr || []).filter(Boolean); if (!arr.length) return "";
+    return '<div class="table-scroll"><table class="data"><thead><tr><th>' + esc((opts && opts.h) || "Measure") + '</th><th class="num">Value</th><th>Period</th><th>Source</th></tr></thead><tbody>' + arr.map(function (m) {
+      return "<tr><td>" + esc(m.metric || m.line || m.rto || "") + (m.note ? '<div class="sub">' + esc(m.note) + "</div>" : "") + '</td><td class="num"><b>' + numv(m.value) + "</b> " + esc(m.unit || "") + "</td><td>" + esc(m.period || "") + '</td><td class="sub">' + srcA(m.source) + "</td></tr>";
+    }).join("") + "</tbody></table></div>";
+  }
+  function trendBars(arr, unit) {
+    arr = (arr || []).filter(function (m) { return m && typeof m.value === "number"; }); if (!arr.length) return "";
+    return hbars(arr.map(function (m) { return { label: m.period, value: m.value, display: m.value.toLocaleString("en-IN") + (unit ? " " + unit : ""), tip: "<b>" + esc(m.metric || "") + "</b><br>" + esc(m.period) + (m.source && m.source.title ? "<br>" + esc(m.source.title) : "") }; }), { note: "Each bar is a figure from its own source; sources differ, so read the trend, not small differences." });
+  }
+  function viewPulse() {
+    var P = PULSE.people || {}, T = PULSE.transport || {}, Vt = PULSE.voting || {}, c11 = ((P.population || {}).census2011) || {}, city = c11.city || {}, wards = c11.wards || {};
+    var est = ((P.population || {}).estimates || []).slice().sort(function (a, b) { return b.year - a.year; })[0];
+    var parts = [];
+    parts.push('<section class="stats">' +
+      pStat("People (BMC estimate)", est ? (est.value / 1e7).toFixed(2) + "<small> crore</small>" : "—", est ? esc(est.year) + ", " + esc(String(est.by).split("(")[0]) : "") +
+      pStat("People (Census 2011)", city.population ? (city.population / 1e7).toFixed(2) + "<small> crore</small>" : "—", "last full count; Census 2027 not yet out") +
+      pStat("People per sq km", city.densityPerKm2_2024_asPublished ? Number(city.densityPerKm2_2024_asPublished).toLocaleString("en-IN") : "—", "2024, as published by BMC") +
+      pStat("Registered vehicles", T.vehicles && T.vehicles.byType && T.vehicles.byType[0] ? (T.vehicles.byType[0].total / 1e5).toFixed(1) + "<small> lakh</small>" : "—", T.vehicles && T.vehicles.byType && T.vehicles.byType[0] ? esc(T.vehicles.byType[0].period) : "") + "</section>");
+    // people by ward
+    var wk = Object.keys(wards);
+    if (wk.length) {
+      var water = (((P.amenities || {}).water || {}).wards) || {}, toil = (((P.amenities || {}).toilets || {}).wards) || {};
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">People</div><h3>Who lives in each ward</h3></div><p>Census 2011 counts (the last ward-level census), BMC’s official ward areas, water supply hours (2020) and public toilets (Dec 2023). Density and percentages are our arithmetic on the published counts.</p></div>' +
+        '<div class="table-scroll"><table class="data"><thead><tr><th>Ward</th><th class="num">People (2011)</th><th class="num">Area (sq km)</th><th class="num">People per sq km</th><th class="num">In slums</th><th class="num">Women per 1,000 men</th><th class="num">Literacy</th><th class="num">Water hours/day</th><th class="num">People per public toilet seat</th></tr></thead><tbody>' +
+        WARD_ORDER.filter(function (w) { return wards[w]; }).map(function (w) {
+          var r = wards[w], d = r.population && r.areaKm2 ? Math.round(r.population / r.areaKm2) : null, t = toil[w] || {}, wa = water[w] || {};
+          return '<tr class="click" data-ward-go="' + esc(w) + '" tabindex="0"><td>' + wcode(w) + esc(wardTitle(w)) + '</td><td class="num">' + numv(r.population) + '</td><td class="num">' + numv(r.areaKm2) + '</td><td class="num">' + numv(d) + '</td><td class="num">' + (r.slumPct != null ? r.slumPct + "%" : "—") + '</td><td class="num">' + numv(r.sexRatio) + '</td><td class="num">' + (r.literacyPct != null ? r.literacyPct + "%" : "—") + '</td><td class="num">' + numv(wa.avgSupplyHoursPerDay) + '</td><td class="num">' + numv(t.residentsPerPublicSeat != null ? Math.round(t.residentsPerPublicSeat) : null) + "</td></tr>";
+        }).join("") + "</tbody></table></div>" +
+        '<p class="axis-note">' + srcA(city.source || (wards.A || {}).source, "Census 2011 ward table (BMC)") + " · " + srcA((wards.A || {}).areaSource, "ward areas (BMC ESR)") + " · " + srcA(((P.amenities || {}).water || {}).source, "water hours") + " · " + srcA(((P.amenities || {}).toilets || {}).source, "toilets") + (city.areaNote ? " · " + esc(city.areaNote) : "") + "</p></section>");
+    }
+    // transport
+    if (T.bus) {
+      var bus = T.bus, rail = T.rail || {}, metro = T.metro || {}, ms = (T.modeShare || {}).greaterMumbai2015;
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Getting around</div><h3>How Mumbai moves</h3></div><p>Published figures from BEST, the railways, MMRDA, BMC and the RTO. Where sources disagree, both are shown.</p></div>' +
+        (ms && ms.sharesPct ? '<h4 style="margin:6px 0 8px">How trips are made (Greater Mumbai, 2015)</h4>' + hbars(Object.keys(ms.sharesPct).map(function (k) { return { label: k.replace(/([A-Z])/g, " $1").replace(/^./, function (x) { return x.toUpperCase(); }), value: ms.sharesPct[k], display: ms.sharesPct[k] + "%" }; }).sort(function (a, b) { return b.value - a.value; }), { note: esc(ms.basis || "") + " " + srcA(ms.source) }) : "") +
+        '<h4 style="margin:18px 0 8px">BEST bus fleet</h4>' + trendBars(bus.fleetOverTime, "buses") +
+        '<h4 style="margin:18px 0 8px">BEST daily passengers (lakh)</h4>' + trendBars(bus.dailyRidershipOverTime, "lakh") +
+        mtable([].concat(bus.electricShare || [], bus.routes || [], bus.depots || [], bus.speedOrFrequency || [], bus.finance || [])) +
+        '<h4 style="margin:18px 0 8px">Suburban trains</h4>' + mtable([].concat(rail.dailyRidership || [], rail.acLocals || [])) +
+        '<h4 style="margin:18px 0 8px">Deaths on the tracks</h4>' + mtable((rail.trackDeaths || []).map(function (m) { return m && Object.assign({}, m, { note: [m.central != null ? "Central " + m.central : "", m.western != null ? "Western " + m.western : "", m.crossingTracks != null ? "crossing tracks " + m.crossingTracks : "", m.fallingFromTrains != null ? "falling from trains " + m.fallingFromTrains : "", m.note || ""].filter(Boolean).join(" · ") }); })) +
+        '<h4 style="margin:18px 0 8px">Metro and monorail</h4>' + mtable((metro.linesOpen || []).map(function (l) { return l && { metric: l.line, value: l.lengthKm, unit: "km" + (l.stations ? ", " + l.stations + " stations" : ""), period: l.opened || "", source: l.source, note: l.note }; }).concat(metro.ridership || [])) +
+        "</section>");
+      var V = T.vehicles || {}, bt = (V.byType || [])[0];
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Vehicles and traffic</div><h3>Cars, two-wheelers and congestion</h3></div><p>Registered vehicles from the RTO, as published in BMC’s Environment Status Report. Registrations are not published by ward.</p></div>' +
+        (bt ? hbars([["Two-wheelers", bt.twoWheelers], ["Cars, jeeps, station wagons", bt.carsJeepsStationWagons], ["Auto-rickshaws", bt.autoRickshaws], ["Taxis and cabs", bt.taxisCabs], ["Buses", bt.buses], ["Trucks and lorries", bt.trucksLorries], ["Other", bt.other]].filter(function (x) { return x[1] != null; }).map(function (x) { return { label: x[0], value: x[1], display: x[1].toLocaleString("en-IN") }; }), { note: "Registered vehicles " + esc(bt.period) + ", total " + numv(bt.total) + ". " + srcA(bt.source) }) : "") +
+        '<h4 style="margin:18px 0 8px">Registered vehicles over time</h4>' + mtable((V.trend || []).map(function (t) { return t && { metric: "Registered vehicles, Greater Mumbai", value: t.total, unit: "", period: t.period, source: t.source, note: t.note }; })) +
+        '<h4 style="margin:18px 0 8px">New registrations by RTO</h4>' + mtable((V.byRto || []).map(function (r) { return r && { metric: r.rto, value: r.newRegistrations, unit: "new vehicles" + (r.cars != null ? " (" + r.cars.toLocaleString("en-IN") + " cars)" : ""), period: r.period, source: r.source }; })) +
+        mtable([].concat(V.carsPerKm || [], V.newRegistrationsTotal || [])) +
+        '<h4 style="margin:18px 0 8px">Congestion</h4>' + mtable(T.congestion || []) + "</section>");
+    }
+    if (WM) {
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Transport by ward</div><h3>How well each ward is served</h3></div><p>' + esc((window.PUBLIC_WORKS_WARD_METRICS || {}).method || "") + ' Lowest reach first.</p></div>' +
+        '<div class="table-scroll"><table class="data"><thead><tr><th>Ward</th><th class="num">Bus stops</th><th class="num">Stops per sq km</th><th class="num">Land within 400 m of a bus stop</th><th class="num">Rail stations</th><th class="num">Metro stations</th><th class="num">Land within 1 km of a station</th></tr></thead><tbody>' +
+        Object.keys(WM).sort(function (a, b) { return (WM[a].pctNearBus || 0) - (WM[b].pctNearBus || 0); }).map(function (w) { var m = WM[w]; return '<tr class="click" data-ward-go="' + esc(w) + '" tabindex="0"><td>' + wcode(w) + esc(wardTitle(w)) + '</td><td class="num">' + numv(m.busStops) + '</td><td class="num">' + numv(m.busStopsPerKm2) + '</td><td class="num"><b>' + numv(m.pctNearBus) + '%</b></td><td class="num">' + numv(m.stations) + '</td><td class="num">' + numv(m.metroStations) + '</td><td class="num">' + numv(m.pctNearStation) + "%</td></tr>"; }).join("") +
+        '</tbody></table></div><p class="axis-note">Computed from OpenStreetMap (fetched ' + esc(fmtDate((window.PUBLIC_WORKS_WARD_METRICS || {}).fetched)) + '). Includes parks, forest and creek land inside ward boundaries, which lowers reach in wards like P/North and R/Central.</p></section>');
+    }
+    // voting
+    if (Vt.bmc2026) {
+      var b6 = Vt.bmc2026.city || {}, b7 = (Vt.bmc2017 || {}).city || {};
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Voting</div><h3>How many people vote</h3></div><p>' + esc(Vt.bmc2026.wardsNote || "") + "</p></div>" +
+        '<section class="stats" style="margin:0 0 14px">' + pStat("BMC election 2026", b6.turnoutPct != null ? b6.turnoutPct + "%" : "—", "turnout · " + numv(b6.registeredVoters) + " voters") + pStat("BMC election 2017", b7.turnoutPct != null ? b7.turnoutPct + "%" : "—", "turnout · " + numv(b7.registeredVoters) + " voters") + "</section>" +
+        '<p class="axis-note">' + srcA(b6.source, "2026 turnout") + " · " + srcA(b7.source, "2017 (State Election Commission)") + "</p>" +
+        ((Vt.bmc2026.reported || []).length ? '<p style="font-size:.92rem">' + Vt.bmc2026.reported.map(function (r) { return "Ward " + esc(r.ward) + ": <b>" + r.turnoutPct + "%</b> (" + esc(r.label) + ", " + srcA(r.source) + ")"; }).join(" · ") + "</p>" : "") +
+        ((Vt.ls2024 || []).length ? '<h4 style="margin:14px 0 8px">Lok Sabha 2024</h4>' + hbars(Vt.ls2024.map(function (s) { return { label: s.pc, value: s.turnoutPct, display: s.turnoutPct + "%" }; }), { note: esc((Vt.ls2024[0] || {}).measure || "") + " " + srcA((Vt.ls2024[0] || {}).source) }) : "") + "</section>");
+    }
+    // liveability
+    var L = P.liveability;
+    if (L) {
+      parts.push('<section class="panel"><div class="section-head"><div><div class="eyebrow">Liveability</div><h3>How Mumbai rates</h3></div><p>' + esc(L.happinessNote || "") + "</p></div>" +
+        '<div class="table-scroll"><table class="data"><thead><tr><th>Index</th><th class="num">Rank</th><th class="num">Score</th><th>Out of</th></tr></thead><tbody>' +
+        [].concat((L.easeOfLiving || []).map(function (e) { return { n: "Ease of Living Index " + e.edition, e: e }; }), (L.mpi || []).map(function (e) { return { n: "Municipal Performance Index " + e.edition, e: e }; })).map(function (x) { return "<tr><td>" + esc(x.n) + '<div class="sub">' + srcA(x.e.source) + '</div></td><td class="num"><b>' + numv(x.e.rank) + '</b></td><td class="num">' + numv(x.e.score) + "</td><td>" + esc(x.e.category || "") + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+        ((L.surveys || []).length ? '<h4 style="margin:14px 0 8px">Surveys of residents</h4><ul class="sources">' + L.surveys.map(function (s) { return "<li><b>" + esc(s.name) + "</b>: " + esc(s.result) + ' <span class="muted">' + esc(s.methodology || "") + "</span> " + srcA(s.source) + "</li>"; }).join("") + "</ul>" : "") +
+        (P.hdi && P.hdi.note ? '<p class="axis-note">Human Development Index by ward: ' + esc(P.hdi.note) + "</p>" : "") + "</section>");
+    }
+    app.innerHTML = '<section class="lead"><div class="eyebrow">City pulse</div><h2>Mumbai in numbers</h2><p>How many people live here and where, how the city moves, how many people vote and how Mumbai rates, from official and published sources. Every figure shows its period and source. There is no official happiness index for Mumbai; the closest published measures are below. <a href="#next">What should Mumbai take on next? →</a></p></section>' + (parts.join("") || '<p class="muted">Being compiled and checked.</p>');
+    bindClicks(app, "[data-ward-go]", function (el) { go("#ward-" + wardSlug(el.dataset.wardGo)); });
+  }
+  var nstate = { area: "" };
+  function viewNext() {
+    var R = (PULSE.recommendations || []).filter(Boolean);
+    var areas = []; R.forEach(function (r) { if (areas.indexOf(r.area) === -1) areas.push(r.area); });
+    app.innerHTML = '<section class="lead"><div class="eyebrow">What next</div><h2>What Mumbai should take on next</h2><p>Projects and reforms that official plans, auditors, courts and civic bodies have recommended for Mumbai, with the steps they set out and where each stands now. These are their recommendations, attributed to them, not this portal’s.</p></section>' +
+      (R.length ? '<section class="panel"><div class="legend" id="nx-f"><button type="button" class="chip" data-a="" aria-pressed="' + !nstate.area + '">All <b>' + R.length + "</b></button>" + areas.map(function (a) { return '<button type="button" class="chip" data-a="' + esc(a) + '" aria-pressed="' + (nstate.area === a) + '">' + esc(a.charAt(0).toUpperCase() + a.slice(1)) + " <b>" + R.filter(function (r) { return r.area === a; }).length + "</b></button>"; }).join("") + '</div><div id="nx-list" class="recs"></div></section>' : '<p class="muted">Being compiled and checked.</p>');
+    function draw() {
+      document.getElementById("nx-list").innerHTML = R.filter(function (r) { return !nstate.area || r.area === nstate.area; }).map(function (r) {
+        var st = r.status || {};
+        var col = /not started/i.test(st.label || "") ? "--st-notstarted" : /partly|partial/i.test(st.label || "") ? "--st-partial" : /progress/i.test(st.label || "") ? "--st-progress" : /done|complete/i.test(st.label || "") ? "--st-completed" : "--st-delayed";
+        return '<article class="rec"><div class="rec-head"><span class="eyebrow">' + esc(r.area) + '</span><span class="pill" style="color:var(' + col + ')">' + esc(st.label || "status not reported") + "</span></div><h3>" + esc(r.title) + "</h3>" +
+          (r.problem ? '<p class="rec-prob"><b>The problem:</b> ' + esc(r.problem.text) + " " + srcA(r.problem.source) + "</p>" : "") +
+          '<p><b>Recommended:</b> ' + esc(r.recommendation) + "</p>" +
+          '<p class="sub">By ' + (r.recommendedBy || []).map(function (b) { var u = safeUrl(b.url); return (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' : "") + esc(b.body + (b.document ? ", " + b.document : "") + (b.year ? " (" + b.year + ")" : "")) + (u ? "</a>" : ""); }).join("; ") + "</p>" +
+          ((r.steps || []).length ? '<details><summary>Steps they set out (' + r.steps.length + ")</summary><ol>" + r.steps.map(function (s) { return "<li>" + esc(typeof s === "string" ? s : s.text || "") + "</li>"; }).join("") + "</ol></details>" : "") +
+          '<p class="sub"><b>Where it stands:</b> ' + esc(st.detail || "") + " " + srcA(st.source) + "</p>" +
+          '<p class="sub">' + (r.costCr != null ? "Estimated cost: " + crore(r.costCr) + (r.costNote ? " (" + esc(r.costNote) + ")" : "") + " · " : "") + ((r.wards || []).length ? "Wards: " + r.wards.map(function (w) { return WARD_NAMES.indexOf(w) !== -1 ? '<a href="#ward-' + wardSlug(w) + '">' + esc(w) + "</a>" : esc(w); }).join(", ") : "Citywide") + (r.verified ? " · source re-checked " + esc(fmtDate(r.verified)) : "") + "</p></article>";
+      }).join("");
+    }
+    var f = document.getElementById("nx-f");
+    if (f) { bindClicks(f, "[data-a]", function (el) { nstate.area = el.dataset.a; f.querySelectorAll("[data-a]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === el)); }); draw(); }); draw(); }
+  }
+
+  var VIEWS = { area: viewAreaPicker, overview: viewOverview, map: viewMap, wards: viewWards, tenders: viewTenders, mlas: viewReps, contracts: viewContracts, schemes: viewSchemes, funding: viewFunding, about: viewAbout, latest: viewLatest, compare: viewCompare, services: viewServices, audits: viewAudits, pulse: viewPulse, next: viewNext };
   var MONEY = { contracts: "Contracts", tenders: "Tenders", funding: "Funding", audits: "Audits" };
   function moneyTabs(active) {
     return '<nav class="subtabs" aria-label="Money">' + Object.keys(MONEY).map(function (k) { return '<a href="#' + k + '"' + (k === active ? ' aria-current="page" class="on"' : "") + ">" + MONEY[k] + (k === "tenders" ? ' <span class="count">' + OPEN_TENDERS.length + "</span>" : "") + "</a>"; }).join("") + "</nav>";
@@ -1963,7 +2071,7 @@
 
   document.getElementById("footer").innerHTML =
     '<div class="f-col f-about"><div class="board board-sm"><span class="deva" lang="mr">मुंबई सार्वजनिक कामे</span><span class="latin">Mumbai Public Works</span></div><p>An independent public record of government projects in Mumbai, the people responsible and the money involved. Built from official records and news reports; every fact is re-checked by a second reviewer. Compiled with AI assistance; <a href="#about">how</a>.</p><p class="muted">Data updated ' + esc(fmtDate(META.lastUpdated)) + ". Costs in ₹ crore (1 crore = 10 million).</p></div>" +
-    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a><a href="#latest">Latest updates</a><a href="#services">City services</a><a href="#compare">Compare</a></div>' +
+    '<div class="f-col"><h4>Explore</h4><a href="#area">Your area</a><a href="#overview">Projects</a><a href="#map">Map</a><a href="#wards">BMC wards</a><a href="#mlas">Representatives</a><a href="#latest">Latest updates</a><a href="#services">City services</a><a href="#pulse">City pulse</a><a href="#next">What next</a><a href="#compare">Compare</a></div>' +
     '<div class="f-col"><h4>Money</h4><a href="#contracts">Contracts</a><a href="#tenders">Tenders</a><a href="#funding">Funding</a><a href="#schemes">Schemes</a></div>' +
     '<div class="f-col"><h4>About</h4><a href="#about">Sources and method</a><a href="#about">How we check</a><a href="#glossary">What the words mean</a><span class="muted">Corrections: send the source link.</span></div>';
   var hq = document.getElementById("site-q");
