@@ -935,7 +935,7 @@
       return !yq || [y.name, y.nameLocal, y.gives, y.ministry, y.eligibility].join(" ").toLowerCase().indexOf(yq.toLowerCase()) !== -1;
     });
     document.getElementById("y-list").innerHTML = list.map(function (y) {
-      return '<article class="scheme"><header><div><div class="eyebrow">' + esc(y.level) + (y.launched ? " · since " + esc(y.launched) : "") + "</div><h4>" + esc(y.name) + "</h4>" + (y.nameLocal ? '<div class="local" lang="mr">' + esc(y.nameLocal) + "</div>" : "") + '</div><span class="pill" style="color:var(' + schemeStatusColor(y.status) + ')">' + esc(y.status || "Status unknown") + "</span></header>" +
+      return '<article class="scheme"><header><div><div class="eyebrow">' + esc(y.level) + (y.launched ? " · since " + esc(y.launched) : "") + "</div><h4>" + esc(y.name) + "</h4>" + (y.nameLocal ? '<div class="local" lang="mr">' + esc(y.nameLocal) + "</div>" : "") + '</div><span class="pill" style="color:var(' + schemeStatusColor(y.status) + ')">' + esc(y.status || "Status unknown") + "</span>" + (y.statusUnchecked ? '<span class="pill" style="color:var(--st-delayed)" data-tip="No 2025-26 implementation report found by the second reviewer.">Latest status not confirmed</span>' : "") + "</header>" +
         '<p class="gives">' + esc(y.gives || "") + "</p>" +
         (y.eligibility ? '<p class="sub" style="margin:0 0 10px">Who qualifies: ' + esc(y.eligibility) + "</p>" : "") +
         ((y.mumbai || []).length ? '<div class="ynums">' + y.mumbai.map(function (n) { return '<div data-tip="' + esc((n.source && n.source.title ? n.source.title + ", " : "") + fmtDate(n.asOf)) + '"><span class="v">' + esc(typeof n.value === "number" ? n.value.toLocaleString("en-IN") : n.value) + '</span><span class="u">' + esc(n.unit || "") + '</span><span class="l">' + esc(n.metric) + (n.asOf ? " · " + esc(fmtDate(n.asOf)) : "") + "</span></div>"; }).join("") + "</div>" : '<p class="sub" style="margin:0 0 10px">No Mumbai-specific figure published.</p>') +
@@ -955,7 +955,7 @@
     if (!d) return "";
     var monthsLate = p.targetDate ? Math.max(0, Math.round((TODAY - toTime(p.targetDate, true)) / (30.44 * 864e5))) : null;
     var over = overrun(p);
-    return '<section class="panel stuck"><h3>What’s holding it up</h3>' +
+    return '<section class="panel stuck"><h3>What’s holding it up</h3>' + (d.statusUnchecked ? '<p><span class="pill" style="color:var(--st-delayed)">Latest status not confirmed</span> <span class="sub">No 2026 report on the current blocker was found by the second reviewer.</span></p>' : "") +
       (d.blocker ? '<p style="margin:0 0 4px;font-weight:600">' + esc(d.blocker) + "</p>" : "") +
       (d.pendingWith ? '<p class="sub" style="margin:0 0 12px">Waiting on: ' + esc(d.pendingWith) + "</p>" : "") +
       '<dl class="kv"><div><dt>Spent so far</dt><dd>' + (d.spentCr != null ? crore(d.spentCr) : '<span class="muted" style="font-size:1rem">not published</span>') + "<small>" + (d.spentAsOf ? "as of " + esc(fmtDate(d.spentAsOf)) : "&nbsp;") + "</small></dd></div>" +
