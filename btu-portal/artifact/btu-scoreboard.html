@@ -422,16 +422,31 @@ const OCT_2026_GOALS = {
                   "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 4, incentive: 200000 }, "SMECO": { count: 3, incentive: 5000 },
                   "Georgia": { count: 3 }, "Virginia/CGS": { count: 5, incentive: 5000 } },
 };
+// November 2026 goals from "HBS_Weekly_Scoreboard_Nov_1123.xlsx", Tune-Up Factory tab. Same as October except
+// BPTU Preapprovals Submitted $, which the workbook sets at $386,700 = Phase-1 applications $86,700 + Phase-2 PA $300,000.
+const NOV_2026_GOALS = JSON.parse(JSON.stringify(OCT_2026_GOALS));
+NOV_2026_GOALS.pa_submitted["BPTU"] = { count: 4, incentive: 386700 };
 // BPTU Phase 1 is the audit incentive. On the KPI board it is logged as a Phase 1 closeout, not a preapproval,
-// so the workbook's "Phase-1 Applications Submitted" goal is tracked against Phase 1 Closeouts Submitted.
-OCT_2026_GOALS.bptu_phase1 = { incentive: 86700 };
-// A Total goal exists only where every program has one.
-for (const [k, st] of Object.entries(OCT_2026_GOALS)) {
-  if (k === "bptu_phase1") continue;
-  const vals = Object.values(st), t = {};
-  for (const f of ["count", "incentive"]) if (vals.length === 8 && vals.every((g) => g[f] != null)) t[f] = vals.reduce((a, g) => a + g[f], 0);
-  if (Object.keys(t).length) st.Total = t;
+// so the workbook's "Phase-1 Applications Submitted" goal is also tracked against Phase 1 Closeouts Submitted.
+for (const G of [OCT_2026_GOALS, NOV_2026_GOALS]) {
+  G.bptu_phase1 = { incentive: 86700 };
+  // Total goal = the sum of the program goals, as the workbook builds it. Where only some programs have a dollar
+  // goal (Closeouts $: none for Prescriptive or Georgia), the total covers those programs and the actual is summed
+  // over the same programs, so goal and actual compare like with like.
+  for (const [k, st] of Object.entries(G)) {
+    if (k === "bptu_phase1") continue;
+    const progs = Object.keys(st), t = {};
+    for (const f of ["count", "incentive"]) {
+      const have = progs.filter((p) => st[p][f] != null);
+      if (!have.length) continue;
+      t[f] = have.reduce((a, p) => a + st[p][f], 0);
+      if (have.length < progs.length) (t.covers ||= {})[f] = have;
+    }
+    if (Object.keys(t).length) st.Total = t;
+  }
 }
+/* Programs a Total goal covers for a measure (null = all of them). */
+function totalCovers(month, stage, measure) { return CONFIG.goals[month]?.[stage]?.Total?.covers?.[measure] || null; }
 
 const CONFIG = {
   server: "monday.com",
@@ -468,7 +483,7 @@ const CONFIG = {
                  "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
                  "HBS Resubmitted": { holder: "ICF", kind: "Resubmission" } } },
   // KPIs judged on their Incentive goal first and the project count second (Incentive is the real value of the target).
-  incentiveFirst: ["pa_submitted", "impl_scheduled"],
+  incentiveFirst: ["pa_submitted", "impl_scheduled", "co_submitted"],
   rules: { countRepeatsAsNew: false, repeatStages: ["pa_submitted", "co_submitted"], paceWatchRatio: 0.9,
            paceBasis: "count", holidays: [] },
   weeks: {
@@ -480,10 +495,10 @@ const CONFIG = {
   goals: {
     repeatsCountedAsNew: false,
     "2026-10": OCT_2026_GOALS,
-    "2026-11": OCT_2026_GOALS,
+    "2026-11": NOV_2026_GOALS,
     sources: {
       "2026-10": "October goals from the HBS Weekly Scoreboard workbook (Tune-Up Factory tab).",
-      "2026-11": "No November goals have been set, so October's goals from the HBS Weekly Scoreboard workbook are used.",
+      "2026-11": "November goals from the HBS Weekly Scoreboard workbook (Nov 11/23, Tune-Up Factory tab). Totals are the sum of the program goals; the Closeouts $ total covers the six programs with a dollar goal (not Prescriptive or Georgia).",
     },
   },
   // Level readings (Utilization %, MRR, live contracts): { metric, kind: "percent"|"dollars"|"count", date, value, source }.
@@ -875,10 +890,11 @@ function buildRow(M, stage, program, month, mode, weeks, evs, pace, today) {
   const goal = goalFor(month, stage, program, mode);
   // Incentive-first KPIs are judged on Incentive whatever the dollar toggle shows.
   const incGoal = goalFor(month, stage, program, "incentive").dollars;
-  const incActual = ua || dUnavailFor(M, stage, program === "Total" ? "*" : program, "incentive") ? null : (sumOf(evs.filter((e) => e.counted).map((e) => e.incentive)) || 0);
+  const cov = program === "Total" ? totalCovers(month, stage, "incentive") : null;
+  const incActual = ua || dUnavailFor(M, stage, program === "Total" ? "*" : program, "incentive") ? null : (sumOf(evs.filter((e) => e.counted && (!cov || cov.includes(e.program))).map((e) => e.incentive)) || 0);
   const incFirst = CONFIG.incentiveFirst.includes(stage) && incGoal != null && incActual != null;
   const basisCount = CONFIG.rules.paceBasis === "count" ? goal.count != null : goal.dollars == null;
-  return { stage, program, weeks: wk, un, mtd, goal, inc: { goal: incGoal, actual: incActual, first: incFirst },
+  return { stage, program, weeks: wk, un, mtd, goal, inc: { goal: incGoal, actual: incActual, first: incFirst, covers: cov },
     pctCount: mtd.count != null && goal.count ? mtd.count / goal.count : null,
     pctDollars: mtd.dollars != null && goal.dollars ? mtd.dollars / goal.dollars : null,
     status: incFirst ? paceStatus(incActual, incGoal, pace.fraction) : paceStatus(basisCount ? mtd.count : mtd.dollars, basisCount ? goal.count : goal.dollars, pace.fraction),
@@ -1097,7 +1113,8 @@ function samePointLastMonth(stage, program, month, measure) {
   const closed = TODAY > monthBounds(month)[1];
   let cutoff = pl;
   if (!closed) { const wd = workingDays(pf, pl), n = paceInfo(month, TODAY).elapsed; cutoff = n <= 0 ? null : wd[Math.min(n, wd.length) - 1]; }
-  return cutoff ? sumMeasure(evsFor(stage, program, pm).filter((e) => e.date <= cutoff), measure) : 0;
+  const cov = program === "Total" && measure !== "count" ? totalCovers(pm, stage, measure === "dollars" ? state.mode : measure) : null;
+  return cutoff ? sumMeasure(evsFor(stage, program, pm).filter((e) => e.date <= cutoff && (!cov || cov.includes(e.program))), measure) : 0;
 }
 function niceMax(v) { if (v <= 0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * e >= v) return m * e; return 10 * e; }
 
@@ -1107,8 +1124,10 @@ function burnupData(stage, program, month, measure) {
   const [f, l] = monthBounds(month), days = +l.slice(8), pm = prevMonthOf(month), plDays = +monthBounds(pm)[1].slice(8);
   const cum = (evs, upto) => { const by = new Array(33).fill(0); for (const e of evs) by[+e.date.slice(8)] += measureOf(e, measure); const out = []; let c = 0; for (let d = 1; d <= upto; d++) { c += by[d]; out.push(c); } return out; };
   const todayDay = TODAY < f ? 0 : TODAY > l ? days : +TODAY.slice(8);
-  const actual = cum(evsFor(stage, program, month), todayDay);
-  const lastFull = cum(evsFor(stage, program, pm), plDays);
+  const covOf = (m) => program === "Total" && measure !== "count" ? totalCovers(m, stage, measure === "dollars" ? state.mode : measure) : null;
+  const pick = (m) => { const c = covOf(m), xs = evsFor(stage, program, m); return c ? xs.filter((e) => c.includes(e.program)) : xs; };
+  const actual = cum(pick(month), todayDay);
+  const lastFull = cum(pick(pm), plDays);
   const last = lastFull.slice(0, days);
   const goal = goalFigure(stage, program, month, measure);
   const wd = workingDays(f, l);
@@ -1217,7 +1236,7 @@ function stageTiles(B, program) {
     return `<button type="button" class="tile ${sel ? "sel" : ""}" data-chartstage="${stage}" aria-pressed="${sel}" title="Chart ${esc(label)}">
       <span class="step">${i + 1} · ${esc(label)}</span>
       <span class="big">${g && g.incentive ? shortMoney(g.actual) : g && g.dollar ? shortMoney(c.dollars) : c.count}</span>
-      <span class="usd">${g && g.incentive ? `Incentive · ${c.count} project${c.count === 1 ? "" : "s"}${g.second ? ` of ${num(g.second.goal)}` : ""}` : g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
+      <span class="usd">${g && g.incentive ? `Incentive${r.inc.covers ? ` (${r.inc.covers.length} utilities with a $ goal)` : ""} · ${c.count} project${c.count === 1 ? "" : "s"}${g.second ? ` of ${num(g.second.goal)}` : ""}` : g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
       ${g ? `<span class="tbar" title="${esc(`${pct(g.pct)} of the ${g.fmt(g.goal)} goal; the tick is where pace says you should be today`)}"><i class="${r.status || ""}" style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:${Math.round(B.pace.fraction * 100)}%"></b></span>
         <span class="tfoot"><span>${pct(g.pct)} of ${g.dollar ? shortMoney(g.goal) : num(g.goal)}</span>${chip(r.status)}</span>` : `<span class="tfoot muted">no goal</span>`}
       <span class="delta ${dCls}" title="${esc(`At this point in ${monthName(prevMonthOf(state.month))}: ${fmtExact(measure, prev)}`)}">${dTxt}</span></button>`;
@@ -1364,7 +1383,8 @@ function renderWeekly() {
   const nW = B.weeks.length;
   const evAll = (stage) => evsFor(stage, prog, state.month);
   const lineFor = (r, measure, goal, primary) => {
-    const evs = evAll(r.stage);
+    const cov = measure !== "count" && r.program === "Total" ? r.inc.covers : null;
+    const evs = cov ? evAll(r.stage).filter((e) => cov.includes(e.program)) : evAll(r.stage);
     const v = (xs) => measure === "count" ? xs.length : (sumOf(xs.map((e) => e.incentive)) || 0);
     const f = (x) => measure === "count" ? num(x) : shortMoney(x);
     const fx = (x) => measure === "count" ? num(x) : money(x);
