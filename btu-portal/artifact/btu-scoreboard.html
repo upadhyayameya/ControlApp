@@ -128,6 +128,7 @@ h2 .sub, .card-h .sub { font-weight: 400; color: var(--muted); font-size: 13px; 
 .chip.none { background: var(--surface-2); color: var(--muted); font-weight: 500; }
 .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
 .pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.good { background: var(--good-bg); color: var(--good); } .pill.bad { background: var(--bad-bg); color: var(--bad); }
 .pill.mute { background: var(--surface-2); color: var(--muted); }
 
 /* ---------- tables ---------- */
@@ -157,6 +158,9 @@ th.mtd, td.mtd { background: color-mix(in srgb, var(--accent-soft) 70%, var(--su
 tr.total td.mtd { background: color-mix(in srgb, var(--accent-soft) 100%, var(--surface)); }
 th.orph, td.orph { background: var(--bad-bg); }
 table.list td { font-size: 13px; padding: 8px 12px; }
+.wkv.good { color: var(--good); font-weight: 600; } .wkv.warn { color: var(--warn); font-weight: 600; } .wkv.bad { color: var(--bad); font-weight: 600; }
+table.crt td.small.muted { white-space: normal; }
+table.crt td, table.crt th { padding-left: 8px; padding-right: 8px; }
 tr.holder { cursor: pointer; }
 tr.holder:hover td, tr.holder[aria-expanded="true"] td { background: var(--surface-2); }
 tr.holder:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -377,6 +381,7 @@ details.how .body p { margin: 0; }
       <span>BTU Scoreboard<small>HBS Solutions · Building Tune-Up</small></span></div>
     <nav class="tabs" id="nav" aria-label="Views">
       <a href="#overview">Overview</a>
+      <a href="#company">Company results</a>
       <a href="#weekly">By utility &amp; why</a>
       <a href="#pace">Pace</a>
       <a href="#submissions">Submissions</a>
@@ -424,6 +429,9 @@ const OCT_2026_GOALS = {
                     "Delmarva": { incentive: 200000 }, "SMECO": { incentive: 5000 }, "Georgia": { incentive: 49000 }, "Virginia/CGS": { incentive: 5000 } },
   impl_completed: { "Prescriptive": { count: 25 }, "BGE Tune-Up": { count: 10 }, "BPTU": { count: 4 }, "Pepco/WGL": { count: 4 },
                     "Delmarva": { count: 3 }, "SMECO": { count: 3 }, "Georgia": { count: 2 }, "Virginia/CGS": { count: 15 } },
+  // "Payments Received ($)" rows. The workbook fills them from Closeouts Approved on monday.
+  co_approved: { "Prescriptive": { incentive: 80000 }, "BGE Tune-Up": { incentive: 240000 }, "BPTU": { incentive: 300000 }, "Pepco/WGL": { incentive: 240000 },
+                 "Delmarva": { incentive: 200000 }, "SMECO": { incentive: 5000 }, "Georgia": { incentive: 49000 }, "Virginia/CGS": { incentive: 5000 } },
   co_submitted: { "Prescriptive": { count: 48 }, "BGE Tune-Up": { count: 25, incentive: 240000 }, "BPTU": { count: 3, incentive: 300000 },
                   "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 4, incentive: 200000 }, "SMECO": { count: 3, incentive: 5000 },
                   "Georgia": { count: 3 }, "Virginia/CGS": { count: 5, incentive: 5000 } },
@@ -450,6 +458,8 @@ for (const G of [OCT_2026_GOALS, NOV_2026_GOALS]) {
     }
     if (Object.keys(t).length) st.Total = t;
   }
+  // Division payments goal is the $800,000 Tune-Up revenue goal (Company Results), not the $1,119,000 the program rows add up to.
+  G.co_approved.Total = { incentive: 800000 };
 }
 /* Programs a Total goal covers for a measure (null = all of them). */
 function totalCovers(month, stage, measure) { return CONFIG.goals[month]?.[stage]?.Total?.covers?.[measure] || null; }
@@ -489,7 +499,7 @@ const CONFIG = {
                  "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
                  "HBS Resubmitted": { holder: "ICF", kind: "Resubmission" } } },
   // KPIs judged on their Incentive goal first and the project count second (Incentive is the real value of the target).
-  incentiveFirst: ["pa_submitted", "impl_scheduled", "co_submitted"],
+  incentiveFirst: ["pa_submitted", "impl_scheduled", "co_submitted", "co_approved"],
   rules: { countRepeatsAsNew: false, repeatStages: ["pa_submitted", "co_submitted"], paceWatchRatio: 0.9,
            paceBasis: "count", holidays: [] },
   weeks: {
@@ -520,7 +530,7 @@ const STAGES = [["audits", "Audits Performed"], ["pa_submitted", "Preapprovals S
 const STAGE_LABEL = Object.fromEntries(STAGES);
 const STAGE_NOTES = {
   impl_completed: "From the project trackers' implementation dates (the KPI board has no such stage). Counted only once the date has passed and the tracker shows the work done.",
-  co_approved: "monday proxy for payments only, not recognised revenue. Payments and revenue are accounting figures owned by the Director of Accounting.",
+  co_approved: "The workbook's Payments Received ($) rows read this stage. It is incentive paid by the utility, not recognised revenue, which accounting owns.",
 };
 const DOLLAR_LABEL = { incentive: "Incentive (total utility incentive)", share: "HBS Share (what HBS earns)" };
 
@@ -1336,7 +1346,7 @@ function howItsCounted(B) {
     <p><b>Unique projects, not raw rows.</b> monday often logs the same event twice. Rows with the same completion date, project, stage and program count once. ${CONFIG.rules.countRepeatsAsNew ? "A submission repeated on a later date with the same project, program and incentive counts again." : "A submission repeated on a later date with the same project, program and incentive counts only at first logging."} Turn on "Show raw counts" in Weekly detail to see what monday shows.</p>
     <p><b>Prescriptive work has no utility.</b> Those records carry HVAC BTU, HVAC BPTU or HVAC Tune Up in the Utility field, so every utility row excludes prescriptive work at that utility. Read BGE Tune-Up as BGE non-prescriptive, not all BGE work.${B && B.presc ? ` ${B.presc} such records this month.` : ""}</p>
     <p><b>BGE Tune-Up vs BPTU.</b> A BGE project is BPTU when its name contains (Phase 1) or (Phase 2). Cases where that disagrees with the BPTU tracker are listed under Data quality.</p>
-    <p><b>Closeouts Approved</b> is the monday proxy for payments, not recognised revenue. Payments and revenue are accounting figures owned by the Director of Accounting.</p>
+    <p><b>Closeouts Approved</b> is what the workbook calls Payments Received: incentive paid by the utility, not recognised revenue. Payments and revenue are accounting figures owned by the Director of Accounting.</p>
     <p><b>Implementations Completed</b> comes from the project trackers: the implementation date has passed and the tracker shows the work done.</p>
     <p><b>Pace</b> compares month-to-date with the goal × share of working days gone, never the latest week, because this work lands in batches.</p>
     <p><b>Every refresh re-reads the whole month</b>, so a closed week can still change when monday is corrected.</p>
@@ -1425,7 +1435,7 @@ function renderWeekly() {
     return L;
   }
   const body = rows.map((r, i) => {
-    const name = `<td class="rowh kname" rowspan="ROWSPAN">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>`;
+    const name = `<td class="rowh kname" rowspan="ROWSPAN">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.stage === "co_approved" ? `<span class="sub">= Payments Received in the workbook</span>` : ""}</td>`;
     if (r.mtd.count == null) return `<tr class="kgrp">${name.replace("ROWSPAN", "1")}<td colspan="${nW + 7}"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`;
     let ls = goalLines(r);
     if (!ls.length) ls = [{ measure: "count", goal: null }];
@@ -1599,6 +1609,193 @@ function agingTable(xs, boardId, withStatus) {
       <td>${x.bucket ? `<span class="pill" style="${key(x.bucket) === "critical" ? "background:var(--bad-bg);color:var(--bad)" : key(x.bucket) === "watch" ? "background:var(--warn-bg);color:var(--warn)" : ""}">${esc(x.bucket)}</span>` : ""}</td>
       <td style="white-space:nowrap">${x.next ? `<span style="${x.next < today ? "color:var(--bad);font-weight:600" : ""}">${esc(md(x.next))}${x.next < today ? ` · ${daysBetween(x.next, today)}d late` : ""}</span>` : `<span class="muted">—</span>`}</td>
       <td>${esc(x.icf || "")}</td><td>${esc(x.hbs || "")}</td><td class="n">${money(x.value)}</td><td style="white-space:nowrap">${itemLink(boardId, x.id)}</td></tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------------------------------- company results -------------------------------------- */
+/* The workbook's Company Results tab. Goals are the ones typed in the workbook; actuals come from monday
+   where monday has them. Rows monday cannot supply (revenue, deposits, non-Tune-Up sales) show their goal
+   and say who enters them. Nothing is estimated. */
+const SALES_ROWS = [
+  // [label, owner, goal, source] — source: { stage, program, phase?, utility? } or null when monday has no such work.
+  ["BGE BPTU Phase 1", "Adriana", 86700, { stage: "co_approved", program: "BPTU", phase: 1, how: "Phase 1 audit incentive approved (monday logs it as a Closeout Approved)" }],
+  ["BGE BPTU Phase 2", "Adriana", 300000, { stage: "pa_approved", program: "BPTU", phase: 2, how: "BPTU preapprovals approved" }],
+  ["BGE Tune-Up", "Adriana", 240000, { stage: "pa_approved", program: "BGE Tune-Up" }],
+  ["Pepco", "Adriana", 240000, { stage: "pa_approved", program: "Pepco/WGL", utility: "pepco" }],
+  ["Delmarva", "Adriana", 60000, { stage: "pa_approved", program: "Delmarva" }],
+  ["SMECO", "Adriana", 5000, { stage: "pa_approved", program: "SMECO" }],
+  ["WGL", "Adriana", 2500, { stage: "pa_approved", program: "Pepco/WGL", utility: "wgl" }],
+  ["Georgia", "Adriana", 49000, { stage: "pa_approved", program: "Georgia" }],
+  ["Virginia / CGS", "Adriana", 25000, { stage: "pa_approved", program: "Virginia/CGS" }],
+  ["Direct Install", "Adriana", 300000, null],
+  ["BAS", "Adriana", 150000, null],
+  ["Commissioning", "Adriana", 75000, null],
+  ["HVAC Tune-Up Prescriptive", "Adriana", 80000, { stage: "pa_approved", program: "Prescriptive" }],
+  ["Consulting / Ongoing", "Adriana", 35000, null],
+  ["HVAC Service Contracts", "Adriana", 2500, null],
+  ["BAS Service Contracts", "Adriana", 2500, null],
+  ["Zentility", "Adriana", 10000, null],
+];
+const COMPANY_GOALS = {
+  revenue: [["Tune-Up", "Devon Goforth (Director of Accounting)", 800000], ["Commissioning", "Devon Goforth (Director of Accounting)", 50000],
+            ["Consulting / Ongoing", "Devon Goforth (Director of Accounting)", 45000], ["BAS / Controls", "Devon Goforth (Director of Accounting)", 105000],
+            ["Direct Install", "Devon Goforth (Director of Accounting)", 600000]],
+  salesTotal: 1668200,
+  tuneUpPayments: 800000,
+};
+const COMPANY_SOURCES = {
+  "2026-10": "Goals from the HBS Weekly Scoreboard workbook, Company Results tab. They have not changed since September.",
+  "2026-11": "Goals from the HBS Weekly Scoreboard workbook (Nov 11/23), Company Results tab.",
+};
+const isWgl = (u) => /wgl|washington/i.test(u || "");
+function companyEvs(src, month) {
+  return evsFor(src.stage, src.program, month).filter((e) =>
+    (src.phase == null || (src.phase === 1 ? e.phase === 1 : e.phase !== 1)) &&
+    (!src.utility || (src.utility === "wgl" ? isWgl(e.utility) : !isWgl(e.utility))));
+}
+function companyRow(label, owner, goal, measure, evs, weeks, opts = {}) {
+  const v = (xs) => measure === "count" ? xs.length : (sumOf(xs.map((e) => e.incentive)) || 0);
+  return { label, owner, goal, measure, vals: evs ? weeks.map((w) => v(evs.filter((e) => inWeek(w, e.date)))) : null, ...opts };
+}
+function companyTable(rows, weeks, pace, opts = {}) {
+  const nW = weeks.length, done = weeks.filter((w) => w.end < TODAY).length;
+  const owners = [...new Set(rows.filter((r) => !r.section).map((r) => r.owner || ""))];
+  const showOwner = owners.length > 1;
+  const fx = (m, x) => m === "count" ? num(x, x % 1 ? 1 : 0) : money(x);
+  const WB = { GREEN: `<span class="chip good">${ICON.up}Green</span>`, YELLOW: `<span class="chip warn">${ICON.dot}Yellow</span>`, RED: `<span class="chip bad">${ICON.down}Red</span>` };
+  const body = rows.map((r) => {
+    if (r.section) return `<tr class="crsec"><td colspan="${nW + 8}">${esc(r.section)}</td></tr>`;
+    const target = r.goal != null && nW ? r.goal / nW : null;
+    const name = `<td class="rowh">${esc(r.label)}${r.sub ? `<span class="sub">${esc(r.sub)}</span>` : ""}</td>${showOwner ? `<td class="small muted">${esc(r.owner || "")}</td>` : ""}`;
+    const goals = `<td class="n">${r.goal == null ? `<span class="muted">—</span>` : fx(r.measure, r.goal)}</td><td class="n muted">${target == null ? "" : fx(r.measure, target)}</td>`;
+    if (!r.vals) return `<tr class="${r.total ? "total" : ""}">${name}${goals}<td colspan="${nW + 5}" class="small muted" style="text-align:left">${esc(r.na || "Not on monday.")}</td></tr>`;
+    const mtd = r.vals.reduce((a, b) => a + b, 0), pctv = r.goal ? mtd / r.goal : null;
+    const latest = done ? r.vals[Math.min(done, nW) - 1] : null;
+    const wb = target == null ? null : latest == null ? null : latest >= target ? "GREEN" : latest >= 0.85 * target ? "YELLOW" : "RED";
+    const pc = r.goal != null ? paceStatus(mtd, r.goal, pace.fraction) : null;
+    const wk = r.vals.map((x, i) => {
+      const w = weeks[i];
+      if (w.start > TODAY) return `<td class="n"><span class="future" title="Week has not started">·</span></td>`;
+      const fin = w.end < TODAY, cls = target == null || !fin ? "" : x >= target ? "good" : x >= 0.85 * target ? "warn" : "bad";
+      return `<td class="n"><span class="wkv ${cls}" title="${esc(`Week ${w.index}: ${fx(r.measure, x)}${target != null ? ` · weekly target ${fx(r.measure, target)}` : ""}${fin ? "" : " · week in progress"}`)}">${r.measure === "count" ? num(x) : shortMoney(x)}</span></td>`;
+    }).join("");
+    return `<tr class="${r.total ? "total" : ""}">${name}${goals}${wk}<td class="n mtd"><b>${r.measure === "count" ? num(mtd) : shortMoney(mtd)}</b></td>
+      <td>${pctv == null ? "" : `<div style="display:grid;gap:3px;min-width:110px"><span class="small tnum"><b>${pct(pctv)}</b></span><div class="bullet" title="Bar: month to date against the monthly goal. Tick: where pace says you should be today."><i style="width:${Math.round(Math.min(1, pctv) * 100)}%"></i><b style="left:calc(${Math.round(Math.min(1, pace.fraction) * 100)}% - 1px)"></b></div></div>`}</td>
+      <td class="n">${latest == null ? `<span class="muted">—</span>` : r.measure === "count" ? num(latest) : shortMoney(latest)}</td>
+      <td>${wb ? WB[wb] : `<span class="muted small">${target == null ? "No goal" : "No week done"}</span>`}</td>
+      <td>${pc ? chip(pc) : ""}</td></tr>`;
+  }).join("");
+  return `${showOwner ? "" : `<p class="small muted" style="margin:0 0 6px">Owner: <b>${esc(owners[0])}</b></p>`}<table class="goaltable crt"><thead><tr><th>Program / KPI</th>${showOwner ? "<th>Owner</th>" : ""}<th class="n">Monthly goal</th><th class="n">Weekly target</th>${weeks.map((w) => `<th class="n">Wk ${w.index}<span class="sub">${esc(w.label)}</span></th>`).join("")}<th class="n mtd">MTD actual</th><th>% of monthly goal</th><th class="n" title="The last completed week, as the workbook scores it">Latest</th><th title="Workbook rule: the last completed week against the weekly target. Green at or above, yellow within 15%, red below.">Status</th><th title="Month to date against the goal × share of working days gone">Pace</th></tr></thead><tbody>${body}</tbody></table>`;
+}
+function renderCompany() {
+  const month = state.month, { weeks } = monthWeeks(month), pace = paceInfo(month, TODAY), nW = weeks.length;
+  const done = weeks.filter((w) => w.end < TODAY).length;
+  let h = pageHead(`Company results · ${monthName(month)}`, `Revenue, sales and cash pace for the month, laid out like the workbook's Company Results tab. Weekly target = monthly goal ÷ ${nW} weeks. ${done} of ${nW} weeks complete.`);
+  const src = COMPANY_SOURCES[month];
+  if (!src || !nW) return h + `<section class="card"><div class="empty"><b>No Company Results goals for ${esc(monthName(month))}</b>Send Claude the month's workbook to add them.</div></section>`;
+  const kpiDown = !DATA.boards.kpi;
+  const G = CONFIG.goals[month] || {};
+  const tot = (stage, f = "incentive") => G[stage]?.Total?.[f] ?? null;
+  const cover = (stage) => totalCovers(month, stage, "incentive");
+  const allEvs = (stage, covers) => kpiDown ? null : evsFor(stage, "Total", month).filter((e) => !covers || covers.includes(e.program));
+
+  // Sales rows.
+  const sales = SALES_ROWS.map(([label, owner, goal, s]) => s && !kpiDown
+    ? companyRow(label, owner, goal, "incentive", companyEvs(s, month), weeks, { sub: s.how || "Preapprovals approved" })
+    : { label, owner, goal, measure: "incentive", vals: null, na: s ? "Monthly KPIs board not loaded." : "Not on monday. Entered by hand in the workbook." });
+  const tracked = sales.filter((r) => r.vals);
+  const trackedGoal = tracked.reduce((a, r) => a + r.goal, 0);
+  const salesVals = weeks.map((_, i) => tracked.reduce((a, r) => a + r.vals[i], 0));
+  const salesMtd = salesVals.reduce((a, b) => a + b, 0);
+  const streamSum = SALES_ROWS.reduce((a, r) => a + r[2], 0);
+
+  // Tune-Up Factory summary rows (incentive $ and counts from the scoreboard model).
+  const payEvs = allEvs("co_approved");
+  const payMtd = payEvs ? sumOf(payEvs.map((e) => e.incentive)) || 0 : null;
+  const tf = [
+    companyRow("Preapprovals Submitted ($)", "Michael Costa", tot("pa_submitted"), "incentive", allEvs("pa_submitted"), weeks, { sub: "in the workbook's summary" }),
+    companyRow("Implementations Scheduled (Est. Incentive $)", "Michael Costa", tot("impl_scheduled"), "incentive", allEvs("impl_scheduled"), weeks, { sub: "in the workbook's summary" }),
+    companyRow("Closeouts Submitted ($)", "Devon Goforth", tot("co_submitted"), "incentive", allEvs("co_submitted", cover("co_submitted")), weeks, { sub: cover("co_submitted") ? `added · ${cover("co_submitted").length} utilities with a $ goal` : "added" }),
+    companyRow("Payments Received ($)", "Devon Goforth", COMPANY_GOALS.tuneUpPayments, "incentive", payEvs, weeks, { sub: "added · Closeouts Approved on monday; goal is the Tune-Up revenue goal" }),
+    companyRow("Audits Performed", "Program leads", tot("audits", "count"), "count", allEvs("audits"), weeks, { sub: "added" }),
+    companyRow("Preapprovals Approved", "Program leads", tot("pa_approved", "count"), "count", allEvs("pa_approved"), weeks, { sub: "added" }),
+    !DATA.boards.master_tu && !DATA.boards.bptu && !DATA.boards.prescriptive
+      ? { label: "Implementations Completed", owner: "David Rodriguez", goal: tot("impl_completed", "count"), measure: "count", vals: null, na: "Project trackers not loaded.", sub: "added" }
+      : companyRow("Implementations Completed", "David Rodriguez", tot("impl_completed", "count"), "count", evsFor("impl_completed", "Total", month), weeks, { sub: "added · from the project trackers" }),
+    companyRow("Closeouts Submitted (count)", "Devon Goforth", tot("co_submitted", "count"), "count", allEvs("co_submitted"), weeks, { sub: "added" }),
+  ];
+  if (kpiDown) for (const r of tf) if (r.label !== "Implementations Completed") { r.vals = null; r.na = "Monthly KPIs board not loaded."; }
+
+  // Headline tiles.
+  const tile = (lbl, actual, goal, sub, measure = "incentive") => {
+    if (actual == null) return `<div class="kpi"><div class="lbl">${esc(lbl)}</div><div class="val muted">n/a</div><div class="sub">${esc(sub)}</div></div>`;
+    const p = goal ? actual / goal : null, st = goal ? paceStatus(actual, goal, pace.fraction) : null;
+    return `<div class="kpi"><div class="lbl">${esc(lbl)}</div><div class="val">${measure === "count" ? num(actual) : shortMoney(actual)}</div>
+      <div class="sub">${goal ? `${pct(p)} of ${measure === "count" ? num(goal) : shortMoney(goal)} · ` : ""}${esc(sub)}</div>
+      ${goal ? `<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><div class="bullet" style="flex:1"><i style="width:${Math.round(Math.min(1, p) * 100)}%"></i><b style="left:calc(${Math.round(pace.fraction * 100)}% - 1px)"></b></div>${chip(st)}</div>` : ""}</div>`;
+  };
+  const mtdOf = (r) => r.vals ? r.vals.reduce((a, b) => a + b, 0) : null;
+  h += `<div class="kpis">
+    ${tile("Tune-Up sales (approved)", kpiDown ? null : salesMtd, trackedGoal, "Preapprovals approved, Tune-Up programs")}
+    ${tile("Tune-Up payments received", payMtd, COMPANY_GOALS.tuneUpPayments, "Closeouts Approved on monday")}
+    ${tile("Preapprovals submitted", mtdOf(tf[0]), tf[0].goal, "Incentive")}
+    ${tile("Implementations scheduled", mtdOf(tf[1]), tf[1].goal, "Incentive")}
+    ${tile("Closeouts submitted", mtdOf(tf[2]), tf[2].goal, "Incentive")}</div>`;
+
+  const card = (title, sub, inner, note) => `<section class="card"><div class="card-h"><h2>${title}</h2>${sub ? `<span class="sub">${sub}</span>` : ""}</div><div class="card-b scroll">${inner}</div>${note ? `<div class="card-note">${note}</div>` : ""}</section>`;
+  const revRows = COMPANY_GOALS.revenue.map(([l, o, g]) => ({ label: l, owner: o, goal: g, measure: "incentive", vals: null, na: "Not on monday. Entered by accounting." }));
+  revRows.push({ label: "TOTAL HBS REVENUE", owner: "Mark Gill (Fractional COO)", goal: COMPANY_GOALS.revenue.reduce((a, r) => a + r[2], 0), measure: "incentive", vals: null, total: true, na: "Not on monday. Entered by accounting." });
+  h += card("Revenue by stream", "accounting figures · goals only", companyTable(revRows, weeks, pace),
+    `Recognised revenue is entered by accounting and isn't on monday. Incentive paid by the utilities is not the same as revenue, so Tune-Up payments (${payMtd == null ? "n/a" : money(payMtd)} this month, Closeouts Approved) are not shown here as revenue. They're in the Tune-Up Factory summary below.`);
+
+  const salesTable = companyTable([
+    ...sales,
+    kpiDown ? { label: "TOTAL SALES", owner: "Adriana", goal: COMPANY_GOALS.salesTotal, measure: "incentive", vals: null, total: true, na: "Monthly KPIs board not loaded." }
+            : { label: "TOTAL SALES", owner: "Adriana", goal: COMPANY_GOALS.salesTotal, measure: "incentive", vals: salesVals, total: true, sub: `actual covers the ${tracked.length} Tune-Up rows only` },
+  ], weeks, pace);
+  h += card("Sales / new work by program", `Incentive approved · ${tracked.length} of ${sales.length} rows come from monday`, salesTable,
+    `Sales is Preapprovals Approved (Incentive) on the Monthly KPIs board. BPTU Phase 1 has no preapproval step on monday, so its row reads the Phase 1 audit incentive approved instead; the workbook leaves that row at $0. Pepco and WGL are split by the Utility column. The ${SALES_ROWS.length - tracked.length} rows marked "not on monday" (${money(SALES_ROWS.filter((r) => !r[3]).reduce((a, r) => a + r[2], 0))} of goal) are entered by hand.
+     The total goal is ${money(COMPANY_GOALS.salesTotal)}; the program goals add up to ${money(streamSum)}${COMPANY_GOALS.salesTotal - streamSum ? `, leaving ${money(COMPANY_GOALS.salesTotal - streamSum)} unallocated` : ""}. Against the Tune-Up rows alone (${money(trackedGoal)} of goal) sales are ${pct(trackedGoal ? salesMtd / trackedGoal : 0)} of goal.`);
+
+  h += card("Cash / collections", "bank balance intentionally excluded", companyTable([{ label: "Deposits Received", owner: "Devon Goforth (Director of Accounting)", goal: COMPANY_GOALS.revenue.reduce((a, r) => a + r[2], 0), measure: "incentive", vals: null, na: "Not on monday. Entered by accounting." }], weeks, pace));
+
+  h += card("Tune-Up Factory summary", "Incentive $ and project counts from the Monthly KPIs board", companyTable(tf, weeks, pace),
+    `The workbook's summary has the first two rows; the rest are added here from the same goals. ${esc(CONFIG.goals.sources?.[month] || "")} The payments goal is the ${money(COMPANY_GOALS.tuneUpPayments)} Tune-Up revenue goal; the program payment goals on the Tune-Up Factory tab add up to ${money(sumOf(PROGRAMS.map((p) => G.co_approved?.[p]?.incentive)) || 0)}.`);
+
+  h += coverageCard(month);
+  h += `<p class="small muted" style="margin:0">${esc(src)} Status follows the workbook: the last completed week against the weekly target (green at or above, yellow within 15%, red below). Pace is this page's month-to-date check against working days gone (${pct(pace.fraction)}).</p>`;
+  return h;
+}
+
+/* Every row on the workbook's Tune-Up Factory tab, and where (or whether) this page tracks it. */
+function coverageCard(month) {
+  const G = CONFIG.goals[month] || {};
+  const T = (cls, t) => `<span class="pill ${cls}">${t}</span>`;
+  const yes = T("good", "Tracked"), part = T("warn", "Partly"), no = T("bad", "Not tracked");
+  const g = (stage, f) => { const xs = PROGRAMS.map((p) => G[stage]?.[p]?.[f]).filter((x) => x != null); return xs.length ? `${xs.length} of 8 utilities` : "—"; };
+  const rows = [
+    ["Audits Completed", g("audits", "count"), yes, "Audits Performed. BPTU counts each building once, not once per phase."],
+    ["Pre-Approvals Submitted (count)", g("pa_submitted", "count"), yes, "Second line under Preapprovals Submitted. The workbook leaves Prescriptive's weekly target blank; here it is 45 ÷ 4 = 11.25."],
+    ["Pre-Approvals Submitted ($ Value)", g("pa_submitted", "incentive"), yes, "Judged first (Incentive). BPTU's $386,700 goal includes Phase 1 $86,700."],
+    ["Pre-Approvals Approved (count)", g("pa_approved", "count"), yes, "Preapprovals Approved."],
+    ["Implementations Scheduled (Est. Incentive $)", g("impl_scheduled", "incentive"), yes, "Judged on Incentive."],
+    ["Implementations Completed (count)", g("impl_completed", "count"), yes, "The workbook reads No Data (no such stage on the KPI board). Here it comes from the project trackers' implementation dates and status."],
+    ["Closeouts Submitted (count)", g("co_submitted", "count"), yes, "Second line under Closeouts Submitted, first for Prescriptive and Georgia."],
+    ["Closeouts Submitted ($)", g("co_submitted", "incentive"), yes, "Judged first where there is a $ goal (not Prescriptive or Georgia)."],
+    ["Payments Received ($)", g("co_approved", "incentive"), yes, "Closeouts Approved on monday, the same source the workbook uses. Incentive paid, not recognised revenue."],
+    ["BPTU: # of BPTUs Submitted", "10", no, "The workbook row reads 0 all month and nothing on monday defines it. Tell Claude what counts as a BPTU submitted and it can be added."],
+    ["BPTU: Phase-1 Applications Submitted ($)", "$86,700", yes, "BPTU phases card on By utility: Phase 1 Closeouts Submitted. The workbook row reads 0 because the board has no phase column; here the phase comes from the (Phase 1)/(Phase 2) tag in the name."],
+    ["BPTU: Phase-2 Incentive Submitted for PA ($)", "$300,000", yes, "BPTU phases card: Phase 2 preapprovals submitted, against $300,000."],
+    ["Georgia: New Qualified Opportunities", "none set", no, "Not on monday and no goal in the workbook (owner TBD)."],
+    ["Georgia: Customer Meetings / Site Visits", "none set", no, "Not on monday and no goal in the workbook (owner TBD)."],
+    ["Georgia: Proposals Submitted", "none set", no, "Not on monday and no goal in the workbook (owner TBD)."],
+    ["Georgia: Revenue ($)", "$49,000", no, "Accounting figure, not on monday. Payments Received is tracked."],
+    ["Georgia: Technician Utilization (%)", "30%", part, "A reading, not a sum. The page has a Levels table for it, but no readings have been entered."],
+  ];
+  const n = { t: rows.filter((r) => r[2] === yes).length, p: rows.filter((r) => r[2] === part).length, x: rows.filter((r) => r[2] === no).length };
+  return `<section class="card"><div class="card-h"><h2>Is every Tune-Up Factory KPI tracked?</h2><span class="sub">${n.t} tracked · ${n.p} partly · ${n.x} not tracked, of ${rows.length} rows on the workbook tab</span></div>
+    <div class="card-b scroll"><table><thead><tr><th>Workbook row</th><th>Goal in the workbook</th><th>On this page</th><th>How</th></tr></thead><tbody>
+    ${rows.map(([k, gl, st, how]) => `<tr><td class="rowh">${esc(k)}</td><td class="small">${esc(gl)}</td><td>${st}</td><td class="small">${esc(how)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="card-note">Weekly targets match the workbook: monthly goal ÷ weeks in the month (Start Here B10 = ${monthWeeks(month).weeks.length}). Monthly goals match the November Tune-Up Factory tab row for row.</div></section>`;
 }
 
 function renderQuality() {
@@ -2088,7 +2285,7 @@ function render() {
   for (const b of document.querySelectorAll(".seg button")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   renderAlerts(); renderFresh();
   if (!MODEL) return;
-  const views = { overview: renderOverview, weekly: renderWeekly, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
+  const views = { overview: renderOverview, company: renderCompany, weekly: renderWeekly, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
   const main = $("#main");
   main.innerHTML = (views[state.view] || renderOverview)();
   main.classList.toggle("busy", REFRESHING);
@@ -2157,7 +2354,7 @@ async function refresh() {
 
 /* ---------------------------------- wiring ----------------------------------------------- */
 state.month = monthOf(TODAY);
-const VIEWS = ["overview", "weekly", "pace", "submissions", "aging", "quality"];
+const VIEWS = ["overview", "company", "weekly", "pace", "submissions", "aging", "quality"];
 function fromHash() { const h = (location.hash || "").slice(1); state.view = h === "why" ? "weekly" : VIEWS.includes(h) ? h : "overview"; }
 fromHash();
 try { const p = JSON.parse(store.get("btu-scoreboard-prefs") || "{}"); if (p.mode === "share" || p.mode === "incentive") state.mode = p.mode; if (p.stage && STAGE_LABEL[p.stage]) state.stage = p.stage; if (p.program && (ALL_ROWS.includes(p.program) || p.program === "Total")) state.program = p.program; } catch { /* defaults */ }
