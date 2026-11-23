@@ -112,7 +112,7 @@ h2 .sub, .card-h .sub { font-weight: 400; color: var(--muted); font-size: 13px; 
 .tile .big { font-size: 28px; font-weight: 600; line-height: 1.1; margin-top: 4px; }
 .tile .usd { font-size: 13px; color: var(--ink-2); }
 .tile .foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 6px; min-height: 22px; }
-.tile.na .big { font-size: 15px; color: var(--muted); font-weight: 500; }
+.tile.tile-na .big { font-size: 15px; color: var(--muted); font-weight: 500; }
 .spark { display: flex; align-items: flex-end; gap: 3px; height: 26px; }
 .spark i { width: 9px; border-radius: 3px 3px 0 0; background: var(--series); min-height: 2px; }
 .spark i.zero { background: var(--line-2); }
@@ -457,6 +457,8 @@ const CONFIG = {
                  "HBS Revising Submission": { holder: "HBS", kind: "Revision" },
                  "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
                  "HBS Resubmitted": { holder: "ICF", kind: "Resubmission" } } },
+  // KPIs judged on their Incentive goal first and the project count second (Incentive is the real value of the target).
+  incentiveFirst: ["pa_submitted", "impl_scheduled"],
   rules: { countRepeatsAsNew: false, repeatStages: ["pa_submitted", "co_submitted"], paceWatchRatio: 0.9,
            paceBasis: "count", holidays: [] },
   weeks: {
@@ -861,11 +863,15 @@ function buildRow(M, stage, program, month, mode, weeks, evs, pace, today) {
   const un = weeks.length ? makeCell(orphans, mode, ua, du, { ...base, week: "none" }) : null;
   const mtd = makeCell(evs, mode, ua, du, { ...base, week: "mtd" });
   const goal = goalFor(month, stage, program, mode);
+  // Incentive-first KPIs are judged on Incentive whatever the dollar toggle shows.
+  const incGoal = goalFor(month, stage, program, "incentive").dollars;
+  const incActual = ua || dUnavailFor(M, stage, program === "Total" ? "*" : program, "incentive") ? null : (sumOf(evs.filter((e) => e.counted).map((e) => e.incentive)) || 0);
+  const incFirst = CONFIG.incentiveFirst.includes(stage) && incGoal != null && incActual != null;
   const basisCount = CONFIG.rules.paceBasis === "count" ? goal.count != null : goal.dollars == null;
-  return { stage, program, weeks: wk, un, mtd, goal,
+  return { stage, program, weeks: wk, un, mtd, goal, inc: { goal: incGoal, actual: incActual, first: incFirst },
     pctCount: mtd.count != null && goal.count ? mtd.count / goal.count : null,
     pctDollars: mtd.dollars != null && goal.dollars ? mtd.dollars / goal.dollars : null,
-    status: paceStatus(basisCount ? mtd.count : mtd.dollars, basisCount ? goal.count : goal.dollars, pace.fraction),
+    status: incFirst ? paceStatus(incActual, incGoal, pace.fraction) : paceStatus(basisCount ? mtd.count : mtd.dollars, basisCount ? goal.count : goal.dollars, pace.fraction),
     expCount: goal.count == null ? null : goal.count * pace.fraction,
     expDollars: goal.dollars == null ? null : goal.dollars * pace.fraction };
 }
@@ -1041,11 +1047,16 @@ function pageHead(title, sub, B) {
 
 /* One view of a row's goal: by count when there's a count goal, else by dollars (Incentive goals only). */
 function goalView(r) {
+  if (r.inc && r.inc.first) {
+    const second = r.goal.count != null && r.mtd.count != null ? { actual: r.mtd.count, goal: r.goal.count, pct: r.mtd.count / r.goal.count } : null;
+    return { dollar: true, incentive: true, actual: r.inc.actual, goal: r.inc.goal, pct: r.inc.actual / r.inc.goal, fmt: (v) => money(v), second };
+  }
   if (r.goal.count != null) return { dollar: false, actual: r.mtd.count, goal: r.goal.count, pct: r.mtd.count == null ? null : r.mtd.count / r.goal.count, fmt: (v) => num(v) };
   if (r.goal.dollars != null) return { dollar: true, actual: r.mtd.dollars, goal: r.goal.dollars, pct: r.mtd.dollars == null ? null : r.mtd.dollars / r.goal.dollars, fmt: (v) => money(v) };
   return null;
 }
-const hasGoal = (r) => r.goal.count != null || r.goal.dollars != null;
+const hasGoal = (r) => r.goal.count != null || r.goal.dollars != null || !!(r.inc && r.inc.first);
+const secondTxt = (g) => g && g.second ? `${g.second.actual} of ${num(g.second.goal)} projects (${pct(g.second.pct)})` : "";
 
 function visibleRows(rows) { return rows.filter((r) => !(r.program === OTHER || r.program === UNMAPPED) || r.mtd.raw || r.mtd.count == null); }
 
@@ -1063,6 +1074,7 @@ function goalFigure(stage, program, month, measure) {
 }
 function autoMeasure(stage, program, month) {
   if (state.chartMeasure) return state.chartMeasure;
+  if (CONFIG.incentiveFirst.includes(stage) && (CONFIG.goals[month]?.[stage]?.[program] || CONFIG.goals[month]?.[stage]?.Total)?.incentive != null) return "incentive";
   const g = CONFIG.goals[month]?.[stage]?.[program] || CONFIG.goals[month]?.[stage]?.Total;
   return g && g.count == null && g.incentive != null ? "incentive" : "count";
 }
@@ -1184,9 +1196,9 @@ function stageTiles(B, program) {
   const rowOf = (s) => program === "Total" ? B.totals[s] : B.sections[s].find((x) => x.program === program);
   return `<div class="pipeline">${STAGES.map(([stage, label], i) => {
     const r = rowOf(stage), c = r.mtd, sel = stage === state.chartStage;
-    if (c.count == null) return `<button type="button" class="tile na ${sel ? "sel" : ""}" data-chartstage="${stage}" title="${esc(c.unavail)}"><span class="step">${i + 1} · ${esc(label)}</span><span class="big">n/a</span><span class="usd small">source unavailable</span></button>`;
+    if (c.count == null) return `<button type="button" class="tile tile-na ${sel ? "sel" : ""}" data-chartstage="${stage}" title="${esc(c.unavail)}"><span class="step">${i + 1} · ${esc(label)}</span><span class="big">n/a</span><span class="usd small">source unavailable</span></button>`;
     const g = goalView(r);
-    const measure = g && g.dollar ? "dollars" : "count";
+    const measure = g && g.incentive ? "incentive" : g && g.dollar ? "dollars" : "count";
     const now = measure === "count" ? c.count : (c.dollars || 0);
     const prev = samePointLastMonth(stage, program, state.month, measure);
     const d = now - prev;
@@ -1194,8 +1206,8 @@ function stageTiles(B, program) {
     const dCls = d > 0 ? "up" : d < 0 ? "down" : "flat";
     return `<button type="button" class="tile ${sel ? "sel" : ""}" data-chartstage="${stage}" aria-pressed="${sel}" title="Chart ${esc(label)}">
       <span class="step">${i + 1} · ${esc(label)}</span>
-      <span class="big">${g && g.dollar ? shortMoney(c.dollars) : c.count}</span>
-      <span class="usd">${g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
+      <span class="big">${g && g.incentive ? shortMoney(g.actual) : g && g.dollar ? shortMoney(c.dollars) : c.count}</span>
+      <span class="usd">${g && g.incentive ? `Incentive · ${c.count} project${c.count === 1 ? "" : "s"}${g.second ? ` of ${num(g.second.goal)}` : ""}` : g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
       ${g ? `<span class="tbar" title="${esc(`${pct(g.pct)} of the ${g.fmt(g.goal)} goal; the tick is where pace says you should be today`)}"><i class="${r.status || ""}" style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:${Math.round(B.pace.fraction * 100)}%"></b></span>
         <span class="tfoot"><span>${pct(g.pct)} of ${g.dollar ? shortMoney(g.goal) : num(g.goal)}</span>${chip(r.status)}</span>` : `<span class="tfoot muted">no goal</span>`}
       <span class="delta ${dCls}" title="${esc(`At this point in ${monthName(prevMonthOf(state.month))}: ${fmtExact(measure, prev)}`)}">${dTxt}</span></button>`;
@@ -1319,8 +1331,9 @@ function renderWeekly() {
     const pctv = g.pct == null ? 0 : Math.min(1, g.pct);
     const exp = Math.min(1, B.pace.fraction);
     const dollarGoal = !g.dollar && r.goal.dollars != null ? `<span class="muted"> · ${money(r.goal.dollars)} goal</span>` : "";
+    const sec = g.second ? `<div class="small muted">${esc(secondTxt(g))}</div>` : "";
     return `<td><div style="display:grid;gap:4px;min-width:170px"><div class="small tnum" style="display:flex;justify-content:space-between;gap:8px"><span>${g.actual == null ? "—" : g.fmt(g.actual)} of ${g.fmt(g.goal)}${dollarGoal}</span><span class="muted">${pct(g.pct)}</span></div>
-      <div class="bullet" title="Bar: month to date. Tick: where pace says you should be today."><i style="width:${Math.round(pctv * 100)}%"></i><b style="left:calc(${Math.round(exp * 100)}% - 1px)"></b></div></div></td>`;
+      <div class="bullet" title="Bar: month to date. Tick: where pace says you should be today."><i style="width:${Math.round(pctv * 100)}%"></i><b style="left:calc(${Math.round(exp * 100)}% - 1px)"></b></div>${sec}</div></td>`;
   };
   const phaseLine = (stage) => {
     if (prog !== "BPTU") return "";
@@ -1346,7 +1359,7 @@ function renderWeekly() {
       <p class="small muted" style="margin:8px 0 0">On the KPI board, Phase 1 goes straight from the audit to Closeouts (the audit-incentive application and its approval). Phase 2 goes through Preapprovals, Implementation and Closeouts. Closeout counts and dollars below include both phases; the split is under each KPI.</p></div></section>`;
   }
   const body = rows.map((r, i) => `<tr>
-      <td class="rowh">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.goal.count == null && r.goal.dollars != null ? `<span class="sub">goal in Incentive $</span>` : r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>
+      <td class="rowh">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.inc && r.inc.first ? `<span class="sub">judged on Incentive $, then projects</span>` : r.goal.count == null && r.goal.dollars != null ? `<span class="sub">goal in Incentive $</span>` : r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>
       ${r.weeks.map((c) => valueCell(c)).join("")}${B.hasUn ? valueCell(r.un, "orph") : ""}${valueCell(r.mtd, "mtd")}
       ${anyGoal ? goalCell(r) + `<td>${isOff(r) ? `<a href="#why-${r.stage}" class="jump" data-jump="why-${r.stage}" title="See why">${chip(r.status)}<span class="small">Why?</span></a>` : chip(r.status) || `<span class="muted small">—</span>`}</td>` : ""}</tr>`).join("");
   const reasons = [...new Set(rows.map((r) => r.mtd.unavail).filter(Boolean))];
@@ -1383,7 +1396,7 @@ function renderPace() {
     const g = goalView(r);
     const cls = r.status === "on" ? "good" : r.status === "watch" ? "warn" : "bad";
     return `<td class="pg ${cls}"><a href="#weekly" data-proglink="${esc(p)}" data-jumpafter="why-${s}" title="${esc(`${p === "Total" ? "All utilities" : p} · ${STAGE_LABEL[s]}: ${g.fmt(g.actual)} of ${g.fmt(g.goal)}. Open with reasons.`)}">
-      <span class="pct">${pct(g.pct)}</span><span class="of">${g.dollar ? shortMoney(g.actual) : g.actual} / ${g.dollar ? shortMoney(g.goal) : g.goal}</span><span class="st">${ICONS[r.status] || ""}${r.status === "on" ? "On pace" : r.status === "watch" ? "Watch" : "Behind"}</span></a></td>`;
+      <span class="pct">${pct(g.pct)}</span><span class="of">${g.dollar ? shortMoney(g.actual) : g.actual} / ${g.dollar ? shortMoney(g.goal) : g.goal}</span>${g.second ? `<span class="of">${g.second.actual}/${g.second.goal} proj</span>` : ""}<span class="st">${ICONS[r.status] || ""}${r.status === "on" ? "On pace" : r.status === "watch" ? "Watch" : "Behind"}</span></a></td>`;
   };
   h += `<section class="card"><div class="card-h"><h2>Pace grid</h2><span class="sub">% of goal so far · click a cell for that utility and why</span></div>
     <div class="card-b scroll"><table class="pacegrid"><thead><tr><th>KPI</th>${cols.map((p) => `<th>${p === "Total" ? "All utilities" : esc(p)}</th>`).join("")}</tr></thead>
@@ -1402,13 +1415,14 @@ function renderPace() {
       if (r.mtd.count == null) { body += `<tr><td class="rowh">${r.program === "Total" ? "All utilities" : esc(r.program)}</td><td colspan="5"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`; continue; }
       const exp = g.goal * B.pace.fraction, gap = (c || 0) - exp, left = Math.max(g.goal - (c || 0), 0);
       body += `<tr class="${r.program === "Total" ? "total" : ""}"><td class="rowh">${r.program === "Total" ? "All utilities" : esc(r.program)}</td>
-        <td><div style="display:grid;gap:4px"><div class="small" style="display:flex;justify-content:space-between;gap:8px"><span><b>${g.fmt(c)}</b> of ${g.fmt(g.goal)}${g.dollar ? "" : ` <span class="muted">· ${money(r.mtd.dollars)}</span>`}</span><span class="muted">${pct(g.pct)}</span></div>
+        <td><div style="display:grid;gap:4px"><div class="small" style="display:flex;justify-content:space-between;gap:8px"><span><b>${g.fmt(c)}</b> of ${g.fmt(g.goal)}${g.second ? ` <span class="muted">· ${esc(secondTxt(g))}</span>` : g.dollar ? "" : ` <span class="muted">· ${money(r.mtd.dollars)}</span>`}</span><span class="muted">${pct(g.pct)}</span></div>
         <div class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></div></div></td>
         <td class="n" style="color:${gap < -0.05 ? "var(--bad)" : "var(--good)"}">${fmtGap(g, gap)}</td>
         <td class="n">${weeksLeft ? (g.dollar ? money(left / weeksLeft) : num(left / weeksLeft, 1)) : "—"}</td>
         <td class="n">${B.pace.remaining ? (g.dollar ? money(left / B.pace.remaining) : num(left / B.pace.remaining, 2)) : "—"}</td><td>${chip(r.status)}</td></tr>`;
     }
   }
+  if (CONFIG.incentiveFirst.length) h += `<p class="small muted" style="margin:0">${CONFIG.incentiveFirst.map((s) => STAGE_LABEL[s]).join(" and ")} ${CONFIG.incentiveFirst.length === 1 ? "is" : "are"} judged on the Incentive goal (whichever dollars the page shows), with the project count second where there is one.</p>`;
   h += `<details class="how"><summary>Detail: gap to pace and what's needed per week</summary><div class="scroll" style="padding:0 18px 14px"><table><thead><tr>
     <th>Utility</th><th style="min-width:230px">Progress <span class="sub" style="display:inline">· bar: so far, tick: today's pace</span></th><th class="n">Gap to pace</th><th class="n">Needed / week</th><th class="n">Needed / working day</th><th>Status</th></tr></thead><tbody>${body}</tbody></table></div></details>`;
   return h;
@@ -1669,7 +1683,8 @@ function reasonsFor(r, ctx) {
     const items = order.flatMap((k) => groups[k].map(({ p, st }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name,
       detail: `${tag[k]} · ${STAGE_LABEL[prev]} ${p.furthestDate} (${daysBetween(p.furthestDate, asOf)} days) · ${st.label}` })));
     pipe = { prev, groups };
-    const active = groups.active, val = (xs) => g.dollar ? sumOf(xs.map(({ p }) => p.ev[prev].incentive)) || 0 : xs.length;
+    const est = g.dollar ? avgIncentive(stage, prog, month) : null;
+    const active = groups.active, val = (xs) => g.dollar ? xs.reduce((a, { p }) => a + (p.ev[prev].incentive ?? (est ? est.avg : 0)), 0) : xs.length;
     const activeVal = val(active);
     const excluded = groups.cancelled.length + groups.completed.length + groups.movedOn.length;
     const tr = [groups.cancelled.length && `${groups.cancelled.length} ${groups.cancelled.length === 1 ? "is" : "are"} cancelled`, groups.completed.length && `${groups.completed.length} ${groups.completed.length === 1 ? "is" : "are"} completed`].filter(Boolean);
@@ -1760,6 +1775,15 @@ function offCounts(B) {
   return c;
 }
 
+/* Average Incentive per project at a stage over the last 6 months: used to put a value on waiting projects
+   that have no dollar figure yet (e.g. audits). Falls back to all utilities when there are too few. */
+function avgIncentive(stage, program, month) {
+  const months = monthsBefore(month, 6);
+  const pick = (all) => months.flatMap((mo) => (MODEL.byStageMonth.get(stage + "|" + mo) || []).filter((e) => e.counted && e.incentive != null && (all || program === "Total" || e.program === program)));
+  let xs = pick(false), scope = program === "Total" ? "all utilities" : program;
+  if (xs.length < 5) { xs = pick(true); scope = "all utilities"; }
+  return xs.length ? { avg: xs.reduce((a, e) => a + e.incentive, 0) / xs.length, scope, n: xs.length } : null;
+}
 /* Share of projects that reached `prev` 30–180 days ago and went on to reach `stage`. */
 function convRate(P, prev, stage, program, asOf) {
   const pick = (all) => [...P.values()].filter((p) => (all || program === "Total" || p.program === program) && p.at[prev] && daysBetween(p.at[prev], asOf) >= 30 && daysBetween(p.at[prev], asOf) <= 180);
@@ -1820,11 +1844,17 @@ function pathToGoal(d, ctx) {
   if (d.pipe && idx > 0) {
     const { prev, groups } = d.pipe;
     conv = convRate(P, prev, stage, program, asOf);
-    const act = groups.active.map(({ p }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, value: p.ev[prev].incentive, detail: `${STAGE_LABEL[prev]} ${md(p.furthestDate)} · waiting ${daysBetween(p.furthestDate, asOf)} days` }));
+    const est = g.dollar ? avgIncentive(stage, program, month) : null;
+    let estimated = 0;
+    const act = groups.active.map(({ p }) => {
+      let v = p.ev[prev].incentive;
+      if (g.dollar && v == null && est) { v = est.avg; estimated++; }
+      return { b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, value: v, detail: `${STAGE_LABEL[prev]} ${md(p.furthestDate)} · waiting ${daysBetween(p.furthestDate, asOf)} days${p.ev[prev].incentive == null && g.dollar && est ? ` · valued at the ${est.scope} average` : ""}` };
+    });
     if (act.length) {
       const full = g.dollar ? sumOf(act.map((x) => x.value)) || 0 : act.length;
       const rate = conv ? conv.rate : null;
-      sources.push({ kind: "pipeline", label: `${plural(act.length, "project")} in progress at ${STAGE_LABEL[prev]}${g.dollar ? ` (${money(full)})` : ""}${rate != null ? `. Usually ${pct(rate)} move on (${conv.scope}, last 6 months), so expect about ${g.dollar ? money(full * rate) : num(full * rate, 1)}` : ""}`,
+      sources.push({ kind: "pipeline", label: `${plural(act.length, "project")} in progress at ${STAGE_LABEL[prev]}${g.dollar ? ` (${estimated ? "about " : ""}${money(full)}${estimated ? `, valued at the ${est.scope} average of ${money(est.avg)} per ${STAGE_LABEL[stage].toLowerCase().replace(/s$/, "")} because ${estimated === act.length ? "they have" : `${estimated} ${estimated === 1 ? "has" : "have"}`} no dollar figure yet` : ""})` : ""}${rate != null ? `. Usually ${pct(rate)} move on (${conv.scope}, last 6 months), so expect about ${g.dollar ? money(full * rate) : num(full * rate, 1)}` : ""}`,
         value: rate != null ? full * rate : full, max: full, items: act });
     }
     if (groups.hold.length) actions.push({ label: `Unblock ${plural(groups.hold.length, "project")} on hold or waiting on information at ${STAGE_LABEL[prev]}`, items: groups.hold.map(({ p, st }) => ({ b: p.ev[prev].boardId, id: p.ev[prev].id, name: p.name, detail: st.label })) });
@@ -1841,7 +1871,10 @@ function pathToGoal(d, ctx) {
   let upstream = null;
   if (uncovered > 0 && d.pipe && conv && conv.rate > 0) {
     const more = uncovered / conv.rate;
-    upstream = `${g.dollar ? money(more) : num(Math.ceil(more))} more at ${STAGE_LABEL[d.pipe.prev]} (at the usual ${pct(conv.rate)} conversion), and only work that moves on before ${md(monthEnd)} counts this month.`;
+    const ea = g.dollar ? avgIncentive(stage, program, month) : null;
+    upstream = g.dollar && ea
+      ? `${num(Math.ceil(uncovered / ea.avg / conv.rate))} more projects at ${STAGE_LABEL[d.pipe.prev]} (${money(uncovered)} at the ${ea.scope} average of ${money(ea.avg)}, and the usual ${pct(conv.rate)} conversion), and only work that moves on before ${md(monthEnd)} counts this month.`
+      : `${g.dollar ? money(more) : num(Math.ceil(more))} more at ${STAGE_LABEL[d.pipe.prev]} (at the usual ${pct(conv.rate)} conversion), and only work that moves on before ${md(monthEnd)} counts this month.`;
   }
   return { left, needPerDay, needPerWeek: weeksLeft ? left / weeksLeft : null, runPerDay, factor: runPerDay > 0 && needPerDay != null ? needPerDay / runPerDay : null,
            sources, actions, covered, uncovered, upstream, daysLeft };
@@ -1858,13 +1891,14 @@ function whyCard(d, B, open) {
   return `<details class="whyrow" id="why-${r.stage}" ${open ? "open" : ""}>
     <summary>
       <span class="wk"><b>${esc(STAGE_LABEL[r.stage])}</b>${chip(r.status)}</span>
-      <span class="wp"><span class="small tnum"><b>${g.actual == null ? "—" : g.fmt(g.actual)}</b> of ${g.fmt(g.goal)}${d.closed ? "" : ` · <span style="color:var(--bad)">${fmtN(d.short)} short</span>`}</span>
+      <span class="wp"><span class="small tnum"><b>${g.actual == null ? "—" : g.fmt(g.actual)}</b> of ${g.fmt(g.goal)}${g.second ? ` <span class="muted">· ${g.second.actual}/${g.second.goal} proj</span>` : ""}${d.closed ? "" : ` · <span style="color:var(--bad)">${fmtN(d.short)} short</span>`}</span>
         <span class="bullet"><i style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:calc(${Math.round(B.pace.fraction * 100)}% - 1px)"></b></span></span>
       <span class="wr">${d.path && d.path.left > 0 ? `<span class="need">Needs ${esc(g.fmt(d.path.left))} more${d.path.needPerWeek != null ? ` · ${esc(g.dollar ? shortMoney(d.path.needPerWeek) : num(d.path.needPerWeek, 1))}/week` : ""}${d.path.uncovered > 0 ? ` · <b>${esc(g.dollar ? shortMoney(d.path.uncovered) : num(Math.ceil(d.path.uncovered)))} not in the pipeline</b>` : " · pipeline covers it"}</span>` : ""}${top.length ? top.map((x) => `<span class="reason"><span class="sev ${sevCls(x)}"></span>${esc(x.head || x.kind)}</span>`).join("") : `<span class="muted small">No clear cause in the monday data</span>`}</span>
       <span class="chev" aria-hidden="true">›</span>
     </summary>
     <div class="whybody">
       <div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;padding:0 18px 10px">
+        ${g.second ? `<span>Projects: <b>${esc(secondTxt(g))}</b></span>` : ""}
         ${d.closed ? `<span style="color:var(--bad)">Missed the goal by <b>${g.fmt(d.left)}</b></span>` : `<span>Should be <b>${fmtN(d.exp)}</b> by today</span>${d.weeksLeft ? `<span>Needs <b>${g.fmt(d.left / d.weeksLeft)}</b> a week for the ${plural(d.weeksLeft, "week")} left</span>` : ""}`}
         <button type="button" class="linkbtn" data-drill="${esc(JSON.stringify(r.mtd.drill))}">See this month's items →</button></div>
       ${d.path && d.path.left > 0 ? pathHtml(d) : ""}
