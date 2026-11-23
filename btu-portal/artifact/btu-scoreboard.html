@@ -258,6 +258,8 @@ svg.chart .vlbl { fill: var(--ink-2); font-size: 10px; font-weight: 600; }
 .rk-b { position: relative; height: 12px; background: var(--track); border-radius: 3px; }
 .rk-b i { position: absolute; inset: 0 auto 0 0; background: var(--series); border-radius: 3px; }
 .rk-b b { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); }
+.rk-s { grid-column: 2 / 4; font-size: 11px; color: var(--muted); margin-top: -4px; }
+.rk-s b { color: var(--ink-2); }
 .rk-v { font-size: 13px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .trends { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
 @media (max-width: 1200px) { .trends { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -282,6 +284,14 @@ b.ok { color: var(--good) !important; } b.no { color: var(--bad) !important; }
 .plist { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; }
 .plist li.act::marker { content: "→ "; color: var(--accent); }
 .plist details summary { font-size: 12px; margin-top: 2px; }
+table.goaltable td, table.goaltable th { padding: 7px 10px; }
+table.goaltable tr.kgrp td { border-top: 1px solid var(--line-2); }
+table.goaltable tr.ksub td { border-top: 0; }
+table.goaltable tr.kgrp:first-child td { border-top: 0; }
+table.goaltable td.kname { vertical-align: top; padding-top: 10px; min-width: 170px; border-bottom: 0; }
+table.goaltable td.mlabel { font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+table.goaltable td.mgoal b { font-size: 14px; }
+.v.wk-good .c { color: var(--good); } .v.wk-watch .c { color: var(--warn); } .v.wk-bad .c { color: var(--bad); }
 details.whyrow { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
 details.whyrow > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(200px, 1.1fr) minmax(170px, 1fr) minmax(220px, 2fr) 16px; gap: 8px 18px; align-items: center; padding: 12px 18px; }
 details.whyrow > summary::-webkit-details-marker { display: none; }
@@ -1234,7 +1244,8 @@ function chartRow(B, program) {
     side = `<section class="card"><div class="card-h"><h2>By utility</h2><span class="sub">${esc(STAGE_LABEL[stage])} · ${measure === "count" ? "count" : "dollars"} so far</span></div><div class="card-b ranked">
       ${rows.length ? rows.map((x) => `<a href="#weekly" data-proglink="${esc(x.p)}" class="rk" title="${esc(`${x.p}: ${fmtExact(measure, x.v)}${x.g != null ? ` of ${fmtExact(measure, x.g)} goal` : ""}`)}">
         <span class="rk-l">${esc(x.p)}</span><span class="rk-b"><i style="width:${(x.v / max) * 100}%"></i>${x.g != null ? `<b style="left:${(x.g / max) * 100}%"></b>` : ""}</span>
-        <span class="rk-v">${fmtM(measure, x.v)}${x.g != null ? `<span class="muted"> / ${fmtM(measure, x.g)}</span>` : ""}</span></a>`).join("") : `<div class="empty">Nothing logged yet.</div>`}
+        <span class="rk-v">${fmtM(measure, x.v)}${x.g != null ? `<span class="muted"> / ${fmtM(measure, x.g)}</span>` : ""}</span>
+        ${x.g != null ? `<span class="rk-s"><b>${pct(x.v / x.g)}</b> of monthly goal · ${x.v >= x.g ? `<span style="color:var(--good)">met</span>` : `${fmtM(measure, x.g - x.v)} left`}</span>` : ""}</a>`).join("") : `<div class="empty">Nothing logged yet.</div>`}
       ${rows.some((x) => x.g != null) ? `<div class="legend"><span><i style="background:var(--series)"></i>So far</span><span><i class="lg-goal"></i>Monthly goal</span></div>` : ""}</div></section>`;
   } else {
     side = `<section class="card"><div class="card-h"><h2>Last six months</h2><span class="sub">${esc(STAGE_LABEL[stage])} · ${esc(prog)}</span></div><div class="card-b">
@@ -1325,16 +1336,6 @@ function renderWeekly() {
     <label class="switch"><input type="checkbox" id="showRaw" ${state.showRaw ? "checked" : ""}>Show raw counts</label></div>`;
   h += stageTiles(B, prog) + chartRow(B, prog);
   const cols = B.weeks.map((w) => `<th class="n">Week ${w.index}<span class="sub">${esc(w.label)}</span></th>`).join("");
-  const goalCell = (r) => {
-    const g = goalView(r);
-    if (!g) return `<td class="n"><span class="muted small" title="${esc(r.goal.reason || (state.mode === "share" ? "Goals are set in Incentive dollars" : ""))}">—</span></td>`;
-    const pctv = g.pct == null ? 0 : Math.min(1, g.pct);
-    const exp = Math.min(1, B.pace.fraction);
-    const dollarGoal = !g.dollar && r.goal.dollars != null ? `<span class="muted"> · ${money(r.goal.dollars)} goal</span>` : "";
-    const sec = g.second ? `<div class="small muted">${esc(secondTxt(g))}</div>` : "";
-    return `<td><div style="display:grid;gap:4px;min-width:170px"><div class="small tnum" style="display:flex;justify-content:space-between;gap:8px"><span>${g.actual == null ? "—" : g.fmt(g.actual)} of ${g.fmt(g.goal)}${dollarGoal}</span><span class="muted">${pct(g.pct)}</span></div>
-      <div class="bullet" title="Bar: month to date. Tick: where pace says you should be today."><i style="width:${Math.round(pctv * 100)}%"></i><b style="left:calc(${Math.round(exp * 100)}% - 1px)"></b></div>${sec}</div></td>`;
-  };
   const phaseLine = (stage) => {
     if (prog !== "BPTU") return "";
     if (stage === "audits") { const all = (MODEL.byStageMonth.get("audits|" + state.month) || []).filter((e) => e.program === "BPTU"); return all.length ? `<span class="sub">${plural(all.filter((e) => e.counted).length, "building")} · ${all.length} rows in monday (one per phase)</span>` : ""; }
@@ -1358,17 +1359,58 @@ function renderWeekly() {
       </div>
       <p class="small muted" style="margin:8px 0 0">On the KPI board, Phase 1 goes straight from the audit to Closeouts (the audit-incentive application and its approval). Phase 2 goes through Preapprovals, Implementation and Closeouts. Closeout counts and dollars below include both phases; the split is under each KPI.</p></div></section>`;
   }
-  const body = rows.map((r, i) => `<tr>
-      <td class="rowh">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.inc && r.inc.first ? `<span class="sub">judged on Incentive $, then projects</span>` : r.goal.count == null && r.goal.dollars != null ? `<span class="sub">goal in Incentive $</span>` : r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>
-      ${r.weeks.map((c) => valueCell(c)).join("")}${B.hasUn ? valueCell(r.un, "orph") : ""}${valueCell(r.mtd, "mtd")}
-      ${anyGoal ? goalCell(r) + `<td>${isOff(r) ? `<a href="#why-${r.stage}" class="jump" data-jump="why-${r.stage}" title="See why">${chip(r.status)}<span class="small">Why?</span></a>` : chip(r.status) || `<span class="muted small">—</span>`}</td>` : ""}</tr>`).join("");
+  // Monthly goal table, laid out like the workbook's Tune-Up Factory tab: one line per goal
+  // (Incentive $ first for incentive-first KPIs, then projects), weekly target, weeks, MTD, % of goal, left, pace.
+  const nW = B.weeks.length;
+  const evAll = (stage) => evsFor(stage, prog, state.month);
+  const lineFor = (r, measure, goal, primary) => {
+    const evs = evAll(r.stage);
+    const v = (xs) => measure === "count" ? xs.length : (sumOf(xs.map((e) => e.incentive)) || 0);
+    const f = (x) => measure === "count" ? num(x) : shortMoney(x);
+    const fx = (x) => measure === "count" ? num(x) : money(x);
+    const mtd = v(evs);
+    const target = goal != null && nW ? goal / nW : null;
+    const weekCells = B.weeks.map((w, j) => {
+      const c = r.weeks[j];
+      if (c.future) return `<td class="n"><span class="future" title="Week has not started">·</span></td>`;
+      if (c.count == null) return `<td class="n"><span class="na" title="${esc(c.unavail)}">n/a</span></td>`;
+      const val = v(evs.filter((e) => inWeek(w, e.date)));
+      const done = w.end < TODAY;
+      const cls = target == null || !done ? "" : val >= target ? "wk-good" : val >= target * 0.85 ? "wk-watch" : "wk-bad";
+      const note = measure === "count" ? fixNote(c) : "";
+      return `<td class="n"><button type="button" class="v ${val ? "" : "zero"} ${cls}" data-drill="${esc(JSON.stringify(c.drill))}" title="${esc([`Week ${w.index}: ${fx(val)}`, target != null ? `weekly target ${fx(target)}` : "", note, done || target == null ? "" : "week in progress"].filter(Boolean).join(" · "))}">
+        <span class="c">${note ? `<span class="fix" aria-hidden="true"></span>` : ""}${val ? f(val) : "–"}</span>${measure === "count" && !goalLines(r).some((l) => l.measure === "incentive") ? `<span class="d">${c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>` : ""}</button></td>`;
+    }).join("");
+    const pctv = goal ? mtd / goal : null, left = goal == null ? null : goal - mtd;
+    const st = goal == null ? null : primary ? r.status : paceStatus(mtd, goal, B.pace.fraction);
+    const label = measure === "count" ? "Projects" : "Incentive $";
+    return { measure, html: `<td class="mlabel">${goal != null || goalLines(r).length > 1 ? `${label}${primary && goalLines(r).length > 1 ? ` <span class="pill">judged on</span>` : ""}` : ""}</td>
+      <td class="n mgoal">${goal == null ? `<span class="muted">—</span>` : `<b>${fx(goal)}</b>`}</td><td class="n muted">${target == null ? "" : f(target)}</td>
+      ${weekCells}<td class="n mtd"><button type="button" class="v" data-drill="${esc(JSON.stringify(r.mtd.drill))}"><span class="c">${f(mtd)}</span>${measure === "count" && !goalLines(r).some((l) => l.measure === "incentive") ? `<span class="d">${r.mtd.dUnavail ? "$ n/a" : shortMoney(r.mtd.dollars)}</span>` : ""}</button></td>
+      <td>${goal == null ? "" : `<div style="display:grid;gap:3px;min-width:120px"><span class="small tnum"><b>${pct(pctv)}</b> <span class="muted">of monthly goal</span></span><div class="bullet" title="Bar: month to date against the monthly goal. Tick: where pace says you should be today."><i style="width:${Math.round(Math.min(1, pctv || 0) * 100)}%"></i><b style="left:calc(${Math.round(Math.min(1, B.pace.fraction) * 100)}% - 1px)"></b></div></div>`}</td>
+      <td class="n">${left == null ? "" : left <= 0 ? `<span class="chip good">${ICON.up}Met</span>` : `<b>${f(left)}</b>`}</td>
+      <td>${st == null ? `<span class="muted small">—</span>` : primary && isOff(r) ? `<a href="#why-${r.stage}" class="jump" data-jump="why-${r.stage}" title="See why">${chip(st)}<span class="small">Why?</span></a>` : chip(st)}</td>` };
+  };
+  function goalLines(r) {
+    const cnt = r.goal.count, inc = r.inc ? r.inc.goal : null;
+    const L = [];
+    if (CONFIG.incentiveFirst.includes(r.stage)) { if (inc != null) L.push({ measure: "incentive", goal: inc }); if (cnt != null) L.push({ measure: "count", goal: cnt }); }
+    else { if (cnt != null) L.push({ measure: "count", goal: cnt }); if (inc != null) L.push({ measure: "incentive", goal: inc }); }
+    return L;
+  }
+  const body = rows.map((r, i) => {
+    const name = `<td class="rowh kname" rowspan="ROWSPAN">${esc(STAGES[i][1])}${phaseLine(STAGES[i][0])}${r.stage === "co_approved" ? `<span class="sub">monday proxy, not revenue</span>` : ""}</td>`;
+    if (r.mtd.count == null) return `<tr class="kgrp">${name.replace("ROWSPAN", "1")}<td colspan="${nW + 7}"><span class="na" style="text-align:left">${esc(r.mtd.unavail)}</span></td></tr>`;
+    let ls = goalLines(r);
+    if (!ls.length) ls = [{ measure: "count", goal: null }];
+    return ls.map((l, j) => `<tr class="${j === 0 ? "kgrp" : "ksub"}">${j === 0 ? name.replace("ROWSPAN", String(ls.length)) : ""}${lineFor(r, l.measure, l.goal, j === 0).html}</tr>`).join("");
+  }).join("");
   const reasons = [...new Set(rows.map((r) => r.mtd.unavail).filter(Boolean))];
   const src = CONFIG.goals.sources?.[state.month];
-  h += `<section class="card"><div class="card-h"><h2>Week by week</h2></div><div class="card-b scroll"><table><thead><tr><th>KPI</th>${cols}${B.hasUn ? `<th class="n orph">Not in any week</th>` : ""}<th class="n mtd">Month to date</th>
-      ${anyGoal ? `<th>Goal</th><th>Pace</th>` : ""}</tr></thead><tbody>${body}</tbody></table></div>
+  h += `<section class="card"><div class="card-h"><h2>Against the monthly goal</h2><span class="sub">${esc(title)} · weeks turn green when they hit the weekly target, amber within 15%, red below</span></div>
+    <div class="card-b scroll"><table class="goaltable"><thead><tr><th>KPI</th><th></th><th class="n">Monthly goal</th><th class="n">Weekly target</th>${B.weeks.map((w) => `<th class="n">Wk ${w.index}<span class="sub">${esc(w.label)}</span></th>`).join("")}<th class="n mtd">Month to date</th><th>% of goal</th><th class="n">Left to goal</th><th>Pace</th></tr></thead><tbody>${body}</tbody></table></div>
     ${reasons.length ? `<div class="card-note">n/a: ${reasons.map(esc).join("<br>n/a: ")}</div>` : ""}
-    ${anyGoal ? (src ? `<div class="card-note">${esc(src)} Dollar goals are Incentive.</div>` : "")
-      : `<div class="card-note">No goals are set for ${esc(prog === "Total" ? "all utilities" : prog)} in ${esc(monthName(state.month))}, so there is no pace status.</div>`}</section>`;
+    <div class="card-note">${anyGoal ? `${src ? esc(src) + " " : ""}Dollar goals and figures here are Incentive. Weekly target = monthly goal ÷ ${nW} weeks. Pace judges month to date against the goal × share of working days gone (${pct(B.pace.fraction)}).` : `No goals are set for ${esc(prog === "Total" ? "all utilities" : prog)} in ${esc(monthName(state.month))}.`}</div></section>`;
   h += whySection(B, rows, prog === "Total" ? "the division" : title);
   const levels = levelRows(state.month, B.weeks, TODAY);
   if (levels.length) h += `<section class="card"><div class="card-h"><h2>Levels <span class="sub">· readings, never summed across weeks</span></h2></div><div class="card-b scroll"><table><thead><tr><th>Metric</th>${B.weeks.map((w) => `<th class="n">Week ${w.index}</th>`).join("")}<th class="n mtd">Latest</th><th class="n">Target</th></tr></thead><tbody>
