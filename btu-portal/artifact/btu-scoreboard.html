@@ -157,6 +157,12 @@ th.mtd, td.mtd { background: color-mix(in srgb, var(--accent-soft) 70%, var(--su
 tr.total td.mtd { background: color-mix(in srgb, var(--accent-soft) 100%, var(--surface)); }
 th.orph, td.orph { background: var(--bad-bg); }
 table.list td { font-size: 13px; padding: 8px 12px; }
+tr.holder { cursor: pointer; }
+tr.holder:hover td, tr.holder[aria-expanded="true"] td { background: var(--surface-2); }
+tr.holder:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+tr.holder .caret { display: inline-block; width: 1em; color: var(--muted); }
+tr.holder-items > td { background: var(--surface-2); }
+tr.holder-items table.list { background: var(--surface); border-radius: 8px; }
 table.list td.name { font-weight: 500; }
 tr.excluded td { color: var(--muted); }
 tr.excluded td.name { text-decoration: line-through; text-decoration-color: var(--line-2); }
@@ -994,7 +1000,7 @@ function aging(D) {
   return { ok: true, boardId: b.meta.id, at: b.at, items, loop: inLoop,
     byKind: Object.fromEntries(Object.entries(byKind).map(([k, v]) => [k, agg(v)])),
     byHolder: Object.fromEntries(Object.entries(byHolder).map(([k, v]) => [k, agg(v)])),
-    byPerson: Object.entries(people).map(([k, v]) => { const [h, p] = k.split("\u0001"); return [h, p, ...agg(v), Math.max(0, ...v.map((x) => x.dfr || 0))]; })
+    byPerson: Object.entries(people).map(([k, v]) => { const [h, p] = k.split("\u0001"); return [h, p, ...agg(v), Math.max(0, ...v.map((x) => x.dfr || 0)), v.slice().sort((x, y) => (y.dfr || 0) - (x.dfr || 0))]; })
       .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : b[2] - a[2])),
     rfiCount: rfis.length,
     overdue: rfis.filter((x) => (x.dfr || 0) > A.rfiOverdueDays).sort((a, b) => (b.dfr || 0) - (a.dfr || 0)),
@@ -1563,14 +1569,24 @@ function renderAging() {
       <table style="margin-top:10px"><thead><tr><th>Bucket</th><th class="n">Projects</th><th class="n">Total Incentive</th></tr></thead><tbody>
       ${a.buckets.map(([b, n, d]) => `<tr><td>${esc(b)}</td><td class="n">${n}</td><td class="n">${money(d)}</td></tr>`).join("")}</tbody></table>
       <div class="small muted" style="margin-top:8px">All projects on the tracker. Critical: over 60 days in phase. Watch: over 30.</div>` : `<div class="empty">No bucket values on the tracker.</div>`}</div></section></div>`;
-  h += `<section class="card"><div class="card-h"><h2>Who is holding the work</h2><span class="sub">HBS-side items by HBS Engineer, ICF-side by ICF Engineer</span></div><div class="card-b scroll"><table><thead><tr><th>Side</th><th>Person</th><th class="n">Items</th><th class="n">Total Incentive</th><th class="n">Longest since last update (days)</th></tr></thead><tbody>
-    ${a.byPerson.map(([hh, p, n, d, mx]) => `<tr><td><span class="legend" style="margin:0"><span><i style="background:${hh === "HBS" ? "var(--series)" : "var(--series-2)"}"></i>${hh}</span></span></td><td class="rowh">${esc(p)}</td><td class="n">${n}</td><td class="n">${money(d)}</td><td class="n">${num(mx)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Nothing in the loop.</div></td></tr>`}</tbody></table></div></section>`;
+  h += `<section class="card"><div class="card-h"><h2>Who is holding the work</h2><span class="sub">HBS-side items by HBS Engineer, ICF-side by ICF Engineer · click a person to see their pending items</span></div><div class="card-b scroll"><table class="holders"><thead><tr><th>Side</th><th>Person</th><th class="n">Items</th><th class="n">Total Incentive</th><th class="n">Longest since last update (days)</th></tr></thead><tbody>
+    ${a.byPerson.map(([hh, p, n, d, mx, xs], i) => { const open = state.agingOpen && state.agingOpen.has(hh + "|" + p);
+      const tip = xs.slice(0, 8).map((x) => `• ${x.name.split(" - ")[0]} — ${x.status}${x.dfr != null ? `, ${Math.round(x.dfr)}d` : ""}${x.value != null ? `, ${money(x.value)}` : ""}`).join("\n") + (xs.length > 8 ? `\n…and ${xs.length - 8} more` : "") + "\n\nClick to see the list";
+      return `<tr class="holder" data-holder="${esc(hh + "|" + p)}" tabindex="0" role="button" aria-expanded="${!!open}" title="${esc(tip)}"><td><span class="legend" style="margin:0"><span><i style="background:${hh === "HBS" ? "var(--series)" : "var(--series-2)"}"></i>${hh}</span></span></td><td class="rowh"><span class="caret" aria-hidden="true">${open ? "▾" : "▸"}</span> ${esc(p)}</td><td class="n">${n}</td><td class="n">${money(d)}</td><td class="n">${num(mx)}</td></tr>
+      <tr class="holder-items" ${open ? "" : "hidden"}><td colspan="5" style="padding:0 0 12px 24px;background:var(--surface-2,transparent)">${agingTable(xs, a.boardId, true)}</td></tr>`; }).join("") || `<tr><td colspan="5"><div class="empty">Nothing in the loop.</div></td></tr>`}</tbody></table></div></section>`;
   if (a.overdueFollowUps.length) h += `<section class="card"><div class="card-h"><h2>Follow-ups overdue</h2><span class="sub">Next Action Date has passed, oldest first</span></div><div class="card-b scroll">${agingTable(a.overdueFollowUps, a.boardId, true)}</div></section>`;
   h += `<section class="card"><div class="card-h"><h2>RFIs older than ${CONFIG.icf.rfiOverdueDays} days</h2><span class="sub">${plural(a.overdue.length, "item")}, longest since last update first</span></div><div class="card-b scroll">${agingTable(a.overdue, a.boardId, false)}</div></section>`;
   h += `<details class="how"><summary>Every item in the loop (${a.loop.length})</summary><div class="scroll" style="padding:0 8px 12px">${agingTable(a.loop.slice().sort((x, y) => (y.dfr || 0) - (x.dfr || 0)), a.boardId, true)}</div></details>`;
   if (a.stale.length) h += `<details class="how" id="stale-list"><summary>ICF tracker out of date (${a.stale.length})</summary><div class="body" style="max-width:none"><p>The ICF status says these are in the RFI loop, but the project tracker shows them further along. Update the ICF/HBS Project Tracker so they drop out of the loop.</p></div><div class="scroll" style="padding:0 8px 12px">${agingTable(a.stale, a.boardId, true)}</div></details>`;
   if (a.missingValue) h += `<p class="small muted" style="margin:0">${plural(a.missingValue, "item")} in the loop ${a.missingValue === 1 ? "has" : "have"} no Total Incentive, so dollar totals leave ${a.missingValue === 1 ? "it" : "them"} out.</p>`;
   return h;
+}
+function toggleHolder(tr) {
+  const k = tr.dataset.holder, nx = tr.nextElementSibling, open = nx.hidden;
+  state.agingOpen = state.agingOpen || new Set();
+  if (open) state.agingOpen.add(k); else state.agingOpen.delete(k);
+  nx.hidden = !open; tr.setAttribute("aria-expanded", String(open));
+  const c = tr.querySelector(".caret"); if (c) c.textContent = open ? "▾" : "▸";
 }
 function agingTable(xs, boardId, withStatus) {
   if (!xs.length) return `<div class="empty">None.</div>`;
@@ -2150,7 +2166,11 @@ window.addEventListener("hashchange", () => { fromHash(); render(); window.scrol
 $("#month").addEventListener("change", (e) => { state.month = e.target.value; render(); });
 $("#refresh").addEventListener("click", () => refresh());
 $("#backdrop").addEventListener("click", closeDrawer);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#drawer").hidden) closeDrawer(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$("#drawer").hidden) closeDrawer();
+  const hold = e.target.closest && e.target.closest("tr.holder");
+  if (hold && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleHolder(hold); }
+});
 document.addEventListener("change", (e) => {
   if (e.target.id === "showRaw") { state.showRaw = e.target.checked; render(); }
   if (e.target.id === "subProg") { state.subProg = e.target.value; $("#subResults").innerHTML = subResults(); }
@@ -2159,6 +2179,8 @@ document.addEventListener("input", (e) => { if (e.target.id === "subSearch") { s
 document.addEventListener("click", (e) => {
   const seg = e.target.closest(".seg button");
   if (seg) { state.mode = seg.dataset.mode; savePrefs(); render(); return; }
+  const hold = e.target.closest("tr.holder");
+  if (hold) { toggleHolder(hold); return; }
   const cell = e.target.closest("[data-drill]");
   if (cell) { openDrawer(JSON.parse(cell.getAttribute("data-drill"))); return; }
   if (e.target.closest("#closeDrawer")) { closeDrawer(); return; }
