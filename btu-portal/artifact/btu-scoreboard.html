@@ -423,8 +423,11 @@ const OCT_2026_GOALS = {
   pa_submitted: { "Prescriptive": { count: 45, incentive: 80000 }, "BGE Tune-Up": { count: 40, incentive: 240000 }, "BPTU": { count: 4, incentive: 300000 },
                   "Pepco/WGL": { count: 4, incentive: 240000 }, "Delmarva": { count: 2, incentive: 60000 }, "SMECO": { count: 2, incentive: 5000 },
                   "Georgia": { count: 2, incentive: 49000 }, "Virginia/CGS": { count: 3, incentive: 1000 } },
-  pa_approved: { "Prescriptive": { count: 40 }, "BGE Tune-Up": { count: 24 }, "BPTU": { count: 4 }, "Pepco/WGL": { count: 9 },
-                 "Delmarva": { count: 8 }, "SMECO": { count: 2 }, "Georgia": { count: 3 }, "Virginia/CGS": { count: 4 } },
+  // Incentive goals for approvals are the workbook's Company Results "Sales / New Work by Program" goals (sales = preapprovals approved $).
+  // BPTU = Phase 2 ($300,000; Phase 1 has no preapproval step). Pepco/WGL = Pepco $240,000 + WGL $2,500.
+  pa_approved: { "Prescriptive": { count: 40, incentive: 80000 }, "BGE Tune-Up": { count: 24, incentive: 240000 }, "BPTU": { count: 4, incentive: 300000 },
+                 "Pepco/WGL": { count: 9, incentive: 242500 }, "Delmarva": { count: 8, incentive: 60000 }, "SMECO": { count: 2, incentive: 5000 },
+                 "Georgia": { count: 3, incentive: 49000 }, "Virginia/CGS": { count: 4, incentive: 25000 } },
   impl_scheduled: { "Prescriptive": { incentive: 80000 }, "BGE Tune-Up": { incentive: 240000 }, "BPTU": { incentive: 300000 }, "Pepco/WGL": { incentive: 240000 },
                     "Delmarva": { incentive: 200000 }, "SMECO": { incentive: 5000 }, "Georgia": { incentive: 49000 }, "Virginia/CGS": { incentive: 5000 } },
   impl_completed: { "Prescriptive": { count: 25 }, "BGE Tune-Up": { count: 10 }, "BPTU": { count: 4 }, "Pepco/WGL": { count: 4 },
@@ -499,7 +502,7 @@ const CONFIG = {
                  "RFI Responed by HBS": { holder: "ICF", kind: "RFI response" },   // (sic) — the data's spelling
                  "HBS Resubmitted": { holder: "ICF", kind: "Resubmission" } } },
   // KPIs judged on their Incentive goal first and the project count second (Incentive is the real value of the target).
-  incentiveFirst: ["pa_submitted", "impl_scheduled", "co_submitted", "co_approved"],
+  incentiveFirst: ["pa_submitted", "pa_approved", "impl_scheduled", "co_submitted", "co_approved"],
   rules: { countRepeatsAsNew: false, repeatStages: ["pa_submitted", "co_submitted"], paceWatchRatio: 0.9,
            paceBasis: "count", holidays: [] },
   weeks: {
@@ -514,7 +517,7 @@ const CONFIG = {
     "2026-11": NOV_2026_GOALS,
     sources: {
       "2026-10": "October goals from the HBS Weekly Scoreboard workbook (Tune-Up Factory tab).",
-      "2026-11": "November goals from the HBS Weekly Scoreboard workbook (Nov 11/23, Tune-Up Factory tab). Totals are the sum of the program goals; the Closeouts $ total covers the six programs with a dollar goal (not Prescriptive or Georgia).",
+      "2026-11": "November goals from the HBS Weekly Scoreboard workbook (Nov 11/23, Tune-Up Factory tab). Totals are the sum of the program goals; the Closeouts $ total covers the six programs with a dollar goal (not Prescriptive or Georgia). Preapprovals Approved $ goals are the Sales / New Work goals from the Company Results tab.",
     },
   },
   // Level readings (Utilization %, MRR, live contracts): { metric, kind: "percent"|"dollars"|"count", date, value, source }.
@@ -1093,7 +1096,8 @@ function goalView(r) {
     const second = r.goal.count != null && r.mtd.count != null ? { actual: r.mtd.count, goal: r.goal.count, pct: r.mtd.count / r.goal.count } : null;
     return { dollar: true, incentive: true, actual: r.inc.actual, goal: r.inc.goal, pct: r.inc.actual / r.inc.goal, fmt: (v) => money(v), second };
   }
-  if (r.goal.count != null) return { dollar: false, actual: r.mtd.count, goal: r.goal.count, pct: r.mtd.count == null ? null : r.mtd.count / r.goal.count, fmt: (v) => num(v) };
+  if (r.goal.count != null) return { dollar: false, actual: r.mtd.count, goal: r.goal.count, pct: r.mtd.count == null ? null : r.mtd.count / r.goal.count, fmt: (v) => num(v),
+    lead: r.inc && r.inc.actual ? r.inc.actual : null };
   if (r.goal.dollars != null) return { dollar: true, actual: r.mtd.dollars, goal: r.goal.dollars, pct: r.mtd.dollars == null ? null : r.mtd.dollars / r.goal.dollars, fmt: (v) => money(v) };
   return null;
 }
@@ -1251,10 +1255,10 @@ function stageTiles(B, program) {
     const dCls = d > 0 ? "up" : d < 0 ? "down" : "flat";
     return `<button type="button" class="tile ${sel ? "sel" : ""}" data-chartstage="${stage}" aria-pressed="${sel}" title="Chart ${esc(label)}">
       <span class="step">${i + 1} · ${esc(label)}</span>
-      <span class="big">${g && g.incentive ? shortMoney(g.actual) : g && g.dollar ? shortMoney(c.dollars) : c.count}</span>
-      <span class="usd">${g && g.incentive ? `Incentive${r.inc.covers ? ` (${r.inc.covers.length} utilities with a $ goal)` : ""} · ${c.count} project${c.count === 1 ? "" : "s"}${g.second ? ` of ${num(g.second.goal)}` : ""}` : g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
+      <span class="big">${g && g.incentive ? shortMoney(g.actual) : g && g.dollar ? shortMoney(c.dollars) : g && g.lead != null ? shortMoney(g.lead) : c.count}</span>
+      <span class="usd">${g && g.lead != null && !g.dollar ? `Incentive · ${c.count} project${c.count === 1 ? "" : "s"} of ${num(g.goal)}` : g && g.incentive ? `Incentive${r.inc.covers ? ` (${r.inc.covers.length} utilities with a $ goal)` : ""} · ${c.count} project${c.count === 1 ? "" : "s"}${g.second ? ` of ${num(g.second.goal)}` : ""}` : g && g.dollar ? `${c.count} project${c.count === 1 ? "" : "s"}` : c.dUnavail ? "$ n/a" : shortMoney(c.dollars)}</span>
       ${g ? `<span class="tbar" title="${esc(`${pct(g.pct)} of the ${g.fmt(g.goal)} goal; the tick is where pace says you should be today`)}"><i class="${r.status || ""}" style="width:${Math.round(Math.min(1, g.pct || 0) * 100)}%"></i><b style="left:${Math.round(B.pace.fraction * 100)}%"></b></span>
-        <span class="tfoot"><span>${pct(g.pct)} of ${g.dollar ? shortMoney(g.goal) : num(g.goal)}</span>${chip(r.status)}</span>` : `<span class="tfoot muted">no goal</span>`}
+        <span class="tfoot"><span>${pct(g.pct)} of ${g.dollar ? shortMoney(g.goal) : `${num(g.goal)}${g.lead != null ? " projects" : ""}`}</span>${chip(r.status)}</span>` : `<span class="tfoot muted">no goal</span>`}
       <span class="delta ${dCls}" title="${esc(`At this point in ${monthName(prevMonthOf(state.month))}: ${fmtExact(measure, prev)}`)}">${dTxt}</span></button>`;
   }).join("")}</div>`;
 }
@@ -1474,7 +1478,7 @@ function renderPace() {
     const g = goalView(r);
     const cls = r.status === "on" ? "good" : r.status === "watch" ? "warn" : "bad";
     return `<td class="pg ${cls}"><a href="#weekly" data-proglink="${esc(p)}" data-jumpafter="why-${s}" title="${esc(`${p === "Total" ? "All utilities" : p} · ${STAGE_LABEL[s]}: ${g.fmt(g.actual)} of ${g.fmt(g.goal)}. Open with reasons.`)}">
-      <span class="pct">${pct(g.pct)}</span><span class="of">${g.dollar ? shortMoney(g.actual) : g.actual} / ${g.dollar ? shortMoney(g.goal) : g.goal}</span>${g.second ? `<span class="of">${g.second.actual}/${g.second.goal} proj</span>` : ""}<span class="st">${ICONS[r.status] || ""}${r.status === "on" ? "On pace" : r.status === "watch" ? "Watch" : "Behind"}</span></a></td>`;
+      <span class="pct">${pct(g.pct)}</span>${g.lead != null ? `<span class="of">${shortMoney(g.lead)} Incentive</span>` : ""}<span class="of">${g.dollar ? shortMoney(g.actual) : g.actual} / ${g.dollar ? shortMoney(g.goal) : `${g.goal}${g.lead != null ? " proj" : ""}`}</span>${g.second ? `<span class="of">${g.second.actual}/${g.second.goal} proj</span>` : ""}<span class="st">${ICONS[r.status] || ""}${r.status === "on" ? "On pace" : r.status === "watch" ? "Watch" : "Behind"}</span></a></td>`;
   };
   h += `<section class="card"><div class="card-h"><h2>Pace grid</h2><span class="sub">% of goal so far · click a cell for that utility and why</span></div>
     <div class="card-b scroll"><table class="pacegrid"><thead><tr><th>KPI</th>${cols.map((p) => `<th>${p === "Total" ? "All utilities" : esc(p)}</th>`).join("")}</tr></thead>
@@ -1500,7 +1504,7 @@ function renderPace() {
         <td class="n">${B.pace.remaining ? (g.dollar ? money(left / B.pace.remaining) : num(left / B.pace.remaining, 2)) : "—"}</td><td>${chip(r.status)}</td></tr>`;
     }
   }
-  if (CONFIG.incentiveFirst.length) h += `<p class="small muted" style="margin:0">${CONFIG.incentiveFirst.map((s) => STAGE_LABEL[s]).join(" and ")} ${CONFIG.incentiveFirst.length === 1 ? "is" : "are"} judged on the Incentive goal (whichever dollars the page shows), with the project count second where there is one.</p>`;
+  if (CONFIG.incentiveFirst.length) h += `<p class="small muted" style="margin:0">${(() => { const L = CONFIG.incentiveFirst.map((s) => STAGE_LABEL[s]); return L.length > 1 ? L.slice(0, -1).join(", ") + " and " + L[L.length - 1] : L[0]; })()} ${CONFIG.incentiveFirst.length === 1 ? "is" : "are"} judged on the Incentive goal, with the project count second. Audits and Implementations Completed have only a project goal in the workbook, so they show their Incentive value first and are judged on projects.</p>`;
   h += `<details class="how"><summary>Detail: gap to pace and what's needed per week</summary><div class="scroll" style="padding:0 18px 14px"><table><thead><tr>
     <th>Utility</th><th style="min-width:230px">Progress <span class="sub" style="display:inline">· bar: so far, tick: today's pace</span></th><th class="n">Gap to pace</th><th class="n">Needed / week</th><th class="n">Needed / working day</th><th>Status</th></tr></thead><tbody>${body}</tbody></table></div></details>`;
   return h;
@@ -1776,7 +1780,7 @@ function coverageCard(month) {
     ["Audits Completed", g("audits", "count"), yes, "Audits Performed. BPTU counts each building once, not once per phase."],
     ["Pre-Approvals Submitted (count)", g("pa_submitted", "count"), yes, "Second line under Preapprovals Submitted. The workbook leaves Prescriptive's weekly target blank; here it is 45 ÷ 4 = 11.25."],
     ["Pre-Approvals Submitted ($ Value)", g("pa_submitted", "incentive"), yes, "Judged first (Incentive). BPTU's $386,700 goal includes Phase 1 $86,700."],
-    ["Pre-Approvals Approved (count)", g("pa_approved", "count"), yes, "Preapprovals Approved."],
+    ["Pre-Approvals Approved (count)", g("pa_approved", "count"), yes, "Second line under Preapprovals Approved. Judged first on Incentive, using the Sales / New Work goals from Company Results."],
     ["Implementations Scheduled (Est. Incentive $)", g("impl_scheduled", "incentive"), yes, "Judged on Incentive."],
     ["Implementations Completed (count)", g("impl_completed", "count"), yes, "The workbook reads No Data (no such stage on the KPI board). Here it comes from the project trackers' implementation dates and status."],
     ["Closeouts Submitted (count)", g("co_submitted", "count"), yes, "Second line under Closeouts Submitted, first for Prescriptive and Georgia."],
