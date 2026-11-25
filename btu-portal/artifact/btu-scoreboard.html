@@ -372,6 +372,29 @@ details.how .body p { margin: 0; }
   .pagehead h1 { font-size: 20px; }
   .tile .big { font-size: 24px; }
 }
+.rgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
+@media (max-width: 720px) { .rgrid { grid-template-columns: minmax(0, 1fr); } }
+table.rtable td { vertical-align: top; }
+table.rtable td .sub { display: block; font-size: 11px; color: var(--muted); }
+table.rtable td:nth-child(5) { min-width: 320px; }
+ul.rlist { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+@media print {
+  :root, :root:not([data-theme="light"]) {
+    --page: #ffffff; --surface: #ffffff; --surface-2: #f3f5f8; --ink: #111821; --ink-2: #485462; --muted: #6b7685;
+    --line: #dfe4ea; --line-2: #cfd7e0; --accent: #1f5aa6; --accent-soft: #e6eef9; --series: #2a78d6; --series-2: #eb6834; --track: #e7ecf2;
+    --good: #0f7a2f; --good-bg: #e3f4e7; --warn: #8a5800; --warn-bg: #fdf1d6; --bad: #b42323; --bad-bg: #fbe6e5; --shadow: none; color-scheme: light; }
+  header.top, #alerts, .noprint, #drawer, #backdrop { display: none !important; }
+  body { background: #fff; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  main { max-width: none; padding: 0; gap: 12px; }
+  .kpi, tr, .card-h { break-inside: avoid; break-after: avoid; }
+  .card { break-inside: auto; }
+  td.pg a { padding: 4px 2px; }
+  .card { box-shadow: none; }
+  .scroll { overflow: visible !important; }
+  table { font-size: 10px; }
+  .rgrid { grid-template-columns: 1fr 1fr; }
+  @page { size: landscape; margin: 12mm; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
 </style>
 
@@ -382,6 +405,7 @@ details.how .body p { margin: 0; }
     <nav class="tabs" id="nav" aria-label="Views">
       <a href="#overview">Overview</a>
       <a href="#company">Company results</a>
+      <a href="#report">Report</a>
       <a href="#weekly">By utility &amp; why</a>
       <a href="#pace">Pace</a>
       <a href="#submissions">Submissions</a>
@@ -1802,6 +1826,199 @@ function coverageCard(month) {
     <div class="card-note">Weekly targets match the workbook: monthly goal ÷ weeks in the month (Start Here B10 = ${monthWeeks(month).weeks.length}). Monthly goals match the November Tune-Up Factory tab row for row.</div></section>`;
 }
 
+/* ---------------------------------- report ----------------------------------------------- */
+/* One printable page for the Monday meeting: where we are against the monthly and weekly targets (Incentive
+   first, then projects), each utility, why we're behind and what it takes, sales and payments, the RFI loop.
+   Built from the same model as every other view, so it always matches the live numbers. */
+function reportData(month) {
+  const B = scoreboard(MODEL, month, "incentive", TODAY);
+  const { weeks } = monthWeeks(month);
+  const G = CONFIG.goals[month] || {};
+  const kpiDown = !DATA.boards.kpi;
+  // Division lines: one per goal, Incentive first where the KPI has an Incentive goal.
+  const lines = [];
+  for (const [stage, label] of STAGES) {
+    const t = B.totals[stage];
+    if (!hasGoal(t) && !G[stage]?.Total) continue;
+    const unav = stage === "impl_completed" ? (t.mtd.count == null ? t.mtd.unavail : null) : kpiDown ? "Monthly KPIs board not loaded." : null;
+    const inc = G[stage]?.Total?.incentive, cnt = G[stage]?.Total?.count;
+    const cov = totalCovers(month, stage, "incentive");
+    const all = unav ? null : evsFor(stage, "Total", month);
+    const owner = { audits: "Program leads", pa_submitted: "Program leads", pa_approved: "Program leads", impl_scheduled: "David Rodriguez", impl_completed: "David Rodriguez", co_submitted: "Devon Goforth", co_approved: "Devon Goforth" }[stage];
+    const na = { na: unav };
+    if (inc != null) lines.push(all ? companyRow(`${label} ($)`, owner, inc, "incentive", cov ? all.filter((e) => cov.includes(e.program)) : all, weeks, { sub: cov ? `Incentive · ${cov.length} utilities with a $ goal` : stage === "co_approved" ? "Incentive · = Payments Received" : "Incentive" })
+                                     : { label: `${label} ($)`, owner, goal: inc, measure: "incentive", vals: null, ...na });
+    if (cnt != null) lines.push(all ? companyRow(`${label} (projects)`, owner, cnt, "count", all, weeks, { sub: inc != null ? "second measure" : "judged on projects" })
+                                     : { label: `${label} (projects)`, owner, goal: cnt, measure: "count", vals: null, ...na });
+  }
+  // Off-pace KPIs with reasons and the path to goal (division level).
+  const ctx = whyContext(B, month);
+  const totals = STAGES.map(([s]) => B.totals[s]);
+  const diag = totals.filter(isOff).map((r) => reasonsFor(r, ctx));
+  // Biggest gaps by utility, in Incentive dollars where the KPI is judged on Incentive.
+  const gaps = [];
+  for (const [s] of STAGES) for (const r of B.sections[s]) {
+    if (!PROGRAMS.includes(r.program) || !isOff(r)) continue;
+    const g = goalView(r); if (!g || g.actual == null) continue;
+    gaps.push({ r, g, short: Math.max(0, g.goal * B.pace.fraction - g.actual), left: Math.max(0, g.goal - g.actual) });
+  }
+  const dollarGaps = gaps.filter((x) => x.g.dollar).sort((a, b) => b.short - a.short);
+  const countGaps = gaps.filter((x) => !x.g.dollar).sort((a, b) => b.short / b.g.goal - a.short / a.g.goal);
+  // Sales (Preapprovals Approved $ by program, from the workbook's Company Results goals) and payments.
+  const sales = kpiDown ? [] : SALES_ROWS.filter((r) => r[3]).map(([label, owner, goal, s]) => companyRow(label, owner, goal, "incentive", companyEvs(s, month), weeks, { sub: s.how || "Preapprovals approved" }));
+  const sum = (xs, f) => xs.reduce((a, x) => a + f(x), 0);
+  const salesTotal = { label: "Tune-Up sales", owner: "Adriana", goal: sum(sales, (r) => r.goal), measure: "incentive", vals: weeks.map((_, i) => sum(sales, (r) => r.vals[i])), total: true, sub: `${sales.length} Tune-Up rows of the ${money(COMPANY_GOALS.salesTotal)} company sales goal` };
+  const a = aging(DATA);
+  return { B, weeks, lines, diag, dollarGaps, countGaps, sales, salesTotal, a, ctx };
+}
+
+function renderReport() {
+  const month = state.month, R = reportData(month), { B, weeks } = R, pace = B.pace;
+  const closed = TODAY > monthBounds(month)[1];
+  const doneW = weeks.filter((w) => w.end < TODAY).length;
+  const mtd = (r) => r.vals ? r.vals.reduce((x, y) => x + y, 0) : null;
+  const line = (label) => R.lines.find((l) => l.label === label);
+  let h = `<div class="pagehead"><div><h1>BTU scoreboard report · ${esc(monthName(month))}</h1>
+    <p>As of ${esc(md(TODAY))}${DATA && DATA.at ? ` · monday data pulled ${esc(fmtTime(DATA.at))}` : ""} · working day ${pace.elapsed} of ${pace.total} (${pct(pace.fraction)} of the month) · ${doneW} of ${weeks.length} weeks complete. Dollars are Incentive.</p></div>
+    <div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;align-self:center">
+      <button type="button" class="iconbtn" data-print>Print or save as PDF</button>
+      <button type="button" class="iconbtn" data-copyreport>Copy summary text</button></div></div>`;
+  if (!Object.keys(CONFIG.goals[month] || {}).length) h += `<div class="alert warn">${ICON.warn}<span>No goals are set for ${esc(monthName(month))}, so this report shows actuals only.</span></div>`;
+
+  // 1. Headline.
+  const tile = (lbl, r, sub) => {
+    if (!r) return "";
+    const v = mtd(r);
+    if (v == null) return `<div class="kpi"><div class="lbl">${esc(lbl)}</div><div class="val muted">n/a</div><div class="sub">${esc(r.na || "")}</div></div>`;
+    const p = r.goal ? v / r.goal : null, st = r.goal ? paceStatus(v, r.goal, pace.fraction) : null;
+    const f = r.measure === "count" ? num : shortMoney;
+    return `<div class="kpi"><div class="lbl">${esc(lbl)}</div><div class="val">${f(v)}</div>
+      <div class="sub">${r.goal ? `${pct(p)} of ${f(r.goal)} · ` : ""}${esc(sub)}</div>
+      ${r.goal ? `<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><div class="bullet" style="flex:1"><i style="width:${Math.round(Math.min(1, p) * 100)}%"></i><b style="left:calc(${Math.round(pace.fraction * 100)}% - 1px)"></b></div>${chip(st)}</div>` : ""}</div>`;
+  };
+  h += `<div class="kpis">
+    ${tile("Preapprovals submitted", line("Preapprovals Submitted ($)"), "Incentive")}
+    ${tile("Sales (preapprovals approved)", line("Preapprovals Approved ($)"), "Incentive")}
+    ${tile("Implementations scheduled", line("Implementations Scheduled ($)"), "Incentive")}
+    ${tile("Closeouts submitted", line("Closeouts Submitted ($)"), "Incentive")}
+    ${tile("Payments received", line("Closeouts Approved ($)"), "Closeouts Approved")}</div>`;
+
+  const card = (title, sub, inner, note, cls = "") => `<section class="card ${cls}"><div class="card-h"><h2>${title}</h2>${sub ? `<span class="sub">${sub}</span>` : ""}</div><div class="card-b scroll">${inner}</div>${note ? `<div class="card-note">${note}</div>` : ""}</section>`;
+
+  // 2. Division against monthly and weekly targets.
+  h += card("Where we are · division", `monthly goal, weekly target (goal ÷ ${weeks.length}), each week and month to date`, companyTable(R.lines, weeks, pace),
+    `${esc(CONFIG.goals.sources?.[month] || "")} Status follows the workbook: the last completed week against the weekly target (green at or above, yellow within 15%, red below). Pace: month to date against the goal × working days gone (${pct(pace.fraction)}).`);
+
+  // 3. By utility.
+  const progs = PROGRAMS;
+  const cell = (s, p) => {
+    const r = B.sections[s].find((x) => x.program === p);
+    if (!r || !hasGoal(r)) return `<td class="pg none"><span class="muted">—</span></td>`;
+    if (r.mtd.count == null) return `<td class="pg none"><span class="muted small">n/a</span></td>`;
+    const g = goalView(r), cls = r.status === "on" ? "good" : r.status === "watch" ? "warn" : "bad";
+    return `<td class="pg ${cls}"><a href="#weekly" data-proglink="${esc(p)}" data-jumpafter="why-${s}"><span class="pct">${pct(g.pct)}</span>${g.lead != null ? `<span class="of">${shortMoney(g.lead)}</span>` : ""}<span class="of">${g.dollar ? `${shortMoney(g.actual)} / ${shortMoney(g.goal)}` : `${g.actual} / ${g.goal}${g.lead != null ? " proj" : ""}`}</span>${g.second ? `<span class="of">${g.second.actual}/${g.second.goal} proj</span>` : ""}<span class="st">${r.status === "on" ? "On pace" : r.status === "watch" ? "Watch" : "Behind"}</span></a></td>`;
+  };
+  h += card("By utility", "% of monthly goal · Incentive first, then projects", `<table class="pacegrid"><thead><tr><th>KPI</th>${progs.map((p) => `<th>${esc(p)}</th>`).join("")}</tr></thead>
+    <tbody>${STAGES.map(([s, l]) => `<tr><td class="rowh">${esc(l)}</td>${progs.map((p) => cell(s, p)).join("")}</tr>`).join("")}</tbody></table>`,
+    `On pace: at or above ${pct(pace.fraction)} of the goal. Watch: within 10% below. Behind: more than 10% below.`);
+
+  // 4. Why we're behind and what it takes.
+  if (R.diag.length) {
+    const rows = R.diag.map((d) => {
+      const { r, g, path: p } = d;
+      const f = g.dollar ? money : (v) => num(v, v < 10 && v % 1 ? 1 : 0);
+      const fs = g.dollar ? shortMoney : (v) => num(v, v < 10 && v % 1 ? 1 : 0);
+      const top = d.reasons.filter((x) => x.sev >= 2).slice(0, 3);
+      return `<tr><td class="rowh">${esc(STAGE_LABEL[r.stage])}<span class="sub">${g.dollar ? "Incentive" : "projects"}</span></td>
+        <td class="n">${fs(g.actual || 0)} <span class="muted">of ${fs(g.goal)}</span><span class="sub">${pct(g.pct)}${g.second ? ` · ${g.second.actual}/${g.second.goal} proj` : ""}</span></td>
+        <td>${chip(r.status)}${closed ? "" : `<span class="sub" style="color:var(--bad)">${fs(d.short)} behind pace</span>`}</td>
+        <td class="small">${p && p.left > 0 ? `<b>${f(p.left)}</b> more${p.needPerWeek != null ? ` · <b>${fs(p.needPerWeek)}</b>/week` : ""}${p.factor != null && p.factor >= 1.05 ? ` · ${p.factor.toFixed(1)}× the pace so far` : ""}<br>${p.uncovered > 0 ? `<span style="color:var(--bad)"><b>${fs(p.uncovered)}</b> not covered by bookings or the pipeline</span>${p.upstream ? `. Needs about ${esc(p.upstream)}` : ""}` : `<span style="color:var(--good)">Bookings and pipeline cover it if they move as usual</span>`}` : closed ? `Missed by ${f(d.left)}` : ""}</td>
+        <td class="small">${top.length ? `<ul class="rlist">${top.map((x) => `<li><b>${esc(x.head || x.kind)}.</b> ${esc(x.text)}</li>`).join("")}</ul>` : `<span class="muted">No clear cause in the monday data.</span>`}</td></tr>`;
+    }).join("");
+    h += card(closed ? "Why the division missed" : "Why the division is behind, and what it takes", `${plural(R.diag.length, "KPI")} off pace`,
+      `<table class="rtable"><thead><tr><th>KPI</th><th class="n">Month to date</th><th>Pace</th><th>To reach the goal</th><th>Why (from the monday data)</th></tr></thead><tbody>${rows}</tbody></table>`,
+      `Reasons and the path to goal come from the monday boards: the history of each KPI, work waiting at the previous step and its usual conversion, bookings on the trackers and the ICF RFI loop. The By utility &amp; why tab has the projects behind every line.`);
+  } else if (R.lines.length) h += `<section class="card"><div class="empty"><b>The division is on pace for every KPI with a goal</b>Nothing to explain this month.</div></section>`;
+
+  // 5. Biggest gaps by utility.
+  if (R.dollarGaps.length || R.countGaps.length) {
+    const gl = (x) => { const fs = x.g.dollar ? shortMoney : num; return `<tr><td class="rowh">${esc(x.r.program)}</td><td>${esc(STAGE_LABEL[x.r.stage])}</td><td class="n">${fs(x.g.actual)} <span class="muted">of ${fs(x.g.goal)}</span></td><td class="n">${pct(x.g.pct)}</td><td class="n" style="color:var(--bad)">${fs(x.short)}</td><td class="n">${fs(x.left)}</td><td>${chip(x.r.status)}</td></tr>`; };
+    const head = `<thead><tr><th>Utility</th><th>KPI</th><th class="n">Month to date</th><th class="n">% of goal</th><th class="n">Behind pace</th><th class="n">Left to goal</th><th></th></tr></thead>`;
+    h += `<div class="rgrid">${R.dollarGaps.length ? card("Biggest Incentive gaps by utility", "largest dollar shortfall against pace", `<table>${head}<tbody>${R.dollarGaps.slice(0, 10).map(gl).join("")}</tbody></table>`) : ""}
+      ${R.countGaps.length ? card("Project-count gaps by utility", "KPIs judged on projects", `<table>${head}<tbody>${R.countGaps.slice(0, 10).map(gl).join("")}</tbody></table>`) : ""}</div>`;
+  }
+
+  // 6. Sales by program.
+  if (R.sales.length) h += card("Sales by program", "Preapprovals Approved Incentive against the Company Results sales goals", companyTable([...R.sales, R.salesTotal], weeks, pace),
+    `BPTU Phase 1 reads the Phase 1 audit incentive approved (logged as a Closeout Approved on monday). Direct Install, BAS, Commissioning, Consulting, service contracts and Zentility are not on monday.`);
+
+  // 7. RFI loop.
+  const a = R.a;
+  if (a.ok) {
+    const v = (o, k) => o[k] || [0, 0];
+    const hbs = v(a.byHolder, "HBS"), icf = v(a.byHolder, "ICF");
+    const hbsItems = a.loop.filter((x) => x.holder === "HBS").sort((x, y) => (y.dfr || 0) - (x.dfr || 0)).slice(0, 10);
+    h += card("RFI loop with ICF", "current state from the ICF/HBS Project Tracker", `<div class="kpis" style="margin-bottom:12px">
+        <div class="kpi"><div class="lbl">Waiting on HBS</div><div class="val">${hbs[0]}</div><div class="sub">${money(hbs[1])}${a.blocked.length ? ` · ${a.blocked.length} waiting on customer/others` : ""}</div></div>
+        <div class="kpi"><div class="lbl">Waiting on ICF</div><div class="val">${icf[0]}</div><div class="sub">${money(icf[1])}</div></div>
+        <div class="kpi ${a.overdue.length ? "bad" : "good"}"><div class="lbl">RFIs older than ${CONFIG.icf.rfiOverdueDays} days</div><div class="val">${a.overdue.length}</div><div class="sub">${money(sumOf(a.overdue.map((x) => x.value)) || 0)}</div></div>
+        <div class="kpi ${a.overdueFollowUps.length ? "bad" : "good"}"><div class="lbl">Follow-ups overdue</div><div class="val">${a.overdueFollowUps.length}</div><div class="sub">Next Action Date passed</div></div></div>
+      ${hbsItems.length ? `<table class="list"><thead><tr><th>Waiting on HBS, longest first</th><th>ICF status</th><th class="n">Days since update</th><th>HBS engineer</th><th class="n">Incentive</th></tr></thead><tbody>
+        ${hbsItems.map((x) => `<tr><td class="name">${esc(x.name)}${x.blocked ? ` <span class="pill warn">waiting on customer/others</span>` : ""}</td><td>${esc(x.status)}</td><td class="n"><b>${x.dfr == null ? "—" : Math.round(x.dfr)}</b></td><td>${esc(x.hbs || "")}</td><td class="n">${money(x.value)}</td></tr>`).join("")}</tbody></table>` : ""}`,
+      `${a.stale.length ? `${plural(a.stale.length, "project")} on the ICF tracker look out of date (the project tracker has moved on) and are left out. ` : ""}The Aging tab has every item and who holds it.`);
+  }
+
+  // 8. What this report does not cover.
+  h += `<details class="how"><summary>Sources and what isn't covered</summary><div class="body">
+    <p>Monthly KPIs board for every stage except Implementations Completed, which comes from the Master TU, BGE BPTU and Prescriptive trackers. Duplicates (same date, project, stage and utility) are removed; BPTU audits count once per building. ${esc(CONFIG.goals.sources?.[month] || "")}</p>
+    <p>Not on monday, so not in this report: recognised revenue by stream, deposits, non-Tune-Up sales (Direct Install, BAS, Commissioning, Consulting, service contracts, Zentility), Georgia opportunities, meetings, proposals and technician utilization, and the BPTU "# of BPTUs submitted" row.</p></div></details>`;
+  return h;
+}
+
+/* Plain-text summary for an email or chat message. */
+function reportText(month) {
+  const R = reportData(month), { B, weeks } = R, pace = B.pace;
+  const mtd = (r) => r.vals ? r.vals.reduce((x, y) => x + y, 0) : null;
+  const fx = (m, v) => m === "count" ? num(v) : money(v);
+  const st = (s) => s === "on" ? "on pace" : s === "watch" ? "watch" : s === "behind" ? "behind" : "";
+  const out = [`BTU scoreboard · ${monthName(month)} · as of ${md(TODAY)} (working day ${pace.elapsed} of ${pace.total}, ${pct(pace.fraction)} of the month). Dollars are Incentive.`, "", "WHERE WE ARE"];
+  for (const r of R.lines) {
+    const v = mtd(r);
+    if (v == null) { out.push(`- ${r.label}: n/a (${r.na})`); continue; }
+    out.push(`- ${r.label}: ${fx(r.measure, v)} of ${fx(r.measure, r.goal)} (${pct(v / r.goal)}), weekly target ${fx(r.measure, r.goal / weeks.length)}, ${st(paceStatus(v, r.goal, pace.fraction))}`);
+  }
+  if (R.diag.length) {
+    out.push("", "WHY WE'RE BEHIND AND WHAT IT TAKES");
+    for (const d of R.diag) {
+      const g = d.g, p = d.path, f = (v) => g.dollar ? money(v) : num(v, v < 10 && v % 1 ? 1 : 0);
+      const top = d.reasons.filter((x) => x.sev >= 2).slice(0, 2).map((x) => x.head || x.kind);
+      out.push(`- ${STAGE_LABEL[d.r.stage]}: ${f(g.actual || 0)} of ${f(g.goal)}.${p && p.left > 0 ? ` Needs ${f(p.left)} more${p.needPerWeek != null ? ` (${f(p.needPerWeek)}/week)` : ""}${p.uncovered > 0 ? `; ${f(p.uncovered)} not covered by bookings or pipeline` : "; pipeline covers it"}.` : ""}${top.length ? ` Why: ${top.join("; ")}.` : ""}`);
+    }
+  }
+  if (R.dollarGaps.length) {
+    out.push("", "BIGGEST INCENTIVE GAPS BY UTILITY");
+    for (const x of R.dollarGaps.slice(0, 6)) out.push(`- ${x.r.program} · ${STAGE_LABEL[x.r.stage]}: ${money(x.g.actual)} of ${money(x.g.goal)} (${pct(x.g.pct)}), ${money(x.short)} behind pace`);
+  }
+  if (R.a.ok) {
+    const h = R.a.byHolder.HBS || [0, 0], i = R.a.byHolder.ICF || [0, 0];
+    out.push("", "RFI LOOP", `- Waiting on HBS: ${h[0]} (${money(h[1])}); waiting on ICF: ${i[0]} (${money(i[1])}); RFIs older than ${CONFIG.icf.rfiOverdueDays} days: ${R.a.overdue.length}; follow-ups overdue: ${R.a.overdueFollowUps.length}`);
+  }
+  return out.join("\n");
+}
+async function copyReport(btn) {
+  const text = reportText(state.month);
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch { /* clipboard blocked: fall back below */ }
+  if (!ok) {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand("copy"); } catch { ok = false; }
+    ta.remove();
+  }
+  const was = btn.textContent; btn.textContent = ok ? "Copied" : "Copy blocked: select the text below";
+  if (!ok) { const pre = document.createElement("pre"); pre.className = "card"; pre.style.cssText = "white-space:pre-wrap;padding:16px;font-size:13px"; pre.textContent = text; $("#main").prepend(pre); }
+  setTimeout(() => { btn.textContent = was; }, 2000);
+}
+
 function renderQuality() {
   const month = state.month, M = MODEL, kpi = DATA.boards.kpi;
   const count = kpi ? (kpi.meta.items_count ?? kpi.items.length) : null;
@@ -2289,7 +2506,7 @@ function render() {
   for (const b of document.querySelectorAll(".seg button")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   renderAlerts(); renderFresh();
   if (!MODEL) return;
-  const views = { overview: renderOverview, company: renderCompany, weekly: renderWeekly, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
+  const views = { overview: renderOverview, company: renderCompany, report: renderReport, weekly: renderWeekly, pace: renderPace, submissions: renderSubmissions, aging: renderAging, quality: renderQuality };
   const main = $("#main");
   main.innerHTML = (views[state.view] || renderOverview)();
   main.classList.toggle("busy", REFRESHING);
@@ -2358,7 +2575,7 @@ async function refresh() {
 
 /* ---------------------------------- wiring ----------------------------------------------- */
 state.month = monthOf(TODAY);
-const VIEWS = ["overview", "company", "weekly", "pace", "submissions", "aging", "quality"];
+const VIEWS = ["overview", "company", "report", "weekly", "pace", "submissions", "aging", "quality"];
 function fromHash() { const h = (location.hash || "").slice(1); state.view = h === "why" ? "weekly" : VIEWS.includes(h) ? h : "overview"; }
 fromHash();
 try { const p = JSON.parse(store.get("btu-scoreboard-prefs") || "{}"); if (p.mode === "share" || p.mode === "incentive") state.mode = p.mode; if (p.stage && STAGE_LABEL[p.stage]) state.stage = p.stage; if (p.program && (ALL_ROWS.includes(p.program) || p.program === "Total")) state.program = p.program; } catch { /* defaults */ }
@@ -2380,6 +2597,9 @@ document.addEventListener("input", (e) => { if (e.target.id === "subSearch") { s
 document.addEventListener("click", (e) => {
   const seg = e.target.closest(".seg button");
   if (seg) { state.mode = seg.dataset.mode; savePrefs(); render(); return; }
+  if (e.target.closest("[data-print]")) { window.print(); return; }
+  const cp = e.target.closest("[data-copyreport]");
+  if (cp) { copyReport(cp); return; }
   const hold = e.target.closest("tr.holder");
   if (hold) { toggleHolder(hold); return; }
   const cell = e.target.closest("[data-drill]");
