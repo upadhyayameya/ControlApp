@@ -1,0 +1,82 @@
+# Drafts the week's news for wattonearth.in and opens a PR for review.
+# Nothing is published automatically: every generated post has `status: draft`.
+#
+# Setup (once):
+#   - Repo secret  ANTHROPIC_API_KEY
+#   - Repo variable ANTHROPIC_MODEL (optional; defaults to the model in scripts/fetch-news.ts)
+#   - Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests"
+name: Weekly news drafts
+
+on:
+  schedule:
+    # Mondays 06:00 IST = 00:30 UTC
+    - cron: "30 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: weekly-news
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: wattonearth
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: wattonearth/package-lock.json
+
+      - run: npm ci
+
+      - name: Week of (IST)
+        id: week
+        run: echo "date=$(TZ=Asia/Kolkata date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch feeds and draft posts
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          NEWS_SUMMARY_FILE: ${{ runner.temp }}/news-summary.md
+        run: |
+          echo "" > "$NEWS_SUMMARY_FILE"
+          npm run news:fetch
+
+      - name: Check the site still builds with the new drafts
+        run: npm run build
+
+      - name: Build PR body
+        id: body
+        run: |
+          {
+            echo "Automated weekly news drafts. **All posts are \`status: draft\`** and will not appear on the site until you change them to \`published\`."
+            echo ""
+            cat "${{ runner.temp }}/news-summary.md"
+            echo ""
+            echo "### Review checklist"
+            echo "- [ ] Each summary is accurate against the original source and written in our own words"
+            echo "- [ ] \"What this means for you\" is correct and not overstated"
+            echo "- [ ] Tags and sectors are right"
+            echo "- [ ] Delete anything not worth publishing; set \`status: published\` on the rest"
+          } > "${{ runner.temp }}/pr-body.md"
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: news/drafts-${{ steps.week.outputs.date }}
+          title: "News drafts – week of ${{ steps.week.outputs.date }}"
+          commit-message: "News drafts – week of ${{ steps.week.outputs.date }}"
+          body-path: ${{ runner.temp }}/pr-body.md
+          add-paths: wattonearth/content/news/*.mdx
+          labels: news
+          delete-branch: true
