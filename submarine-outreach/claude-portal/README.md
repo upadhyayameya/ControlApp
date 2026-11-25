@@ -57,3 +57,12 @@ The page keeps these collections:
 ## Optional: an Inbox watcher that runs without the portal open
 
 `inbox-prompt.md` is a standalone version of the inbox check for a scheduled routine. A routine can only use Gmail if you create it yourself in claude.ai → Routines with the Gmail connector attached. The portal's built-in check covers this as long as you open the portal once or twice a day.
+
+## India portal
+
+A separate portal for Indian businesses, with its own leads, emails and settings:
+https://claude.ai/artifact/2i7FojLq8KqxYy96rq5oTK
+
+- Page: `submarine-outreach-india.html`, generated from the US page. It has Indian states in four zones (North, West & Central, South, East & Northeast), quotes in rupees before GST, and an email button that links to submarinepens.com when there is no call or brochure link. Emails never quote prices.
+- Prospector: `prospector-prompt-india.md`, scheduled weekdays at 9:36am India time. It starts with the big metros: Maharashtra, Delhi, Karnataka, Telangana, Tamil Nadu, Gujarat and West Bengal, 50 businesses each.
+- Seasonal campaigns: Diwali and festive gifts, New Year, wedding season, financial year-end, new academic year, convocations, conferences and key handovers.
