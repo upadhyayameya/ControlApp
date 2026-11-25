@@ -80,8 +80,8 @@ select.month { background: var(--surface); border: 1px solid var(--line-2); bord
 .alerts { max-width: 1480px; margin: 0 auto; display: grid; gap: 8px; padding-top: 14px; }
 .alert { display: flex; gap: 10px; align-items: flex-start; border-radius: 10px; padding: 10px 14px; border: 1px solid; font-size: 13px; }
 .alert svg { flex: none; width: 16px; height: 16px; margin-top: 2px; }
-.alert.bad { background: var(--bad-bg); border-color: color-mix(in srgb, var(--bad) 30%, transparent); color: var(--bad); }
-.alert.warn { background: var(--warn-bg); border-color: color-mix(in srgb, var(--warn) 30%, transparent); color: var(--warn); }
+.alert.bad { background: var(--bad-bg); border-color: var(--bad-bg); color: var(--bad); }
+.alert.warn { background: var(--warn-bg); border-color: var(--warn-bg); color: var(--warn); }
 .alert.info { background: var(--surface); border-color: var(--line); color: var(--ink-2); }
 .alert b { font-weight: 600; }
 
@@ -154,8 +154,8 @@ td.rowh .sub { display: block; font-size: 11px; font-weight: 400; color: var(--m
 .rawline { display: block; font-size: 11px; color: var(--muted); text-align: right; }
 .na { color: var(--muted); font-size: 12px; text-align: right; display: block; }
 .future { color: var(--line-2); text-align: right; display: block; }
-th.mtd, td.mtd { background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface)); }
-tr.total td.mtd { background: color-mix(in srgb, var(--accent-soft) 100%, var(--surface)); }
+th.mtd, td.mtd { background: var(--accent-soft); }
+tr.total td.mtd { background: var(--accent-soft); }
 th.orph, td.orph { background: var(--bad-bg); }
 table.list td { font-size: 13px; padding: 8px 12px; }
 .wkv.good { color: var(--good); font-weight: 600; } .wkv.warn { color: var(--warn); font-weight: 600; } .wkv.bad { color: var(--bad); font-weight: 600; }
@@ -377,6 +377,8 @@ details.how .body p { margin: 0; }
 table.rtable td { vertical-align: top; }
 table.rtable td .sub { display: block; font-size: 11px; color: var(--muted); }
 table.rtable td:nth-child(5) { min-width: 320px; }
+body.pdfmode .noprint { display: none !important; }
+body.pdfmode .scroll { overflow: visible !important; }
 ul.rlist { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
 @media print {
   :root, :root:not([data-theme="light"]) {
@@ -1881,8 +1883,9 @@ function renderReport() {
   let h = `<div class="pagehead"><div><h1>BTU scoreboard report · ${esc(monthName(month))}</h1>
     <p>As of ${esc(md(TODAY))}${DATA && DATA.at ? ` · monday data pulled ${esc(fmtTime(DATA.at))}` : ""} · working day ${pace.elapsed} of ${pace.total} (${pct(pace.fraction)} of the month) · ${doneW} of ${weeks.length} weeks complete. Dollars are Incentive.</p></div>
     <div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;align-self:center">
-      <button type="button" class="iconbtn" data-print>Print or save as PDF</button>
+      <button type="button" class="iconbtn" data-pdf>Download PDF</button>
       <button type="button" class="iconbtn" data-copyreport>Copy summary text</button></div></div>`;
+  h += `<div id="pdfnote" hidden></div>`;
   if (!Object.keys(CONFIG.goals[month] || {}).length) h += `<div class="alert warn">${ICON.warn}<span>No goals are set for ${esc(monthName(month))}, so this report shows actuals only.</span></div>`;
 
   // 1. Headline.
@@ -1973,6 +1976,73 @@ function renderReport() {
     <p>Monthly KPIs board for every stage except Implementations Completed, which comes from the Master TU, BGE BPTU and Prescriptive trackers. Duplicates (same date, project, stage and utility) are removed; BPTU audits count once per building. ${esc(CONFIG.goals.sources?.[month] || "")}</p>
     <p>Not on monday, so not in this report: recognised revenue by stream, deposits, non-Tune-Up sales (Direct Install, BAS, Commissioning, Consulting, service contracts, Zentility), Georgia opportunities, meetings, proposals and technician utilization, and the BPTU "# of BPTUs submitted" row.</p></div></details>`;
   return h;
+}
+
+/* PDF: the page sits in a sandboxed frame where window.print() does nothing, so the report is drawn to a PDF here
+   (html2canvas + jsPDF, loaded on first use) and handed to the viewer through the downloads capability. */
+const PDF_LIBS = ["https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+                  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"];
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[data-lib="${src}"]`)) return res();
+    const el = document.createElement("script"); el.src = src; el.dataset.lib = src;
+    el.onload = () => res(); el.onerror = () => rej(new Error("The PDF tools could not be loaded. Check your connection and try again."));
+    document.head.appendChild(el);
+  });
+}
+function pdfNote(text, kind = "info") {
+  const n = $("#pdfnote"); if (!n) return;
+  n.hidden = !text; n.className = `alert ${kind} noprint`; n.innerHTML = text ? `${kind === "info" ? ICON.info : ICON.warn}<span>${esc(text)}</span>` : "";
+}
+async function downloadReportPdf(btn) {
+  let downloads = null;
+  try { downloads = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null; } catch { downloads = null; }
+  if (!downloads) { pdfNote("Saving files isn't available in this view. Open the page on claude.ai while signed in, then try again.", "warn"); return; }
+  const label = btn.textContent, root = document.documentElement, prevTheme = root.getAttribute("data-theme");
+  btn.disabled = true; btn.textContent = "Building PDF…"; pdfNote("");
+  try {
+    for (const src of PDF_LIBS) await loadScript(src);
+    root.setAttribute("data-theme", "light"); document.body.classList.add("pdfmode");
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
+    const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight(), M = 28, cw = W - 2 * M, ch = H - 2 * M - 14;
+    let y = M;
+    const blocks = [...$("#main").children].filter((el) => !el.classList.contains("noprint") && el.tagName !== "DETAILS" && el.offsetHeight > 0);
+    for (const el of blocks) {
+      const canvas = await window.html2canvas(el, { scale: 2, backgroundColor: "#ffffff", logging: false });
+      const h = canvas.height * cw / canvas.width;
+      if (h <= ch) {
+        if (y + h > M + ch) { pdf.addPage(); y = M; }
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", M, y, cw, h); y += h + 10;
+        continue;
+      }
+      // Taller than a page: slice it across pages.
+      const per = Math.floor(ch * canvas.width / cw);
+      for (let sy = 0; sy < canvas.height; sy += per) {
+        if (y > M) { pdf.addPage(); y = M; }
+        const part = document.createElement("canvas"); part.width = canvas.width; part.height = Math.min(per, canvas.height - sy);
+        const cx = part.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, part.width, part.height);
+        cx.drawImage(canvas, 0, sy, canvas.width, part.height, 0, 0, canvas.width, part.height);
+        const ph = part.height * cw / canvas.width;
+        pdf.addImage(part.toDataURL("image/jpeg", 0.92), "JPEG", M, y, cw, ph); y += ph + 10;
+      }
+    }
+    const n = pdf.getNumberOfPages();
+    for (let i = 1; i <= n; i++) { pdf.setPage(i); pdf.setFontSize(8); pdf.setTextColor(120); pdf.text(`BTU scoreboard report · ${monthName(state.month)} · as of ${md(TODAY)} · page ${i} of ${n}`, M, H - 14); }
+    root.removeAttribute("data-theme"); if (prevTheme) root.setAttribute("data-theme", prevTheme); document.body.classList.remove("pdfmode");
+    btn.textContent = "Waiting for you to save…";
+    await downloads.save({ filename: `BTU scoreboard report ${state.month} (as of ${TODAY}).pdf`, data: pdf.output("blob") });
+    btn.textContent = "Saved";
+  } catch (e) {
+    const code = e && e.code;
+    if (code === "declined") pdfNote("PDF not saved.");
+    else if (code === "rate_limited") pdfNote("A save prompt is already open. Finish it, then try again.", "warn");
+    else if (code && code !== "bad_request") pdfNote("Saving files isn't available in this view. Open the page on claude.ai while signed in, then try again.", "warn");
+    else pdfNote(`The PDF couldn't be made: ${(e && e.message) || "unknown error"}. Copy summary text still works.`, "warn");
+  } finally {
+    root.removeAttribute("data-theme"); if (prevTheme) root.setAttribute("data-theme", prevTheme); document.body.classList.remove("pdfmode");
+    btn.disabled = false; setTimeout(() => { btn.textContent = label; }, 2000);
+  }
 }
 
 /* Plain-text summary for an email or chat message. */
@@ -2597,7 +2667,8 @@ document.addEventListener("input", (e) => { if (e.target.id === "subSearch") { s
 document.addEventListener("click", (e) => {
   const seg = e.target.closest(".seg button");
   if (seg) { state.mode = seg.dataset.mode; savePrefs(); render(); return; }
-  if (e.target.closest("[data-print]")) { window.print(); return; }
+  const pdfb = e.target.closest("[data-pdf]");
+  if (pdfb) { downloadReportPdf(pdfb); return; }
   const cp = e.target.closest("[data-copyreport]");
   if (cp) { copyReport(cp); return; }
   const hold = e.target.closest("tr.holder");
