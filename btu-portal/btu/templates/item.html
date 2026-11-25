@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import monday_link %}
+{% block title %}Item {{ item_id }}{% endblock %}
+{% block body %}
+<div class="pagehead"><h1>Item #{{ item_id }} ({{ board_key }})</h1></div>
+{% for e in events %}
+<p><strong>{{ e.name }}</strong> — {{ STAGE_LABEL[e.stage] }} on {{ e.date }}, program <strong>{{ e.program }}</strong> ({{ e.program_basis }}).
+  {{ e.status_label }}. Incentive {{ e.incentive|money }}, HBS Share {{ e.share|money }}. {{ monday_link(e.board_id, e.item_id) }}</p>
+{% else %}
+<p class="unavail">This item does not produce a scoreboard event (unmapped group, no date, or not yet complete) — see Data quality.</p>
+{% endfor %}
+{% if corr %}
+<section class="stage"><h2>Corrections applied</h2>
+<ul>{% for c in corr %}<li><strong>{{ c.rule }}</strong>: {{ c.detail }}</li>{% endfor %}</ul></section>
+{% endif %}
+<section class="stage"><h2>Versions pulled from monday</h2>
+{% for h in history %}
+<details {{ 'open' if loop.last }}><summary>{{ h.seen_at }} · {{ h.hash }}</summary>
+<table class="list"><tbody>
+<tr><td>group</td><td>{{ h.data.group.id }} ({{ h.data.group.title }})</td></tr>
+{% for c in h.data.column_values %}<tr><td>{{ c.id }}</td><td>{{ c.get('display_value') or c.text or '' }}</td></tr>{% endfor %}
+</tbody></table></details>
+{% else %}<p class="unavail">No stored versions.</p>{% endfor %}
+</section>
+{% endblock %}

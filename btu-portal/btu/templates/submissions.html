@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_events.html" import events_table %}
+{% block title %}Submissions {{ month }}{% endblock %}
+{% block body %}
+<div class="pagehead">
+  <h1>Submissions log — {{ STAGE_LABEL[stage] }}, {{ month }}</h1>
+  <div class="tabs">
+    {% for s, l in STAGES %}<a class="{{ 'on' if s == stage }}" href="/submissions?{{ {'stage': s, 'month': month, 'dollars': dollars}|qs }}">{{ l }}</a>{% endfor %}
+  </div>
+</div>
+<p class="stage-note">Every item logged at this stage, by week. Duplicates and repeats are shown <span class="excluded-sample">greyed</span>, not hidden, with the item they duplicate.</p>
+{% for label, evs in groups %}
+{% set counted = evs|selectattr('counted')|list %}
+<section class="stage">
+  <h2>{{ label }} <span class="tag">{{ counted|length }} counted · {{ evs|length }} raw ·
+    {{ counted|map(attribute=dollars)|select('number')|sum|money }} {{ 'Incentive' if dollars == 'incentive' else 'HBS Share' }}</span></h2>
+  {{ events_table(evs, dollars) }}
+</section>
+{% endfor %}
+{% endblock %}

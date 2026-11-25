@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status %}
+{% block title %}Pace {{ month }}{% endblock %}
+{% block body %}
+<div class="pagehead">
+  <h1>Pace — {{ month }}</h1>
+  <div class="meta">
+    <strong>{{ board.pace.elapsed }}</strong> of <strong>{{ board.pace.total }}</strong> working days elapsed
+    = <strong>{{ board.pace.fraction|pct }}</strong> of the month
+    ({{ board.pace.remaining_days|length }} working days left;
+    holidays configured: {{ cfg.rules.holidays|join(', ') if cfg.rules.holidays else 'none — add company holidays under [rules] holidays' }}).
+  </div>
+</div>
+<p class="stage-note">Expected-to-date = goal × % of working days elapsed. Gap = MTD − expected. "Needed / week" spreads what is left of the goal over the configured weeks that haven't ended yet. Rows without a goal show actuals only.</p>
+<div class="scroll">
+<table class="board">
+  <thead><tr>
+    <th class="prog">Stage</th><th class="prog">Program</th><th>MTD</th><th>Goal</th><th>Expected to date</th><th>Gap</th>
+    <th>Run rate / working day</th><th>Weeks left</th><th>Needed / week</th><th>Needed / working day</th><th>Status</th>
+  </tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr class="{{ 'total' if r.program == 'Total' }}">
+      <td class="prog">{{ STAGE_LABEL[r.stage] }}</td>
+      <td class="prog">{{ r.program }}</td>
+      {% if r.unavailable %}
+      <td class="n na" colspan="9" title="{{ r.unavailable }}">— {{ r.unavailable }}</td>
+      {% else %}
+      <td class="n"><a href="/drill?{{ {'stage': r.stage, 'program': r.program, 'month': month, 'dollars': dollars, 'week': 'mtd'}|qs }}">{{ r.mtd_count }}</a><span class="usd">{{ r.mtd_dollars|money }}</span></td>
+      <td class="n" title="{{ r.goal.reason or '' }}">{{ r.goal.count|num }}<span class="usd">{{ r.goal.dollars|money }}</span></td>
+      <td class="n">{{ r.expected_count|num(1) }}</td>
+      <td class="n {{ 'neg' if r.gap_count is not none and r.gap_count < 0 }}">{{ r.gap_count|num(1) }}<span class="usd">{{ r.gap_dollars|money }}</span></td>
+      <td class="n">{{ r.run_rate_per_day|num(2) }}</td>
+      <td class="n">{{ r.weeks_remaining }}</td>
+      <td class="n">{{ r.need_per_week_count|num(1) }}<span class="usd">{{ r.need_per_week_dollars|money }}</span></td>
+      <td class="n">{{ r.need_per_day_count|num(2) }}</td>
+      {{ status(r.status) }}
+      {% endif %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
