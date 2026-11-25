@@ -1,3 +1,15 @@
+# HBS Solutions — tools
+
+This repository holds two applications:
+
+- **[HBS Client Portal](portal/)** (`portal/`) — the customer-facing BEPS
+  compliance portal built on ENERGY STAR Portfolio Manager. Buildings measured
+  against the standard, penalty exposure, trends, two-way data entry, and
+  communication tracking.
+- **HBS BAS Simulation Trainer** (repository root) — documented below.
+
+---
+
 # HBS BAS Simulation Trainer
 
 A web-based HVAC/BAS simulation trainer for HBS Solutions' BTU division. Engineers
